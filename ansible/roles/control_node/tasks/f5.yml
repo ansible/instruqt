@@ -1,0 +1,22 @@
+---
+- name: upgrade pip (F5 MODE)
+  become: true
+  pip:
+    name: pip
+    state: latest
+
+- name: upgrade setuptools to 44 (F5 MODE)
+  become: true
+  pip:
+    name: setuptools==44.0.0
+
+- name: install f5 workshop dependicies (F5 MODE)
+  become: true
+  pip:
+    name:
+      - f5-sdk
+      - bigsuds
+      - netaddr
+      - jmespath
+      - lxml
+    state: latest

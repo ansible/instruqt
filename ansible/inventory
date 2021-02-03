@@ -1,0 +1,15 @@
+[tower]
+localhost ansible_connection=local
+
+[database]
+
+[all:vars]
+admin_password='password'
+
+pg_host=''
+pg_port=''
+
+pg_database='awx'
+pg_username='awx'
+pg_password='password'
+pg_sslmode='prefer'
