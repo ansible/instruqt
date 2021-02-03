@@ -1,10 +1,10 @@
 # Images for Instruqt
 
-Image name | Description
---- | ---
-`ansible` | Ansible on RHEL 8
-`ansible-tower` | Ansible Tower on RHEL 8
-`windows` | Windows 2016
+Image name | Description | connection
+--- | --- | ---
+`ansible` | Ansible on RHEL 8 | 
+`ansible-tower` | Ansible Tower on RHEL 8 | admin/ansible123!
+`windows` | Windows 2016 | admin/Password123
 
 # Packer recipe for Ansible Tower image
 
