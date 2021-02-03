@@ -1,0 +1,19 @@
+---
+- name: Configure common Windows image
+  hosts: all
+
+  tasks:
+
+    - name: Hard-code an admin user
+      win_user:
+        name: admin
+        password: Password123
+        state: present
+        groups:
+          - Administrators
+
+    - name: install the Win32-OpenSSH service
+      win_chocolatey:
+         name: openssh
+         package_params: /SSHServerFeature
+         state: present

@@ -1,0 +1,19 @@
+---
+- name: configures tower node
+  hosts: all
+  become: true
+  vars:
+
+    admin_password: ansible123!
+    use_manifest: false
+
+  tasks:
+
+    - set_fact:
+        tower_license: "{{ lookup('file', 'tower_license.json')|from_json|combine({'eula_accepted':true}) }}"
+
+    - name: install packages
+      include_tasks: "./roles/control_node/tasks/package_dependencies.yml"
+
+    - name: include tower.yml from workshop provisioner
+      include_tasks: "./roles/control_node/tasks/tower.yml"
