@@ -5,7 +5,6 @@
   vars:
 
     admin_password: ansible123!
-    ansible_host: http://localhost:80
     use_manifest: false
 
   tasks:
