@@ -27,7 +27,7 @@ build {
     }
 
     provisioner "ansible" {
-    	playbook_file = "./ansible/tower.yml"
+    	playbook_file = "./ansible/tower-setup.yml"
 	user = "rhel"
 	extra_arguments = [ "-vvvv" ]
     }
