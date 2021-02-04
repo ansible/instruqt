@@ -1,0 +1,37 @@
+---
+- name: setup tower for windows use cases
+  hosts: localhost
+  become: true
+  vars:
+
+    username: admin
+    admin_password: ansible123!
+
+  tasks:
+
+    - name: install awx collection
+      command: "ansible-galaxy collection install awx.awx"
+
+    - name: configure available adhoc modules
+      awx.awx.tower_settings:
+        name: AD_HOC_COMMANDS
+        value:
+          - 'setup'
+          - 'win_ping'
+          - 'win_service'
+          - 'win_updates'
+          - 'win_group'
+          - 'win_user'
+          - 'win_shell'
+          - 'win_feature'
+          - 'win_reboot'
+          - 'win_chocolatey'
+        validate_certs: false
+        tower_password: "{{ admin_password }}"
+        tower_username: "{{ username }}"
+        tower_host: http://localhost:80
+      register: adhoc_commands
+      until: adhoc_commands is success
+      delay: 1
+      retries: 60
+

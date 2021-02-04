@@ -17,3 +17,12 @@
 
     - name: include tower.yml from workshop provisioner
       include_tasks: "./roles/control_node/tasks/tower.yml"
+
+    - name: install awx.awx
+      command: "ansible-galaxy collection install awx.awx"
+
+    - name: copy setup-scripts to tower node
+      copy:
+        src: ./setup-scripts
+        dest: /tmp
+
