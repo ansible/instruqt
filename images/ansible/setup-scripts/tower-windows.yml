@@ -9,9 +9,6 @@
 
   tasks:
 
-    - name: install awx collection
-      command: "ansible-galaxy collection install awx.awx"
-
     - name: configure available adhoc modules
       awx.awx.tower_settings:
         name: AD_HOC_COMMANDS
