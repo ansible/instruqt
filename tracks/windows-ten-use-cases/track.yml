@@ -1,0 +1,252 @@
+slug: windows-ten-use-cases
+id: dkvcpwwize90
+type: track
+title: Automating Windows environments
+teaser: 10 Use cases for Windows automation
+description: |-
+  Most organizations use varied IT stacks within their business. You may have a Linux® server farm and use a Microsoft Active Directory
+  cluster to provide identity services. Or you may maintain a cross-platform environment that builds software for multiple targets.
+
+  Manually managing each of the different components can be tedious and error-prone.
+  Automate your multivendor environments more easily with Red Hat® Ansible® Automation Platform. Through native Microsoft Windows
+  support, you can now manage your Linux systems like Linux and your Windows systems like Windows, using the same automation tools.
+
+  This track reviews 10 ways you can automate Windows systems using Red Hat Ansible Automation Platform.
+
+
+  ![Image of Ansible and Windows](https://www.ansible.com/hs-fs/hubfs/2015_Images/Blog/ansible-windows-blog.png?width=687&height=299&name=ansible-windows-blog.png)
+
+  More information: [Ansible for Windows](https://www.ansible.com/for/windows)
+
+  [**Try Ansible Automation Platform today!**](https://red.ht/try_ansible)
+icon: https://www.ansible.com/hubfs/Logo-Red_Hat-Ansible-A-Reverse-SVG.svg
+level: beginner
+tags:
+- windows
+owner: redhat
+developers:
+- colin@redhat.com
+private: true
+published: false
+maintenance: true
+show_timer: true
+challenges:
+- slug: ansible-inventory
+  id: fpjtr7wogx9x
+  type: challenge
+  title: Connect using WinRM
+  teaser: WinRM usage in Ansible inventory file
+  assignment: "An inventory file has already been created for the Windows 2016 host
+    that we will be working with. However, the inventory file is missing a few key
+    parameters needed to connect and automate against a Windows target.\n\n**Optional:**
+    Before correcting the inventory, try running an adhoc command on the one host,
+    `winhost`. Ensure you pick a module that works on Windows targets. \n\nThe default
+    connection protocol when adding hosts to an inventory file is `ssh`. When automating
+    Windows targets, the preferred connection protocol is `WinRM`. Therefore, we'll
+    have to override the default connection protocol."
+  notes:
+  - type: text
+    contents: |-
+      # 10 ways to automate Microsoft Windows with Red Hat Ansible Automation Platform
+
+      Most organizations use varied IT stacks within their business. You may have a Linux® server farm and use a Microsoft Active Directory cluster to provide identity services. Or you may maintain a cross-platform environment that builds software for multiple targets. Manually managing each of the different components can be tedious and error-prone.
+  - type: text
+    contents: Automate your multivendor environments more easily with Red Hat® Ansible®
+      Automation Platform. Through native Microsoft Windows support, you can now manage
+      your Linux systems like Linux and your Windows systems like Windows, using the
+      same automation tools.
+  - type: text
+    contents: This track reviews 10 ways you can automate Windows systems using Red
+      Hat Ansible Automation Platform.
+  - type: text
+    contents: |-
+      # Your first challenge! Get Ansible to talk to Windows hosts
+
+      WinRM is Microsoft’s built-in HTTP-based remote management technology.
+      WinRM’s non-interactive login makes it difficult to perform some tasks like
+      accessing the data protection application programming interface (API),
+      double-hop authentication, and Windows updates. With Red Hat Ansible
+      Automation Platform, you can codify authentication to automate these
+      remote management tasks in Windows.
+  tabs:
+  - title: Tower
+    type: service
+    hostname: tower
+    port: 443
+  - title: Tower CLI
+    type: terminal
+    hostname: tower
+  difficulty: basic
+  timelimit: 600
+- slug: powershell-and-ansible
+  id: xkdrzmhbis6x
+  type: challenge
+  title: Powershell and Ansible unite
+  teaser: Leverage the work Microsoft has already built-in
+  assignment: |-
+    Powershell is the task-based command-line shell and scripting language
+    included with Windows. It is built on .NET and provides access to the Desired
+    State Configuration (DSC) platform for configuring, deploying, and managing
+    systems. Red Hat Ansible Automation Platform allows you to automate brand
+    new Windows systems, including all .NET and DSC functions, without installing
+    another scripting language.
+  notes:
+  - type: text
+    contents: |-
+      Powershell is the task-based command-line shell and scripting language
+      included with Windows. It is built on .NET and provides access to the Desired
+      State Configuration (DSC) platform for configuring, deploying, and managing
+      systems. Red Hat Ansible Automation Platform allows you to automate brand
+      new Windows systems, including all .NET and DSC functions, without installing
+      another scripting language.
+  tabs:
+  - title: Tower
+    type: service
+    hostname: tower
+    port: 443
+  difficulty: basic
+  timelimit: 500
+- slug: app-install
+  id: f3pm4dnprj8o
+  type: challenge
+  title: Application installation and maintenance
+  teaser: Package management for Windows
+  assignment: |-
+    Windows does not include an integrated package management system and uses
+    Microsoft Store for application distribution and maintenance. However, Microsoft
+    Store is not easy to automate. Red Hat Ansible Automation Platform provides a
+    module for automating basic package management in Windows. It also integrates
+    with Chocolatey software management automation for Windows to provide automated idempotent package management.
+  notes:
+  - type: text
+    contents: |-
+      Windows does not include an integrated package management system and uses
+      Microsoft Store for application distribution and maintenance. However, Microsoft
+      Store is not easy to automate. Red Hat Ansible Automation Platform provides a
+      module for automating basic package management in Windows. It also integrates
+      with Chocolatey software management automation for Windows to provide automated idempotent package management.
+  difficulty: basic
+  timelimit: 500
+- slug: windows-reboots
+  id: hp9qhncmqzvq
+  type: challenge
+  title: Tasks that require reboots
+  teaser: Reboots... Has this ever happened to you?
+  assignment: |-
+    Many standard IT functions require or result in reboots in Windows. Reboots
+    can be problematic when automating tasks, as a particular system effectively
+    disappears during a reboot, interrupting the automation tasks. Red Hat Ansible
+    Automation Platform provides a way to manage systems through reboot cycles
+    to ensure that all automation tasks are performed, regardless of how many
+    reboots are required.
+  notes:
+  - type: text
+    contents: |-
+      Many standard IT functions require or result in reboots in Windows. Reboots
+      can be problematic when automating tasks, as a particular system effectively
+      disappears during a reboot, interrupting the automation tasks. Red Hat Ansible
+      Automation Platform provides a way to manage systems through reboot cycles
+      to ensure that all automation tasks are performed, regardless of how many
+      reboots are required.
+  difficulty: basic
+  timelimit: 500
+- slug: windows-updates
+  id: ykdyzzkcthsb
+  type: challenge
+  title: Windows Update
+  teaser: Automate updates on your time
+  assignment: |-
+    Update management is an ongoing responsibility for all
+    IT teams. Windows Update delivers software updates for
+    Windows systems, and many IT teams use Microsoft System
+    Center Configuration Manager (SCCM) to manage these
+    updates across their systems. However, SCCM can be unreliable for performing automated updates, particularly when
+    reboots are involved, making it more difficult to meet maintenance windows. Red Hat Ansible Automation Platform lets you
+    perform basic synchronous updates using Windows Update,
+    making automated updates more reliable.
+  notes:
+  - type: text
+    contents: |-
+      Update management is an ongoing responsibility for all
+      IT teams. Windows Update delivers software updates for
+      Windows systems, and many IT teams use Microsoft System
+      Center Configuration Manager (SCCM) to manage these
+      updates across their systems. However, SCCM can be unreliable for performing automated updates, particularly when
+      reboots are involved, making it more difficult to meet maintenance windows. Red Hat Ansible Automation Platform lets you
+      perform basic synchronous updates using Windows Update,
+      making automated updates more reliable.
+  difficulty: basic
+  timelimit: 500
+- slug: automate-iis
+  id: admf7vyxhkme
+  type: challenge
+  title: Internet Information Services (IIS)
+  teaser: IIS automation modules
+  assignment: |-
+    IIS is an extensible web server for Windows. Red Hat Ansible
+    Automation Platform provides basic automation modules for
+    IIS, including setting up a website, web applications, application
+    pools, and virtual directories.
+  difficulty: basic
+  timelimit: 500
+- slug: windows-registry
+  id: xgxyadxbz60m
+  type: challenge
+  title: Windows Registry
+  teaser: Manage key-value pairs the idempotent way
+  assignment: |-
+    Windows Registry stores low-level settings for the Windows
+    operating system and applications. Changing registry values
+    manually can be time-consuming and error-prone. Red Hat
+    Ansible Automation Platform includes built-in capabilities for
+    managing individual key value pairs in an idempotent fashion.
+    You can also create registry templates and automatically apply
+    those templates to groups of Windows systems.
+  difficulty: basic
+  timelimit: 500
+- slug: windows-scm
+  id: qs4xto3t0it4
+  type: challenge
+  title: Windows Service Control Manager (SCM)
+  teaser: Managing Windows services
+  assignment: |-
+    Windows SCM provides management for all Windows services,
+    including WinRM, IIS, and firewalls. Red Hat Ansible Automation
+    Platform includes a module for automating service controls.
+    You can also create and manage Windows services as part of
+    a larger software deployment.
+  difficulty: basic
+  timelimit: 500
+- slug: windows-domains
+  id: ytbtcw2bnuyl
+  type: challenge
+  title: Domains
+  teaser: You can't survive without them; automate them!
+  assignment: |-
+    Windows uses domains to manage enterprise identity.
+    All systems in your enterprise environment should be joined
+    to a domain. This can make testing new software, updates,
+    and configurations difficult, as all test systems must be added
+    to a domain. Red Hat Ansible Automation Platform allows you
+    to automate basic domain and domain user management to
+    simplify operations. It also eases testing of new setups using
+    ephemeral machines. You can automatically create throwaway
+    domains, add ephemeral systems, perform your tests, and tear
+    everything down quickly
+  difficulty: basic
+  timelimit: 500
+- slug: windows-acls
+  id: a1urc4qmiovi
+  type: challenge
+  title: Access control lists (ACLs)
+  teaser: Defining human readable access controls
+  assignment: |-
+    Security is a constant concern for IT teams. Windows uses
+    ACLs to specify access rights for users, groups, and tasks.
+    Configuring ACLs correctly is critical to protecting your business. Red Hat Ansible Automation Platform makes it easier
+    to configure and understand your ACLs. You can use clear,
+    human-readable code to set up users and groups, assign rights,
+    and define inheritance behaviors.
+  difficulty: basic
+  timelimit: 500
+checksum: "17372063260361470326"

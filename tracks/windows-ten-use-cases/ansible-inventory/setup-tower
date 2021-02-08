@@ -1,0 +1,4 @@
+#!/bin/bash
+mv /tmp/setup-scripts/tower-windows.yml /tmp/setup-scripts/bak.tower-windows.yml
+#ansible-playbook /tmp/setup-scripts/tower-windows.yml
+ansible-playbook /tmp/tower-windows.yml

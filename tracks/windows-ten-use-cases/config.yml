@@ -1,0 +1,9 @@
+version: "2"
+virtualmachines:
+- name: tower
+  image: red-hat-mbu/ansible-tower
+  shell: /bin/bash
+  machine_type: n1-standard-2
+- name: winhost
+  image: red-hat-mbu/windows
+  machine_type: n1-standard-1
