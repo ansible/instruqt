@@ -22,4 +22,16 @@ build {
             "sudo dnf install -y ansible",
         ]
     }
+
+    provisioner "file" {
+        source = "ansible/inventory"
+        destination = "/tmp/inventory"
+    }
+
+    provisioner "ansible" {
+        playbook_file = "./ansible/ansible-setup.yml"
+        user = "rhel"
+        extra_arguments = [ "-vvvv" ]
+    }
+
 }
