@@ -3,11 +3,15 @@
 ## Notes:
 The machine generating the images must be configured with google cloud console + an app specific password before running packer builds. In the future, we may not depend on packer preferring ansible as a use case for automating the managemen of cloud images, but this can be implemented later. Also, when generating windows images from macos, there's an env var that needs to be set in your active shell: `export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES`
 
+## Instruqt environment details
+
+Instruqt handles ssh key management for all nodes so `node1-$ ssh node2` should just work. There is currently no shell for Windows hosts but the windows image configured from this repo installs ssh. The short name defined in the environment for your VM is the hostname used to connect through ssh. 
+
 ## Image details
 
 Image name | Description | connection
 --- | --- | ---
-`ansible` | Ansible on RHEL 8 | 
+`ansible` | Ansible on RHEL 8 | ssh keys already there
 `ansible-tower` | Ansible Tower on RHEL 8 | admin/ansible123!
 `windows` | Windows 2016 | admin/Password123
 
