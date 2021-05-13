@@ -1,15 +1,12 @@
 # Images for Instruqt
 
-## Notes:
-The machine generating the images must be configured with google cloud console + an app specific password before running packer builds. In the future, we may not depend on packer preferring ansible as a use case for automating the managemen of cloud images, but this can be implemented later. Also, when generating windows images from macos, there's an env var that needs to be set in your active shell: `export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES`
-
 ## Image details
 
 Image name | Description | connection
 --- | --- | ---
-`ansible` | Ansible on RHEL 8 | ssh keys already there
-`ansible-tower` | Ansible Tower on RHEL 8 | admin/ansible123!
-`windows` | Windows 2016 | admin/Password123
+`ansible` | Ansible on RHEL 8 | **SSH**: root keys
+`ansible-tower` | Ansible Tower on RHEL 8 | **Tower**: admin/ansible123!<br>**SSH**: root keys
+`windows` | Windows 2016 | **SSH**: admin/Password123
 
 **Packer recipe for Ansible Tower image**
 
@@ -26,3 +23,6 @@ The cloud of choice for Instruqt is GCP. Images are currently built on GCP using
 Take a look at the packer files `*.pkr.hcl` for current images to get an idea of what is going on. Once your build file has been customized for your use case run `packer build your-image.pkr.hcl`. If your image already exists within the GCP project specified in the packer file, you can force the refresh of the image like so: `packer build --force your-image.pkr.hcl`
 
 When creating a new track, you should be able to specify the path the new image using `project-name/image-name`
+
+## Notes:
+When generating windows images from macos, there's an env var that needs to be set in your active shell: `export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES`
