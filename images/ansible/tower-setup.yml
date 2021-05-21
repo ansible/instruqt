@@ -18,6 +18,9 @@
     - name: include tower.yml from workshop provisioner
       include_tasks: "./roles/control_node/tasks/tower.yml"
 
+    - name: include code_server modified from workshop provisioner
+      include_tasks: "./roles/code_server/tasks/codeserver.yml"
+
     - name: install awx.awx
       command: "ansible-galaxy collection install awx.awx"
       

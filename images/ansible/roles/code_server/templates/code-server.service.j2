@@ -1,0 +1,18 @@
+[Unit]
+Description=Code Server IDE
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/tmp/
+Restart=on-failure
+RestartSec=10
+Environment="PASSWORD=ansible123!"
+
+ExecStart=/bin/code-server
+ExecStop=/bin/kill -s QUIT $MAINPID
+
+
+[Install]
+WantedBy=multi-user.target
