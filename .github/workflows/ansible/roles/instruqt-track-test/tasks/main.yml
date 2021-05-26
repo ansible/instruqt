@@ -27,3 +27,8 @@
   loop: "{{ tracks.files }}"
   environment:
     INSTRUQT_TOKEN: "{{ INSTRUQT_TOKEN }}"
+  register: tracks_tests
+
+- name: dump tests
+  ansible.builtin.debug:
+    var: "{{ tracks_tests }}"
