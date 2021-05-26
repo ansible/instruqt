@@ -25,3 +25,5 @@
   ansible.builtin.shell:
     cmd: instruqt track test --slug redhat/{{ item.path | basename }}
   loop: "{{ tracks.files }}"
+  environment:
+    INSTRUQT_TOKEN: "{{ INSTRUQT_TOKEN }}"
