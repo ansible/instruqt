@@ -14,5 +14,5 @@ jobs:
       - uses: actions/checkout@v2
       - name: install ansible
         run: sudo apt-get install ansible
-       - name: run playbook
-         run: ansible-playbook /home/runner/work/instruqt/instruqt/.github/workflows/ansible/instruqt-test-track.yml
+      - name: run playbook
+        run: ansible-playbook /home/runner/work/instruqt/instruqt/.github/workflows/ansible/instruqt-test-track.yml
