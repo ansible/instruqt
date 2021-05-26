@@ -1,0 +1,18 @@
+name: instruqt-track-test
+on: 
+  workflow_dispatch:
+  # push:
+  #   paths:
+  #     - 'tracks/*'
+  #   branches:
+  #     - devel
+
+jobs:
+  instruqt-track-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: install ansible
+        run: sudo apt-get install ansible
+      - name: run playbook
+        run: ansible-playbook /home/runner/work/instruqt/instruqt/.github/workflows/ansible/instruqt-test-track.yml

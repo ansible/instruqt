@@ -1,0 +1,11 @@
+---
+- name: get a list of the tracks
+  ansible.builtin.find:
+    paths: /home/runner/work/instruqt/instruqt/images/
+    recurse: false
+    file_type: directory
+  register: tracks
+
+- name: dump tracks
+  ansible.builtin.debug:
+    var: tracks
