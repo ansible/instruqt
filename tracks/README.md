@@ -3,6 +3,10 @@
 ## Usage
 Use the instruqt cli to pull tracks created from the webui and commit them to this directory. 
 
+A template track has been created to demonstrate what the fields mean. You can create a copy of this track using the Instruqt CLI like so: `instruqt track create --from redhat/template-slug-url-of-track --title New track slug --slug new slug`
+
+After copying the track, `cd` into the track directory and run `instruqt track push` to push it to our Instruqt organization for further editing.
+
 ### Helpful resources
 - [Build your first track](https://docs.instruqt.com/building-tracks/your-first-track)
 - [View your tracks logs](https://docs.instruqt.com/building-tracks/viewing-logs)
