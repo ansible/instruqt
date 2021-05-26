@@ -1,4 +1,14 @@
 version: "2"
+containers:
+- name: gitea
+  image: gitea/gitea:1.14.2
+  environment:
+    GITEA__security__INSTALL_LOCK: "true"
+    GITEA__server__DOMAIN: gitea
+    GITEA__server__SSH_DOMAIN: gitea
+    GITEA__server__SSH_LISTEN_PORT: "2222"
+    GITEA__server__SSH_PORT: "22"
+  memory: 512
 virtualmachines:
 - name: tower
   image: red-hat-mbu/ansible-tower
