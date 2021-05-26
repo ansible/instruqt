@@ -1,7 +1,8 @@
 ---
 - name: install instruqt cli
-  ansible.builtin.shell:
-    cmd: wget -o /tmp/instruqt-cli.zip https://github.com/instruqt/cli/releases/download/1723-1f35c6a/instruqt-linux-1723-1f35c6a.zip
+  ansible.builtin.get_url:
+    url: https://github.com/instruqt/cli/releases/download/1723-1f35c6a/instruqt-linux-1723-1f35c6a.zip
+    dest: /tmp/instruqt-cli.zip
 
 - name: extract instruqt
   ansible.builtin.unarchive:
