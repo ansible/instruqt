@@ -9,3 +9,5 @@ This repo contains images and tracks for the instruqt platform
 <hr>
 
 Want to [contribute?](docs/contribute.md)
+
+![ansible demo logo image](assets/ansible-demo.png)
