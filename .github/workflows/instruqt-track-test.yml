@@ -16,6 +16,6 @@ jobs:
         run: sudo apt-get install ansible
       - name: config env
         env:
-          INSTRUQT_API_KEY: ${{ secret.INSTRUQT_API_KEY }}
+          INSTRUQT_API_KEY: ${{ secrets.INSTRUQT_API_KEY }}
       - name: run playbook
         run: ansible-playbook /home/runner/work/instruqt/instruqt/.github/workflows/ansible/instruqt-track-test.yml
