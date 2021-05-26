@@ -4,7 +4,10 @@ type: track
 title: '[template] title of track'
 teaser: A very short description of what this track is about (will be visible in the
   track card)
-description: The full description of the track. Markdown is accepted here.
+description: |-
+  The full description of the track. Markdown is accepted here.
+
+  ![ansible demo logo](https://raw.githubusercontent.com/ansible/instruqt/devel/assets/ansible-demo.png)
 icon: ""
 level: beginner
 tags:
@@ -47,4 +50,4 @@ challenges:
     hostname: rhel
   difficulty: basic
   timelimit: 5000
-checksum: "10244874976982658939"
+checksum: "11357248976371035241"
