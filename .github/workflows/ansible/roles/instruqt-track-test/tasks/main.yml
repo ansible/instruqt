@@ -18,5 +18,5 @@
 
 - name: dump tracks
   ansible.builtin.debug:
-    msg: item
-  loop: "{{ tracks.files.path }}"
+    msg: "{{ item.path }}"
+  loop: "{{ tracks.files }}"
