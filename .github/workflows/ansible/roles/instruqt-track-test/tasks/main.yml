@@ -18,4 +18,4 @@
 
 - name: dump tracks
   ansible.builtin.debug:
-    msg: {{ tracks.files | type_debug }}
+    msg: "{{ tracks.files | type_debug }}"
