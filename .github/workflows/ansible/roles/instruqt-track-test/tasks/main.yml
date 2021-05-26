@@ -29,7 +29,6 @@
   environment:
     INSTRUQT_TOKEN: "{{ INSTRUQT_TOKEN }}"
 
-
 - name: dump tests
   ansible.builtin.debug:
     msg: '"{{ item.item.path }} {{ item.stdout_lines[-1] }}"'
