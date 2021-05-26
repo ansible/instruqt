@@ -9,10 +9,10 @@ Instruqt handles ssh key management for all nodes so `node1-$ ssh node2` should 
 
 ## Image details
 
-Image name | Description | connection
---- | --- | ---
-`ansible` | Ansible on RHEL 8 | ssh keys already there
-`ansible-tower` | Ansible Tower on RHEL 8 | admin/ansible123!
+Image name | Description | connection | usage in challenge
+--- | --- | --- | ---
+`ansible` | Ansible on RHEL 8 | ssh keys already there | 
+`ansible-tower` | Ansible Tower on RHEL 8<br>VS Code included | **Tower** user/pass: `admin/ansible123!` <br>**VS Code** pass: `ansible123!` | **Tower** `type: service`,  `path: `,  `port: 443` <br> **VS Code** `type: service`,  `path: /editor/`,  `port: 443`
 `windows` | Windows 2016 | admin/Password123
 
 **Packer recipe for Ansible Tower image**
