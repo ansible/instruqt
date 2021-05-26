@@ -3,7 +3,7 @@
   hosts: localhost
   become: true
   vars:
-    INSTRUQT_TOKEN: "{{ lookup('env', 'INSTRUQT_TOKEN' }}"
+    INSTRUQT_TOKEN: "{{ lookup('env', 'INSTRUQT_TOKEN') }}"
   
   roles:
     - instruqt-track-test
