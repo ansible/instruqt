@@ -25,10 +25,12 @@
   ansible.builtin.shell:
     cmd: instruqt track test --slug redhat/{{ item.path | basename }}
   loop: "{{ tracks.files }}"
+  register: tracks_tests
   environment:
     INSTRUQT_TOKEN: "{{ INSTRUQT_TOKEN }}"
-  register: tracks_tests
+
 
 - name: dump tests
   ansible.builtin.debug:
-    var: "{{ tracks_tests }}"
+    msg: '"{{ item.item.path }} {{ item.stdout_lines[-1] }}"'
+  loop: "{{ tracks_tests.results }}"
