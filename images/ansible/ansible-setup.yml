@@ -7,3 +7,20 @@
 
     - name: Install useful packages
       include_tasks: "./roles/control_node/tasks/package_dependencies.yml"
+
+    - name: Install oasis roles collection
+      command: "ansible-galaxy collection install oasis_roles.system"
+
+    - name: Add user 'student'
+      ansible.builtin.user:
+        name: student
+        shell: /bin/bash
+        password: "{{ 'ansible123!' | password_hash('sha512', 'mysecretsalt') }}"
+        groups: wheel
+        append: yes
+
+    - name: Change SSHD to allow password logins
+      import_role:
+        name: oasis_roles.system.sshd
+      vars:
+        sshd_allow_password_login: yes
