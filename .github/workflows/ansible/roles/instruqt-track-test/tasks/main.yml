@@ -1,11 +1,35 @@
 ---
+- name: install instruqt cli
+  ansible.builtin.get_url:
+    url: https://github.com/instruqt/cli/releases/download/1723-1f35c6a/instruqt-linux-1723-1f35c6a.zip
+    dest: /tmp/instruqt-cli.zip
+
+- name: extract instruqt
+  ansible.builtin.unarchive:
+    src: /tmp/instruqt-cli.zip
+    dest: /usr/local/bin
+
 - name: get a list of the tracks
   ansible.builtin.find:
-    paths: /home/runner/work/instruqt/instruqt/images/
+    paths: /home/runner/work/instruqt/instruqt/tracks/
     recurse: false
     file_type: directory
   register: tracks
 
 - name: dump tracks
   ansible.builtin.debug:
-    var: tracks
+    msg: "{{ item.path }}"
+  loop: "{{ tracks.files }}"
+
+- name: test tracks in repo
+  ansible.builtin.shell:
+    cmd: instruqt track test --slug redhat/{{ item.path | basename }}
+  loop: "{{ tracks.files }}"
+  register: tracks_tests
+  environment:
+    INSTRUQT_TOKEN: "{{ INSTRUQT_TOKEN }}"
+
+- name: dump tests
+  ansible.builtin.debug:
+    msg: '"{{ item.item.path }} {{ item.stdout_lines[-1] }}"'
+  loop: "{{ tracks_tests.results }}"
