@@ -20,3 +20,8 @@
   ansible.builtin.debug:
     msg: "{{ item.path }}"
   loop: "{{ tracks.files }}"
+
+- name: test tracks in repo
+  ansible.builtin.shell:
+    cmd: instruqt track test --slug redhat/{{ item.path | basename }}
+  loop: "{{ tracks.files }}"
