@@ -19,4 +19,4 @@
 - name: dump tracks
   ansible.builtin.debug:
     msg: "{{ item.path }}"
-  loop: "{{ tracks.files }}"
+  loop: "{{ tracks }}"
