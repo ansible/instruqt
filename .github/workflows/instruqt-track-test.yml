@@ -15,4 +15,4 @@ jobs:
       - name: install ansible
         run: sudo apt-get install ansible
       - name: run playbook
-        run: ansible-playbook /home/runner/work/instruqt/instruqt/.github/workflows/ansible/instruqt-test-track.yml
+        run: ansible-playbook /home/runner/work/instruqt/instruqt/.github/workflows/ansible/instruqt-track-test.yml
