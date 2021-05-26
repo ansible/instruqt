@@ -3,7 +3,7 @@
   hosts: localhost
   become: false
   vars:
-    instruqt-token: ${{ secrets.INSTRUQT_API_KEY }}
+    INSTRUQT_API_KEY: "{{ lookup('env', 'INSTRUQT_API_KEY' }}"
   
   roles:
     - instruqt-track-test
