@@ -1,4 +1,13 @@
 ---
+- name: install instruqt cli
+  ansible.builtin.shell:
+    cmd: wget -o /tmp/instruqt-cli.zip https://github.com/instruqt/cli/releases/download/1723-1f35c6a/instruqt-linux-1723-1f35c6a.zip
+
+- name: extract instruqt
+  ansible.builtin.unarchive:
+    src: /tmp/instruqt-cli.zip
+    dest: /usr/local/bin
+
 - name: get a list of the tracks
   ansible.builtin.find:
     paths: /home/runner/work/instruqt/instruqt/tracks/
@@ -8,4 +17,5 @@
 
 - name: dump tracks
   ansible.builtin.debug:
-    var: tracks
+    msg: item
+  loop: "{{ tracks.files.path }}"

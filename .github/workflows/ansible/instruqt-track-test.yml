@@ -1,9 +1,7 @@
 ---
 - name: Test all tracks in tracks dir
   hosts: localhost
-  become: false
-  vars:
-    INSTRUQT_API_KEY: "{{ lookup('env', 'INSTRUQT_API_KEY' }}"
+  become: true
   
   roles:
     - instruqt-track-test

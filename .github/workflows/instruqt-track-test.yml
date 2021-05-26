@@ -17,4 +17,4 @@ jobs:
       - name: run playbook
         run: ansible-playbook /home/runner/work/instruqt/instruqt/.github/workflows/ansible/instruqt-track-test.yml
         env:
-          INSTRUQT_API_KEY: ${{ secrets.INSTRUQT_API_KEY }}
+          INSTRUQT_TOKEN: ${{ secrets.INSTRUQT_API_KEY }}
