@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+if true ; then
+    cat <<- EOF > /home/rhel/ansible-files/hosts
+    [web]
+    node1
+    node2
+    EOF
+    chown rhel:rhel /home/rhel/ansible-files/hosts
+fi

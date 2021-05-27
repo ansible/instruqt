@@ -1,0 +1,4 @@
+#!/bin/bash
+if [ -f /home/rhel/ansible-files/apache.yml ]; then
+    echo "Success: Playbook created"
+fi
