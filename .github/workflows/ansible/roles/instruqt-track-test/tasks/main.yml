@@ -9,6 +9,10 @@
     src: /tmp/instruqt-cli.zip
     dest: /usr/local/bin
 
+- name: run instruqt update
+  ansible.builtin.shell:
+    cmd: instruqt update
+
 - name: get a list of the tracks
   ansible.builtin.find:
     paths: /home/runner/work/instruqt/instruqt/tracks/
