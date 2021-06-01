@@ -1,11 +1,11 @@
 name: instruqt-track-test
 on: 
   workflow_dispatch:
-  # push:
-  #   paths:
-  #     - 'tracks/*'
-  #   branches:
-  #     - devel
+  push:
+    paths:
+      - 'tracks/*'
+    branches:
+      - devel
 
 jobs:
   instruqt-track-test:
