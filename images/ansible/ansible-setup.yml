@@ -1,0 +1,56 @@
+---
+- name: configures ansible node
+  hosts: all
+  become: true
+
+  tasks:
+
+    - name: Install useful packages
+      include_tasks: "./roles/control_node/tasks/package_dependencies.yml"
+
+    - name: Configure user 'rhel'
+      ansible.builtin.user:
+        name: rhel
+        shell: /bin/bash
+        password: "{{ 'ansible123!' | password_hash('sha512', 'mysecretsalt') }}"
+        groups: wheel
+        append: yes
+
+    - name: Create test directory
+      ansible.builtin.file:
+        path: /home/rhel/test
+        state: directory
+        owner: rhel
+        group: rhel
+    
+    - name: Create test inventory
+      ansible.builtin.copy:
+        dest: /home/rhel/test/hosts
+        content: |
+          [rhel]
+          node1 ansible_user=rhel ansible_password=ansible123!
+        owner: rhel
+        group: rhel
+
+    - name: Create test playbook
+      ansible.builtin.copy:
+        dest: /home/rhel/test/test.yml
+        content: |
+          ---
+          - name: test playbook
+            hosts: rhel
+        owner: rhel
+        group: rhel
+
+    - name: enable sshd password auth
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        state: present
+        regexp: '^PasswordAuthentication'
+        line: >-
+          PasswordAuthentication yes
+
+    - name: restart sshd
+      ansible.builtin.systemd:
+        name: sshd
+        state: restarted
