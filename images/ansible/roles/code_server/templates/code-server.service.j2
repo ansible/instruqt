@@ -8,9 +8,9 @@ User=rhel
 WorkingDirectory=/tmp/
 Restart=on-failure
 RestartSec=10
-Environment="PASSWORD=ansible123!"
+# Environment="PASSWORD=ansible123!"
 
-ExecStart=/bin/code-server
+ExecStart=/bin/code-server --auth none
 ExecStop=/bin/kill -s QUIT $MAINPID
 
 

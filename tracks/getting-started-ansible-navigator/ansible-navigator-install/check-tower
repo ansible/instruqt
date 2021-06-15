@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd /home/rhel/project_directory
+source venv/bin/activate
+ansible localhost -M ansible.builtin.shell -a "ansible-navigator --version"
