@@ -1,0 +1,73 @@
+---
+- name: setup tower for network use cases
+  hosts: localhost
+  become: true
+  vars:
+
+    username: admin
+    admin_password: ansible123!
+
+  tasks:
+
+    - name: ensure tower/controller is online and working
+      uri:
+        url: https://localhost/api/v2/ping/
+        method: GET
+        user: "{{ username }}"
+        password: "{{ admin_password }}"
+        validate_certs: false
+        force_basic_auth: true
+      register: controller_online
+      until: controller_online is success
+      delay: 3
+      retries: 5
+
+    - name: determine if controller or tower
+      set_fact:
+        controller_or_tower: "{{ 'controller' if 'Platform' in check_controller.x_api_product_name else 'tower' }}"
+
+    - name: create inventory
+      awx.awx.inventory:
+        name: "Network Inventory"
+        organization: "Default"
+        user: "{{ username }}"
+        tower_password: "{{ admin_password }}"
+        tower_host: "https://{{ ansible_host }}"
+        tower_verify_ssl: false
+      register: workshop_inventory
+      until: workshop_inventory is success
+      delay: 3
+      retries: 5
+
+    - name: add cisco host
+      awx.awx.host:
+        name: "cisco"
+        inventory: "Network Inventory"
+        tower_password: "{{ admin_password }}"
+        tower_host: "https://{{ ansible_host }}"
+        tower_verify_ssl: false
+        variables:
+          ansible_network_os: ios
+          ansible_user: ansible
+          ansible_connection: network_cli
+          ansible_become: true
+          ansible_become_method: enable
+
+    - name: Add network machine credential
+      awx.awx.credential:
+        name: "Network Credential"
+        organization: "Default"
+        credential_type: Machine
+        tower_password: "{{ admin_password }}"
+        tower_host: "https://{{ ansible_host }}"
+        tower_verify_ssl: false
+        inputs:
+          ssh_key_data: "{{ lookup('file', '/root/.ssh/private_key') }}"
+
+    - name: Add project
+      awx.awx.project:
+        name: "Network Toolkit"
+        description: "Foo bar project"
+        organization: "Default"
+        scm_update_on_launch: True
+        scm_update_cache_timeout: 60

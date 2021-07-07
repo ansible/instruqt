@@ -16,7 +16,7 @@ Image name | Description | connection | machine type | usage in challenge
 `red-hat-mbu/ansible` | cli Ansible on RHEL 8 | Root ssh keys already there<br>Able to SSH as user/pass: <br> `rhel` / `ansible123!` | `n1-standard-1` | `type: terminal`
 `red-hat-mbu/ansible-tower` | Ansible Tower on RHEL 8<br>VS Code included | **Tower** user/pass: <br> `admin` / `ansible123!`| `n1-standard-2` |  **Tower** `type: service`,  `path: `,  `port: 443` <br> **VS Code** `type: service`,  `path: /editor/`,  `port: 443`
 `red-hat-mbu/arista-eos` | Arista EOS virtual switch | user / pass <br> `ansible` / `ansible123!` | `n1-standard-4` | *Terminal not supported yet. SSH from a linux node* |
-`red-hat-mbu/arista-eos` | Cisco IOS-XE virtual router | user / pass <br> `ansible` / `ansible123!` | `n1-standard-1` | *Terminal not supported yet. SSH from a linux node* |
+`red-hat-mbu/cisco-ios-csr-1731` | Cisco IOS-XE virtual router | user / pass <br> `ansible` / `ansible123!` | `n1-standard-1` | *Terminal not supported yet. SSH from a linux node* |
 `red-hat-mbu/windows` | Windows 2016 | SSH user/pass: `admin/Password123` | `n1-standard-2` | *Terminal not supported yet. SSH from a linux node*
 
 **Packer recipe for Ansible Tower image**
