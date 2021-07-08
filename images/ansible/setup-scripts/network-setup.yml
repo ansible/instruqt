@@ -16,6 +16,7 @@
         method: GET
         user: "{{ username }}"
         password: "{{ admin_password }}"
+        validate_certs: false
         force_basic_auth: true
       register: controller_online
       until: controller_online is success
@@ -31,7 +32,6 @@
         name: "Network Inventory"
         organization: "Default"
         controller_config_file: "{{ playbook_dir }}/controller.cfg"
-        validate_certs: false
       register: workshop_inventory
       until: workshop_inventory is success
       delay: 3
