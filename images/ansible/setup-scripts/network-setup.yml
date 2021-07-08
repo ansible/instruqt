@@ -24,7 +24,7 @@
 
     - name: determine if controller or tower
       set_fact:
-        controller_or_tower: "{{ 'controller' if 'Platform' in check_controller.x_api_product_name else 'tower' }}"
+        controller_or_tower: "{{ 'controller' if 'Platform' in controller_online.x_api_product_name else 'tower' }}"
 
     - name: create inventory
       awx.awx.inventory:
@@ -67,7 +67,7 @@
     - name: Add project
       awx.awx.project:
         name: "Network Toolkit"
-        description: "Foo bar project"
+        scm_url: "https://github.com/network-automation/toolkit"
         organization: "Default"
         scm_update_on_launch: True
         scm_update_cache_timeout: 60
