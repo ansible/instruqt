@@ -41,9 +41,7 @@
       awx.awx.host:
         name: "cisco"
         inventory: "Network Inventory"
-        tower_password: "{{ admin_password }}"
-        tower_host: "https://{{ ansible_host }}"
-        tower_verify_ssl: false
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
         variables:
           ansible_network_os: ios
           ansible_user: ansible
