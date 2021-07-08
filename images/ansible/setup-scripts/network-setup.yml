@@ -37,17 +37,8 @@
       delay: 3
       retries: 5
 
-    - name: add cisco host
-      awx.awx.host:
-        name: "cisco"
-        inventory: "Network Inventory"
-        controller_config_file: "{{ playbook_dir }}/controller.cfg"
-        variables:
-          ansible_network_os: ios
-          ansible_user: ansible
-          ansible_connection: network_cli
-          ansible_become: true
-          ansible_become_method: enable
+    - name: import inventory
+      shell: 'tower-manage inventory_import --source={{ playbook_dir }}/network_inventory --inventory-name="Network Inventory"'
 
     - name: Add network machine credential
       awx.awx.credential:
