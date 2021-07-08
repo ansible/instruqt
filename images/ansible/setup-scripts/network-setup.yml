@@ -30,10 +30,8 @@
       awx.awx.inventory:
         name: "Network Inventory"
         organization: "Default"
-        user: "{{ username }}"
-        tower_password: "{{ admin_password }}"
-        tower_host: "https://{{ ansible_host }}"
-        tower_verify_ssl: false
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
+        validate_certs: false
       register: workshop_inventory
       until: workshop_inventory is success
       delay: 3
