@@ -1,6 +1,7 @@
 ---
 - name: setup tower for network use cases
   hosts: localhost
+  gather_facts: false
   become: true
   vars:
 
@@ -15,7 +16,6 @@
         method: GET
         user: "{{ username }}"
         password: "{{ admin_password }}"
-        validate_certs: false
         force_basic_auth: true
       register: controller_online
       until: controller_online is success
