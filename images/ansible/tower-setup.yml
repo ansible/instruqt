@@ -22,7 +22,7 @@
       include_tasks: "./roles/code_server/tasks/codeserver.yml"
 
     - name: install awx.awx
-      command: "ansible-galaxy collection install -r requirements.yml"
+      command: "ansible-galaxy collection install awx.awx"
 
 #### REMOVE BUILT-IN DEMO CONTENT
     # - name: delete demo job template

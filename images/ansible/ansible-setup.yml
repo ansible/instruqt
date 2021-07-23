@@ -22,7 +22,7 @@
         state: directory
         owner: rhel
         group: rhel
-    
+
     - name: Create test inventory
       ansible.builtin.copy:
         dest: /home/rhel/test/hosts

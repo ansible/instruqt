@@ -1,0 +1,60 @@
+---
+- name: download aap.tar.gz to install controller
+  hosts: localhost
+  gather_facts: false
+  vars:
+  tasks:
+    - name: download aap
+      vars:
+        offline_token: "{{ lookup('file', 'offline_token.txt')}}"
+      include_role:
+        name: ansible.workshops.aap_download
+
+- name: configures automation controller node
+  hosts: all
+  gather_facts: true
+  become: true
+  vars:
+
+    admin_password: ansible123!
+    use_manifest: false
+
+  tasks:
+    # - name: install packages
+    #   include_role:
+    #     name: instruqt_setup
+
+    - name: Configure user 'rhel'
+      ansible.builtin.user:
+        name: rhel
+        shell: /bin/bash
+        password: "{{ 'ansible123!' | password_hash('sha512', 'mysecretsalt') }}"
+        groups: wheel
+        append: yes
+
+    - name: include red hat crednetial for registry.redhat.io
+      include_vars:
+        file: redhat_login.yml
+
+    - name: install automation controller
+      vars:
+        username: "{{ ansible_user }}"
+        controllerinstall: "true"
+        redhat_username: "{{ your_username }}"
+        redhat_password: "{{ your_password }}"
+      include_role:
+        name: ansible.workshops.control_node
+
+    - name: install workshop dependecies
+      command: "ansible-galaxy collection install --force-with-deps ansible.workshops"
+    #
+    # - name: include tower.yml from workshop provisioner
+    #   include_tasks: "./roles/control_node/tasks/tower.yml"
+    #
+    # - name: include code_server modified from workshop provisioner
+    #   include_tasks: "./roles/code_server/tasks/codeserver.yml"
+    #
+    # - name: copy setup-scripts to tower node
+    #   copy:
+    #     src: ./setup-scripts
+    #     dest: /tmp

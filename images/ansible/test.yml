@@ -1,0 +1,14 @@
+---
+- name: download aap.tar.gz to install controller
+  hosts: localhost
+  gather_facts: false
+  vars:
+  tasks:
+
+    - name: include red hat crednetial for registry.redhat.io
+      include_vars:
+        file: redhat_login.yml
+
+    - name: include red hat crednetial for registry.redhat.io
+      debug:
+        msg: "{{ your_username }}: {{ your_password }}"
