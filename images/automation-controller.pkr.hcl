@@ -8,11 +8,14 @@ variable "zone" {
     default = "us-east1-b"
 }
 
+<<<<<<< HEAD
 variable "image_name" {
     type    = string
     default = "automation-controller"
 }
 
+=======
+>>>>>>> ac5d790 (Created variable to choose GCP zone)
 source "googlecompute" "automation-controller" {
     project_id          = var.project_id
     source_image_family = "rhel-8"
