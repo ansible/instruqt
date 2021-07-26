@@ -8,11 +8,6 @@ variable "zone" {
     default = "us-east1-b"
 }
 
-variable "image_name" {
-    type    = string
-    default = "automation-controller"
-}
-
 source "googlecompute" "automation-controller" {
     project_id          = var.project_id
     source_image_family = "rhel-8"
