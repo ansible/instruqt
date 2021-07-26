@@ -7,7 +7,7 @@ source "googlecompute" "automation-controller" {
     project_id          = var.project_id
     source_image_family = "rhel-8"
     ssh_username        = "rhel"
-    zone                = "us-east4-c"
+    zone                = "us-east1-d"
     machine_type        = "n1-standard-2"
     image_name          = "automation-controller"
 }
