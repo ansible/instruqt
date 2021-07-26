@@ -3,11 +3,16 @@ variable "project_id" {
     default = "red-hat-mbu"
 }
 
+variable "zone" {
+    type    = string
+    default = "us-east1-b"
+}
+
 source "googlecompute" "automation-controller" {
     project_id          = var.project_id
     source_image_family = "rhel-8"
     ssh_username        = "rhel"
-    zone                = "us-east4-c"
+    zone                = var.zone
     machine_type        = "n1-standard-2"
     image_name          = "automation-controller"
 }
