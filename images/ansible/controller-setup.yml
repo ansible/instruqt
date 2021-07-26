@@ -20,9 +20,33 @@
     use_manifest: false
 
   tasks:
-    # - name: install packages
-    #   include_role:
-    #     name: instruqt_setup
+    - name: include red hat crednetial for registry.redhat.io
+      include_vars:
+        file: redhat_login.yml
+
+    - name: kill gpgcheck
+      ansible.builtin.lineinfile:
+        path: /etc/dnf/dnf.conf
+        regexp: '^gpgcheck'
+        line: gpgcheck=0
+
+    - name: include red hat crednetial for registry.redhat.io
+      dnf:
+        name: subscription-manager
+
+    - name: Register and auto-subscribe to available content
+      community.general.redhat_subscription:
+        state: present
+        username: "{{ your_username }}"
+        password: "{{ your_password }}"
+        auto_attach: true
+
+    # https://access.redhat.com/discussions/4656371#comment-1787341
+    - command: "{{ item }}"
+      loop:
+        - subscription-manager refresh
+        - yum clean all
+        - yum repolist
 
     - name: Configure user 'rhel'
       ansible.builtin.user:
@@ -31,10 +55,6 @@
         password: "{{ 'ansible123!' | password_hash('sha512', 'mysecretsalt') }}"
         groups: wheel
         append: yes
-
-    - name: include red hat crednetial for registry.redhat.io
-      include_vars:
-        file: redhat_login.yml
 
     - name: install automation controller
       vars:
@@ -47,14 +67,14 @@
 
     - name: install workshop dependecies
       command: "ansible-galaxy collection install --force-with-deps ansible.workshops"
-    #
-    # - name: include tower.yml from workshop provisioner
-    #   include_tasks: "./roles/control_node/tasks/tower.yml"
-    #
-    # - name: include code_server modified from workshop provisioner
-    #   include_tasks: "./roles/code_server/tasks/codeserver.yml"
-    #
-    # - name: copy setup-scripts to tower node
-    #   copy:
-    #     src: ./setup-scripts
-    #     dest: /tmp
+
+    - name: install code server
+      vars:
+        username: "{{ ansible_user }}"
+      include_role:
+        name: ansible.workshops.code_server
+
+    - name: copy setup-scripts to tower node
+      copy:
+        src: ./setup-scripts
+        dest: /tmp
