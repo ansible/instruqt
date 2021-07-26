@@ -38,6 +38,9 @@ Take a look at the packer files `*.pkr.hcl` for current images to get an idea of
 
 When creating a new track, you should be able to specify the path the new image using `project-name/image-name`
 
+**High Level Diagram**:
+![high level diagram picture](build_process.png)
+
 ## Building automation controller
 
 You are going to need three files in `instruqt/images/ansible`:
