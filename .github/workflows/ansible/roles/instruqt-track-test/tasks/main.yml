@@ -27,7 +27,7 @@
 
 - name: test tracks in repo
   ansible.builtin.shell:
-    cmd: instruqt track test --slug redhat/{{ item.path | basename }}
+    cmd: instruqt track test --slug redhat/{{ item.path | basename }} > /tmp/test-{{ item.path | basename}}.txt
   loop: "{{ tracks.files }}"
   register: tracks_tests
   environment:
