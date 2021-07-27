@@ -18,3 +18,8 @@ jobs:
         run: ansible-playbook /home/runner/work/instruqt/instruqt/.github/workflows/ansible/instruqt-track-test.yml
         env:
           INSTRUQT_TOKEN: ${{ secrets.INSTRUQT_API_KEY }}
+      - name: 'Upload Artifact'
+        uses: actions/upload-artifact@v2
+        with:
+          path: /tmp/test-*
+          retention-days: 5
