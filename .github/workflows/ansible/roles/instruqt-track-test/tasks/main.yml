@@ -29,12 +29,6 @@
   ansible.builtin.shell:
     cmd: instruqt track test --skip-fail-check redhat/{{ item.path | basename }} > /tmp/test-{{ item.path | basename}}.txt
   loop: "{{ tracks.files }}"
-  register: tracks_tests
   environment:
     INSTRUQT_TOKEN: "{{ INSTRUQT_TOKEN }}"
   ignore_errors: true
-
-- name: dump tests
-  ansible.builtin.debug:
-    msg: '"{{ item.item.path }} {{ item.stdout_lines[-1] }}"'
-  loop: "{{ tracks_tests.results }}"
