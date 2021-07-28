@@ -93,10 +93,15 @@
         remote_src: true
         extra_opts: ['--strip-components=1', '--show-stored-names']
 
-    - name: Install podman
+    - name: Install required packages
       yum:
-        name: podman
+        name: "{{ item }}"
         state: latest
+      loop:
+        - podman
+        - ansible-builder
+        - ansible-navigator
+
 
 
     ## Execution environments
