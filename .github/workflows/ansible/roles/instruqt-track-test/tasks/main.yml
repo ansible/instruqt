@@ -33,6 +33,7 @@
   register: tracks_tests
   environment:
     INSTRUQT_TOKEN: "{{ INSTRUQT_TOKEN }}"
+  ignore_errors: true
 
 - name: dump tests
   ansible.builtin.debug:
