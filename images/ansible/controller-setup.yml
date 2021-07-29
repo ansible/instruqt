@@ -28,7 +28,7 @@
         controllerinstall: "true"
       include_role:
         name: ansible.workshops.control_node
-        
+
     - name: Include common user tasks
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/5_configure_users.yml"
