@@ -27,12 +27,6 @@
       include_vars:
         file: redhat_login.yml
 
-    - name: Register and auto-subscribe to available content
-      community.general.redhat_subscription:
-        state: present
-        username: "{{ your_username }}"
-        password: "{{ your_password }}"
-        auto_attach: true
 
     - name: Configure user 'rhel'
       ansible.builtin.user:
