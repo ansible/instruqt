@@ -124,3 +124,5 @@
         name: "{{ item }}"
       loop:
         - registry.redhat.io/ansible-automation-platform-20-early-access/ee-minimal-rhel8
+        - registry.redhat.io/ansible-automation-platform-20-early-access/ansible-builder-rhel8
+        - registry.redhat.io/ansible-automation-platform-20-early-access/ee-supported-rhel8
