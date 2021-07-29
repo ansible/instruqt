@@ -23,10 +23,6 @@
       delay: 3
       retries: 5
 
-    - name: determine if controller or tower
-      set_fact:
-        controller_or_tower: "{{ 'controller' if 'Platform' in controller_online.x_api_product_name else 'tower' }}"
-
     - name: create inventory
       awx.awx.inventory:
         name: "Network Inventory"
@@ -37,24 +33,60 @@
       delay: 3
       retries: 5
 
-    - name: import inventory
-      shell: 'tower-manage inventory_import --source={{ playbook_dir }}/network_inventory --inventory-name="Network Inventory"'
+    - name: Add host
+      awx.awx.host:
+        name: cisco
+        description: "ios-xe csr running on GCP"
+        inventory: "Network Inventory"
+        state: present
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
+        variables:
+            ansible_network_os: ios
+            ansible_user: ansible
+            ansible_connection: network_cli
+            ansible_become: true
+            ansible_become_method: enable
 
     - name: Add network machine credential
       awx.awx.credential:
         name: "Network Credential"
         organization: "Default"
         credential_type: Machine
-        tower_password: "{{ admin_password }}"
-        tower_host: "https://{{ ansible_host }}"
-        tower_verify_ssl: false
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
         inputs:
           ssh_key_data: "{{ lookup('file', '/root/.ssh/private_key') }}"
+
+    - name: Add controller credential
+      awx.awx.credential:
+        name: "AAP controller credential"
+        organization: "Default"
+        kind: controller
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
+        inputs:
+          host: "localhost"
+          password: "ansible123!"
+          username: "admin"
+          verify_ssl: false
 
     - name: Add project
       awx.awx.project:
         name: "Network Toolkit"
-        scm_url: "https://github.com/network-automation/toolkit"
+        scm_url: "https://github.com/ipvsean/toolkit"
+        scm_type: git
         organization: "Default"
         scm_update_on_launch: True
         scm_update_cache_timeout: 60
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
+
+    - name: Create network backup job template
+      awx.awx.job_template:
+        name: "Network Automation - Backup"
+        job_type: "run"
+        organization: "Default"
+        inventory: Network Inventory
+        project: "Network Toolkit"
+        playbook: "playbooks/network_backup.yml"
+        credentials:
+          - "Network Credential"
+        state: "present"
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"

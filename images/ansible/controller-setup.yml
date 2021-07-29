@@ -20,7 +20,6 @@
   vars:
 
     admin_password: ansible123!
-    use_manifest: false
 
   tasks:
     - name: include red hat cred for registry.redhat.io
