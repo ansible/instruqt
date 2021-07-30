@@ -1,0 +1,74 @@
+---
+##
+# https://play.instruqt.com/redhat/tracks/getting-started-controller/
+##
+- name: Instruqt config getting started with controller
+  hosts: localhost
+  gather_facts: false
+  become: true
+
+  vars:
+    username: admin
+    admin_password: ansible123!
+    lab_credential_name: "Lab Machine Credential"
+    lab_project_name: "Lab playbooks"
+    lab_jt_name: "Debug Info"
+    lab_inventory_name: "Lab-Inventory"
+    debug_info_extra_vars:
+      HOSTS: all
+
+  tasks:
+      #@todo #33 workaround. need to add packabges to workshop collection
+    - name: Intall controller lab packages for controller lab
+      ansible.builtin.dnf:
+        state: present
+        name: "{{ item }}"
+      loop:
+        - jq
+        - /var/lib/ansible-automation-platform-bundle/automation-controller-cli-4.0.0-1.el8ap.x86_64.rpm
+    - name: Ensure tower/controller is online and working
+      uri:
+        url: https://localhost/api/v2/ping/
+        method: GET
+        user: "{{ username }}"
+        password: "{{ admin_password }}"
+        validate_certs: false
+        force_basic_auth: true
+      register: controller_online
+      until: controller_online is success
+      delay: 3
+      retries: 5
+
+    - name: Add the lab ssh credential
+      awx.awx.credential:
+        name: "{{ lab_credential_name }}"
+        organization: "Default"
+        credential_type: Machine
+        inputs:
+          ssh_key_data: "{{ lookup('file', '/home/rhel/.ssh/id_rsa') }}"
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
+        validate_certs: false
+
+    - name: Add the lab project
+      awx.awx.project:
+        name: "{{lab_project_name }}"
+        scm_type: git
+        scm_url: "https://github.com/ansible/product-demos"
+        organization: "Default"
+        scm_update_on_launch: false
+        scm_update_cache_timeout: 60
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
+        validate_certs: false
+
+    - name: Create the lab job template
+      awx.awx.job_template:
+        name: "{{ lab_jt_name }}"
+        state: present
+        become_enabled: true
+        project: "{{ lab_project_name }}"
+        credential: "{{ lab_credential_name }}"
+        inventory: "{{ lab_inventory_name }}"
+        playbook: "playbooks/infrastructure/debug_info.yml"
+        extra_vars: "{{ debug_info_extra_vars }}"
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
+        validate_certs: false
