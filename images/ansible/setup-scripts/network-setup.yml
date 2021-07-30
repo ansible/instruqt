@@ -60,7 +60,7 @@
             ansible_password: ansible123!
 
     - name: Add group
-      group:
+      awx.awx.group:
         name: "network"
         description: "Network Group"
         inventory: "Network Inventory"
