@@ -33,7 +33,7 @@
       delay: 3
       retries: 5
 
-    - name: Add host
+    - name: Add cisco host
       awx.awx.host:
         name: cisco
         description: "ios-xe csr running on GCP"
@@ -46,6 +46,28 @@
             ansible_connection: network_cli
             ansible_become: true
             ansible_become_method: enable
+
+    - name: Add backup server host
+      awx.awx.host:
+        name: "backup-server"
+        description: "this server is where we backup network configuration"
+        inventory: "Network Inventory"
+        state: present
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
+        variables:
+            note: "in production these passwords would be encrypted in vault"
+            ansible_user: rhel
+            ansible_password: ansible123!
+
+    - name: Add group
+      group:
+        name: "network"
+        description: "Network Group"
+        inventory: "Network Inventory"
+        state: present
+        hosts:
+          - cisco
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
 
     - name: Add network machine credential
       awx.awx.credential:
