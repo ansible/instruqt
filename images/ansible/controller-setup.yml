@@ -4,7 +4,7 @@
   gather_facts: false
   tasks:
     - name: get yourself some updated workshop roles
-      command: ansible-galaxy collection install --verbose --force-with-deps ansible.workshops
+      command: ansible-galaxy collection install --verbose --force-with-deps ansible.workshops -p /usr/share/ansible/collections
 
     - name: download aap
       vars:
@@ -12,6 +12,14 @@
       include_role:
         name: ansible.workshops.aap_download
 
+    #@todo #33 workaround. need to add packabges to workshop collection
+    - name: Intall packaes for controller lab
+      ansible.builtin.dnf:
+        state: present
+        name: "{{ item }}"
+      loop:
+        - jq
+       
 - name: configures automation controller node
   hosts: all
   gather_facts: true
