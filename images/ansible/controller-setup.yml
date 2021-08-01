@@ -3,12 +3,16 @@
   hosts: localhost
   gather_facts: false
 <<<<<<< HEAD
+<<<<<<< HEAD
 
   tasks:
     - name: get yourself some updated workshop roles
       command: ansible-galaxy collection install --verbose --force-with-deps ansible.workshops
       
 =======
+=======
+  become: true
+>>>>>>> a69d39f (install collections to shared /usr/share/collections)
   tasks:
     - name: get yourself some updated workshop roles
       command: ansible-galaxy collection install --verbose --force-with-deps ansible.workshops -p /usr/share/ansible/collections
