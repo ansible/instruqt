@@ -14,8 +14,9 @@
     lab_project_name: "Lab playbooks"
     lab_jt_name: "Debug Info"
     lab_inventory_name: "Lab-Inventory"
-    debug_info_extra_vars:
-      HOSTS: all
+  
+  tags:
+    - getting-started-controller
 
   tasks:
       #@todo #33 workaround. need to add packabges to workshop collection
@@ -69,6 +70,5 @@
         credential: "{{ lab_credential_name }}"
         inventory: "{{ lab_inventory_name }}"
         playbook: "playbooks/infrastructure/debug_info.yml"
-        extra_vars: "{{ debug_info_extra_vars }}"
         controller_config_file: "{{ playbook_dir }}/controller.cfg"
         validate_certs: false
