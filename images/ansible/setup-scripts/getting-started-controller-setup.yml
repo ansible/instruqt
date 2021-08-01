@@ -14,6 +14,11 @@
     lab_project_name: "Lab playbooks"
     lab_jt_name: "Debug Info"
     lab_inventory_name: "Lab-Inventory"
+    lab_organization: "Default"
+    lab_hosts:
+      - host01
+      - host02
+    lab_inv_group_name: "web"
   
   tags:
     - getting-started-controller
@@ -43,6 +48,44 @@
       retries: 5
       tags:
         - solve-jt
+        - solve-inventory
+
+    - name: Add the {{ lab_inventory_name }} Inventory
+      awx.awx.inventory:
+        name: "{{ lab_inventory_name }}"
+        description: "Lab Inventory"
+        organization: "{{ lab_organization }}"
+        state: present
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
+      tags:
+        - solve-jt
+        - solve-inventory
+
+    - name: Create hosts
+      awx.awx.host:
+        name: "{{ item }}"
+        inventory: "{{ lab_inventory_name }}"
+        state: present
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
+        validate_certs: false
+      loop: "{{ lab_hosts }}"
+      tags:
+        - solve-jt
+        - solve-inventory
+
+    - name: Add hosts to {{ lab_inv_group_name }}
+      awx.awx.group:
+        name: "{{ lab_inv_group_name }}"
+        inventory: "{{ lab_inventory_name }}"
+        # hosts: " {{ item }}"
+        hosts:
+          "{{ lab_hosts }}"
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
+        validate_certs: false
+      # loop: "{{ lab_hosts }}"
+      tags:
+        - solve-jt
+        - solve-inventory    
 
     - name: Add the lab ssh credential
       awx.awx.credential:
