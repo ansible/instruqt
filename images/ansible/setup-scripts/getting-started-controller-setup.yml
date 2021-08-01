@@ -80,5 +80,5 @@
         playbook: "playbooks/infrastructure/debug_info.yml"
         controller_config_file: "{{ playbook_dir }}/controller.cfg"
         validate_certs: false
-        tags:
+      tags:
         - solve-jt
