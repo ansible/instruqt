@@ -12,7 +12,7 @@
     admin_password: ansible123!
     lab_credential_name: "Lab Machine Credential"
     lab_project_name: "Lab playbooks"
-    lab_jt_name: "Debug Info"
+    lab_jt_name: "Debug-Info"
     lab_inventory_name: "Lab-Inventory"
     lab_organization: "Default"
     lab_hosts:
