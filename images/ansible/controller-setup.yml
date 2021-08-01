@@ -2,11 +2,11 @@
 - name: download aap.tar.gz to install controller
   hosts: localhost
   gather_facts: false
-  become: true
+
   tasks:
     - name: get yourself some updated workshop roles
-      command: ansible-galaxy collection install --verbose --force-with-deps ansible.workshops -p /usr/share/ansible/collections
-
+      command: ansible-galaxy collection install --verbose --force-with-deps ansible.workshops
+      
     - name: download aap
       vars:
         offline_token: "{{ lookup('file', 'offline_token.txt')}}"
@@ -46,7 +46,7 @@
         name: ansible.workshops.control_node
 
     - name: install workshop dependecies
-      command: "ansible-galaxy collection install --force-with-deps ansible.workshops"
+      command: "ansible-galaxy collection install --force-with-deps ansible.workshops  -p /usr/share/ansible/collections"
 
     - name: install code server
       vars:
