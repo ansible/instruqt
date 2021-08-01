@@ -11,7 +11,7 @@
         offline_token: "{{ lookup('file', 'offline_token.txt')}}"
       include_role:
         name: ansible.workshops.aap_download
-       
+        
 - name: configures automation controller node
   hosts: all
   gather_facts: true
