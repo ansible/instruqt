@@ -8,18 +8,13 @@ variable "zone" {
     default = "us-east1-b"
 }
 
-variable "image_name" {
-    type    = string
-    default = "automation-controller"
-}
-
 source "googlecompute" "automation-controller" {
     project_id          = var.project_id
     source_image_family = "rhel-8"
     ssh_username        = "rhel"
     zone                = var.zone
     machine_type        = "n1-standard-2"
-    image_name          = var.image_name
+    image_name          = "automation-controller"
 }
 
 
@@ -33,8 +28,8 @@ build {
 
     provisioner "ansible" {
       playbook_file = "./ansible/controller-setup.yml"
-  user = "rhel"
-  extra_arguments = [ "-vvvv" ]
+      user = "rhel"
+      extra_arguments = [ "-vvvv" ]
     }
 
 }
