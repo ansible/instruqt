@@ -27,6 +27,8 @@
       loop:
         - jq
         - /var/lib/ansible-automation-platform-bundle/automation-controller-cli-4.0.0-1.el8ap.x86_64.rpm
+      tags:
+        - install-packages
     - name: Ensure tower/controller is online and working
       uri:
         url: https://localhost/api/v2/ping/
@@ -39,6 +41,8 @@
       until: controller_online is success
       delay: 3
       retries: 5
+      tags:
+        - solve-jt
 
     - name: Add the lab ssh credential
       awx.awx.credential:
@@ -49,6 +53,8 @@
           ssh_key_data: "{{ lookup('file', '/home/rhel/.ssh/id_rsa') }}"
         controller_config_file: "{{ playbook_dir }}/controller.cfg"
         validate_certs: false
+      tags:
+        - solve-jt
 
     - name: Add the lab project
       awx.awx.project:
@@ -60,6 +66,8 @@
         scm_update_cache_timeout: 60
         controller_config_file: "{{ playbook_dir }}/controller.cfg"
         validate_certs: false
+      tags:
+        - solve-jt
 
     - name: Create the lab job template
       awx.awx.job_template:
@@ -72,3 +80,5 @@
         playbook: "playbooks/infrastructure/debug_info.yml"
         controller_config_file: "{{ playbook_dir }}/controller.cfg"
         validate_certs: false
+        tags:
+        - solve-jt
