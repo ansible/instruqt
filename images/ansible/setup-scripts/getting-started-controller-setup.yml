@@ -62,6 +62,7 @@
         - solve-jt
         - solve-inventory
         - setup-jt
+        - setup-dyn-inv
 
     - name: Create hosts
       awx.awx.host:
@@ -75,6 +76,7 @@
         - solve-jt
         - solve-inventory
         - setup-jt
+        - setup-dyn-inv
 
     - name: Add hosts to {{ lab_inv_group_name }}
       awx.awx.group:
@@ -88,6 +90,7 @@
         - solve-jt
         - solve-inventory
         - setup-jt
+        - setup-dyn-inv
 
     - name: Add the lab ssh credential
       awx.awx.credential:
@@ -101,6 +104,7 @@
       tags:
         - solve-jt
         - setup-jt
+        - setup-dyn-inv
 
     - name: Add the lab project
       awx.awx.project:
@@ -115,6 +119,7 @@
       tags:
         - solve-jt
         - setup-jt
+        - setup-dyn-inv
 
     - name: Create the lab job template
       awx.awx.job_template:
@@ -130,6 +135,7 @@
       tags:
         - solve-jt
         - setup-jt
+        - setup-dyn-inv
 
     - name: run {{ lab_jt_name }} template
       awx.awx.job_launch:
@@ -138,3 +144,4 @@
         validate_certs: false
       tags:
         - solve-jt
+        - setup-dyn-inv
