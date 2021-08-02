@@ -2,38 +2,16 @@
 - name: download aap.tar.gz to install controller
   hosts: localhost
   gather_facts: false
-<<<<<<< HEAD
-<<<<<<< HEAD
 
   tasks:
     - name: get yourself some updated workshop roles
       command: ansible-galaxy collection install --verbose --force-with-deps ansible.workshops
       
-=======
-=======
-  become: true
->>>>>>> a69d39f (install collections to shared /usr/share/collections)
-  tasks:
-    - name: get yourself some updated workshop roles
-      command: ansible-galaxy collection install --verbose --force-with-deps ansible.workshops -p /usr/share/ansible/collections
-
->>>>>>> 37b296a (removed var entry with no vars. Install collections to)
     - name: download aap
       vars:
         offline_token: "{{ lookup('file', 'offline_token.txt')}}"
       include_role:
         name: ansible.workshops.aap_download
-<<<<<<< HEAD
-=======
-
-    #@todo #33 workaround. need to add packabges to workshop collection
-    - name: Intall packaes for controller lab
-      ansible.builtin.dnf:
-        state: present
-        name: "{{ item }}"
-      loop:
-        - jq
->>>>>>> 37b296a (removed var entry with no vars. Install collections to)
        
 - name: configures automation controller node
   hosts: all
