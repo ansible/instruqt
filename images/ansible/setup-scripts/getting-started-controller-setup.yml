@@ -25,7 +25,7 @@
 
   tasks:
       #@todo #33 workaround. need to add packabges to workshop collection
-    - name: Intall controller lab packages for controller lab
+    - name: Install controller lab packages for controller lab
       ansible.builtin.dnf:
         state: present
         name: "{{ item }}"
@@ -34,6 +34,8 @@
         - /var/lib/ansible-automation-platform-bundle/automation-controller-cli-4.0.0-1.el8ap.x86_64.rpm
       tags:
         - install-packages
+        - setup-env
+
     - name: Ensure tower/controller is online and working
       uri:
         url: https://localhost/api/v2/ping/
@@ -47,8 +49,7 @@
       delay: 3
       retries: 5
       tags:
-        - solve-jt
-        - solve-inventory
+        - setup-env
 
     - name: Add the {{ lab_inventory_name }} Inventory
       awx.awx.inventory:
@@ -60,6 +61,7 @@
       tags:
         - solve-jt
         - solve-inventory
+        - setup-jt
 
     - name: Create hosts
       awx.awx.host:
@@ -72,6 +74,7 @@
       tags:
         - solve-jt
         - solve-inventory
+        - setup-jt
 
     - name: Add hosts to {{ lab_inv_group_name }}
       awx.awx.group:
@@ -83,7 +86,8 @@
         validate_certs: false
       tags:
         - solve-jt
-        - solve-inventory    
+        - solve-inventory
+        - setup-jt
 
     - name: Add the lab ssh credential
       awx.awx.credential:
@@ -96,6 +100,7 @@
         validate_certs: false
       tags:
         - solve-jt
+        - setup-jt
 
     - name: Add the lab project
       awx.awx.project:
@@ -109,6 +114,7 @@
         validate_certs: false
       tags:
         - solve-jt
+        - setup-jt
 
     - name: Create the lab job template
       awx.awx.job_template:
@@ -123,6 +129,7 @@
         validate_certs: false
       tags:
         - solve-jt
+        - setup-jt
 
     - name: run {{ lab_jt_name }} template
       awx.awx.job_launch:
