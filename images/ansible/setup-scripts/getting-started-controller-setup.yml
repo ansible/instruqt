@@ -14,14 +14,11 @@
     lab_project_name: "Lab playbooks"
     lab_jt_name: "Debug-Info"
     lab_inventory_name: "Lab-Inventory"
-<<<<<<< HEAD:images/ansible/setup-scripts/getting-started-controller-setup.yml
     lab_organization: "Default"
     lab_hosts:
       - host01
       - host02
     lab_inv_group_name: "web"
-=======
->>>>>>> 4734724 (Install collections to shared /usr/share/collections):images/ansible/setup-scripts/getting-started-controller.yml
   
   tags:
     - getting-started-controller
