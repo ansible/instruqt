@@ -1,0 +1,17 @@
+#!/bin/bash
+
+GROUP="web"
+JOB="Debug-Info"
+
+eval "$(awx --conf.username admin --conf.password "ansible123!" -k login -f human)"
+
+#Check if job template ran
+#if ! `awx -k jobs list | jq -e '.results[] | select(.summary_fields.job_template.name | match('\"${JOB}$\"';"i"))'`; then
+#    echo "FAIL: ${JOB} job has not been run"
+#    exit 1
+#fi
+
+if ! [[ `awx -k jobs list | jq -r '.results[] | select(.summary_fields.job_template.name | match('\"${JOB}$\"';"i")) | .summary_fields.job_template.name'` == "${JOB}" ]]; then
+  echo "FAIL: ${JOB} job has not been run"
+  exit 1
+fi
