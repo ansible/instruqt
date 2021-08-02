@@ -35,7 +35,7 @@
       tags:
         - install-packages
         - setup-env
-        
+
     - name: Ensure tower/controller is online and working
       uri:
         url: https://localhost/api/v2/ping/
@@ -49,9 +49,7 @@
       delay: 3
       retries: 5
       tags:
-        - solve-jt
-        - solve-inventory
-        - setup-jt
+        - setup-env
 
     - name: Add the {{ lab_inventory_name }} Inventory
       awx.awx.inventory:
