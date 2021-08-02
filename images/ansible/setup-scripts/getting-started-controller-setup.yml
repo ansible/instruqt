@@ -127,7 +127,6 @@
     - name: run {{ lab_jt_name }} template
       awx.awx.job_launch:
         job_template: "{{ lab_jt_name }}"
-        job_type: run
         controller_config_file: "{{ playbook_dir }}/controller.cfg"
         validate_certs: false
       tags:
