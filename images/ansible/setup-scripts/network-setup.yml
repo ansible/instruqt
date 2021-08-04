@@ -55,9 +55,11 @@
         state: present
         controller_config_file: "{{ playbook_dir }}/controller.cfg"
         variables:
-            note: "in production these passwords would be encrypted in vault"
+            note: in production these passwords would be encrypted in vault
             ansible_user: rhel
             ansible_password: ansible123!
+            ansible_host: controller
+            ansible_become_password: ansible123!
 
     - name: Add group
       awx.awx.group:
@@ -85,7 +87,7 @@
         kind: controller
         controller_config_file: "{{ playbook_dir }}/controller.cfg"
         inputs:
-          host: "localhost"
+          host: "controller"
           password: "ansible123!"
           username: "admin"
           verify_ssl: false
@@ -111,4 +113,9 @@
         credentials:
           - "Network Credential"
         state: "present"
+        extra_vars:
+          restore_inventory: "Network Inventory"
+          restore_project: "Network Toolkit"
+          restores_playbook: "network_restore.yml"
+          restore_credential: "Network Credential"
         controller_config_file: "{{ playbook_dir }}/controller.cfg"
