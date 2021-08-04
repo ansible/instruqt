@@ -112,10 +112,11 @@
         playbook: "playbooks/network_backup.yml"
         credentials:
           - "Network Credential"
+          - "AAP controller credential"
         state: "present"
         extra_vars:
           restore_inventory: "Network Inventory"
           restore_project: "Network Toolkit"
-          restores_playbook: "network_restore.yml"
+          restores_playbook: "playbooks/network_restore.yml"
           restore_credential: "Network Credential"
         controller_config_file: "{{ playbook_dir }}/controller.cfg"
