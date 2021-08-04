@@ -26,11 +26,6 @@ source "googlecompute" "automation-controller" {
 build {
     sources = ["sources.googlecompute.automation-controller"]
 
-    provisioner "file" {
-        source = "ansible/inventory"
-        destination = "/tmp/inventory"
-    }
-
     provisioner "ansible" {
       playbook_file = "./ansible/controller-setup.yml"
   user = "rhel"
