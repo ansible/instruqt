@@ -1,3 +1,0 @@
-#!/bin/bash
-
-/bin/ansible-playbook /tmp/setup-scripts/getting-started-controller-setup.yml --tags setup-dyn-inv
