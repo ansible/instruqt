@@ -1,9 +1,4 @@
 version: "2"
-containers:
-- name: cloud
-  image: gcr.io/instruqt/cloud-client
-  ports:
-  - 80
 virtualmachines:
 - name: host01
   image: red-hat-mbu/ansible
