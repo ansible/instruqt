@@ -1,0 +1,17 @@
+#!/bin/bash
+
+AWS_INV="AWS-Inventory"
+AWS_CRED="AWS-Cred"
+AWS_SRC="AWS-Source"
+
+eval "$(awx --conf.username admin --conf.password "ansible123!" -k login -f human)"
+
+# Create credentials
+awx -k credentials create --name "${AWS_CRED}" --credential_type 5 --organization "Default"
+
+# Create inventory
+awx -k inventory create --name "${AWS_INV}" --organization "Default"
+
+# Create inventory source
+CRED_ID=$(awx -k credential list | jq -e '.results[] | select(.name | match('\"^${AWS_CRED}\"$';"i")) | .id')
+awx -k inventory_source create --name "${AWS_SRC}"  --source "ec2" --inventory "${AWS_INV}" --credential "${CRED_ID}"

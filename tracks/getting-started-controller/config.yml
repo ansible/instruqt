@@ -1,0 +1,29 @@
+version: "2"
+containers:
+- name: cloud
+  image: gcr.io/instruqt/cloud-client
+  ports:
+  - 80
+virtualmachines:
+- name: host01
+  image: red-hat-mbu/ansible
+  shell: /bin/su - rhel -s /bin/bash
+  environment:
+    TERM: xterm
+  machine_type: n1-standard-1
+- name: host02
+  image: red-hat-mbu/ansible
+  shell: /bin/su - rhel -s /bin/bash
+  environment:
+    TERM: xterm
+  machine_type: n1-standard-1
+- name: controller
+  image: craig-instruqt-dev/automation-controller
+  shell: /bin/su - rhel -s /bin/bash
+  environment:
+    TERM: xterm
+  machine_type: n1-standard-2
+aws_accounts:
+- name: controller
+  managed_policies:
+  - arn:aws:iam::aws:policy/AdministratorAccess
