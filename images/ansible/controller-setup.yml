@@ -2,17 +2,17 @@
 - name: download aap.tar.gz to install controller
   hosts: localhost
   gather_facts: false
-
+  vars:
   tasks:
     - name: get yourself some updated workshop roles
       command: ansible-galaxy collection install --verbose --force-with-deps ansible.workshops
-      
+
     - name: download aap
       vars:
         offline_token: "{{ lookup('file', 'offline_token.txt')}}"
       include_role:
         name: ansible.workshops.aap_download
-       
+
 - name: configures automation controller node
   hosts: all
   gather_facts: true
@@ -20,13 +20,11 @@
   vars:
 
     admin_password: ansible123!
-    use_manifest: false
 
   tasks:
     - name: include red hat cred for registry.redhat.io
       include_vars:
         file: redhat_login.yml
-
 
     - name: Configure user 'rhel'
       ansible.builtin.user:
@@ -36,6 +34,19 @@
         groups: wheel
         append: yes
 
+    - name: enable sshd password auth
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        state: present
+        regexp: '^PasswordAuthentication'
+        line: >-
+          PasswordAuthentication yes
+
+    - name: restart sshd
+      ansible.builtin.systemd:
+        name: sshd
+        state: restarted
+        
     - name: install automation controller
       vars:
         username: "{{ ansible_user }}"
@@ -46,7 +57,7 @@
         name: ansible.workshops.control_node
 
     - name: install workshop dependecies
-      command: "ansible-galaxy collection install --force-with-deps ansible.workshops  -p /usr/share/ansible/collections"
+      command: "ansible-galaxy collection install --force-with-deps ansible.workshops"
 
     - name: install code server
       vars:
