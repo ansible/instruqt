@@ -69,4 +69,3 @@
       copy:
         src: ./setup-scripts
         dest: /tmp
-        
