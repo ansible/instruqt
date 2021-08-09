@@ -1,0 +1,172 @@
+slug: getting-started-controller
+id: euelqtmm2wvu
+type: track
+title: Getting started with Automation controller
+teaser: In this track, we'll explore the automation controller interface and do some basic tasks.
+description: |-
+  <img src="https://github.com/craig-br/instruqt/blob/getting-started-controller-track/assets/logos/Logo-Red_Hat-Ansible_Automation_Platform-A-Standard-RGB.png?raw=true" alt="drawing" style=";width:400px"/>
+  <br><br>
+
+  # Automation controller
+  * * *
+  <br>
+
+  [**Automation controller**](https://docs.ansible.com/automation-controller/latest/html/administration/index.html), formerly known as [Ansible Tower](https://www.ansible.com/products/tower), allows users of Red Hat Ansible Automation Platform to define, operate, scale, and delegate automation across their enterprise.
+
+
+  Manage inventory, launch and schedule workflows, track changes, and integrate into external systems, all from a centralized user interface and REST API.
+  <br>
+
+  In this track you:
+
+  * Will get to know the **automation controller** interface
+  * Create a standard inventory and add hosts
+  * Run automation using a job template on our inventory
+icon: https://github.com/ansible/instruqt//blob/getting-started-controller-track/assets/controller/icons/automation_controller.png?raw=true
+level: beginner
+tags:
+- RedHat
+- Ansible
+- Ansible Automation Platform
+- ' controller'
+- ' automation controller'
+owner: redhat
+developers:
+- cbrandt@redhat.com
+private: true
+published: true
+show_timer: true
+challenges:
+- slug: dashboard
+  id: a5jwp8qx8uwx
+  type: challenge
+  title: Controller Dashboard
+  teaser: Take a first look at the automation controller dashboard
+  notes:
+  - type: text
+    contents: "# Automation controller web interface\n<br>\n<p align=\"center\">\n  <img width=\"700px\" src=\"https://github.com/craig-br/instruqt//blob/getting-started-controller-track/assets/controller/controller_dashboard.png?raw=true\">\n</p>\n<br>\n\n**Automation controller's** web interface Interface offers a friendly graphical framework for your IT orchestration needs.\n\n<style type=\"text/css\" rel=\"stylesheet\">\nh1 {\n\ttext-align: center\n\t}\n</style>"
+  - type: text
+    contents: "# Distinct edit and view perspectives\n<br>\n<p align=\"center\">\n  <img width=\"700px\" src=\"https://github.com/craig-br/instruqt//blob/getting-started-controller-track/assets/controller/controller_jt.png?raw=true\">\n</p>\n<br>\n\n**Automation controller's** interface provides distinct ‘view’ and ‘edit’ perspectives for automation controller objects and components.\n\n<style type=\"text/css\" rel=\"stylesheet\">\nh1 {\n\ttext-align: center\n\t}\n</style>"
+  - type: text
+    contents: "# Web interface filters\n<br>\n<p align=\"center\">\n    <img width=\"700px\" src=\"https://github.com/craig-br/instruqt//blob/getting-started-controller-track/assets/controller/controller_filters.png?raw=true\">\n\n</p>\n<br>\n\n**Automation controller** provides intuitive filters that automators can use to display concise information relevant to the task at hand.\n\n<style type=\"text/css\" rel=\"stylesheet\">\nh1 {\n\ttext-align: center\n\t}\n</style>"
+  assignment: |-
+    Welcome to the automation controller dashboard. The screen on the left shows the login screen. You can log in with the following credentials:
+
+    * Username: `admin`
+    * Password: `ansible123!`
+
+    ## Your assignment
+
+    * Log into automation controller dashboard, using the credentials above.
+    * Take a look around, and get familiar with the environment.
+
+    When you are done, press the "Check" button below to go to the next challenge.
+  tabs:
+  - title: Controller Dashboard
+    type: service
+    hostname: controller
+    port: 443
+  - title: Controller CLI
+    type: terminal
+    hostname: controller
+  difficulty: basic
+  timelimit: 1800
+- slug: inventory
+  id: w69by5ntbgo0
+  type: challenge
+  title: Create an Inventory
+  teaser: Let's take inventory
+  notes:
+  - type: text
+    contents: "# Inventories\n<br>\n<p align=\"center\">\n  <img width=\"700px\" src=\"https://github.com/craig-br/instruqt//blob/getting-started-controller-track/assets/controller/controller-inventory.png?raw=true\">\n</p>\n<br>\n\nAn [**Inventory**](https://docs.ansible.com/automation-controller/latest/html/userguide/inventories.html) is a collection of hosts against which jobs may be launched, the same as an Ansible inventory file.\n\n<style type=\"text/css\" rel=\"stylesheet\">\nh1 {\n\ttext-align: center\n\t}\n</style>\n"
+  - type: text
+    contents: "# Inventories\n<br>\n<p align=\"center\">\n  <img width=\"700px\" src=\"https://github.com/craig-br/instruqt//blob/getting-started-controller-track/assets/controller/controller-hosts.png?raw=true\">\n</p>\n<br>\n\n[**Inventories**](https://docs.ansible.com/automation-controller/latest/html/userguide/inventories.html#inventory-plugins) are divided into groups and these groups contain the actual hosts. Groups may be sourced manually, by entering host names into controller, or from a supported cloud provider.\n\n<style type=\"text/css\" rel=\"stylesheet\">\nh1 {\n\ttext-align: center\n\t}\n</style>"
+  assignment: |-
+    ## Create the following in the controller dashboard:
+
+    *Login credentials:*
+    User: admin
+    Password: ansible123!
+
+    Besides the automation controller instance, your sandbox environment also contains two virtual machines: `host01` and `host02`.
+
+    We've also added extra terminal tabs to these machines, so you can have a look around.
+
+    These machines are configured to be able to `ssh` to each other using an ssh key.
+
+    ## Your assignment
+
+    All tasks are performed in the automation controller dashboard
+    * Create a new Inventory called `Lab-Inventory`
+    ![inventory](https://github.com/craig-br/instruqt//blob/getting-started-controller-track/assets/controller/controller-inventory.png?raw=true)
+    ***
+    <br>
+
+    * Add the two hosts `host01` and `host02` to the `Lab-Inventory`
+    ![hosts](https://github.com/craig-br/instruqt//blob/getting-started-controller-track/assets/controller/controller-hosts.png?raw=true)
+    ***
+    <br>
+
+    * Create a new group called `web` in the `Lab-Inventory`
+    ![group](https://github.com/craig-br/instruqt//blob/getting-started-controller-track/assets/controller/controller-inst-add-group.png?raw=true)
+    ***
+    <br>
+
+    * Add the exiting `host01` and `host02` to the `web` group
+    ![group](https://github.com/craig-br/instruqt//blob/getting-started-controller-track/assets/controller/controller-inst-add-hosts-group.png?raw=true)
+    ***
+    <br>
+
+    **When you are done, press the "Check" button below to go to the next challenge.**
+  tabs:
+  - title: Controller Dashboard
+    type: service
+    hostname: controller
+    port: 443
+  - title: Controller CLI
+    type: terminal
+    hostname: controller
+  - title: Host 01 CLI
+    type: terminal
+    hostname: host01
+  - title: Host 02 CLI
+    type: terminal
+    hostname: host02
+  - title: Editor
+    type: service
+    hostname: controller
+    path: /editor/
+    port: 443
+  difficulty: basic
+  timelimit: 900
+- slug: controller-getting-started-jt
+  id: l7shwh9na7oh
+  type: challenge
+  title: Using job templates
+  teaser: In this challenge, we'll run automation using a Job Template
+  notes:
+  - type: text
+    contents: "# Running automation with job templates\n<br>\n<p align=\"center\">\n  <img width=\"700px\" src=\"https://github.com/craig-br/instruqt//blob/getting-started-controller-track/assets/controller/controller_jt.png?raw=true\">\n</p>\n<br>\n\n[**Job templates**](https://docs.ansible.com/automation-controller/latest/html/userguide/job_templates.html) are a definition and set of parameters for running an Ansible Playbook.\n\nIn controller, job templates are a visual representation of the `ansible-playbook` command and all flags you can utilize when executing from the command line.\n\n<style type=\"text/css\" rel=\"stylesheet\">\nh1 {\n\ttext-align: center\n}\n</style>"
+  assignment: "## Your assignment\n\n*Login credentials:*\nUser: **admin**\nPassword: **ansible123!**\n\nAll tasks are done in the controller dashboard\n\n* Open **Templates** on the navigation bar\n![jtmenu](https://github.com/craig-br/instruqt//blob/getting-started-controller-track/assets/controller/controller-inst-templates-menu.png?raw=true)\n***\n<br>\n\n* Click on the `Debug-Info` Job Template\n![jtclick](https://github.com/craig-br/instruqt//blob/getting-started-controller-track/assets/controller/controller-inst-jt-click.png?raw=true)\n***\n<br>\n\n* Click on `Edit`\n![jtedit](https://github.com/craig-br/instruqt//blob/getting-started-controller-track/assets/controller/controller-inst-jt-edit.png?raw=true)\n***\n<br>\n\n* Let's have a closer look at some of the options:\n  * Notice that we're using the `Lab-Inventory` we created earlier\n  * We're going to run the `playbooks/infrastructure/debug_info.yml`\n  * We're using the SSH credential to authenticate to **host01** and **host02** in our `Lab-Inventory`\n![jtexplore](https://github.com/craig-br/instruqt//blob/getting-started-controller-track/assets/controller/controller-inst-jt-explore.png?raw=true)\n***\n<br>\n\n* Click on **Cancel** and then **Launch**\n![inv_src](https://github.com/craig-br/instruqt//blob/getting-started-controller-track/assets/controller/controller-inst-jt-launch.png?raw=true)\n***\n<br>\n\n* This **Job Template** gathers debug information from the `web` group that has `host01` and `host02`\n  * Have a look at the output and explore the filters\n![inv_src](https://github.com/craig-br/instruqt//blob/getting-started-controller-track/assets/controller/controller-inst-jt-output.png?raw=true)\n***\n<br>\n\n**When you are done, press the \"Check\" button below to go to the next challenge.**\n\n<style type=\"text/css\" rel=\"stylesheet\">\nh1 {\n\ttext-align: center\n\t}\n\timg {\n\t\twidth: 100%\n\t}\n</style>"
+  tabs:
+  - title: Controller Dashboard
+    type: service
+    hostname: controller
+    port: 443
+  - title: Controller CLI
+    type: terminal
+    hostname: controller
+  - title: Host01 CLI
+    type: terminal
+    hostname: host01
+  - title: Host02 CLI
+    type: terminal
+    hostname: host02
+  - title: Editor
+    type: service
+    hostname: controller
+    path: /editor/
+    port: 443
+  difficulty: basic
+  timelimit: 900
+checksum: "8062333379793475322"
