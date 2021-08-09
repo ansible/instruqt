@@ -18,7 +18,3 @@ virtualmachines:
   environment:
     TERM: xterm
   machine_type: n1-standard-2
-aws_accounts:
-- name: controller
-  managed_policies:
-  - arn:aws:iam::aws:policy/AdministratorAccess
