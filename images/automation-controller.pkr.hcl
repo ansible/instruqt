@@ -10,7 +10,7 @@ variable "zone" {
 
 variable "image_name" {
     type    = string
-    default = "us-east1-b"
+    default = "automation-controller"
 }
 
 source "googlecompute" "automation-controller" {
