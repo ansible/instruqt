@@ -30,7 +30,6 @@
         state: present
         name: "{{ item }}"
       loop:
-        - jq
         - /var/lib/ansible-automation-platform-bundle/automation-controller-cli-4.0.0-1.el8ap.x86_64.rpm
       tags:
         - install-packages
@@ -63,6 +62,7 @@
         - solve-inventory
         - setup-jt
         - setup-dyn-inv
+        - setup-getting-started-controller-workflows
 
     - name: Create hosts
       awx.awx.host:
@@ -77,6 +77,7 @@
         - solve-inventory
         - setup-jt
         - setup-dyn-inv
+        - setup-getting-started-controller-workflows
 
     - name: Add hosts to {{ lab_inv_group_name }}
       awx.awx.group:
@@ -91,6 +92,7 @@
         - solve-inventory
         - setup-jt
         - setup-dyn-inv
+        - setup-getting-started-controller-workflows
 
     - name: Add the lab ssh credential
       awx.awx.credential:
@@ -105,6 +107,7 @@
         - solve-jt
         - setup-jt
         - setup-dyn-inv
+        - setup-getting-started-controller-workflows
 
     - name: Add the lab project
       awx.awx.project:
@@ -120,6 +123,7 @@
         - solve-jt
         - setup-jt
         - setup-dyn-inv
+        - setup-getting-started-controller-workflows
 
     - name: Create the lab job template
       awx.awx.job_template:
@@ -136,6 +140,7 @@
         - solve-jt
         - setup-jt
         - setup-dyn-inv
+        - setup-getting-started-controller-workflows
 
     - name: run {{ lab_jt_name }} template
       awx.awx.job_launch:
@@ -145,3 +150,4 @@
       tags:
         - solve-jt
         - setup-dyn-inv
+        - setup-getting-started-controller-workflows
