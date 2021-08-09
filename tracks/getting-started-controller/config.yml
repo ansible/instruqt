@@ -13,7 +13,7 @@ virtualmachines:
     TERM: xterm
   machine_type: n1-standard-1
 - name: controller
-  image: craig-instruqt-dev/automation-controller
+  image: red-hat-mbu/craig-controller
   shell: /bin/su - rhel -s /bin/bash
   environment:
     TERM: xterm
