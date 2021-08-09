@@ -8,13 +8,18 @@ variable "zone" {
     default = "us-east1-b"
 }
 
+variable "image_name" {
+    type    = string
+    default = "us-east1-b"
+}
+
 source "googlecompute" "automation-controller" {
     project_id          = var.project_id
     source_image_family = "rhel-8"
     ssh_username        = "rhel"
     zone                = var.zone
     machine_type        = "n1-standard-2"
-    image_name          = "automation-controller"
+    image_name          = var.image_name
 }
 
 
