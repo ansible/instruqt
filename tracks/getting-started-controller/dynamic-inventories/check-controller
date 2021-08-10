@@ -1,0 +1,53 @@
+#!/bin/bash
+
+### Your assignment
+#
+#* Create an AWS credential called `AWS-Cred`
+#  * Select `Amazon Web Services` as the *Credential type*
+#  * Fill in the *Access Key* and *Secret Key* fields using the AWS account details
+#* Create a new Inventory called `AWS-Inventory`
+#* Create a new Inventory Source called `AWS-Source`
+#  * Select `Amazon EC2` as the *Source*
+#  * Assign the `AWS-Cred` credential under *Source Details*
+### 
+
+AWS_CRED="AWS-Cred"
+AWS_CRED_ID=5
+AWS_CRED_KIND="aws"
+AWS_INV="AWS-Inventory"
+AWS_INV_SRC="AWS-Source"
+
+eval "$(awx --conf.username admin --conf.password "ansible123!" -k login -f human)"
+
+# Test credential exists
+if ! awx -k credential list | jq -e '.results[] | select(.name | test('\"^${AWS_CRED}\"$';"i"))';then
+       echo "FAIL: No credential found with name ${AWS_CRED}"
+        exit 1
+fi
+
+# Test credential type
+if ! awx -k credential list | jq -e '.results[] | select(.name | match('\"^${AWS_CRED}\"$';"i")) and select(.kind | match('\"^${AWS_CRED_KIND}\"';"i"))';then
+       echo "FAIL: ${AWS_CRED} credential is not Amazon Web Services credential type"
+       exit 1
+#    #fail-message "There's no inventory source defined for AWS"
+fi
+
+# Test inventory exists
+if ! awx -k inventory list | jq -e '.results[] | select(.name | test('\"^${AWS_INV}\"$';"i"))';then
+#    #fail-message "There's no inventory source defined for AWS"
+       echo "FAIL: No inventory named ${AWS_INV} found"
+       exit 1
+fi
+
+if ! awx -k inventory_sources list | jq -e '.results[] | select(.name | match('\"^${AWS_INV_SRC}\"$';"i"))';then
+#    #fail-message "There's no inventory source defined for AWS"
+       echo "FAIL: No inventory source named ${AWS_INV_SRC} found"
+       exit 1
+fi
+
+CRED_ID=$(awx -k credential list | jq -e '.results[] | select(.name | match('\"^${AWS_CRED}\"$';"i")) | .id')
+if ! [[ `awx -k inventory_sources list | jq -e '.results[] | select(.name | match('\"^${AWS_INV_SRC}\"$';"i")) | .credential'` -eq "${CRED_ID}" ]];then
+    #fail-message "There's no inventory source defined for AWS"
+       echo "FAIL: ${AWS_INV_SRC} is not using the ${AWS_CRED}"
+       exit 1
+fi
