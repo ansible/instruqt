@@ -1,0 +1,153 @@
+---
+##
+# https://play.instruqt.com/redhat/tracks/getting-started-controller/
+##
+- name: Instruqt config getting started with controller
+  hosts: localhost
+  gather_facts: false
+  become: true
+
+  vars:
+    username: admin
+    admin_password: ansible123!
+    lab_credential_name: "Lab Machine Credential"
+    lab_project_name: "Lab playbooks"
+    lab_jt_name: "Debug-Info"
+    lab_inventory_name: "Lab-Inventory"
+    lab_organization: "Default"
+    lab_hosts:
+      - host01
+      - host02
+    lab_inv_group_name: "web"
+  
+  tags:
+    - getting-started-controller
+
+  tasks:
+      #@todo #33 workaround. need to add packabges to workshop collection
+    - name: Install controller lab packages for controller lab
+      ansible.builtin.dnf:
+        state: present
+        name: "{{ item }}"
+      loop:
+        - /var/lib/ansible-automation-platform-bundle/automation-controller-cli-4.0.0-1.el8ap.x86_64.rpm
+      tags:
+        - install-packages
+        - setup-env
+
+    - name: Ensure tower/controller is online and working
+      uri:
+        url: https://localhost/api/v2/ping/
+        method: GET
+        user: "{{ username }}"
+        password: "{{ admin_password }}"
+        validate_certs: false
+        force_basic_auth: true
+      register: controller_online
+      until: controller_online is success
+      delay: 3
+      retries: 5
+      tags:
+        - setup-env
+
+    - name: Add the {{ lab_inventory_name }} Inventory
+      awx.awx.inventory:
+        name: "{{ lab_inventory_name }}"
+        description: "Lab Inventory"
+        organization: "{{ lab_organization }}"
+        state: present
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
+      tags:
+        - solve-jt
+        - solve-inventory
+        - setup-jt
+        - setup-dyn-inv
+        - setup-getting-started-controller-workflows
+
+    - name: Create hosts
+      awx.awx.host:
+        name: "{{ item }}"
+        inventory: "{{ lab_inventory_name }}"
+        state: present
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
+        validate_certs: false
+      loop: "{{ lab_hosts }}"
+      tags:
+        - solve-jt
+        - solve-inventory
+        - setup-jt
+        - setup-dyn-inv
+        - setup-getting-started-controller-workflows
+
+    - name: Add hosts to {{ lab_inv_group_name }}
+      awx.awx.group:
+        name: "{{ lab_inv_group_name }}"
+        inventory: "{{ lab_inventory_name }}"
+        hosts:
+          "{{ lab_hosts }}"
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
+        validate_certs: false
+      tags:
+        - solve-jt
+        - solve-inventory
+        - setup-jt
+        - setup-dyn-inv
+        - setup-getting-started-controller-workflows
+
+    - name: Add the lab ssh credential
+      awx.awx.credential:
+        name: "{{ lab_credential_name }}"
+        organization: "Default"
+        credential_type: Machine
+        inputs:
+          ssh_key_data: "{{ lookup('file', '/home/rhel/.ssh/id_rsa') }}"
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
+        validate_certs: false
+      tags:
+        - solve-jt
+        - setup-jt
+        - setup-dyn-inv
+        - setup-getting-started-controller-workflows
+
+    - name: Add the lab project
+      awx.awx.project:
+        name: "{{lab_project_name }}"
+        scm_type: git
+        scm_url: "https://github.com/ansible/product-demos"
+        organization: "Default"
+        scm_update_on_launch: false
+        scm_update_cache_timeout: 60
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
+        validate_certs: false
+      tags:
+        - solve-jt
+        - setup-jt
+        - setup-dyn-inv
+        - setup-getting-started-controller-workflows
+
+    - name: Create the lab job template
+      awx.awx.job_template:
+        name: "{{ lab_jt_name }}"
+        state: present
+        become_enabled: true
+        project: "{{ lab_project_name }}"
+        credential: "{{ lab_credential_name }}"
+        inventory: "{{ lab_inventory_name }}"
+        playbook: "playbooks/infrastructure/debug_info.yml"
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
+        validate_certs: false
+      tags:
+        - solve-jt
+        - setup-jt
+        - setup-dyn-inv
+        - setup-getting-started-controller-workflows
+
+    - name: run {{ lab_jt_name }} template
+      awx.awx.job_launch:
+        job_template: "{{ lab_jt_name }}"
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
+        validate_certs: false
+      tags:
+        - solve-jt
+        - setup-dyn-inv
+        - setup-getting-started-controller-workflows
