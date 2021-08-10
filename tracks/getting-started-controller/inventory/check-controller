@@ -1,0 +1,41 @@
+#!/bin/bash
+
+INVENTORY="Lab-Inventory"
+HOSTS=(host01 host02)
+GROUP="web"
+
+eval "$(awx --conf.username admin --conf.password "ansible123!" -k login -f human)"
+
+# Check inventory count
+if awx -k inventory list | jq -e -r '.count < 1'; then
+    echo "FAIL: No inventories have been created"
+    exit 1
+fi
+
+# Inventory not found
+if ! awx -k inventory list | jq -e '.results[] | select(.name | match('\"^${INVENTORY}\"$';"i"))'; then
+    echo "FAIL: ${INVENTORY} inventory was not found"
+    exit 1
+fi
+
+#Hosts have not been created
+for host in "${HOSTS[@]}"; do
+    if ! awx -k hosts list | jq -e '.results[] | select(.name | match('\"${host}\"';"i"))'; then
+        echo "FAIL: ${host} host has not been created"
+        exit 1
+    fi
+done
+
+#Group does not exist
+if ! awx -k groups list | jq -e '.results[] | select(.name | match('\"${GROUP}\"';"i"))'; then
+    echo "FAIL: ${GROUP} group has not been created"
+    exit 1
+fi
+
+#Hosts not in correct group
+for host in "${HOSTS[@]}"; do
+    if ! [[  `awx -k hosts list | jq -r '.results[] | select(.name | match('\"^${host}$\"';"i")) .summary_fields.groups.results[].name'` == "${GROUP}" ]]; then
+        echo "FAIL: Host ${host} is not in the ${GROUP} group"
+        exit 1
+   fi
+done
