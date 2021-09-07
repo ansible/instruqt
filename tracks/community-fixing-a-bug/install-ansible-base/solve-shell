@@ -1,5 +1,0 @@
-#!/bin/bash
-
-. /etc/profile.d/instruqt-env.sh
-
-pip3 install ansible-base

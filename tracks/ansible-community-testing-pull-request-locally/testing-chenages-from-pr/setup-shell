@@ -1,1 +1,0 @@
-echo "export ANSIBLE_COLLECTIONS_PATH=~/ansible_collections/" >> /home/devops/.bashrc

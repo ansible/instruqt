@@ -1,2 +1,0 @@
-/bin/su - devops -c "git config --global pull.rebase false"
-/bin/su - devops -c "export ANSIBLE_COLLECTIONS_PATH=~/ansible_colections/"

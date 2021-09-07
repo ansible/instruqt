@@ -1,5 +1,0 @@
-#!/bin/bash
-
-. /etc/profile.d/instruqt-env.sh
-
-mkdir -p ansible_collections/community

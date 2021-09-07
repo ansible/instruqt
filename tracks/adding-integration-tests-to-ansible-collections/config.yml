@@ -1,6 +1,0 @@
-version: "2"
-virtualmachines:
-- name: shell
-  image: centos-cloud/centos-8
-  shell: /usr/bin/su - devops
-  machine_type: n1-standard-1

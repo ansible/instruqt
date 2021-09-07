@@ -1,6 +1,0 @@
-#!/bin/bash
-
-if [ ! -f /home/devops/.local/bin/ansible ]; then
-    fail-message "Ansible doesn't appear to be installed"
-    exit 1
-fi

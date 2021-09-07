@@ -1,4 +1,0 @@
-#!/bin/bash
-
-mkdir /home/devops/collections/ansible_collections/community/clock/plugins/modules
-cd /home/devops/collections/ansible_collections/community/clock/plugins/modules ; curl -O https://raw.githubusercontent.com/ansible/ansible/stable-2.9/lib/ansible/modules/system/timezone.py

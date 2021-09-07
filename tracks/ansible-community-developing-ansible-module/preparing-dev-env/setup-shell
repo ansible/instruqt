@@ -1,4 +1,0 @@
-pip3 install --upgrade pip
-yum group install "Development Tools" -y
-yum install python3-devel libffi libffi-devel -y
-
