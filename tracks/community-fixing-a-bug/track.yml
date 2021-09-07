@@ -1,0 +1,288 @@
+slug: community-fixing-a-bug
+id: fhcj3oosxgjf
+type: track
+title: '4. Ansible Community: Fixing a bug'
+teaser: This exercise is about getting started with Ansible Collection development.
+description: |
+  ## Overview
+
+  This exercise is about getting started with Testing Ansible Collection. This exercise will cover
+
+  * How to check out the collection
+  * Running tests locally
+  * Understanding test failures
+  * Fixing bugs
+  * Creating a changelog
+icon: https://www.ansible.com/hubfs/2016_Images/Assets/Ansible-Mark-Large-RGB-Pool.png?hsLang=en-us
+tags:
+- ""
+owner: redhat
+developers:
+- jobarker@redhat.com
+- ompragash.viswanathan@gmail.com
+private: false
+published: true
+challenges:
+- slug: install-ansible-base
+  id: lgw4oyc9pryh
+  type: challenge
+  title: Install Ansible Package
+  teaser: How to install ansible-base
+  assignment: |
+    ## Your assignment
+
+    * Install ansible-core
+
+    To use Ansible we need to have it installed. This will also install any required dependencies.
+
+    Install the `ansible-base` package (which includes `ansible-playbook` and `ansible-test`)
+
+    ```
+    pip3 install ansible-core --user
+    ```
+
+    Ansible 2.10 is the first that properly supports Collections:
+
+    ```
+    ansible --version
+    ```
+
+    The output will look similar to the following:
+
+    ~~~
+    ansible 2.11.5
+      config file = /etc/ansible/ansible.cfg
+      configured module search path = ['/root/.ansible/plugins/modules', '/usr/share/ansible/plugins/modules']
+      ansible python module location = /usr/local/lib/python3.8/dist-packages/ansible
+      executable location = /usr/local/bin/ansible
+      python version = 3.6 (default, Jul 13 2020, 23:52:41) [GCC 7.5.0]
+    ~~~
+
+    Take note of the first line which confirms we are using at least version 2.10.
+  tabs:
+  - title: Shell
+    type: terminal
+    hostname: shell
+  difficulty: basic
+  timelimit: 500
+- slug: create-directory-structure
+  id: txgmygmsfrzv
+  type: challenge
+  title: Create the needed directory structure
+  teaser: '#'
+  assignment: |+
+    When working on Ansible, collections are expected to be under a directory `ansible_collections`.
+
+    ~~~
+    ansible_collections/
+    ├── namespace_1
+    │   ├── collection_1
+    │   └── collection_2
+    ├── namespace_2
+    │   ├── collection_1
+    │   └── collection_2
+    ├── namespace_3
+    ...
+    ~~~
+
+    For example:
+    ~~~
+    ansible_collections/
+    ├── community
+    │   ├── general
+    │   ├── mysql
+    │   └── zabbix
+    ├── ansible
+    │   └── netcommon
+    ├── vmware
+    │   └── vmware_rest
+    ├── ...
+    ...
+    ~~~
+
+    ## Your assignment
+
+    Setup the directory structure
+
+    Create the directory structure so `ansible` and `ansible-test` knows which collection we are using.
+
+    ```
+    mkdir -p ansible_collections/community
+    ```
+
+    Go into the newly created directory:
+
+    ```
+    cd ansible_collections/community
+    ```
+
+    For this training, we’ll use the existing `community.mysql` collection available on GitHub.
+
+    Clone the `community.mysql` repository, notice we are specifying the destination is `mysql` (rather than the default `community.mysql`) to comply with what ansible-test expects:
+
+    ```
+    git clone https://github.com/ansible-collections/community.mysql.git mysql
+    ```
+
+    ```
+    cd mysql
+    ```
+
+    Checkout to `ci_example` branch:
+
+    ```
+    git checkout ci_example
+    ```
+
+    ```
+    ls
+    ```
+
+  tabs:
+  - title: shell
+    type: terminal
+    hostname: shell
+  difficulty: basic
+  timelimit: 500
+- slug: running-test-sanity-test-locally
+  id: por4etsqduux
+  type: challenge
+  title: Running Sanity Test locally
+  teaser: '#'
+  assignment: |
+    `ansible-test` is distributed as part of the `ansible-base` (and therefore `ansible`) package.
+
+    `ansible-test` supports three types of tests:
+    * Sanity
+    * Unit
+    * Integration
+
+    Although these tests may run automatically when sending a pull request (PR), we should run them locally to catch errors before sending new commits for review.
+
+    For this example we will be running the Sanity Tests from the root of collection directory, by doing:
+
+    ```
+    cd ansible_collections/community/mysql/
+    ```
+
+    ```
+    sudo ansible-test sanity --docker
+    ```
+
+    We prefer to run the tests in Docker as it ensures all test dependencies are installed, and nothing pollutes the host operating system.
+
+    From the output of `ansible-test`, see there is a `parameter-type-not-in-doc` error for the `mysql_user` module (`plugins/modules/mysql_user.py`) like below:
+
+    ~~~
+    ERROR: Found 1 validate-modules issue(s) which need to be resolved:
+    ERROR: plugins/modules/mysql_user.py:0:0: parameter-type-not-in-doc: Argument 'append_privs' inargument_spec defines type as 'bool' but documentation doesn't define type
+    See documentation for help: https://docs.ansible.com/ansible/2.10/dev_guide/testing/sanity/validate-modules.html
+    Running sanity test 'yamllint' with Python 3.6
+    ERROR: The 1 sanity test(s) listed below (out of 45) failed. See error output above for details.
+    ~~~
+
+    ### Fix mysql_user.py
+
+    Now add the type for the `append_privs` parameter, in the documentation for the `mysql_user` module, by editing the `plugins/modules/mysql_user.py` file.
+
+    ```
+    vim plugins/modules/mysql_user.py
+    ```
+
+    We can see from line 1004 in that file `append_privs=dict(type='bool', default=False),`, so the documentation should say this is a `bool` (boolean).
+
+    Add a new line between existing 62 & 63 `    type: bool` so the entry looks like:
+    ```yaml
+      append_privs:
+        description:
+          - Append the privileges defined by priv to the existing ones for this
+            user instead of overwriting existing ones.
+        default: no
+        type: bool
+    ```
+
+    Once you've added the line, save `mysql_user.py` file and exit vim `:wq`.
+
+    ### Validate the fix
+
+    Run again the sanity check to ensure the warning disappeared after the modification.
+
+    You can also run sanity tests on a specific file to make it faster.
+
+    ```
+    sudo ansible-test sanity plugins/modules/mysql_user.py --docker
+    ```
+
+    If the test fails, reopen the file with the above command, fix it, and run the tests again.
+  tabs:
+  - title: shell
+    type: terminal
+    hostname: shell
+  difficulty: basic
+  timelimit: 600
+- slug: create-a-changelog-fragment
+  id: em4z7pcchcx2
+  type: challenge
+  title: Create a changelog fragment
+  assignment: |
+    Now add a changelog fragment file that describes the change performed, this file that will be included in the changelog file in the next release to provide to users of this collections changes done.
+
+    ```
+    cd ansible_collections/community/mysql
+    ```
+
+    ```
+    vim changelogs/fragments/mysql_user_docs.yml
+    ```
+
+    Note: Turn on `paste` mode in vim by typing `:set paste`, press `i` and then paste the below text to avoid indendation errors.
+
+    ```
+    ---
+    trivial:
+      - mysql_user - fixed the module docs for the mysql_user module.
+    ```
+
+    Save and exit Vim by typing `:wq`.
+    Finally, add the two files to git staging and commit the modification
+
+    ```
+    git add changelogs/fragments/mysql_user_docs.yml plugins/modules/mysql_user.py
+    git commit -m "Fix mysql_user documentation"
+    ```
+
+    More details regarding changelog fragments can be found in the [documentation](https://docs.ansible.com/ansible/latest/community/development_process.html#changelogs).
+  tabs:
+  - title: shell
+    type: terminal
+    hostname: shell
+  difficulty: basic
+  timelimit: 600
+- slug: quiz-1
+  id: oapmses2cnar
+  type: quiz
+  title: Quiz 1
+  assignment: Why do we use the directory structure `ansible_collections/community/mysql`?
+  answers:
+  - So Ansible knows what the namespace and collection is
+  - All collections are community
+  solution:
+  - 0
+  difficulty: basic
+  timelimit: 600
+- slug: quiz-2
+  id: 2rag05vd8ria
+  type: quiz
+  title: Quiz 2
+  assignment: Why do we suggest running tests inside docker?
+  answers:
+  - It's faster
+  - All dependencies are included
+  - Avoids changes to your system
+  solution:
+  - 0
+  - 1
+  - 2
+  difficulty: basic
+  timelimit: 600
+checksum: "11669277139804239608"

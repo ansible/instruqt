@@ -1,0 +1,18 @@
+useradd devops
+
+echo "devops ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/devops
+
+yum install tree -y
+
+tee -a /home/devops/grant-access.yml > /dev/null <<EOT
+- name: Grant user Devops write access to a file
+  hosts: localhost
+  become: true
+  tasks:
+  - ansible.posix.acl:
+      path: /etc/foo.conf
+      entity: devops
+      etype: user
+      permissions: w
+      state: present
+EOT
