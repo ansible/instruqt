@@ -9,13 +9,7 @@ on:
   # changes in ansible-core or ansible-test
   schedule:
     - cron: '0 6 * * *'
-on: 
   workflow_dispatch:
-  push:
-    paths:
-      - 'tracks/*'
-    branches:
-      - devel
 
 jobs:
   instruqt-track-test:
