@@ -3,7 +3,7 @@ id: b8al21byeix5
 type: track
 title: '3. Ansible Community: Adding integration tests to Ansible Collections'
 description: |
-  After completing this scenario, users will be able to write integration tests for the modules inside a collection and test them localling using `ansible-test` tool.
+  After completing this scenario, users will be able to write integration tests for the modules inside a collection and test them locally using the `ansible-test` tool.
 
   ## What you'll do
 
