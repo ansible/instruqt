@@ -1,0 +1,2 @@
+#!/bin/bash
+su - rhel -c 'echo -e "---\nansible-navigator:\n  execution-environment:\n    container-engine: podman\n    enabled: false" > /home/rhel/ansible-navigator.yml'
