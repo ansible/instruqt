@@ -1,0 +1,4 @@
+#!/bin/bash
+if [ -f /home/rhel/ansible-files/files/prod_web.html ]; then
+    echo "Success: html files created"
+fi

@@ -1,8 +1,0 @@
-version: "2"
-virtualmachines:
-- name: tower
-  image: red-hat-mbu/ansible-tower
-  machine_type: n1-standard-2
-- name: rhel
-  image: red-hat-mbu/ansible
-  machine_type: n1-standard-1

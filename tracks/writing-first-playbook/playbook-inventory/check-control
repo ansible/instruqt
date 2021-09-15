@@ -1,0 +1,4 @@
+#!/bin/bash
+if [ -f /home/rhel/ansible-files/hosts ]; then
+    echo "Success: Inventory file created"
+fi

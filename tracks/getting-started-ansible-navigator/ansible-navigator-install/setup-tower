@@ -1,0 +1,8 @@
+#!/bin/bash
+su -c 'mkdir /home/rhel/test-playbook' rhel
+su -c 'echo -e "[rhel]\nnode1 ansible_user=rhel ansible_password=ansible123!" >> /home/rhel/test-playbook/hosts' rhel
+su -c 'echo -e "---\n- name: gather facts\n  hosts: rhel" >> /home/rhel/test-playbook/test.yml' rhel
+until [ -f /opt/instruqt/bootstrap/host-bootstrap-completed ]
+do
+    sleep 1
+done

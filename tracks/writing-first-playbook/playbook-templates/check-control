@@ -1,0 +1,4 @@
+#!/bin/bash
+if [ -f /home/rhel/ansible-files/motd-facts.yml ]; then
+    echo "Success: the playbook exists"
+fi

@@ -1,0 +1,18 @@
+version: "2"
+virtualmachines:
+- name: node1
+  image: red-hat-mbu/ansible
+  shell: /bin/su - rhel -s /bin/bash
+  machine_type: n1-standard-1
+- name: node2
+  image: red-hat-mbu/ansible
+  shell: /bin/su - rhel -s /bin/bash
+  machine_type: n1-standard-1
+- name: control
+  image: red-hat-mbu/ansible-tower
+  shell: /bin/su - rhel -s /bin/bash
+  machine_type: n1-standard-2
+- name: node3
+  image: red-hat-mbu/ansible
+  shell: /bin/su - rhel -s /bin/bash
+  machine_type: n1-standard-1

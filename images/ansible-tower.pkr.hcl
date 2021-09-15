@@ -27,10 +27,9 @@ build {
     }
 
     provisioner "ansible" {
-    	playbook_file = "./ansible/tower-setup.yml"
-	user = "rhel"
-	extra_arguments = [ "-vvvv" ]
+      playbook_file = "./ansible/tower-setup.yml"
+  user = "rhel"
+  extra_arguments = [ "-vvvv" ]
     }
 
 }
-

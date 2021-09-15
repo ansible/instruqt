@@ -1,0 +1,14 @@
+version: "2"
+virtualmachines:
+- name: node1
+  image: red-hat-mbu/ansible
+  shell: /bin/su - rhel -s /bin/bash
+  environment:
+    TERM: xterm
+  machine_type: n1-standard-1
+- name: tower
+  image: red-hat-mbu/ansible-tower
+  shell: /bin/su - rhel -s /bin/bash
+  environment:
+    TERM: xterm
+  machine_type: n1-standard-2

@@ -1,0 +1,125 @@
+slug: getting-started-ansible-navigator
+id: edt5xzxm8ld5
+type: track
+title: Getting started with ansible-navigator
+teaser: In this lab, we'll install ansible-navigator and take a closer look at the
+  command line
+description: |+
+  Automation content navigator (ansible-navigator)
+  ======
+
+
+  [`ansible-navigator`](https://github.com/ansible/ansible-navigator) is the new command-line tool that provides a more cohesive and consistent experience for automation creators.
+
+
+  [`ansible-navigator`](https://github.com/ansible/ansible-navigator) is included in Ansible Automation Platform 2 and leverages your existing CLI knowledge (`ansible-playbook`) while also introducing enhancements for containerized execution.
+
+
+  In this series of challenges, we'll install [`ansible-navigator`](https://github.com/ansible/ansible-navigator) and run through simple use-cases to highlight it's functionality and enhancements.
+
+
+icon: https://www.shellandco.net/wp-content/uploads/2019/06/Ansible_logo.svg_-1-150x150.png
+level: beginner
+tags:
+- aap
+- ansible
+- ' ansible-navigator'
+- aap2
+owner: redhat
+developers:
+- cbrandt@redhat.com
+private: true
+published: true
+show_timer: true
+skipping_enabled: true
+challenges:
+- slug: ansible-navigator-install
+  id: rhdswz55nmob
+  type: challenge
+  title: Installing ansible-navigator
+  teaser: In this challenge, we'll install *ansible-navigator* and cover a couple
+    basic commands
+  notes:
+  - type: text
+    contents: |-
+      [`ansible-navigator`](https://github.com/ansible/ansible-navigator) is being introduced in Ansible Automation Platform 2 and enables automation developers to execute and test execution environments.
+      <br><br><br>
+      `ansible-navigator` also functions as a drop-in replacement for `ansible-playbook`, among other `ansible-*` utilities, and will be the standard way of executing automation moving into Ansible Automation Platform 2.
+  assignment: |+
+    In this challenge, we'll install *ansible-navigator* and cover a few basics when using the tool.
+
+    **1.** Create a project directory and `cd` into it:
+    ```
+    mkdir project_directory && cd project_directory
+    ```
+
+    ***
+
+    **2.** Create a new python virtual environment and activate it:
+    ```
+    python3 -m venv venv && source venv/bin/activate
+    ```
+
+    ***
+
+    **3.** Install `ansible-navigator`:
+    ```
+    pip install ansible-navigator
+    ```
+
+    ***
+
+    **4.** Quickly test that navigator has been installed, run:
+    ```
+    ansible-navigator --help
+    ```
+
+    ***
+
+    Now that we know `ansible-navigator` was installed succesfully, try running the provided playbook using `ansible-navigator`:
+    ```
+    ansible-navigator --execution-environment false run ../test-playbook/test.yml -i ../test-playbook/hosts
+    ```
+
+    Looking the output of the above command, press number '0' in order to inspect the first play, and press '0' again to inspect the task. Pressing 'esc' twice will exit `ansible-navigator`.
+
+  tabs:
+  - title: ansible
+    type: terminal
+    hostname: tower
+  difficulty: basic
+  timelimit: 2000
+- slug: ansible-navigator-explore-ui
+  id: cjpyrstazxxx
+  type: challenge
+  title: Exploring the ansible-navigator interface
+  teaser: This challenge will explore the [`ansible-navigator`](https://github.com/ansible/ansible-navigator)
+    user interface
+  notes:
+  - type: text
+    contents: |-
+      # The *ansible-navigator* interface
+      <br><br>
+      ### Improved developer experience
+      --------
+      [`ansible-navigator`](https://github.com/ansible/ansible-navigator) provides a context-aware user interface improving the development and testing experience for creators. It offers integration with Ansible documentation, IDEs (e.g. VScode) and a more prescriptive approach to creating automation
+      <br><br>
+      ## Enhanced navigation
+      ---------------
+      [`ansible-navigator`](https://github.com/ansible/ansible-navigator) makes it easier to navigate and filter through playbook outputs.
+  assignment: |
+    # [`ansible-navigator`](https://github.com/ansible/ansible-navigator)
+    <br>
+    In this challenge, we'll explore the [`ansible-navigator`](https://github.com/ansible/ansible-navigator) interface and highlight new features.
+  tabs:
+  - title: node1
+    type: terminal
+    hostname: node1
+  - title: code-server
+    type: service
+    hostname: tower
+    path: /editor/
+    port: 443
+  difficulty: basic
+  timelimit: 1200
+checksum: "13001745975421564318"

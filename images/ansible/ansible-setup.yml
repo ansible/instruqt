@@ -1,0 +1,128 @@
+---
+- name: download aap.tar.gz to install controller
+  hosts: localhost
+  gather_facts: false
+  vars:
+  tasks:
+    - name: download aap
+      vars:
+        offline_token: "{{ lookup('file', 'offline_token.txt')}}"
+      include_role:
+        name: ansible.workshops.aap_download
+
+    - name: copy AAP tar.gz
+      copy:
+        src: '{{ playbook_dir }}/aap.tar.gz'
+        dest: /tmp/aap.tar.gz
+
+- name: configures ansible node
+  hosts: all
+  become: true
+
+  tasks:
+
+    - name: Install useful packages
+      include_tasks: "./roles/control_node/tasks/package_dependencies.yml"
+
+    - name: Configure user 'rhel'
+      ansible.builtin.user:
+        name: rhel
+        shell: /bin/bash
+        password: "{{ 'ansible123!' | password_hash('sha512', 'mysecretsalt') }}"
+        groups: wheel
+        append: yes
+
+    - name: Create test directory
+      ansible.builtin.file:
+        path: /home/rhel/test
+        state: directory
+        owner: rhel
+        group: rhel
+
+    - name: Create test inventory
+      ansible.builtin.copy:
+        dest: /home/rhel/test/hosts
+        content: |
+          [rhel]
+          node1 ansible_user=rhel ansible_password=ansible123!
+        owner: rhel
+        group: rhel
+
+    - name: Create test playbook
+      ansible.builtin.copy:
+        dest: /home/rhel/test/test.yml
+        content: |
+          ---
+          - name: test playbook
+            hosts: rhel
+        owner: rhel
+        group: rhel
+
+    - name: enable sshd password auth
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        state: present
+        regexp: '^PasswordAuthentication'
+        line: >-
+          PasswordAuthentication yes
+
+    - name: restart sshd
+      ansible.builtin.systemd:
+        name: sshd
+        state: restarted
+
+    - name: create repo
+      yum_repository:
+        name: aap_installer
+        description: aap_installer
+        baseurl: file:///temp_dir/aap_install/bundle/el8/repos
+        gpgcheck: no
+
+    - name: Create temp_dir
+      file: path=/temp_dir/aap_install state=directory
+
+    - name: copy /tmp/aap_download to temp_dir
+      copy:
+        src: /tmp/aap.tar.gz
+        dest: /temp_dir
+
+    - name: Extract AAP tar.gz install
+      unarchive:
+        src: /temp_dir/aap.tar.gz
+        dest: /temp_dir/aap_install
+        remote_src: true
+        extra_opts: ['--strip-components=1', '--show-stored-names']
+
+    - name: Install required packages
+      yum:
+        name: "{{ item }}"
+        state: latest
+      loop:
+        - podman
+        - ansible-builder
+        - ansible-navigator
+
+
+
+    ## Execution environments
+- name: Pull EEs in rhel user
+  hosts: all
+  become_user: rhel
+  tasks:
+    - name: include red hat crednetial for registry.redhat.io
+      include_vars:
+        file: redhat_login.yml
+
+    - name: Login to redhat registry
+      containers.podman.podman_login:
+        username: '{{ your_username }}'
+        password: '{{ your_password }}'
+        registry: registry.redhat.io
+
+    - name: Pull an image
+      containers.podman.podman_image:
+        name: "{{ item }}"
+      loop:
+        - registry.redhat.io/ansible-automation-platform-20-early-access/ee-minimal-rhel8
+        - registry.redhat.io/ansible-automation-platform-20-early-access/ansible-builder-rhel8
+        - registry.redhat.io/ansible-automation-platform-20-early-access/ee-supported-rhel8

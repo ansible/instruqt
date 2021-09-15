@@ -1,0 +1,25 @@
+name: instruqt-track-test
+on: 
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tracks/*'
+    branches:
+      - devel
+
+jobs:
+  instruqt-track-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: install ansible
+        run: sudo apt-get install ansible
+      - name: run playbook
+        run: ansible-playbook /home/runner/work/instruqt/instruqt/.github/workflows/ansible/instruqt-track-test.yml
+        env:
+          INSTRUQT_TOKEN: ${{ secrets.INSTRUQT_API_KEY }}
+      - name: 'Upload Artifact'
+        uses: actions/upload-artifact@v2
+        with:
+          path: /tmp/test-*
+          retention-days: 5
