@@ -97,22 +97,28 @@ challenges:
     ## Your assignment
 
     All tasks are performed in the automation controller dashboard
+    * On the side navigation under the **Resources** section, click on **Inventories**
+    * Under **Inventories**, click on **Add**
     * Create a new Inventory called `Lab-Inventory`
     ![inventory](https://github.com/ansible/instruqt/blob/devel/assets/controller/controller-inventory.png?raw=true)
     ***
     <br>
 
+    * Once you've created the `Lab-Inventory`, click on **Hosts**
     * Add the two hosts `host01` and `host02` to the `Lab-Inventory`
     ![hosts](https://github.com/ansible/instruqt/blob/devel/assets/controller/controller-hosts.png?raw=true)
     ***
     <br>
 
+    * Once you've added `host01` and `host02` to the `Lab-Inventory` go back to the Inventory list.
+    * Click on `Lab-Inventory` and select **Groups** on the top menu.
     * Create a new group called `web` in the `Lab-Inventory`
     ![group](https://github.com/ansible/instruqt/blob/devel/assets/controller/controller-inst-add-group.png?raw=true)
     ***
     <br>
 
-    * Add the exiting `host01` and `host02` to the `web` group
+    * Click on the newly created `web` group and click on **Hosts** on the top menu.
+    * Add the existing `host01` and `host02` to the `web` group
     ![group](https://github.com/ansible/instruqt/blob/devel/assets/controller/controller-inst-add-hosts-group.png?raw=true)
     ***
     <br>
@@ -169,4 +175,4 @@ challenges:
     port: 443
   difficulty: basic
   timelimit: 900
-checksum: "11029078563482976170"
+checksum: "5970634570771652915"
