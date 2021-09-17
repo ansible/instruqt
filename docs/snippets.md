@@ -36,7 +36,6 @@ ansible-navigator:
   execution-environment:
     container-engine: podman
     image: ee-supported-rhel8:2.0.0
-    pull-policy: never
     enabled: false
 
   playbook-artifact:
