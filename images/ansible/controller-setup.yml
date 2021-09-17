@@ -56,9 +56,16 @@
       include_role:
         name: ansible.workshops.control_node
 
-    - name: install workshop dependecies
+    - name: install workshop dependencies
       command: "ansible-galaxy collection install --force-with-deps ansible.workshops  -p /usr/share/ansible/collections"
 
+    - name: Install controller lab packages for controller lab
+      ansible.builtin.dnf:
+        state: present
+        name: "{{ item }}"
+      loop:
+        - /var/lib/ansible-automation-platform-bundle/automation-controller-cli-4.0.0-1.el8ap.x86_64.rpm
+  
     - name: install code server
       vars:
         username: "{{ ansible_user }}"
