@@ -1,9 +1,0 @@
-
-name: instruqt-track-test
-on: 
-  workflow_dispatch:
-  push:
-    paths:
-      - 'images/*'
-    branches:
-      - devel
