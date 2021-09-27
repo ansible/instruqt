@@ -42,7 +42,7 @@ challenges:
     ```
 
     ~~~
-    ansible [core 2.11.0rc2]
+    ansible [core 2.11.4]
       config file = None
       configured module search path = ['/root/.ansible/plugins/modules', '/usr/share/ansible/plugins/modules']
       ansible python module location = /rusr/share/lib64/python3.6/site-packages/ansible
