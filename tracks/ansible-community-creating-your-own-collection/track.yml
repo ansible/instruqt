@@ -27,7 +27,7 @@ challenges:
   title: Installing ansible-core
   teaser: How to install ansible-core
   assignment: |+
-    Ansible v2.10 is the first release of Ansible that fully supports Collections and it contains a minimal amount of Core supported modules and plugins.
+    Ansible Core v.10 is the first release of Ansible that fully supports Collections and it contains a minimal amount of Core supported modules and plugins.
 
     To start with, install `ansible-core` package which also includes `ansible-playbook` and `ansible-galaxy` binaries.
 
