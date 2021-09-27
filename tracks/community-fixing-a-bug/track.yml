@@ -41,7 +41,7 @@ challenges:
     pip3 install ansible-core --user
     ```
 
-    Ansible 2.10 is the first that properly supports Collections:
+    Ansible Core 2.10 is the first that properly supports Collections:
 
     ```
     ansible --version
@@ -52,7 +52,7 @@ challenges:
     ~~~
     ansible 2.11.5
       config file = /etc/ansible/ansible.cfg
-      configured module search path = ['/root/.ansible/plugins/modules', '/usr/share/ansible/plugins/modules']
+      configured module search path = ['/home/devops/.ansible/plugins/modules', '/usr/share/ansible/plugins/modules']
       ansible python module location = /usr/local/lib/python3.8/dist-packages/ansible
       executable location = /usr/local/bin/ansible
       python version = 3.6 (default, Jul 13 2020, 23:52:41) [GCC 7.5.0]
