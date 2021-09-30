@@ -11,7 +11,7 @@ eval "$(awx --conf.username admin --conf.password "ansible123!" -k login -f huma
 #    exit 1
 #fi
 
-if ! [[ `awx -k jobs list | jq -r '.results[] | select(.summary_fields.job_template.name | match('\"${JOB}$\"';"i")) | .summary_fields.job_template.name'` == "${JOB}" ]]; then
+if ! [[ `awx -k jobs list | jq -r '.results[] | select(.summary_fields.job_template.name | match('\"${JOB}$\"';"i")) | .summary_fields.job_template.name' | head -1` == "${JOB}" ]]; then
   echo "FAIL: ${JOB} job has not been run"
   exit 1
 fi
