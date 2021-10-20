@@ -5,7 +5,7 @@ title: Getting started with Automation controller
 teaser: In this track, we'll explore the automation controller interface and do some basic tasks.
 description: |-
   <img src="https://github.com/ansible/instruqt/blob/devel/assets/logos/Logo-Red_Hat-Ansible_Automation_Platform-A-Standard-RGB.png?raw=true" alt="drawing" style=";width:400px"/>
-  <br><br>
+  <br>
 
   # Automation controller
   * * *
@@ -175,4 +175,4 @@ challenges:
     port: 443
   difficulty: basic
   timelimit: 900
-checksum: "12900275408480439281"
+checksum: "17543208059947414479"
