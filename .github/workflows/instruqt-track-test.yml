@@ -1,24 +1,31 @@
 name: instruqt-track-test
-on: 
-  workflow_dispatch:
+on:
+  # Run CI against all pushes (direct commits, also merged PRs), Pull Requests
   push:
-    paths:
-      - 'tracks/*'
-    branches:
-      - devel
+  pull_request:
+  # Run CI once per day (at 06:00 UTC)
+  # This ensures that even if there haven't been commits that we are still
+  # testing. This is particularly important to validate the scenarios against
+  # changes in ansible-core or ansible-test
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
 
 jobs:
   instruqt-track-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
       - name: install ansible
         run: sudo apt-get install ansible
+
       - name: run playbook
         run: ansible-playbook /home/runner/work/instruqt/instruqt/.github/workflows/ansible/instruqt-track-test.yml
         env:
           INSTRUQT_TOKEN: ${{ secrets.INSTRUQT_API_KEY }}
       - name: 'Upload Artifact'
+
         uses: actions/upload-artifact@v2
         with:
           path: /tmp/test-*
