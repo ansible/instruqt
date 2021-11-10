@@ -24,17 +24,6 @@
     - getting-started-controller
 
   tasks:
-      #@todo #33 workaround. need to add packabges to workshop collection
-    - name: Install controller lab packages for controller lab
-      ansible.builtin.dnf:
-        state: present
-        name: "{{ item }}"
-      loop:
-        - /var/lib/ansible-automation-platform-bundle/automation-controller-cli-4.0.0-1.el8ap.x86_64.rpm
-      tags:
-        - install-packages
-        - setup-env
-
     - name: Ensure tower/controller is online and working
       uri:
         url: https://localhost/api/v2/ping/
