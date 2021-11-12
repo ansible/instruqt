@@ -18,11 +18,13 @@
 - name: configures ansible node
   hosts: all
   become: true
+  vars:
+    - admin_password: 'ansible123!'
 
   tasks:
 
-    - name: Install useful packages
-      include_tasks: "./roles/control_node/tasks/package_dependencies.yml"
+#    - name: Install useful packages
+#      include_tasks: "./roles/control_node/tasks/package_dependencies.yml"
 
     - name: Configure user 'rhel'
       ansible.builtin.user:
@@ -71,13 +73,17 @@
         name: sshd
         state: restarted
 
+    - name: DNF update the system
+      dnf:
+        name:  "*"
+        state: latest
+
     - name: create repo
       yum_repository:
         name: aap_installer
         description: aap_installer
         baseurl: file:///temp_dir/aap_install/bundle/el8/repos
         gpgcheck: no
-
     - name: Create temp_dir
       file: path=/temp_dir/aap_install state=directory
 
@@ -102,6 +108,15 @@
         - ansible-builder
         - ansible-navigator
 
+    - name: install code server
+      vars:
+        username: "{{ ansible_user }}"
+      include_tasks: "./roles/code_server/tasks/codeserver.yml"
+
+    - name: remove dnf automatic
+      package:
+        name: dnf-automatic
+        state: absent
 
 
     ## Execution environments
@@ -123,6 +138,6 @@
       containers.podman.podman_image:
         name: "{{ item }}"
       loop:
-        - registry.redhat.io/ansible-automation-platform-20-early-access/ee-minimal-rhel8
-        - registry.redhat.io/ansible-automation-platform-20-early-access/ansible-builder-rhel8
-        - registry.redhat.io/ansible-automation-platform-20-early-access/ee-supported-rhel8
+        - registry.redhat.io/ansible-automation-platform-20-early-access/ee-minimal-rhel8:2.0.0
+        - registry.redhat.io/ansible-automation-platform-20-early-access/ansible-builder-rhel8:2.0.0
+        - registry.redhat.io/ansible-automation-platform-20-early-access/ee-supported-rhel8:2.0.0
