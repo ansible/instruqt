@@ -45,7 +45,7 @@
         description: "Lab Inventory"
         organization: "{{ lab_organization }}"
         state: present
-        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
       tags:
         - solve-jt
         - solve-inventory
@@ -58,7 +58,7 @@
         name: "{{ item }}"
         inventory: "{{ lab_inventory_name }}"
         state: present
-        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
         validate_certs: false
       loop: "{{ lab_hosts }}"
       tags:
@@ -74,7 +74,7 @@
         inventory: "{{ lab_inventory_name }}"
         hosts:
           "{{ lab_hosts }}"
-        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
         validate_certs: false
       tags:
         - solve-jt
@@ -90,7 +90,7 @@
         credential_type: Machine
         inputs:
           ssh_key_data: "{{ lookup('file', '/home/rhel/.ssh/id_rsa') }}"
-        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
         validate_certs: false
       tags:
         - solve-jt
@@ -106,7 +106,7 @@
         organization: "Default"
         scm_update_on_launch: false
         scm_update_cache_timeout: 60
-        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
         validate_certs: false
       tags:
         - solve-jt
@@ -123,7 +123,7 @@
         credential: "{{ lab_credential_name }}"
         inventory: "{{ lab_inventory_name }}"
         playbook: "playbooks/infrastructure/debug_info.yml"
-        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
         validate_certs: false
       tags:
         - solve-jt
@@ -134,7 +134,7 @@
     - name: run {{ lab_jt_name }} template
       awx.awx.job_launch:
         job_template: "{{ lab_jt_name }}"
-        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        controller_config_file: "{{ playbook_dir }}/controller.cfg"
         validate_certs: false
       tags:
         - solve-jt
