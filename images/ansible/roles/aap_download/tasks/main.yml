@@ -1,0 +1,14 @@
+---
+- name: attempt to download specified AAP
+  block:
+    - name: setup control node for workshop type
+      include_tasks: 10_download.yml
+
+  rescue:
+    - name: aap_download role has entered rescue stanza
+      debug:
+        msg: "download from access.redhat.com has failed, attempting to see if there is a cached aap.tar.gz file"
+
+    - name: check if aap.tar.gz exists
+      ansible.builtin.stat:
+        path: "{{ playbook_dir }}/aap.tar.gz"
