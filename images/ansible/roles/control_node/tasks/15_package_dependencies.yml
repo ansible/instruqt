@@ -12,7 +12,6 @@
     regexp: '\$releasever'
     replace: '8'
   loop:
-    # - /etc/yum.repos.d/epel-modular.repo
     - /etc/yum.repos.d/epel.repo
   when:
     - ansible_distribution_major_version|int == 8
@@ -29,11 +28,22 @@
       - tmux
       - python3-pip
       - python3-devel
-      - ansible
+      - ansible-core
+      - ansible-navigator
       - gcc
       - bind-utils
+      - jq
+      - automation-controller-cli
     state: present
   register: dnf_check
   until: dnf_check is not failed
   retries: 4
   delay: 5
+
+- name: install community collection
+  shell: "ansible-galaxy collection install {{ item }} --force-with-deps "
+  register: controlnode
+  loop:
+    - community.general
+  until: controlnode is not failed
+  retries: 5

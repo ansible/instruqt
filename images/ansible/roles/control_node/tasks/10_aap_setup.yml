@@ -1,0 +1,19 @@
+---
+- name: Create directory for automation controller
+  ansible.builtin.file:
+    path: "{{ aap_dir }}"
+    state: directory
+
+- name: Extract AAP tar.gz install
+  ansible.builtin.unarchive:
+    src: "{{ tempdir.path }}/aap.tar.gz"
+    dest: "{{ aap_dir }}"
+    remote_src: true
+    extra_opts: ['--strip-components=1', '--show-stored-names']
+
+- name: Install vimrc in home directory
+  ansible.builtin.template:
+    src: vimrc.j2
+    dest: "/home/{{ username }}/.vimrc"
+    owner: "{{ username }}"
+    group: "{{ username }}"

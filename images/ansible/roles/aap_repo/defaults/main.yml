@@ -1,0 +1,6 @@
+---
+# Default installation directory
+aap_dir: "/home/{{ username }}/aap_install"
+
+# Default username used for control_node and aap_setup roles
+username: "{{ ansible_user }}"
