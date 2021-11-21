@@ -1,0 +1,4 @@
+host: {{ hostvars[inventory_hostname]['ansible_hostname'] }}
+username: admin
+password: {{ admin_password }}
+verify_ssl = false
