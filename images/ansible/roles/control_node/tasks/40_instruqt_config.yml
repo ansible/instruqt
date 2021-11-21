@@ -1,0 +1,23 @@
+---
+- name: copy setup-scripts to controller node
+  ansible.builtin.copy:
+    src: ./setup-scripts
+    dest: /tmp
+
+- name: Create controller.cfg file for controller node
+  ansible.builtin.template:
+    src: controller.cfg.j2
+    dest: "/tmp/setup-scripts/controller.cfg"
+  when: controllerinstall is defined and controllerinstall | bool
+
+# - name: Create awx_cli.cfg
+#   ansible.builtin.template:
+#     src: awx_cli.cfg.j2
+#     dest: "{{ lookup('env', 'HOME')/.awx_cli.cfg.j2 }}"
+#   when: controllerinstall | bool
+
+- name: Remove AAP installer inventory file
+  ansible.builtin.file:
+    path: "{{ aap_dir }}/inventory"
+    state: absent
+  when: mesh_lab is defined and mesh_lab | bool
