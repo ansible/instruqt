@@ -18,7 +18,8 @@ Image name | Description | connection | machine type | usage in challenge
 `red-hat-mbu/automation-controller` | Automation controller on RHEL8 | `admin/ansible123!` | n1-standard-2 | **Controller**: `type: service`, `port: 443`
 `red-hat-mbu/arista-eos` | Arista EOS virtual switch | user / pass <br> `ansible` / `ansible123!` | `n1-standard-4` | *Terminal not supported yet. SSH from a linux node* |
 `red-hat-mbu/cisco-ios-csr-1731` | Cisco IOS-XE virtual router | user / pass <br> `ansible` / `ansible123!` | `n1-standard-1` | *Terminal not supported yet. SSH from a linux node* |
-`red-hat-mbu/windows` | Windows 2016 | SSH user/pass: `admin/Password123` | `n1-standard-2` | *Terminal not supported yet. SSH from a linux node*
+`red-hat-mbu/windows` | Windows 2016 | SSH user/pass: `admin/Password123` | `n1-standard-2` | *Terminal not supported yet. SSH from a linux node* 
+`red-hat-mbu/automation-mesh` | Automation mesh lab | user/pass <br> `admin`/default: `ansible123!` | `n1-standard-2` | **Mesh**: `type: service,port: 443`
 
 **Packer recipe for Ansible Tower image**
 
