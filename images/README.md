@@ -41,32 +41,45 @@ When creating a new track, you should be able to specify the path the new image 
 **High Level Diagram**:
 ![high level diagram picture](build_process.png)
 
-## Building automation controller
+## Building the automation-controller and automation-mesh images
 
-You are going to need three files in `instruqt/images/ansible`:
+You are going to need two files in `instruqt/images/ansible`:
 
-1. `offline_token.txt`
+1. `extra_vars.yml`
 
-which is an offline token to download AAP from access.redhat.com.  This uses the `aap_download` role from the `ansible.workshops` collection.  You can retrieve the offline token from here: [https://access.redhat.com/management/api
-](https://access.redhat.com/management/api)
+This file contains all the required and optional variables needed to create images. These variables are used in the `control_node`, `aap_download`, `control_node`, and `ansible.workhops.code_server` roles. Here's a summary of the variables and what they're used for.
 
-2. `redhat_login.yml`
+> **Note**
+> 
+> Here's an `extra_vars.yml` [template](docs/extra_vars.md) to get you started.
 
-Create this file and it should be like this->
+**Image build variables**:
+| Var name 	| Required? 	| Default value 	| Example 	|  	|
+|---	|---	|---	|---	|---	|
+| redhat_username 	| Yes 	| None 	| redhat_username: seanmcvanought@redhat.com 	| Your Red Hat account username to download AAP installer and EE images 	|
+| redhat_password 	| Yes 	| None 	| redhat_password: ILikeColin 	| Your Red Hat account password to download AAP installer and EE images 	|
+| offline_token 	| Yes 	| None 	| offline_token: sdfsdfskh9809s8dj..... 	| access.redhat.com offline token<br>You can retrieve your token from https://access.redhat.com/management/api 	|
+| aap_download_url 	| No 	| Latest stable controller bundle version 	| aap_download_url: https://<uri>/aap_bundle_setup.tar.gz 	| AAP setup bundle download path. <br>If left blank, the latest stable release will be used<br>NOTE: It must the bundle installer 	|
+| controller_install_command 	| No 	| ./setup.sh -e gpgcheck=0 	| controller_install_command: './setup.sh -e gpgcheck=1 	| Automation controller install setup command 	|
+| admin_password 	| No 	| ansible123! 	| admin_password: "ansible123!" 	| Password for automation controller admin user 	|
+| rhel_user_password 	| No 	| ansible123! 	| rhel_user_password: "ansible123!" 	| Password for `rhel` user 	|
+| code_server_password 	| No 	| ansible123! 	| code_server_password: "ansible123!" 	| Password for code server. Currently not in use 	|
+| controllerinstall 	| No 	| true 	| controllerinstall: true 	| Install automation controller instead of Tower.<br><br>NOTE: Recommended to use `true` 	|
+| mesh_lab 	| No 	| false 	| mesh_lab: false 	| Install automation mesh lab.<br>NOTE: This requires `controllerinstall: true` 	|
+| ee_registry_name 	| No 	| registry.redhat.io 	| ee_registry_name: registry.redhat.io 	| The location to download execution environments 	|
+| ee_images 	| No 	| AAP 2 pre-release images in a yaml list 	| ee_images:<br>  - ee_image_1<br>  - ee_image_N 	| EEs to download and cache on controller 	|
 
-```
----
-your_username: colin@redhat.com
-your_password: ILuvSean
-```
-
-3. `manifest.zip`
+1. `manifest.zip`
 
 This is a license file to apply to AAP.  Please refer to this video by Colin McNaughton [https://www.youtube.com/watch?v=FYtilnsk7sM](https://www.youtube.com/watch?v=FYtilnsk7sM) to figure out how to get your manifest.zip
 
-To execute packer run the following command->
+To build the automation-controller image, run the following command->
 
 ```packer build --force automation-controller.pkr.hcl```
+
+To build the automation-mesh image, run the following command->
+
+```packer build --force automation-mesh.pkr.hcl```
 
 
 ## Notes:
