@@ -20,9 +20,6 @@ controller_install_command: "./setup.sh -e gpgcheck=0"
 # Use automation mesh inventory and packer file
 mesh_lab: false
 
-# Developer mode for testing
-developer_mode: false
-
 # EE registry name used in installer and EE controller credential
 ee_registry_name: registry.redhat.io
 
