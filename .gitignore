@@ -1,10 +1,12 @@
 tower_license.json
-
 .DS_Store
 images/ansible/aap.tar.gz
 images/ansible/manifest.zip
 images/ansible/offline_token.txt
 images/ansible/redhat_login.yml
+images/ansible/extra_vars.yml
 images/ansible/roles/instruqt_setup/tasks/main.yml
 *.pem
 *.swp
+*artifact*.json
+images/ansible/ansible-navigator.yml
