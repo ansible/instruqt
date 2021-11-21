@@ -4,9 +4,14 @@
   gather_facts: false
   vars:
   tasks:
+    - name: include red hat crednetial for registry.redhat.io
+      ansible.builtin.include_vars:
+        file: "{{ playbook_dir }}/extra_vars.yml"
+      no_log: true
+
     - name: download aap
-      vars:
-        offline_token: "{{ lookup('file', 'offline_token.txt')}}"
+      # vars:
+        # offline_token: "{{ lookup('file', 'offline_token.txt')}}"
       include_role:
         name: ansible.workshops.aap_download
 
@@ -125,13 +130,14 @@
   become_user: rhel
   tasks:
     - name: include red hat crednetial for registry.redhat.io
-      include_vars:
-        file: redhat_login.yml
+      ansible.builtin.include_vars:
+        file: "{{ playbook_dir }}/extra_vars.yml"
+      no_log: true
 
     - name: Login to redhat registry
       containers.podman.podman_login:
-        username: '{{ your_username }}'
-        password: '{{ your_password }}'
+        username: '{{ redhat_username }}'
+        password: '{{ redhat_password }}'
         registry: registry.redhat.io
 
     - name: Pull an image
