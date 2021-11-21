@@ -1,6 +1,12 @@
 ---
 - name: attempt to download specified AAP
   block:
+    - name: Create tmp directory to store AAP tar.gz
+      ansible.builtin.tempfile:
+        state: directory
+        suffix: "aapbundle"
+      register: tempdir
+
     - name: setup control node for workshop type
       include_tasks: 10_download.yml
 
@@ -11,4 +17,4 @@
 
     - name: check if aap.tar.gz exists
       ansible.builtin.stat:
-        path: "{{ playbook_dir }}/aap.tar.gz"
+        path: "{{ tempdir }}/aap.tar.gz"
