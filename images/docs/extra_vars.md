@@ -84,7 +84,7 @@ offline_token: ''
 #   ee_registry_name: registry.redhat.io
 # Image repo for EEs and controller registry credentials
 ##
-#ee_registry_name: brew.registry.redhat.io
+#ee_registry_name: registry.redhat.io
 
 ##
 # EE images pull with awx user in controller
