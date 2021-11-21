@@ -1,41 +1,57 @@
 ---
-- name: download aap.tar.gz to install controller
-  hosts: localhost
-  gather_facts: false
-
-  tasks:
-    - name: get yourself some updated workshop roles
-      command: ansible-galaxy collection install --verbose --force-with-deps ansible.workshops
-      
-    - name: download aap
-      vars:
-        offline_token: "{{ lookup('file', 'offline_token.txt')}}"
-      include_role:
-        name: ansible.workshops.aap_download
-       
 - name: configures automation controller node
   hosts: all
   gather_facts: true
   become: true
-  vars:
 
-    admin_password: ansible123!
+  pre_tasks:
+    - name: Include extra_vars.yml file
+      delegate_to: localhost
+      ansible.builtin.include_vars:
+        file: "{{ playbook_dir }}/extra_vars.yml"
+      no_log: true
+      tags:
+        - pre-checks
+
+    - name: check variables are defined and not empty before building image
+      delegate_to: localhost
+      ansible.builtin.fail:
+        msg: "{{ item }} is undefined or empty. Please check your extra vars file"
+      when: not lookup('vars', item) or lookup('vars', item) is undefined
+      loop:
+        - offline_token
+        - redhat_username
+        - redhat_password
+      tags:
+        - pre-checks
 
   tasks:
-    - name: include red hat cred for registry.redhat.io
-      include_vars:
-        file: redhat_login.yml
+    - name: Include extra_vars.yml file
+      ansible.builtin.include_vars:
+        file: "{{ playbook_dir }}/extra_vars.yml"
+      no_log: true
+      tags:
+        - include-vars
+
+    - name: download aap
+      include_role:
+        name: aap_download
+        apply:
+          tags:
+            - aap-download
+      tags:
+        - aap-download
 
     - name: Configure user 'rhel'
       ansible.builtin.user:
         name: rhel
         shell: /bin/bash
-        password: "{{ 'ansible123!' | password_hash('sha512', 'mysecretsalt') }}"
+        password: "{{ rhel_user_password | default('ansible123!') | password_hash('sha512', 'mysecretsalt') }}"
         groups: wheel
         append: yes
 
     - name: enable sshd password auth
-      lineinfile:
+      ansible.builtin.lineinfile:
         dest: /etc/ssh/sshd_config
         state: present
         regexp: '^PasswordAuthentication'
@@ -46,33 +62,72 @@
       ansible.builtin.systemd:
         name: sshd
         state: restarted
-        
+
     - name: install automation controller
-      vars:
-        username: "{{ ansible_user }}"
-        controllerinstall: "true"
-        redhat_username: "{{ your_username }}"
-        redhat_password: "{{ your_password }}"
-      include_role:
-        name: ansible.workshops.control_node
+      ansible.builtin.include_role:
+        name: control_node
+        tasks_from: 10_aap_setup.yml
+        apply:
+          tags:
+            - install-controller
+      tags:
+        - install-controller
+
+    - name: Create controller repo
+      ansible.builtin.include_role:
+        name: aap_repo
+        apply:
+          tags:
+            - aap-repo
+      tags:
+        - aap-repo
+
+    - name: Install packages dependencies
+      ansible.builtin.include_role:
+        name: control_node
+        tasks_from: 15_package_dependencies.yml
+        apply:
+          tags:
+            - install-packages
+      tags:
+        - install-packages
 
     - name: install workshop dependencies
-      command: "ansible-galaxy collection install --force-with-deps ansible.workshops  -p /usr/share/ansible/collections"
+      ansible.builtin.command: "ansible-galaxy collection install --force-with-deps ansible.workshops  -p /usr/share/ansible/collections"
+      tags:
+        - install-collection
 
-    - name: Install controller lab packages for controller lab
-      ansible.builtin.dnf:
-        state: present
-        name: "{{ item }}"
-      loop:
-        - /var/lib/ansible-automation-platform-bundle/automation-controller-cli-4.0.0-1.el8ap.x86_64.rpm
-  
+    - name: Install controller
+      ansible.builtin.include_role:
+        name: control_node
+        tasks_from: 30_controller.yml
+        apply:
+          tags:
+            - install-controller
+      tags:
+        - install-controller
+        - installer-file
+        - pull-ee-images
+
     - name: install code server
       vars:
         username: "{{ ansible_user }}"
-      include_role:
+        admin_password: "{{ code_server_password | default('ansible123!') }}"
+      ansible.builtin.include_role:
         name: ansible.workshops.code_server
+        apply:
+          tags:
+            - install-code-server
+      tags:
+        - install-code-server
 
-    - name: copy setup-scripts to tower node
-      copy:
-        src: ./setup-scripts
-        dest: /tmp
+    - name: Additional Instruqt configurations
+      ansible.builtin.include_role:
+        name: control_node
+        tasks_from: 40_instruqt_config.yml
+        apply:
+          tags:
+            - instruqt-config
+      tags:
+        - instruqt-config
+

@@ -12,15 +12,27 @@
   template:
     src: "{{ controller_or_tower }}_install.j2"
     dest: "{{ aap_dir }}/inventory"
-  when: create_cluster is not defined or not create_cluster|bool
+  when:
+    - create_cluster is not defined or not create_cluster|bool
+    - mesh_lab is undefined or not mesh_lab | bool
 
 - name: template inventory file for Automation Controller Install
   template:
     src: tower_cluster_install.j2
     dest: "{{ aap_dir }}/inventory"
-  when: create_cluster is defined and create_cluster|bool
+  when:
+    - create_cluster is defined and create_cluster|bool
+    - mesh_lab is undefined or not mesh_lab | bool
 
-# sean note to self... should I remove the gpgcheck=0?
+- name: template inventory file for Ansible Controller Install
+  template:
+    src: "automation_mesh_install.j2"
+    dest: "{{ aap_dir }}/inventory"
+  when:
+    - mesh_lab is defined and mesh_lab | bool
+  tags:
+    - installer-file
+
 - name: run the Automation Controller installer
   shell: "{{ controller_install_command }}"
   args:
@@ -46,12 +58,6 @@
   retries: 60
   delay: 10
 
-# - name: Install ansible.cfg in home directory
-#   template:
-#     src: ansible.cfg.j2
-#     dest: "/etc/ansible/ansible.cfg"
-
-
 - name: Display /api/v2/ping results
   debug:
     msg: '{{ check2.json }}'
@@ -63,7 +69,7 @@
       - ansible-tower-cli
       - "requests==2.6.0"
     state: latest
-  when: controller_or_tower == 'controller'
+  when: controller_or_tower == 'tower'
 
 - name: load license block
   block:
@@ -98,12 +104,14 @@
 
 ## Execution environments
 
-- name: Login to redhat registry
+- name: Login to {{ ee_registry_name }} registry
   containers.podman.podman_login:
     username: '{{ redhat_username }}'
     password: '{{ redhat_password }}'
-    registry: registry.redhat.io
+    registry: "{{ ee_registry_name }}"
   become_user: "awx"
+  tags:
+    - pull-ee-images
 
 - name: Mod containers.conf to utilize max of 10 parallel threads
   become_user: "awx"
@@ -116,28 +124,17 @@
   become_user: "awx"
   containers.podman.podman_image:
     name: "{{ item }}"
-  loop:
-    - "registry.redhat.io/ansible-automation-platform-20-early-access/ee-supported-rhel8:2.0.0"
-    - "registry.redhat.io/ansible-automation-platform-20-early-access/ee-29-rhel8:2.0.0"
-    - "registry.redhat.io/ansible-automation-platform-20-early-access/ee-minimal-rhel8:2.0.0"
+  loop: "{{ ee_images }}"
   register: podman_pull_supported
   until: podman_pull_supported is not failed
   retries: 5
   delay: 15
-
-- name: Pull workshop images
-  become_user: "awx"
-  containers.podman.podman_image:
-    name: "{{ lookup('vars', workshop_type + '_ee') }}"
-  when: workshop_type is defined
-  register: podman_pull_workshop
-  until: podman_pull_workshop is not failed
-  retries: 5
-  delay: 15
+  tags:
+    - pull-ee-images
 
 - name: create container registry credential
   awx.awx.credential:
-    name: registry.redhat.io credential
+    name: "{{ ee_registry_name }} credential"
     organization: Default
     credential_type: Container Registry
     controller_host: "https://{{ ansible_host }}"
@@ -147,14 +144,15 @@
     inputs:
       username: "{{ redhat_username }}"
       password: "{{ redhat_password }}"
-      host: "registry.redhat.io"
+      host: "{{ ee_registry_name }}"
+  when: mesh_lab is undefined or not mesh_lab | bool
 
 - name: update default EE to use credential
   awx.awx.execution_environment:
     name: "Default execution environment"
     image: "registry.redhat.io/ansible-automation-platform-20-early-access/ee-supported-rhel8:2.0.0"
     pull: missing
-    credential: "registry.redhat.io credential"
+    credential: "{{ ee_registry_name }} credential"
     controller_username: admin
     controller_password: "{{ admin_password }}"
     controller_host: "https://{{ ansible_host }}"
@@ -163,5 +161,5 @@
   until: ee_check is not failed
   retries: 4
   delay: 5
-
+  when: mesh_lab is undefined or not mesh_lab | bool
 ### end of execution environments
