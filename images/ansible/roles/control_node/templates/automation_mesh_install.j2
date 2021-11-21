@@ -1,0 +1,42 @@
+# Automation Controller Nodes
+[automationcontroller]
+localhost ansible_connection=local
+
+[automationcontroller:vars]
+peers=execution_nodes
+
+# Execution Nodes
+[execution_nodes]
+
+
+[all:vars]
+admin_password='{{ admin_password }}'
+
+# PostgreSQL configuration
+pg_host=''
+pg_port=''
+
+pg_database='awx'
+pg_username='awx'
+pg_password='{{ admin_password }}'
+pg_sslmode='prefer'  # set to 'verify-full' for client-side enforced SSL
+
+# Execution Environment Configuration
+registry_url='{{ ee_registry_name }}'
+registry_username='{{ redhat_username }}'
+registry_password='{{ redhat_password }}'
+
+
+# Receptor Configuration
+receptor_listener_port=27199
+
+# Single-Sign-On configuration
+sso_console_admin_password=''
+
+[automationhub]
+
+[database]
+
+[servicescatalog_workers]
+
+[sso]
