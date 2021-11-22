@@ -48,7 +48,7 @@ You are going to need two files in `instruqt/images/ansible`:
 
 1. `extra_vars.yml`
 
-This file contains all the required and optional variables needed to create images. These variables are used in the `control_node`, `aap_download`, `control_node`, and `ansible.workhops.code_server` roles. Here's a summary of the variables and what they're used for.
+This file contains all the required and optional variables needed to create images. These variables are used in the `control_node`, `aap_download`, `aap_repo`, and `ansible.workhops.code_server` roles. Here's a summary of the variables and what they're used for.
 
 > **Note**
 > 
