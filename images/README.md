@@ -60,7 +60,7 @@ This file contains all the required and optional variables needed to create imag
 | redhat_username 	| Yes 	| None 	| redhat_username: seanmcvanought@redhat.com 	| Your Red Hat account username to download AAP installer and EE images 	|
 | redhat_password 	| Yes 	| None 	| redhat_password: ILikeColin 	| Your Red Hat account password to download AAP installer and EE images 	|
 | offline_token 	| Yes 	| None 	| offline_token: sdfsdfskh9809s8dj..... 	| access.redhat.com offline token<br>You can retrieve your token from https://access.redhat.com/management/api 	|
-| aap_download_url 	| No 	| Latest stable controller bundle version 	| aap_download_url: https://<uri>/aap_bundle_setup.tar.gz 	| AAP setup bundle download path. <br>If left blank, the latest stable release will be used<br>NOTE: It must the bundle installer 	|
+| aap_download_url 	| No 	| Latest stable controller bundle version 	| aap_download_url: https://"uri"/aap_bundle_setup.tar.gz 	| AAP setup bundle download path. <br>If left blank, the latest stable release will be used<br>NOTE: It must the bundle installer 	|
 | controller_install_command 	| No 	| ./setup.sh -e gpgcheck=0 	| controller_install_command: './setup.sh -e gpgcheck=1 	| Automation controller install setup command 	|
 | admin_password 	| No 	| ansible123! 	| admin_password: "ansible123!" 	| Password for automation controller admin user 	|
 | rhel_user_password 	| No 	| ansible123! 	| rhel_user_password: "ansible123!" 	| Password for `rhel` user 	|
