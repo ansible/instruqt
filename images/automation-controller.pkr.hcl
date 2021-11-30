@@ -29,7 +29,7 @@ build {
     provisioner "ansible" {
       playbook_file = "./ansible/controller-setup.yml"
       user = "rhel"
-      extra_arguments = [ "-vvvv" ]
+      extra_arguments = [ "-e", "@ansible/extra-vars.yml" ]
     }
 
 }
