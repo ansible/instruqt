@@ -73,10 +73,10 @@
         name: sshd
         state: restarted
 
-    - name: DNF update the system
-      dnf:
-        name:  "*"
-        state: latest
+    # - name: DNF update the system
+    #   dnf:
+    #     name:  "*"
+    #     state: latest
 
     - name: create repo
       yum_repository:

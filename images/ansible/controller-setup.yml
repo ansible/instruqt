@@ -72,6 +72,29 @@
       include_role:
         name: ansible.workshops.code_server
 
+    - name: disable dnf automatic services
+      ansible.builtin.service:
+        name: "{{ item }}"
+        state: stopped
+      loop:
+        - dnf-automatic.timer
+
+    - name: automatic.conf disable downloads
+      ansible.builtin.lineinfile:
+        path: /etc/dnf/automatic.conf
+        regexp: '^download_updates'
+        line: download_updates = no
+
+    - name: automatic.conf disable updates
+      ansible.builtin.lineinfile:
+        path: /etc/dnf/automatic.conf
+        regexp: '^apply_updates'
+        line: apply_updates = no
+
+    - name: Disable RHUI repos
+      ansible.builtin.command: >
+        dnf config-manager --set-disabled rhui*
+
     - name: copy setup-scripts to tower node
       copy:
         src: ./setup-scripts
