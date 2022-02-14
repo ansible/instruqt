@@ -4,6 +4,6 @@
   gather_facts: false
   tasks:
     - command: packer build --force automation-controller.pkr.hcl
-      register: ihaterhel
-      until: ihaterhel is not failed
+      register: iloverhel
+      until: iloverhel is not failed
       retries: 20 

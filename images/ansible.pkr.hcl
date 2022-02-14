@@ -16,16 +16,9 @@ source "googlecompute" "ansible" {
 build {
     sources = ["sources.googlecompute.ansible"]
 
-    provisioner "shell" {
-        inline = [
-            "sudo dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm",
-            "sudo dnf install -y ansible podman gcc python3-devel",
-        ]
-    }
-
     provisioner "ansible" {
         playbook_file = "./ansible/ansible-setup.yml"
         user = "rhel"
-        extra_arguments = [ "-vvvv" ]
+        extra_arguments = [ "-e", "@ansible/extra-vars.yml" ]
     }
 }
