@@ -1,5 +1,6 @@
 - name: configures ansible node
-  hosts: all
+  hosts: localhost
+  connection: local
   become: true
   vars:
     - admin_password: 'ansible123!'
