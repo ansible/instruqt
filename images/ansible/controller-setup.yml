@@ -6,13 +6,13 @@
   tasks:
     - name: get yourself some updated workshop roles
       command: ansible-galaxy collection install --verbose --force-with-deps ansible.workshops
-      
+
     - name: download aap
       vars:
         offline_token: "{{ lookup('file', 'offline_token.txt')}}"
       include_role:
         name: ansible.workshops.aap_download
-       
+
 - name: configures automation controller node
   hosts: all
   gather_facts: true
@@ -46,13 +46,11 @@
       ansible.builtin.systemd:
         name: sshd
         state: restarted
-        
+
     - name: install automation controller
       vars:
         username: "{{ ansible_user }}"
         controllerinstall: "true"
-        redhat_username: "{{ your_username }}"
-        redhat_password: "{{ your_password }}"
       include_role:
         name: ansible.workshops.control_node
 
@@ -64,8 +62,8 @@
         state: present
         name: "{{ item }}"
       loop:
-        - /var/lib/ansible-automation-platform-bundle/automation-controller-cli-4.0.0-1.el8ap.x86_64.rpm
-  
+        - /var/lib/ansible-automation-platform-bundle/automation-controller-cli-4.1.1-2.el8ap.x86_64.rpm
+
     - name: install code server
       vars:
         username: "{{ ansible_user }}"

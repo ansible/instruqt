@@ -56,8 +56,9 @@ Create this file and it should be like this->
 
 ```
 ---
-your_username: colin@redhat.com
-your_password: ILuvSean
+redhat_username: colin@redhat.com
+redhat_password: "iLuvSean!"
+
 ```
 
 3. `manifest.zip`
