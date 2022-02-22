@@ -1,0 +1,21 @@
+---
+- name: deploy azure credential
+  hosts: localhost
+  gather_facts: false
+  become: true
+
+  tasks:
+
+    - name: add azure credential to automation controller
+      awx.awx.credential:
+        name: azure_credential
+        description: Azure Instruqt Credential
+        organization: "Default"
+        state: present
+        credential_type: Microsoft Azure Resource Manager
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        inputs:
+          subscription: "{{ lookup('env','INSTRUQT_AZURE_SUBSCRIPTION_AAPAZURELAB_SUBSCRIPTION_ID') }}"
+          tenant: "{{ lookup('env','INSTRUQT_AZURE_SUBSCRIPTION_AAPAZURELAB_TENANT_ID') }}"
+          username: "{{ lookup('env','INSTRUQT_AZURE_SUBSCRIPTION_AAPAZURELAB_USERNAME') }}"
+          password: "{{ lookup('env','INSTRUQT_AZURE_SUBSCRIPTION_AAPAZURELAB_PASSWORD') }}"
