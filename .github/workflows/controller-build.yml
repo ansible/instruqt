@@ -21,7 +21,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   call-deploy-workflow:
-    uses:  ansible/instruqt/.github/workflows/build-images.yml@main
+    uses:  ansible/instruqt/.github/workflows/build-images.yml@devel
     secrets:
       GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
       REDHAT_OFFLINE_TOKEN: ${{ secrets.REDHAT_OFFLINE_TOKEN }}
