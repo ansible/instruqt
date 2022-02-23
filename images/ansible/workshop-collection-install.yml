@@ -1,0 +1,9 @@
+---
+- name: download aap.tar.gz to install controller
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: get yourself some updated workshop roles
+      command: ansible-galaxy collection install --verbose --force-with-deps ansible.workshops
+

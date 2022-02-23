@@ -17,6 +17,7 @@ source "googlecompute" "automation-controller" {
     project_id          = var.project_id
     source_image_family = "rhel-8"
     ssh_username        = "rhel"
+    wait_to_add_ssh_keys = "20s"
     zone                = var.zone
     machine_type        = "n1-standard-2"
     image_name          = var.image_name
@@ -27,9 +28,23 @@ build {
     sources = ["sources.googlecompute.automation-controller"]
 
     provisioner "ansible" {
-      playbook_file = "./ansible/controller-setup.yml"
+      command = "ansible-playbook"
+      playbook_file = "images/ansible/workshop-collection-install.yml"
       user = "rhel"
-      extra_arguments = [ "-e", "@ansible/extra-vars.yml" ]
+      inventory_file_template = "controller ansible_host={{ .Host }} ansible_user={{ .User }} ansible_port={{ .Port }}\n"
+      extra_arguments = [ "-e", "@images/ansible/extra-vars.yml" ]
+    }
+
+    // provisioner "shell-local" {
+    //     inline = ["tree", "/home/runner/work/instruqt/instruqt/"]
+    // }
+
+    provisioner "ansible" {
+      command = "ansible-playbook"
+      playbook_file = "images/ansible/controller-setup.yml"
+      user = "rhel"
+      inventory_file_template = "controller ansible_host={{ .Host }} ansible_user={{ .User }} ansible_port={{ .Port }}\n"
+      extra_arguments = [ "-e", "@images/ansible/extra-vars.yml" ]
     }
 
 }
