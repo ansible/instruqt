@@ -23,8 +23,6 @@ jobs:
   call-deploy-workflow:
     uses:  cloin/instruqt/.github/workflows/build-images.yml@devel
     secrets:
-      GCP_WIP: ${{ secrets.GCP_WIP }}
-      GCP_SA: ${{ secrets.GCP_SA }}
       GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
       REDHAT_OFFLINE_TOKEN: ${{ secrets.REDHAT_OFFLINE_TOKEN }}
       REDHAT_PASSWORD: ${{ secrets.REDHAT_PASSWORD }}
