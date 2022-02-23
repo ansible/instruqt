@@ -22,9 +22,10 @@
     admin_password: ansible123!
 
   tasks:
-    - name: include red hat cred for registry.redhat.io
-      include_vars:
-        file: redhat_login.yml
+    # I include these in environment variables instead
+    # - name: include red hat cred for registry.redhat.io
+    #   include_vars:
+    #     file: redhat_login.yml
 
     - name: Configure user 'rhel'
       ansible.builtin.user:
