@@ -18,13 +18,9 @@
   gather_facts: true
   become: true
   vars:
-
     admin_password: ansible123!
 
   tasks:
-    - name: include red hat cred for registry.redhat.io
-      include_vars:
-        file: redhat_login.yml
 
     - name: Configure user 'rhel'
       ansible.builtin.user:

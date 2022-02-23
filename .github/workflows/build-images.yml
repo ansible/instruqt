@@ -1,0 +1,94 @@
+# Workflow name
+name: Instruqt image build 
+
+# Controls when the workflow will run
+on:
+  # This is a reusable workflow
+  workflow_call:
+    secrets:
+      GCP_SA_KEY:
+        description: 'service account json key'
+        required: false
+      REDHAT_PASSWORD:
+        description: 'needed for registry login'
+        required: false
+      REDHAT_USERNAME:
+        description: 'needed for registry login'
+        required: false
+      REDHAT_OFFLINE_TOKEN:
+        description: 'needed to download aap tar'
+        required: false
+      GPG_PASSPHRASE:
+        description: 'decrypt manifest.zip.gpg'
+        required: false
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+
+  # This workflow contains a single job called "build"
+  build:
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    runs-on: ubuntu-latest
+    environment: deploy
+    steps:
+
+      # In this job, all steps begin with a name
+    - name: Checkout repo
+      uses: actions/checkout@v2
+      with:
+        ref: 'devel' 
+
+    - name: GCP auth setup
+      uses: google-github-actions/auth@v0 
+      with:
+        credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v0.3.0
+
+    - name: Use gcloud CLI
+      run: gcloud info
+
+    - name: Install requirements
+      run: pip install -r requirements.txt 
+
+    - name: Log in to registry.redhat.io
+      id: registry-redhat
+      uses: redhat-actions/podman-login@v1
+      with:
+        registry: registry.redhat.io
+        username: ${{ secrets.REDHAT_USERNAME }}
+        password: ${{ secrets.REDHAT_PASSWORD }}
+
+    # # validate templates
+    # - name: Validate Template
+    #   uses: hashicorp/packer-github-actions@master
+    #   with:
+    #     command: validate
+    #     arguments: -syntax-only
+    #     target: images/automation-controller.pkr.hcl
+
+    # # build artifact
+    # - name: Build Artifact
+    #   uses: hashicorp/packer-github-actions@master
+    #   with:
+    #     command: build
+    #     arguments: "-color=false -on-error=abort --force"
+    #     target: images/automation-controller.pkr.hcl
+    #   env:
+    #     PACKER_LOG: 1
+    - name: install packer
+      run: sudo apt-get update; sudo apt-get install packer
+      
+    - name: prepare manifest
+      run: gpg --quiet --batch --yes --decrypt --passphrase="${{ secrets.GPG_PASSPHRASE }}" --output $HOME/work/instruqt/instruqt/images/ansible/manifest.zip $HOME/work/instruqt/instruqt/images/ansible/manifest.zip.gpg
+    
+    - name: build image with packer
+      id: packer-build
+      run: packer build --force -debug images/automation-controller.pkr.hcl
+      env:
+        REDHAT_OFFLINE_TOKEN: ${{ secrets.REDHAT_OFFLINE_TOKEN }}
+        REDHAT_USERNAME: ${{ secrets.REDHAT_USERNAME }}
+        REDHAT_PASSWORD: ${{ secrets.REDHAT_PASSWORD }}
