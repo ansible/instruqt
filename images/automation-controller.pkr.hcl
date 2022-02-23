@@ -35,10 +35,6 @@ build {
       extra_arguments = [ "-e", "@images/ansible/extra-vars.yml" ]
     }
 
-    // provisioner "shell-local" {
-    //     inline = ["tree", "/home/runner/work/instruqt/instruqt/"]
-    // }
-
     provisioner "ansible" {
       command = "ansible-playbook"
       playbook_file = "images/ansible/controller-setup.yml"
