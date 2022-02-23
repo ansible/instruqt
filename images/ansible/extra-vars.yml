@@ -1,4 +1,4 @@
 ---
-offline_token: "{{ lookup('env','REDHAT_OFFLINE_TOKEN') }}"
-redhat_username: "{{ lookup('env','REDHAT_USERNAME') }}"
-redhat_password: "{{ lookup('env','REDHAT_PASSWORD') }}"
+offline_token: "{{ lookup('env','REDHAT_OFFLINE_TOKEN') or 'YOUR_TOKEN' }}"
+redhat_username: "{{ lookup('env','REDHAT_USERNAME') or 'YOUR_USERNAME' }}"
+redhat_password: "{{ lookup('env','REDHAT_PASSWORD') or 'YOUR_PASSWORD' }}"
