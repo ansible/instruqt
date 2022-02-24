@@ -7,3 +7,9 @@
     - name: get yourself some updated workshop roles
       command: ansible-galaxy collection install --verbose --force-with-deps ansible.workshops
 
+    - name: install redhat_cop.controller_configuration
+      command: ansible-galaxy collection install --verbose redhat_cop.controller_configuration
+
+    - name: install awx.awx
+      command: ansible-galaxy collection install awx.awx
+
