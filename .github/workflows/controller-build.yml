@@ -22,6 +22,8 @@ on:
 jobs:
   call-deploy-workflow:
     uses:  ansible/instruqt/.github/workflows/build-images.yml@devel
+    with:
+      PACKER_FILE: 'images/automation-controller.pkr.hcl'
     secrets:
       GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
       REDHAT_OFFLINE_TOKEN: ${{ secrets.REDHAT_OFFLINE_TOKEN }}
