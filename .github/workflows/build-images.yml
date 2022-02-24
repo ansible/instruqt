@@ -5,6 +5,12 @@ name: Instruqt image build
 on:
   # This is a reusable workflow
   workflow_call:
+    inputs:
+      PACKER_FILE:
+        description: 'path to packer file'
+        type: string
+        required: true
+        default: ''
     secrets:
       GCP_SA_KEY:
         description: 'service account json key'
@@ -87,7 +93,7 @@ jobs:
     
     - name: build image with packer
       id: packer-build
-      run: packer build --force -debug images/automation-controller.pkr.hcl
+      run: packer build --force -debug ${{ inputs.PACKER_FILE }}
       env:
         REDHAT_OFFLINE_TOKEN: ${{ secrets.REDHAT_OFFLINE_TOKEN }}
         REDHAT_USERNAME: ${{ secrets.REDHAT_USERNAME }}
