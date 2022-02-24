@@ -93,3 +93,44 @@
       copy:
         src: ./setup-scripts
         dest: /tmp
+
+- name: Playbook to configure ansible controller post installation
+  hosts: all
+
+  vars:
+    controller_hostname: https://localhost:443
+    controller_username: admin
+    controller_password: ansible123!
+    controller_validate_certs: false
+    controller_credential_types:
+      - name: "servicenow.itsm"
+        description: "servicenow.itsm credential"
+        kind: cloud
+        inputs:
+          fields:
+            - id: SN_HOST
+              type: string
+              label: SNOW Instance
+            - id: SN_USERNAME
+              type: string
+              label: SNOW Username
+            - id: SN_PASSWORD
+              type: string
+              secret: true
+              label: SNOW Password
+          required:
+            - SN_HOST
+            - SN_USERNAME
+            - SN_PASSWORD
+        injectors:
+          env:
+            SN_HOST: "{% raw %}{{ '{{' }} SN_HOST {{ '}}' }}{% endraw %}"
+            SN_USERNAME: "{% raw %}{{ '{{' }} SN_USERNAME {{ '}}' }}{% endraw %}"
+            SN_PASSWORD: "{% raw %}{{ '{{' }} SN_PASSWORD {{ '}}' }}{% endraw %}"
+
+  collections:
+    - awx.awx
+    - redhat_cop.controller_configuration
+  
+  roles:
+    - {role: redhat_cop.controller_configuration.credential_types, when: controller_credential_types is defined}

@@ -3,4 +3,3 @@ collections:
   - name: ansible.workshops
   - name: awx.awx
   - name: redhat_cop.controller_configuration
-    version: "*"
