@@ -17,7 +17,7 @@ source "googlecompute" "automation-controller" {
     project_id          = var.project_id
     source_image_family = "rhel-8"
     ssh_username        = "rhel"
-    wait_to_add_ssh_keys = "20s"
+    wait_to_add_ssh_keys = "60s"
     zone                = var.zone
     machine_type        = "n1-standard-2"
     image_name          = var.image_name
