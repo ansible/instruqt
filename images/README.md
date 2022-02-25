@@ -19,6 +19,7 @@ Image name | Description | connection | machine type | usage in challenge
 `red-hat-mbu/arista-eos` | Arista EOS virtual switch | user / pass <br> `ansible` / `ansible123!` | `n1-standard-4` | *Terminal not supported yet. SSH from a linux node* |
 `red-hat-mbu/cisco-ios-csr-1731` | Cisco IOS-XE virtual router | user / pass <br> `ansible` / `ansible123!` | `n1-standard-1` | *Terminal not supported yet. SSH from a linux node* |
 `red-hat-mbu/windows` | Windows 2016 | SSH user/pass: `admin/Password123` | `n1-standard-2` | *Terminal not supported yet. SSH from a linux node*
+`red-hat-mbu/rhel8`  | RHEL 8 latest | none | `n1-standard-2` | none
 
 **Packer recipe for Ansible Tower image**
 
