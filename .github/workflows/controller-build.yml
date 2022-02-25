@@ -1,5 +1,5 @@
 # Workflow name
-name: Build controller image for instruqt platform
+name: controller build
 
 # Controls when the workflow will run
 on:
