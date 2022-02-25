@@ -149,14 +149,14 @@
   hosts: all
   become_user: rhel
   tasks:
-    - name: include red hat crednetial for registry.redhat.io
-      include_vars:
-        file: redhat_login.yml
+    # - name: include red hat crednetial for registry.redhat.io
+    #   include_vars:
+    #     file: redhat_login.yml
 
     - name: Login to redhat registry
       containers.podman.podman_login:
-        username: '{{ your_username }}'
-        password: '{{ your_password }}'
+        username: '{{ redhat_username }}'
+        password: '{{ redhat_password }}'
         registry: registry.redhat.io
 
     - name: Pull an image
