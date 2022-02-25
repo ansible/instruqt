@@ -1,0 +1,30 @@
+tee -a /tmp/documentation_block.txt > /dev/null <<EOT
+
+DOCUMENTATION = r'''
+---
+module: my_test
+short_description: This is my test module
+# If this is part of a collection, you need to use semantic versioning,
+# i.e. the version is of the form "2.5.0" and not "2.4".
+version_added: "1.0.0"
+description: This is my longer description explaining my test module.
+notes: This is a list which contains additional information that cannot be clubbed into any other parameter.
+options:
+    name:
+        description: This is the message to send to the test module.
+        required: true
+        type: str
+    new:
+        description:
+            - Control to demo if the result of this module is changed or not.
+            - Parameter description can be a list as well.
+        required: false
+        type: bool
+# Specify this value according to your collection
+# in format of namespace.collection.doc_fragment_name
+extends_documentation_fragment:
+    - my_namespace.my_collection.my_doc_fragment_name
+author:
+    - Your Name (@yourGitHubHandle)
+'''
+EOT

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+pip3 install ansible-core
+
+echo "Defaults    secure_path = /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin" > /etc/sudoers.d/sudo_secure_path
