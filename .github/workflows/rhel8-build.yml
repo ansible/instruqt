@@ -1,0 +1,31 @@
+# Workflow name
+name: Build rhel8 image for instruqt platform
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push events but only for the main branch
+  push:
+    branches:
+      - main
+    paths:
+      - 'images/rhel8.pkr.hcl'
+
+  # Schedule workflow run at 00:00 on Sunday
+  schedule:
+    - cron: '0 0 * * 0'
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+  
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  call-deploy-workflow:
+    uses:  ansible/instruqt/.github/workflows/build-images.yml@devel
+    with:
+      PACKER_FILE: 'images/rhel8.pkr.hcl'
+    secrets:
+      GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+      REDHAT_OFFLINE_TOKEN: ${{ secrets.REDHAT_OFFLINE_TOKEN }}
+      REDHAT_PASSWORD: ${{ secrets.REDHAT_PASSWORD }}
+      REDHAT_USERNAME: ${{ secrets.REDHAT_USERNAME }}
+      GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
