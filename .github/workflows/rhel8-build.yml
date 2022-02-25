@@ -1,5 +1,5 @@
 # Workflow name
-name: Build rhel8 image for instruqt platform
+name: rhel8 build
 
 # Controls when the workflow will run
 on:
