@@ -17,7 +17,7 @@ build {
     sources = ["sources.googlecompute.ansible-community"]
 
     provisioner "file" {
-        source = "./setup.sh"
+        source = "ansible/setup-scripts/community/setup.sh"
         destination = "/tmp/setup.sh"
     }
 
