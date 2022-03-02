@@ -1,5 +1,5 @@
 # Workflow name
-name: community ansible image build
+name: community ansible build
 
 # Controls when the workflow will run
 on:
@@ -9,7 +9,6 @@ on:
       - main
     paths:
       - 'images/ansible-community.pkr.hcl'
-      - 'images/ansible/setup-scripts/community/setup.sh'
 
   # Schedule workflow run at 00:00 on Sunday
   schedule:
