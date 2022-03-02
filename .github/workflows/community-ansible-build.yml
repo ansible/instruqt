@@ -9,6 +9,7 @@ on:
       - main
     paths:
       - 'images/ansible-community.pkr.hcl'
+      - 'images/ansible/setup-scripts/community/setup.sh'
 
   # Schedule workflow run at 00:00 on Sunday
   schedule:
