@@ -50,18 +50,8 @@ You are going to need three files in `instruqt/images/ansible`:
 which is an offline token to download AAP from access.redhat.com.  This uses the `aap_download` role from the `ansible.workshops` collection.  You can retrieve the offline token from here: [https://access.redhat.com/management/api
 ](https://access.redhat.com/management/api)
 
-2. `redhat_login.yml`
 
-Create this file and it should be like this->
-
-```
----
-redhat_username: colin@redhat.com
-redhat_password: "iLuvSean!"
-
-```
-
-3. `manifest.zip`
+2. `manifest.zip`
 
 This is a license file to apply to AAP.  Please refer to this video by Colin McNaughton [https://www.youtube.com/watch?v=FYtilnsk7sM](https://www.youtube.com/watch?v=FYtilnsk7sM) to figure out how to get your manifest.zip
 
