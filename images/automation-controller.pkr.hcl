@@ -13,6 +13,11 @@ variable "image_name" {
     default = "automation-controller"
 }
 
+variable "ansible_extra_args" {
+    type    = string
+    default = ""
+}
+
 source "googlecompute" "automation-controller" {
     project_id          = var.project_id
     source_image_family = "rhel-8"
@@ -32,7 +37,7 @@ build {
       playbook_file = "images/ansible/workshop-collection-install.yml"
       user = "rhel"
       inventory_file_template = "controller ansible_host={{ .Host }} ansible_user={{ .User }} ansible_port={{ .Port }}\n"
-      extra_arguments = [ "-e", "@images/ansible/extra-vars.yml" ]
+      extra_arguments = ["-e", "@images/ansible/extra-vars.yml", "-e", "ansible_python_interpreter=/usr/bin/python3", var.ansible_extra_args]
     }
 
     provisioner "ansible" {
@@ -40,7 +45,7 @@ build {
       playbook_file = "images/ansible/controller-setup.yml"
       user = "rhel"
       inventory_file_template = "controller ansible_host={{ .Host }} ansible_user={{ .User }} ansible_port={{ .Port }}\n"
-      extra_arguments = [ "-e", "@images/ansible/extra-vars.yml" ]
-    }
+      extra_arguments = ["-e", "@images/ansible/extra-vars.yml", "-e", "ansible_python_interpreter=/usr/bin/python3", var.ansible_extra_args]
 
+    }
 }
