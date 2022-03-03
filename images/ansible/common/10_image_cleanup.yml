@@ -1,0 +1,58 @@
+- name: Gather current standard users
+  ansible.builtin.shell: >
+    cut -d: -f1,3 /etc/passwd | egrep ':[0-9]{4}$' | cut -d: -f1
+  register: _standard_users
+  
+- name: Remove all normal users except rhel and awx
+  ansible.builtin.user:
+    name: "{{ item }}"
+    state: absent
+    remove: true
+  loop: "{{ _standard_users.stdout_lines }}"
+  when: 
+    - item != "rhel"
+    - item != "awx"
+    
+- name: disable dnf automatic services
+  ansible.builtin.service:
+    name: "dnf-automatic.timer"
+    state: stopped
+
+- name: automatic.conf disable downloads
+  ansible.builtin.lineinfile:
+    path: /etc/dnf/automatic.conf
+    regexp: '^download_updates'
+    line: download_updates = no
+
+- name: automatic.conf disable updates
+  ansible.builtin.lineinfile:
+    path: /etc/dnf/automatic.conf
+    regexp: '^apply_updates'
+    line: apply_updates = no
+
+- name: Disable RHUI repos
+  ansible.builtin.command: >
+    dnf config-manager --set-disabled rhui*
+
+- name: remove AAP repo
+  ansible.builtin.yum_repository:
+    name: aap_installer
+    state: absent
+
+- name: remove AAP install dir
+  file:
+    path: "{{ aap_dir }}"
+    state: absent
+
+- name: Remove bash history file
+  ansible.builtin.file:
+    path: "/home/{{ ansible_user }}/.bash_history"
+    state: absent
+  tags: 
+    - cleanup-history
+
+- name: Clear bash history
+  ansible.builtin.shell: history -c; history -w
+  tags: 
+    - cleanup-history
+  
