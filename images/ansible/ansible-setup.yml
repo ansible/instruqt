@@ -139,9 +139,9 @@
         regexp: '^apply_updates'
         line: apply_updates = no
 
-    # - name: Disable RHUI repos
-    #   ansible.builtin.command: >
-    #     dnf config-manager --set-disabled rhui*
+    - name: Disable RHUI repos
+      ansible.builtin.command: >
+        dnf config-manager --set-disabled rhui*
 
 
     ## Execution environments
