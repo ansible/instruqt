@@ -19,8 +19,9 @@
   hosts: all
   become: true
   vars:
-    - admin_password: 'ansible123!'
-
+    admin_password: 'ansible123!'
+    aap_dir: "/home/{{ username }}/aap_install"
+    username: "{{ ansible_user }}"
   tasks:
 
 #    - name: Install useful packages
@@ -118,30 +119,38 @@
     #   package:
     #     name: dnf-automatic
     #     state: absent
-   
-    # Stop dnf auto updates
-    - name: disable dnf automatic services
-      ansible.builtin.service:
-        name: "{{ item }}"
-        state: stopped
-      loop:
-        - dnf-automatic.timer
+    - name: Include common image cleanup tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/10_image_cleanup.yml"
+        apply:
+          tags: 
+            - image-cleanup
+      tags:
+        - image-cleanup
 
-    - name: automatic.conf disable downloads
-      ansible.builtin.lineinfile:
-        path: /etc/dnf/automatic.conf
-        regexp: '^download_updates'
-        line: download_updates = no
+    # # Stop dnf auto updates
+    # - name: disable dnf automatic services
+    #   ansible.builtin.service:
+    #     name: "{{ item }}"
+    #     state: stopped
+    #   loop:
+    #     - dnf-automatic.timer
 
-    - name: automatic.conf disable updates
-      ansible.builtin.lineinfile:
-        path: /etc/dnf/automatic.conf
-        regexp: '^apply_updates'
-        line: apply_updates = no
+    # - name: automatic.conf disable downloads
+    #   ansible.builtin.lineinfile:
+    #     path: /etc/dnf/automatic.conf
+    #     regexp: '^download_updates'
+    #     line: download_updates = no
 
-    - name: Disable RHUI repos
-      ansible.builtin.command: >
-        dnf config-manager --set-disabled rhui*
+    # - name: automatic.conf disable updates
+    #   ansible.builtin.lineinfile:
+    #     path: /etc/dnf/automatic.conf
+    #     regexp: '^apply_updates'
+    #     line: apply_updates = no
+
+    # - name: Disable RHUI repos
+    #   ansible.builtin.command: >
+    #     dnf config-manager --set-disabled rhui*
 
 
     ## Execution environments
