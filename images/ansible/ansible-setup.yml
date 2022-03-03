@@ -128,31 +128,6 @@
       tags:
         - image-cleanup
 
-    # # Stop dnf auto updates
-    # - name: disable dnf automatic services
-    #   ansible.builtin.service:
-    #     name: "{{ item }}"
-    #     state: stopped
-    #   loop:
-    #     - dnf-automatic.timer
-
-    # - name: automatic.conf disable downloads
-    #   ansible.builtin.lineinfile:
-    #     path: /etc/dnf/automatic.conf
-    #     regexp: '^download_updates'
-    #     line: download_updates = no
-
-    # - name: automatic.conf disable updates
-    #   ansible.builtin.lineinfile:
-    #     path: /etc/dnf/automatic.conf
-    #     regexp: '^apply_updates'
-    #     line: apply_updates = no
-
-    # - name: Disable RHUI repos
-    #   ansible.builtin.command: >
-    #     dnf config-manager --set-disabled rhui*
-
-
     ## Execution environments
 - name: Pull EEs in rhel user
   hosts: all
