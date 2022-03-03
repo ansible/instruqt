@@ -48,11 +48,7 @@
   ansible.builtin.file:
     path: "/home/{{ ansible_user }}/.bash_history"
     state: absent
-  tags: 
-    - cleanup-history
 
 - name: Clear bash history
   ansible.builtin.shell: history -c; history -w
-  tags: 
-    - cleanup-history
   
