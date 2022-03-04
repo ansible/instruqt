@@ -1,1 +1,0 @@
-curl -k -X POST https://ansible.demoredhat.com/api/v2/job_templates/88/launch/ -H "Content-Type: application/json"  -H "Authorization: Bearer 8tGvwVFVGsKgYStxueyt5LNUh36T5I" -d "{\"extra_vars\": {\"random_user\":\"$INSTRUQT_PARTICIPANT_ID\",\"cleanup\":true,\"demo_password\":\"$INSTRUQT_PARTICIPANT_ID\"}}"
