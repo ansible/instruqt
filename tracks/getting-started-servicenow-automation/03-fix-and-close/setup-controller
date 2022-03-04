@@ -1,0 +1,82 @@
+#!/bin/bash
+
+# make challenge dir
+su - rhel -c 'mkdir /home/rhel/challenge-3'
+
+# Create a playbook for the user to execute which will create a SN incident
+tee /home/rhel/servicenow_project/change-attach.yml << EOF
+---
+- name: Automate SNOW 
+  hosts: localhost
+  connection: local
+  collections:
+    - servicenow.itsm
+    
+  vars:
+    problem_number: changeMe
+
+  tasks:
+
+    - name: Assign problem for assessment
+      servicenow.itsm.problem:
+        number: "{{ problem_number }}"
+        state: assess
+        assigned_to: "{{ lookup('env', 'INSTRUQT_PARTICIPANT_ID') }}"
+
+    - name: Create change request for resolving a problem
+      servicenow.itsm.change_request:
+        state: new
+        type: standard
+        short_description: "Reboot the webserver"
+        description: "Just power off the entire rack to be sure"
+        on_hold: true
+        hold_reason: "Wait until after board meeting!"
+        other:
+          parent: "{{ problem_number }}"
+      register: change
+
+    - debug:
+        msg: "A new change request has been created {{ change.record.number }}"
+
+EOF
+
+# chown above file
+sudo chown rhel:rhel /home/rhel/servicenow_project/change-attach.yml
+
+# Write a new playbook to create a template from above playbook
+tee /home/rhel/challenge-3/template-create.yml << EOF
+---
+- name: Create job template for problem-attach
+  hosts: localhost
+  connection: local
+  collections:
+    - awx.awx
+
+  tasks:
+
+    - name: Post change-attach job template
+      job_template:
+        name: "3 - Attach change request (change-attach.yml)"
+        job_type: "run"
+        organization: "Default"
+        inventory: "Demo Inventory"
+        project: "ServiceNow"
+        playbook: "change-attach.yml"
+        credentials:
+          - "servicenow credential"
+        state: "present"
+        ask_variables_on_launch: true
+        extra_vars:
+          problem_number: changeMe
+        controller_host: "https://localhost"
+        controller_username: admin
+        controller_password: ansible123!
+        validate_certs: false
+
+EOF
+
+# chown above file
+sudo chown rhel:rhel /home/rhel/challenge-3/template-create.yml
+
+# Execute above playbook
+su - rhel -c 'ansible-playbook /home/rhel/challenge-3/template-create.yml'
