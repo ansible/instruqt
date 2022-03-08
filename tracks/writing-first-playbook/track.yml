@@ -253,7 +253,6 @@ challenges:
         service:
           name: httpd
           enabled: true
-          state: started
     ```
 
     Make sure that the task is indented the same way as the previous task!
@@ -346,7 +345,7 @@ challenges:
       is enforced at execution time via command line flags or via tools like Ansible
       controller.
   assignment: |
-    In the editor, open the `apache.yml` file. Change the `hosts` line value from `node1` to `web`. That way during the next run of the playbook, instead of one host, Ansible targets an entire group.
+    In the editor, open the `apache.yml` file and Change the `hosts` line value from `node1` to `web`. That way during the next run of the playbook, instead of one host, Ansible targets an entire group.
 
     Run the playbook afterwards on the control host with:
 
