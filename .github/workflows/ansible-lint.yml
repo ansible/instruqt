@@ -26,8 +26,8 @@ jobs:
       - id: set-matrix
         run: echo "::set-output name=matrix::$(ls images/ansible/*-setup.yml | jq -R -s -c 'split("\n")[:-1]')"
   
-  # The `validate` job spins up for each file within the array created above
-  validate:
+  # The `lint` job spins up for each file within the array created above
+  ansible-lint:
     needs: get-ansible-files
     runs-on: ubuntu-latest
     strategy:
@@ -45,6 +45,4 @@ jobs:
       
     - name: Lint Ansible Playbook
       # replace "master" with any valid ref
-      uses: ansible/ansible-lint-action@master
-      with:
-        targets: ${{ matrix.ansible-file }}
+      run: ansible-lint -p ${{ matrix.ansible-file }}
