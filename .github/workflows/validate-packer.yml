@@ -7,7 +7,7 @@
 name: validate packer files 
 on:
   # Triggers the workflow on pull request open or reopen on devel and only when a packer file is included
-  pull_request_target:
+  pull_request:
     types: [opened, reopened]
     branches:
       - devel
@@ -28,7 +28,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          # ref: ${{github.event.pull_request.head.ref}}
           ref: 'devel'
       - id: set-matrix
         run: echo "::set-output name=matrix::$(ls images/*.pkr.hcl | jq -R -s -c 'split("\n")[:-1]')"
@@ -45,7 +44,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        # ref: ${{github.event.pull_request.head.ref}}
         ref: 'devel'
   
     - name: Install python requirements
