@@ -36,16 +36,19 @@ jobs:
       with:
         ref: 'devel'
   
-    - name: Install requirements
+    - name: Install python requirements
       run: pip install -r requirements.txt 
+      
+    - name: Install packer
+      run: sudo apt-get update; sudo apt-get install packer
+      
+    - name: Validate image with packer
+      id: packer-validate
+      run: packer validate ${{ matrix.packer-file }}
 
-    - name: Get plugin binaries
-      uses: hashicorp/packer-github-actions@master
-      with:
-        command: init
-
-    - name: Validate ${{ matrix.packer-file }}
-      uses: hashicorp/packer-github-actions@master
-      with:
-        command: validate
-        target: ${{ matrix.packer-file }}
+# # Would rather use this but not working with ansible and haven't investigated
+#     - name: Validate ${{ matrix.packer-file }}
+#       uses: hashicorp/packer-github-actions@master
+#       with:
+#         command: validate
+#         target: ${{ matrix.packer-file }}
