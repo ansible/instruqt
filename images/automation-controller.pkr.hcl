@@ -34,7 +34,7 @@ build {
 
     provisioner "ansible" {
       command = "ansible-playbook"
-      playbook_file = "images/ansible/workshop-collection-install.yml"
+      playbook_file = "${path.root}/ansible/workshop-collection-install.yml"
       user = "rhel"
       inventory_file_template = "controller ansible_host={{ .Host }} ansible_user={{ .User }} ansible_port={{ .Port }}\n"
       extra_arguments = ["-e", "@images/ansible/extra-vars.yml", "-e", "ansible_python_interpreter=/usr/bin/python3", var.ansible_extra_args]
@@ -42,7 +42,7 @@ build {
 
     provisioner "ansible" {
       command = "ansible-playbook"
-      playbook_file = "images/ansible/controller-setup.yml"
+      playbook_file = "${path.root}/ansible/controller-setup.yml"
       user = "rhel"
       inventory_file_template = "controller ansible_host={{ .Host }} ansible_user={{ .User }} ansible_port={{ .Port }}\n"
       extra_arguments = ["-e", "@images/ansible/extra-vars.yml", "-e", "ansible_python_interpreter=/usr/bin/python3", var.ansible_extra_args]
