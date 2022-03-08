@@ -28,6 +28,7 @@ jobs:
     needs: list-packer-files
     runs-on: ubuntu-latest
     strategy:
+        fail-fast: false
         matrix:
             packer-file: ${{ fromJson(needs.list-packer-files.outputs.matrix) }}
     
