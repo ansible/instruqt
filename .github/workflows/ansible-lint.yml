@@ -1,0 +1,50 @@
+name: ansible-lint
+on:
+  # Triggers the workflow on pull request open or reopen on devel and only when an ansible playbook is included
+  pull_request:
+    types: [opened, reopened]
+    branches:
+      - devel
+    paths:
+      - 'ansible/*-setup.yml'
+
+  # You can also run this workflow manually from the `Actions` tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This `get-ansible-files` job builds an array of ansible playbooks in the `ansible` dir
+  get-ansible-files:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: 'devel'
+      - id: set-matrix
+        run: echo "::set-output name=matrix::$(ls ansible/*-setup.yml | jq -R -s -c 'split("\n")[:-1]')"
+  
+  # The `validate` job spins up for each file within the array created above
+  validate:
+    needs: get-ansible-files
+    runs-on: ubuntu-latest
+    strategy:
+        fail-fast: false
+        matrix:
+            ansible-file: ${{ fromJson(needs.get-ansible-files.outputs.matrix) }}
+    
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: 'devel'
+  
+    - name: Install python requirements
+      run: pip install -r requirements.txt
+      
+    - name: Lint Ansible Playbook
+      # replace "master" with any valid ref
+      uses: ansible/ansible-lint-action@master
+      with:
+        targets: ${{ matrix.ansible-file }}
