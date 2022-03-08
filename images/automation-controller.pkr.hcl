@@ -16,6 +16,7 @@ variable "image_name" {
 variable "ansible_extra_args" {
     type    = string
     default = ""
+    // default = "test"
 }
 
 source "googlecompute" "automation-controller" {
