@@ -1,5 +1,5 @@
 # Workflow name
-name: community ansible image build
+name: community ansible build
 
 # Controls when the workflow will run
 on:
