@@ -39,6 +39,11 @@ jobs:
     - name: Install requirements
       run: pip install -r requirements.txt 
 
+    - name: Get plugin binaries
+      uses: hashicorp/packer-github-actions@master
+      with:
+        command: init
+
     - name: Validate ${{ matrix.packer-file }}
       uses: hashicorp/packer-github-actions@master
       with:
