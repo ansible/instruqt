@@ -24,7 +24,7 @@ jobs:
         with:
           ref: 'devel'
       - id: set-matrix
-        run: echo "::set-output name=matrix::$(ls ansible/*-setup.yml | jq -R -s -c 'split("\n")[:-1]')"
+        run: echo "::set-output name=matrix::$(ls images/ansible/*-setup.yml | jq -R -s -c 'split("\n")[:-1]')"
   
   # The `validate` job spins up for each file within the array created above
   validate:
