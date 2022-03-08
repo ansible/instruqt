@@ -34,4 +34,4 @@ jobs:
       uses: hashicorp/packer-github-actions@master
       with:
         command: validate
-        target: images/${{ matrix.packer-file }}
+        target: ${{ matrix.packer-file }}
