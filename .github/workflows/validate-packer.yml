@@ -1,10 +1,10 @@
-# https://www.packer.io/docs/commands/validate
 # The packer validate Packer command is used to validate the syntax and 
 # configuration of a template. The command will return a zero exit status 
 # on success, and a non-zero exit status on failure. Additionally, if a 
 # template doesn't validate, any error messages will be outputted.
+# https://www.packer.io/docs/commands/validate
 
-name: packer validate 
+name: validate packer files 
 on:
   # Triggers the workflow on push events but only for the main branch
   pull_request:
@@ -17,7 +17,7 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  list-packer-files:
+  get-packer-files:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
@@ -30,12 +30,12 @@ jobs:
         run: echo "::set-output name=matrix::$(ls images/*.pkr.hcl | jq -R -s -c 'split("\n")[:-1]')"
   
   validate:
-    needs: list-packer-files
+    needs: get-packer-files
     runs-on: ubuntu-latest
     strategy:
         fail-fast: false
         matrix:
-            packer-file: ${{ fromJson(needs.list-packer-files.outputs.matrix) }}
+            packer-file: ${{ fromJson(needs.get-packer-files.outputs.matrix) }}
     
     steps:
     - uses: actions/checkout@v2
