@@ -29,6 +29,9 @@ jobs:
         matrix:
             packer-file: ${{ fromJson(needs.list-packer-files.outputs.matrix) }}
     steps:
+    - uses: actions/checkout@v2
+        with:
+          ref: 'devel'
     # validate templates
     - name: Validate ${{ matrix.packer-file }}
       uses: hashicorp/packer-github-actions@master
