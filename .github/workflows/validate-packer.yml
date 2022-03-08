@@ -28,7 +28,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: 'devel'
+          ref: ${{github.event.pull_request.head.ref}}
+          # ref: 'devel'
       - id: set-matrix
         run: echo "::set-output name=matrix::$(ls images/*.pkr.hcl | jq -R -s -c 'split("\n")[:-1]')"
   
@@ -44,7 +45,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        ref: 'devel'
+        ref: ${{github.event.pull_request.head.ref}}
+        # ref: 'devel'
   
     - name: Install python requirements
       run: pip install -r requirements.txt 
