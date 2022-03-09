@@ -1,0 +1,66 @@
+# The packer validate Packer command is used to validate the syntax and 
+# configuration of a template. The command will return a zero exit status 
+# on success, and a non-zero exit status on failure. Additionally, if a 
+# template doesn't validate, any error messages will be outputted.
+# https://www.packer.io/docs/commands/validate
+
+name: validate packer files 
+on:
+  # Triggers the workflow on pull request open or reopen on devel and only when a packer file is included
+  pull_request:
+    types: [opened, reopened]
+    branches:
+      - devel
+    paths:
+      - 'images/*.pkr.hcl'
+
+  # You can also run this workflow manually from the `Actions` tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This `get-packer-files` job builds an array of packer files in the `images` dir
+  get-packer-files:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: 'devel'
+      - id: set-matrix
+        run: echo "::set-output name=matrix::$(ls images/*.pkr.hcl | jq -R -s -c 'split("\n")[:-1]')"
+  
+  # The `validate` job spins up for each packer file within the array created above
+  validate:
+    needs: get-packer-files
+    runs-on: ubuntu-latest
+    strategy:
+        fail-fast: false
+        matrix:
+            packer-file: ${{ fromJson(needs.get-packer-files.outputs.matrix) }}
+    
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: 'devel'
+  
+    - name: Install python requirements
+      run: pip install -r requirements.txt 
+      
+    - name: Install packer
+      run: sudo apt-get update; sudo apt-get install packer
+      
+    - name: Validate image with packer
+      id: packer-validate
+      run: packer validate ${{ matrix.packer-file }}
+
+# # Would rather use this but not working with ansible and haven't investigated
+# # would likely need to modify the dockerfile or entrypoint.sh to install ansible
+# # in the docker container created for the packer action below
+#     - name: Validate ${{ matrix.packer-file }}
+#       uses: hashicorp/packer-github-actions@master
+#       with:
+#         command: validate
+#         target: ${{ matrix.packer-file }}
