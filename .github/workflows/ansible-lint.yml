@@ -48,4 +48,4 @@ jobs:
       
     - name: Lint Ansible Playbook
       # replace "master" with any valid ref
-      run: yamllint ${{ matrix.ansible-file }}
+      run: yamllint -d relaxed ${{ matrix.ansible-file }}
