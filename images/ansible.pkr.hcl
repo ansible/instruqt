@@ -13,9 +13,13 @@ variable "image_name" {
     default = "ansible"
 }
 
-variable "ansible_extra_args" {
+variable "ansible_vars_file" {
     type    = string
-    default = ""
+    default = null
+}
+
+local "extra_args" {
+    expression = var.ansible_vars_file != null ? ["-e", "@images/ansible/extra-vars.yml", "-e", "ansible_python_interpreter=/usr/bin/python3", "-e", var.ansible_vars_file] : ["-e", "@images/ansible/extra-vars.yml", "-e", "ansible_python_interpreter=/usr/bin/python3"]
 }
 
 source "googlecompute" "ansible" {
@@ -32,6 +36,6 @@ build {
     provisioner "ansible" {
         playbook_file = "${path.root}/ansible/ansible-setup.yml"
         user = "rhel"
-        extra_arguments = ["-e", "@images/ansible/extra-vars.yml", "-e", "ansible_python_interpreter=/usr/bin/python3", var.ansible_extra_args]
+      extra_arguments = local.extra_args
     }
 }
