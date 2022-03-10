@@ -24,7 +24,7 @@ build {
     sources = ["sources.googlecompute.windows"]
 
     provisioner "ansible" {
-      playbook_file = "./ansible/windows-setup.yml"
+      playbook_file = "${path.root}/ansible/windows-setup.yml"
       user = "windows"
       use_proxy = false
       keep_inventory_file = true

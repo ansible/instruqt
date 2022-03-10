@@ -1,2 +1,4 @@
 ansible-core
 ansible-navigator
+ansible-lint
+yamllint

@@ -1,5 +1,5 @@
 ---
-- name: download aap.tar.gz to install controller
+- name: install necessary collections
   hosts: localhost
   gather_facts: false
 

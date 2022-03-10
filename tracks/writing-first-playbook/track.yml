@@ -71,7 +71,7 @@ challenges:
   assignment: |-
     On your control host, we are using a simple directory structure in our home directory for the inventory and future playbooks, the directory `ansible-files`
 
-    Open the editor tab, log in with the password `ansible123!`, open the directory `ansible-files` and in that directory create the file `hosts` with the content:
+    Open the editor tab, open the directory `ansible-files` and in that directory create the file `hosts` with the content:
 
     ```
     [web]
@@ -253,7 +253,6 @@ challenges:
         service:
           name: httpd
           enabled: true
-          state: started
     ```
 
     Make sure that the task is indented the same way as the previous task!
@@ -338,7 +337,7 @@ challenges:
       So what about changing the apache.yml Playbook to run on node2 and node3?
   - type: text
     contents: To do that, the playbook will not target an individual  node in the
-      future, but instead a group of nodes. Ansilbe automatically identifies all hosts
+      future, but instead a group of nodes. Ansible automatically identifies all hosts
       in the group via the inventory.
   - type: text
     contents: As a best practice Ansible in real life applications playbooks are usually
@@ -346,7 +345,7 @@ challenges:
       is enforced at execution time via command line flags or via tools like Ansible
       controller.
   assignment: |
-    In the editor, open the `apache.yml` file. Change the `hosts` line value from `node1` to `web`. That way during the next run of the playbook, instead of one host, Ansible targets an entire group.
+    In the editor, open the `apache.yml` file and Change the `hosts` line value from `node1` to `web`. That way during the next run of the playbook, instead of one host, Ansible targets an entire group.
 
     Run the playbook afterwards on the control host with:
 
