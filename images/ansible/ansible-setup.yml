@@ -123,7 +123,7 @@
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/10_image_cleanup.yml"
         apply:
-          tags: 
+          tags:
             - image-cleanup
       tags:
         - image-cleanup
