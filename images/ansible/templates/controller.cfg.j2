@@ -1,0 +1,8 @@
+host: {% for node in _mesh_node_instance_info.resources %}
+{% if node.labels["mesh-type"] == "controller" %}
+{{ node.name }} ansible_host={{ node.networkInterfaces[0].accessConfigs[0].natIP }}
+{% endif %}
+{% endfor %}
+username: admin
+password: {{ admin_password }}
+verify_ssl = false
