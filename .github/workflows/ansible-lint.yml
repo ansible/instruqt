@@ -1,4 +1,4 @@
-name: ansible-lint
+name: lint playbooks
 on:
   # Triggers the workflow on pull request open or reopen on devel and only when an ansible playbook is included
   pull_request:
@@ -48,4 +48,4 @@ jobs:
       
     - name: Lint Ansible Playbook
       # replace "master" with any valid ref
-      run: ansible-lint -p ${{ matrix.ansible-file }}
+      run: yamllint ${{ matrix.ansible-file }}
