@@ -13,6 +13,15 @@ variable "image_name" {
     default = "automation-controller"
 }
 
+variable "ansible_vars_file" {
+    type    = string
+    default = null
+}
+
+local "extra_args" {
+    expression = var.ansible_vars_file != null ? ["-e", "@images/ansible/extra-vars.yml", "-e", "ansible_python_interpreter=/usr/bin/python3", "-e", var.ansible_vars_file] : ["-e", "@images/ansible/extra-vars.yml", "-e", "ansible_python_interpreter=/usr/bin/python3"]
+}
+
 source "googlecompute" "automation-controller" {
     project_id          = var.project_id
     source_image_family = "rhel-8"
@@ -23,14 +32,6 @@ source "googlecompute" "automation-controller" {
     image_name          = var.image_name
 }
 
-variable "ansible_vars_file" {
-    type    = string
-    default = null
-}
-
-local "extra_args" {
-    expression = var.ansible_vars_file != null ? ["-e", "@images/ansible/extra-vars.yml", "-e", "ansible_python_interpreter=/usr/bin/python3", "-e", var.ansible_vars_file] : ["-e", "@images/ansible/extra-vars.yml", "-e", "ansible_python_interpreter=/usr/bin/python3"]
-}
 
 build {
     sources = ["sources.googlecompute.automation-controller"]
