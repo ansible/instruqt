@@ -1,4 +1,4 @@
-name: ansible-lint
+name: lint playbooks
 on:
   # Triggers the workflow on pull request open or reopen on devel and only when an ansible playbook is included
   pull_request:
@@ -6,7 +6,7 @@ on:
     branches:
       - devel
     paths:
-      - 'ansible/*-setup.yml'
+      - 'images/ansible/*-setup.yml'
 
   # You can also run this workflow manually from the `Actions` tab
   workflow_dispatch:
@@ -22,12 +22,14 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: 'devel'
+          # ref: 'devel'
+          ref: ${{github.event.pull_request.head.ref}}
+          repository: ${{github.event.pull_request.head.repo.full_name}}
       - id: set-matrix
         run: echo "::set-output name=matrix::$(ls images/ansible/*-setup.yml | jq -R -s -c 'split("\n")[:-1]')"
   
   # The `lint` job spins up for each file within the array created above
-  ansible-lint:
+  yamllint:
     needs: get-ansible-files
     runs-on: ubuntu-latest
     strategy:
@@ -38,7 +40,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        ref: 'devel'
+        # ref: 'devel'
+        ref: ${{github.event.pull_request.head.ref}}
+        repository: ${{github.event.pull_request.head.repo.full_name}}
   
     - name: Install python requirements
       run: pip install -r requirements.txt
@@ -48,4 +52,4 @@ jobs:
       
     - name: Lint Ansible Playbook
       # replace "master" with any valid ref
-      run: ansible-lint -p ${{ matrix.ansible-file }}
+      run: yamllint -d relaxed ${{ matrix.ansible-file }}
