@@ -1,0 +1,81 @@
+---
+- name: configures mesh node
+  hosts: all
+  become: true
+  vars:
+    receptor_packages:
+      - receptor
+      - receptorctl
+      - podman
+      - crun
+      - ansible-runner
+      - libcgroup-tools
+      - subscription-manager-rhsm-certificates
+      - rsync
+      - git
+      - "@python38"
+    aap_dir: "/home/{{ ansible_user }}/aap_install"
+    admin_password: 'ansible123!'
+    username: "{{ ansible_user }}"
+    ee_registry_name: "registry.redhat.io"
+    ee_images:
+      - "{{ ee_registry_name }}/ansible-automation-platform-21/ee-29-rhel8:latest"
+      - "{{ ee_registry_name }}/ansible-automation-platform-21/ee-supported-rhel8:latest"
+      - "{{ ee_registry_name }}/ansible-automation-platform-21/ee-minimal-rhel8:latest"
+
+  pre_tasks:
+    - name: check variables are defined and not empty before building image
+      ansible.builtin.fail:
+        msg: "{{ item }} is undefined or empty. Please check your extra vars file"
+      when: not lookup('vars', item) or lookup('vars', item) is undefined
+      loop:
+        - offline_token
+        - redhat_username
+        - redhat_password
+      delegate_to: localhost
+
+  tasks:
+    - name: download aap
+      ansible.builtin.include_role:
+        name: ansible.workshops.aap_download
+        apply:
+          delegate_to: localhost
+
+    - name: Setup AAP install files
+      ansible.builtin.include_role:
+        name: ansible.workshops.control_node
+        tasks_from: 10_aap_setup.yml
+
+    - name: Create controller repo
+      ansible.builtin.include_role:
+        name: ansible.workshops.aap_repo
+
+    - name: Install receptor packages
+      ansible.builtin.dnf:
+        name: "{{ receptor_packages }}"
+        state: present
+
+    - name: Update appstream to python38
+      command: >
+        /usr/sbin/alternatives --set python3 /usr/bin/python3.8
+
+    - name: Include common user tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/5_configure_users.yml"
+
+    - name: Login to redhat registry
+      containers.podman.podman_login:
+        username: '{{ redhat_username }}'
+        password: '{{ redhat_password }}'
+        registry: "{{ ee_registry_name }}"
+      become_user: awx
+
+    - name: Pull supported images
+      containers.podman.podman_image:
+        name: "{{ item }}"
+      loop: "{{ ee_images }}"
+      become_user: awx
+
+    - name: Include common image cleanup tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/10_image_cleanup.yml"

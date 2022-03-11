@@ -8,3 +8,4 @@ images/ansible/redhat_login.yml
 images/ansible/roles/instruqt_setup/tasks/main.yml
 *.pem
 *.swp
+extra_vars.yml
