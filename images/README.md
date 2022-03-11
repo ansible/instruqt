@@ -77,7 +77,16 @@ which is an offline token to download AAP from access.redhat.com.  This uses the
 ](https://access.redhat.com/management/api)
 
 
-2. `manifest.zip`
+Create this file and it should be like this->
+
+```
+---
+redhat_username: colin@redhat.com
+redhat_password: "iLuvSean!"
+
+```
+
+3. `manifest.zip`
 
 This is a license file to apply to AAP.  Please refer to this video by Colin McNaughton [https://www.youtube.com/watch?v=FYtilnsk7sM](https://www.youtube.com/watch?v=FYtilnsk7sM) to figure out how to get your manifest.zip
 
@@ -109,7 +118,8 @@ Place the `manifest.zip` in the `images\ansible` folder.
 
 **Required extra variables**
 
-Please ensure the following Ansible variables are declared your `extra_vars.yml` file:
+Please ensure the following Ansible variables are declared in your `extra_vars.yml` file:
+
 - redhat_username
 - redhat_password
 - registry_username
