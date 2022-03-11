@@ -103,8 +103,6 @@ The steps below create the following GCP images:
 | mesh-node | Worker node base image | None
 
 
-**`manifest.zip`**
-
 This is a license file to apply to AAP.  Please refer to this video by Colin McNaughton [https://www.youtube.com/watch?v=FYtilnsk7sM](https://www.youtube.com/watch?v=FYtilnsk7sM) to figure out how to get your manifest.zip
 
 Place the `manifest.zip` in the `images\ansible` folder.

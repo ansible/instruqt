@@ -47,7 +47,6 @@ jobs:
       with:
         ref: ${{github.event.pull_request.head.ref}}
         repository: ${{github.event.pull_request.head.repo.full_name}}
-
     - name: Install python requirements
       run: pip install -r requirements.txt 
       
