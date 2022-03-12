@@ -34,7 +34,7 @@ source "googlecompute" "ansible" {
 build {
     sources = ["sources.googlecompute.ansible"]
     provisioner "ansible" {
-        playbook_file = "${path.root}./ansible/ansible-setup.yml"
+        playbook_file = "${path.root}/../ansible/ansible-setup.yml"
         user = "rhel"
       extra_arguments = local.extra_args
     }
