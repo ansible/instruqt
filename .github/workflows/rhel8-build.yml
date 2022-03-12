@@ -8,7 +8,7 @@ on:
     branches:
       - main
     paths:
-      - 'images/rhel8.pkr.hcl'
+      - 'images/packer/rhel8.pkr.hcl'
 
   # Schedule workflow run at 00:00 on Sunday
   schedule:
@@ -20,9 +20,9 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   call-deploy-workflow:
-    uses:  ansible/instruqt/.github/workflows/build-images.yml@devel
+    uses:  ansible/instruqt/.github/workflows/build-images.yml@main
     with:
-      PACKER_FILE: 'images/rhel8.pkr.hcl'
+      PACKER_FILE: 'images/packer/rhel8.pkr.hcl'
     secrets:
       GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
       REDHAT_OFFLINE_TOKEN: ${{ secrets.REDHAT_OFFLINE_TOKEN }}
