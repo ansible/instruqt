@@ -67,24 +67,7 @@ jobs:
         registry: registry.redhat.io
         username: ${{ secrets.REDHAT_USERNAME }}
         password: ${{ secrets.REDHAT_PASSWORD }}
-
-    # # validate templates
-    # - name: Validate Template
-    #   uses: hashicorp/packer-github-actions@master
-    #   with:
-    #     command: validate
-    #     arguments: -syntax-only
-    #     target: images/automation-controller.pkr.hcl
-
-    # # build artifact
-    # - name: Build Artifact
-    #   uses: hashicorp/packer-github-actions@master
-    #   with:
-    #     command: build
-    #     arguments: "-color=false -on-error=abort --force"
-    #     target: images/automation-controller.pkr.hcl
-    #   env:
-    #     PACKER_LOG: 1
+ 
     - name: install packer
       run: sudo apt-get update; sudo apt-get install packer
       
