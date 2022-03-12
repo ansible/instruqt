@@ -8,7 +8,7 @@ on:
     branches:
       - main
     paths:
-      - 'images/automation-controller.pkr.hcl'
+      - 'images/packer/automation-controller.pkr.hcl'
       - 'images/ansible/controller-setup.yml'
 
   # Schedule workflow run at 00:00 on Sunday
@@ -21,9 +21,9 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   call-deploy-workflow:
-    uses:  ansible/instruqt/.github/workflows/build-images.yml@devel
+    uses:  ansible/instruqt/.github/workflows/build-images.yml@main
     with:
-      PACKER_FILE: 'images/automation-controller.pkr.hcl'
+      PACKER_FILE: 'images/packer/automation-controller.pkr.hcl'
     secrets:
       GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
       REDHAT_OFFLINE_TOKEN: ${{ secrets.REDHAT_OFFLINE_TOKEN }}
