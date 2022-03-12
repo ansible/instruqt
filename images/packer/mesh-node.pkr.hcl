@@ -37,7 +37,7 @@ build {
 
     provisioner "ansible" {
       command = "ansible-playbook"
-      playbook_file = "${path.root}/ansible/mesh-node-setup.yml"
+      playbook_file = "${path.root}/../ansible/mesh-node-setup.yml"
       user = "rhel"
       extra_arguments = local.extra_args
     }

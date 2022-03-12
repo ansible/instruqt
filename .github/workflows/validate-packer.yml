@@ -12,7 +12,7 @@ on:
     branches:
       - devel
     paths:
-      - 'images/*.pkr.hcl'
+      - 'images/packer/*.pkr.hcl'
 
   # You can also run this workflow manually from the `Actions` tab
   workflow_dispatch:
