@@ -13,9 +13,13 @@ variable "image_name" {
     default = "automation-controller"
 }
 
-variable "ansible_extra_args" {
+variable "ansible_vars_file" {
     type    = string
-    default = ""
+    default = null
+}
+
+local "extra_args" {
+    expression = var.ansible_vars_file != null ? ["-e", "@images/ansible/extra-vars.yml", "-e", "ansible_python_interpreter=/usr/bin/python3", "-e", var.ansible_vars_file] : ["-e", "@images/ansible/extra-vars.yml", "-e", "ansible_python_interpreter=/usr/bin/python3"]
 }
 
 source "googlecompute" "automation-controller" {
@@ -34,18 +38,18 @@ build {
 
     provisioner "ansible" {
       command = "ansible-playbook"
-      playbook_file = "${path.root}/ansible/workshop-collection-install.yml"
+      playbook_file = "${path.root}/../ansible/workshop-collection-install.yml"
       user = "rhel"
       inventory_file_template = "controller ansible_host={{ .Host }} ansible_user={{ .User }} ansible_port={{ .Port }}\n"
-      extra_arguments = ["-e", "@images/ansible/extra-vars.yml", "-e", "ansible_python_interpreter=/usr/bin/python3", var.ansible_extra_args]
+      extra_arguments = local.extra_args
     }
 
     provisioner "ansible" {
       command = "ansible-playbook"
-      playbook_file = "${path.root}/ansible/controller-setup.yml"
+      playbook_file = "${path.root}/../ansible/controller-setup.yml"
       user = "rhel"
       inventory_file_template = "controller ansible_host={{ .Host }} ansible_user={{ .User }} ansible_port={{ .Port }}\n"
-      extra_arguments = ["-e", "@images/ansible/extra-vars.yml", "-e", "ansible_python_interpreter=/usr/bin/python3", var.ansible_extra_args]
+      extra_arguments = local.extra_args
 
     }
 }

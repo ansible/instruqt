@@ -1,5 +1,5 @@
 # Workflow name
-name: controller build
+name: mesh node build
 
 # Controls when the workflow will run
 on:
@@ -8,8 +8,7 @@ on:
     branches:
       - main
     paths:
-      - 'images/packer/automation-controller.pkr.hcl'
-      - 'images/ansible/controller-setup.yml'
+      - 'images/packer/mesh-node.pkr.hcl'
 
   # Schedule workflow run at 00:00 on Sunday
   schedule:
@@ -23,7 +22,7 @@ jobs:
   call-deploy-workflow:
     uses:  ansible/instruqt/.github/workflows/build-images.yml@main
     with:
-      PACKER_FILE: 'images/packer/automation-controller.pkr.hcl'
+      PACKER_FILE: 'images/packer/mesh-node.pkr.hcl'
     secrets:
       GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
       REDHAT_OFFLINE_TOKEN: ${{ secrets.REDHAT_OFFLINE_TOKEN }}
