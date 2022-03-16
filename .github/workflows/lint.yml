@@ -51,4 +51,6 @@ jobs:
     - name: Lint Ansible Playbook
       # replace "master" with any valid ref
       # run: yamllint -d relaxed ${{ matrix.ansible-file }}
-      run: ansible-lint -p ${{ matrix.ansible-file }}
+      env:
+        GITHUB_ACTIONS=true
+      run: ansible-lint ${{ matrix.ansible-file }}
