@@ -6,7 +6,7 @@ on:
     branches:
       - devel
     paths:
-      - 'images/ansible/*-setup.yml'
+      - 'images/ansible/*.yml'
 
   # You can also run this workflow manually from the `Actions` tab
   workflow_dispatch:
@@ -50,4 +50,5 @@ jobs:
       
     - name: Lint Ansible Playbook
       # replace "master" with any valid ref
-      run: yamllint -d relaxed ${{ matrix.ansible-file }}
+      # run: yamllint -d relaxed ${{ matrix.ansible-file }}
+      run: ansible-lint -p ${{ matrix.ansible-file }}
