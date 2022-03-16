@@ -52,5 +52,5 @@ jobs:
       # replace "master" with any valid ref
       # run: yamllint -d relaxed ${{ matrix.ansible-file }}
       env:
-        GITHUB_ACTIONS=true
+        GITHUB_ACTIONS: true
       run: ansible-lint ${{ matrix.ansible-file }}
