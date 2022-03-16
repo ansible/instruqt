@@ -5,7 +5,7 @@
   become: true
 
   tasks:
-
+  
     - name: add azure credential to automation controller
       awx.awx.credential:
         name: azure_credential
@@ -34,6 +34,7 @@
         state: present
         scm_type: git
         scm_url: https://github.com/ansible-cloud/azure-demos
+        default_environment: "Microsoft Azure Execution Environment"
         controller_config_file: "{{ playbook_dir }}/../controller.cfg"
 
     - name: delete native job template
@@ -49,16 +50,30 @@
         organization: "Default"
         inventory: "Demo Inventory"
         project: "Azure Demos Project"
+        extra_vars:
+          resource_group_name: "azure-demo"
+          region: "eastus"
+          vnet_cidr: "10.0.0.0/16"
+          subnet_cidr: "10.0.1.0/24"
+          vnet_name: "demo_vnet"
+          subnet_name: "demo_subnet"
+          network_sec_group_name: "demo_sec_group"
+          win_vm_name: "WIN-ansible"
+          win_vm_size: "Standard_DS1_v2"
+          win_vm_sku: "2022-Datacenter"
+          win_public_ip_name: "win_demo_ip"
+          win_nic_name: "win_demo_nic"
+          win_admin_user: "azureuser"
+          win_admin_password: "ansible123!"
         playbook: "project/{{ item.playbook }}"
         credentials:
           - "azure_credential"
         state: "present"
         controller_config_file: "{{ playbook_dir }}/../controller.cfg"
       with_items:
-        - { playbook: 'create_resource_group.yml', name: 'Create Resource Group' }
-        - { playbook: 'create_rhel_vm_demo.yml', name: 'Create RHEL VM Demo' }
-        - { playbook: 'create_windows_vm_demo.yml', name: 'Create Windows VM Demo' }
-        - { playbook: 'destroy_resource_group.yml', name: 'Destroy Resource Group' }
+        - { playbook: 'create_resource_group.yml', name: 'Create Azure Resource Group' }
+        - { playbook: 'create_windows_vm_demo.yml', name: 'Create Windows Server 2022 VM' }
+        - { playbook: 'destroy_resource_group.yml', name: 'Destroy Azure Resource Group' }
 
     - name: create job template
       awx.awx.job_template:
@@ -67,6 +82,21 @@
         organization: "Default"
         inventory: "Demo Inventory"
         project: "Azure Demos Project"
+        extra_vars:
+          resource_group_name: "azure-demo"
+          region: "eastus"
+          vnet_cidr: "10.0.0.0/16"
+          subnet_cidr: "10.0.1.0/24"
+          vnet_name: "demo_vnet"
+          subnet_name: "demo_subnet"
+          network_sec_group_name: "demo_sec_group"
+          win_vm_name: "WIN-ansible"
+          win_vm_size: "Standard_DS1_v2"
+          win_vm_sku: "2022-Datacenter"
+          win_public_ip_name: "win_demo_ip"
+          win_nic_name: "win_demo_nic"
+          win_admin_user: "azureuser"
+          win_admin_password: "ansible123!"
         playbook: "workflow/{{ item.playbook }}"
         credentials:
           - "azure_credential"
@@ -80,3 +110,4 @@
         - { playbook: '05-create_network_security_group.yml', name: 'Workflow - 05 - Create Network Security Group' }
         - { playbook: '06-create_virtual_network_interface_card.yml', name: 'Workflow - 06 - Create Virtual Network Interface Card' }
         - { playbook: '07-create_windows_2022_vm.yml', name: 'Workflow - 07 - Create Windows 2022 Virtual Machine' }
+        
