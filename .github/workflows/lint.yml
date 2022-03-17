@@ -1,4 +1,4 @@
-name: lint playbooks
+name: lint
 on:
   # Triggers the workflow on pull request open or reopen on devel and only when an ansible playbook is included
   pull_request:
@@ -28,7 +28,7 @@ jobs:
         run: echo "::set-output name=matrix::$(ls images/ansible/*-setup.yml | jq -R -s -c 'split("\n")[:-1]')"
   
   # The `lint` job spins up for each file within the array created above
-  yamllint:
+  ansible-lint:
     needs: get-ansible-files
     runs-on: ubuntu-latest
     strategy:
