@@ -9,7 +9,7 @@
 
     - name: download aap
       vars:
-        offline_token: "{{ lookup('file', 'offline_token.txt')}}"
+        offline_token: "{{ lookup('file', 'offline_token.txt') }}"
       include_role:
         name: ansible.workshops.aap_download
 
@@ -26,7 +26,7 @@
     - name: install automation controller
       vars:
         controllerinstall: "true"
-      include_role:
+      ansible.builtin.include_role:
         name: ansible.workshops.control_node
 
     - name: Include common user tasks
@@ -34,7 +34,7 @@
         file: "{{ playbook_dir }}/common/5_configure_users.yml"
 
     - name: install workshop dependencies
-      command: "ansible-galaxy collection install --force-with-deps ansible.workshops  -p /usr/share/ansible/collections"
+      ansible.builtin.command: "ansible-galaxy collection install --force-with-deps ansible.workshops  -p /usr/share/ansible/collections"
 
     - name: Install controller lab packages for controller lab
       ansible.builtin.dnf:
@@ -44,7 +44,7 @@
         - /var/lib/ansible-automation-platform-bundle/automation-controller-cli-4.1.1-2.el8ap.x86_64.rpm
 
     - name: install code server
-      include_role:
+      ansible.builtin.include_role:
         name: ansible.workshops.code_server
 
     - name: Include common image cleanup tasks
@@ -52,7 +52,7 @@
         file: "{{ playbook_dir }}/common/10_image_cleanup.yml"
 
     - name: copy setup-scripts to tower node
-      copy:
+      ansible.builtin.copy:
         src: ./setup-scripts
         dest: /tmp
 
