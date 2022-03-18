@@ -60,8 +60,8 @@ redhat_username: 'Your Red hat username'
 redhat_password: 'Your Red Hat password'
 
 # registry.redhat.io credentials
-registry_username: cbrandt1
-registry_password: 'Eth@n2117'
+registry_username: 'Your registry username'
+registry_password: 'Your registry password'
 
 # access.redhat.com offline token. You can retrieve your token from https://access.redhat.com/management/api
 offline_token: 'dswrfw8743rliuhfwiu444hweffw.....'
