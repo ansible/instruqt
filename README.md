@@ -2,8 +2,8 @@
 
 ## How to access the labs
 
-* [Community Labs (How to contribute, what's ansible-test, etc)](https://www.redhat.com/en/engage/redhat-ansible-automation-202108061218)
-* [Product & user labs (How to use Automation Controller, Ansible Builder, etc](https://www.ansible.com/products/ansible-training)
+* [Community Labs (How to contribute, what's ansible-test, etc)](https://www.ansible.com/products/ansible-community-training)
+* [Product & user labs (How to use Automation Controller, Ansible Builder, etc](https://www.redhat.com/en/engage/redhat-ansible-automation-202108061218)
 
 ## Feedback
 
