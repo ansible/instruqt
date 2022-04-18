@@ -1,0 +1,117 @@
+---
+- name: setup controller for network use cases
+  hosts: localhost
+  gather_facts: false
+  become: true
+  vars:
+
+    username: admin
+    admin_password: ansible123!
+
+  tasks:
+
+    - name: ensure tower/controller is online and working
+      uri:
+        url: https://localhost/api/v2/ping/
+        method: GET
+        user: "{{ username }}"
+        password: "{{ admin_password }}"
+        validate_certs: false
+        force_basic_auth: true
+      register: controller_online
+      until: controller_online is success
+      delay: 3
+      retries: 5
+
+    - name: create inventory
+      awx.awx.inventory:
+        name: "Network Inventory"
+        organization: "Default"
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+      register: workshop_inventory
+      until: workshop_inventory is success
+      delay: 3
+      retries: 5
+
+    - name: Add cisco host
+      awx.awx.host:
+        name: cisco
+        description: "ios-xe csr running on GCP"
+        inventory: "Network Inventory"
+        state: present
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        variables:
+            ansible_network_os: ios
+            ansible_user: ansible
+            ansible_connection: network_cli
+            ansible_become: true
+            ansible_become_method: enable
+
+    - name: Add backup server host
+      awx.awx.host:
+        name: "backup-server"
+        description: "this server is where we backup network configuration"
+        inventory: "Network Inventory"
+        state: present
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        variables:
+            note: in production these passwords would be encrypted in vault
+            ansible_user: rhel
+            ansible_password: ansible123!
+            ansible_host: controller
+            ansible_become_password: ansible123!
+
+    - name: Add group
+      awx.awx.group:
+        name: "network"
+        description: "Network Group"
+        inventory: "Network Inventory"
+        state: present
+        hosts:
+          - cisco
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+
+    - name: Add network machine credential
+      awx.awx.credential:
+        name: "Network Credential"
+        organization: "Default"
+        credential_type: Machine
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        inputs:
+          ssh_key_data: "{{ lookup('file', '/root/.ssh/private_key') }}"
+
+    - name: Add controller credential
+      awx.awx.credential:
+        name: "AAP controller credential"
+        organization: "Default"
+        kind: controller
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        inputs:
+          host: "controller"
+          password: "ansible123!"
+          username: "admin"
+          verify_ssl: false
+
+    - name: Add project
+      awx.awx.project:
+        name: "Network Toolkit"
+        scm_url: "https://github.com/ipvsean/toolkit"
+        scm_type: git
+        organization: "Default"
+        scm_update_on_launch: True
+        scm_update_cache_timeout: 60
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+
+    - name: Add backup server host
+      awx.awx.host:
+        name: "ansible-1"
+        description: "this is the report server"
+        inventory: "Network Inventory"
+        state: present
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        variables:
+            note: in production these passwords would be encrypted in vault
+            ansible_user: rhel
+            ansible_password: ansible123!
+            ansible_host: controller
+            ansible_become_password: ansible123!
