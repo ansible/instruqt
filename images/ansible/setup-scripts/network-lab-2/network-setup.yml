@@ -98,7 +98,7 @@
         scm_url: "https://github.com/ipvsean/toolkit"
         scm_type: git
         organization: "Default"
-        scm_update_on_launch: True
+        scm_update_on_launch: False
         scm_update_cache_timeout: 60
         controller_config_file: "{{ playbook_dir }}/../controller.cfg"
 
