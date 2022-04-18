@@ -1,8 +1,8 @@
 name: prod track test
 on:
   # Run CI against all pushes (direct commits, also merged PRs), Pull Requests
-  push:
-  pull_request:
+#   push:
+#   pull_request:
   # Run CI once per day (at 06:00 UTC)
   # This ensures that even if there haven't been commits that we are still
   # testing. This is particularly important to validate the scenarios against
@@ -14,7 +14,7 @@ on:
 jobs:
   instruqt-track-test:
     runs-on: ubuntu-latest
-    environment: deploy
+    environment: test
     steps:
       - uses: actions/checkout@v2
 
