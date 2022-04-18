@@ -20,6 +20,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   call-deploy-workflow:
+    if: github.repository == 'ansible/instruqt' && github.ref == 'refs/heads/main' 
     uses:  ansible/instruqt/.github/workflows/build-images.yml@main
     with:
       PACKER_FILE: 'images/packer/rhel8.pkr.hcl'
