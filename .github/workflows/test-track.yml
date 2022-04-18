@@ -16,8 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: test
     steps:
-      - uses: actions/checkout@v2
-
       - name: get production tracks
         run: |
           curl 'https://play.instruqt.com/graphql' \
@@ -25,7 +23,7 @@ jobs:
           -H 'Content-Type: application/json' \
           -H 'Accept: application/json' \
           -H 'Connection: keep-alive' \
-          -H 'Authorization: Bearer ${{ INSTRUQT_API_KEY }}' \
+          -H 'Authorization: Bearer $INSTRUQT_API_KEY' \
           --data-binary '{"query":"query tracks {\n  tracks(organizationSlug: \"redhat\") {\n    slug\n    maintenance\n  }\n}\n","variables":{}}' --compressed | jq '.data.tracks[] | select(.maintenance==false) | .slug'
         env:
-          INSTRUQT_TOKEN: ${{ secrets.INSTRUQT_API_KEY }}
+          INSTRUQT_API_KEY: ${{ secrets.INSTRUQT_API_KEY }}
