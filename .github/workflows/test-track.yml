@@ -25,7 +25,7 @@ jobs:
           -H 'Content-Type: application/json' \
           -H 'Accept: application/json' \
           -H 'Connection: keep-alive' \
-          -H 'Authorization: Bearer ${{ INSTRUQT_TOKEN }}' \
+          -H 'Authorization: Bearer ${{ INSTRUQT_API_KEY }}' \
           --data-binary '{"query":"query tracks {\n  tracks(organizationSlug: \"redhat\") {\n    slug\n    maintenance\n  }\n}\n","variables":{}}' --compressed | jq '.data.tracks[] | select(.maintenance==false) | .slug'
         env:
           INSTRUQT_TOKEN: ${{ secrets.INSTRUQT_API_KEY }}
