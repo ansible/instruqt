@@ -25,9 +25,9 @@
     ansible.builtin.set_fact:
       prod_tracks: "{{ tracks.json | community.general.json_query('data.tracks[?maintenance==`false`].slug') }}"
 
-  - name: Run instruqt track test on list of production tracks
-    shell: "INSTRUQT_TOKEN={{ INSTRUQT_API_KEY }} instruqt track test {{ INSTRUQT_ORG }}/{{ item }}"
-    loop: "{{ prod_tracks }}"
+#   - name: Run instruqt track test on list of production tracks
+#     shell: "INSTRUQT_TOKEN={{ INSTRUQT_API_KEY }} instruqt track test {{ INSTRUQT_ORG }}/{{ item }}"
+#     loop: "{{ prod_tracks }}"
 
   - debug:
       var: "{{ prod_tracks }}"
