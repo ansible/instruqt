@@ -12,18 +12,34 @@ on:
   workflow_dispatch:
 
 jobs:
-  instruqt-track-test:
+  get-instruqt-prod-tracks:
     runs-on: ubuntu-latest
     environment: test
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+
     steps:
       - name: get production tracks
+        id: set-matrix
         run: |
-          curl https://play.instruqt.com/graphql \
+          echo "::set-output name=matrix::$(curl https://play.instruqt.com/graphql \
           -H "Content-Type: application/json" \
           -H "Accept: application/json" \
           -H "Authorization: Bearer $INSTRUQT_API_KEY" \
           -d '{"query":"query tracks {\n  tracks(organizationSlug: \"redhat\") {\n    slug\n    maintenance\n  }\n}\n","variables":{}}' \
-          | jq '.data.tracks[] | select(.maintenance==false) | .slug'
+          | jq '.data.tracks[] | select(.maintenance==false) | .slug')
         env:
           INSTRUQT_API_KEY: ${{ secrets.INSTRUQT_API_KEY }}
           INSTRUQT_ORG: ${{ secrets.INSTRUQT_ORG }}
+  
+  run-track-test:
+    runs-on: ubuntu-latest
+    environment: test
+    strategy:
+      fail-fast: false
+      matrix:
+        track-slug: ${{ fromJson(needs.get-instruqt-prod-tracks.outputs.matrix) }}
+        
+    steps:
+      test-matrix:
+      run: echo ${{ matrix.track-slug }}
