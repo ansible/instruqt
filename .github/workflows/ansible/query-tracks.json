@@ -1,0 +1,1 @@
+{"query":"query tracks {\n  tracks(organizationSlug: \"{{ INSTRUQT_ORG }}\") {\n    slug\n    maintenance\n  }\n}\n","variables":{}}
