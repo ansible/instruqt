@@ -20,6 +20,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - run: pip install jmespath
       
       - name: get production tracks
         id: set-matrix
