@@ -41,5 +41,5 @@ jobs:
         track-slug: ${{ fromJson(needs.get-instruqt-prod-tracks.outputs.matrix) }}
         
     steps:
-      test-matrix:
+    - name: dump slugs
       run: echo ${{ matrix.track-slug }}
