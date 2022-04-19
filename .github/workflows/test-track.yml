@@ -22,12 +22,12 @@ jobs:
       - name: get production tracks
         id: set-matrix
         run: |
-          echo "::set-output name=matrix::\
-          $(curl -s https://play.instruqt.com/graphql \
+          echo "::set-output name=matrix::`\
+          curl -s https://play.instruqt.com/graphql \
           -H "Content-Type: application/json" \
           -H "Accept: application/json" \
           -H "Authorization: Bearer $INSTRUQT_API_KEY" \
-          -d '{"query":"query tracks {\n  tracks(organizationSlug: \"redhat\") {\n    slug\n    maintenance\n  }\n}\n"' | jq '.data.tracks[] | select(.maintenance==false) | .slug')"
+          -d '{"query":"query tracks {\n  tracks(organizationSlug: \"redhat\") {\n    slug\n    maintenance\n  }\n}\n"' | jq '.data.tracks[] | select(.maintenance==false) | .slug')`
         env:
           INSTRUQT_API_KEY: ${{ secrets.INSTRUQT_API_KEY }}
           INSTRUQT_ORG: ${{ secrets.INSTRUQT_ORG }}
