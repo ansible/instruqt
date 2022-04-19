@@ -27,7 +27,7 @@ jobs:
           -H "Content-Type: application/json" \
           -H "Accept: application/json" \
           -H "Authorization: Bearer $INSTRUQT_API_KEY" \
-          -d '{"query":"query tracks {\n  tracks(organizationSlug: \"redhat\") {\n    slug\n    maintenance\n  }\n}\n","variables":{}}' | jq -s '.data.tracks[] | select(.maintenance==false) | .slug'\
+          -d '{"query":"query tracks {\n  tracks(organizationSlug: \"redhat\") {\n    slug\n    maintenance\n  }\n}\n","variables":{}}' | jq -R '.data.tracks[] | select(.maintenance==false) | .slug'\
           )"
         env:
           INSTRUQT_API_KEY: ${{ secrets.INSTRUQT_API_KEY }}
