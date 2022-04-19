@@ -43,7 +43,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        track-slug: ${{ get-instruqt-prod-tracks.outputs.matrix }}
+        track-slug: ${{ jobs.get-instruqt-prod-tracks.outputs.matrix }}
         
     steps:
     - name: dump slugs
