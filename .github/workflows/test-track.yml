@@ -32,6 +32,9 @@ jobs:
         env:
           INSTRUQT_API_KEY: ${{ secrets.INSTRUQT_API_KEY }}
           INSTRUQT_ORG: ${{ secrets.INSTRUQT_ORG }}
+          
+      - name: show output
+        run: echo ${{ outputs.matrix }}
   
   run-track-test:
     runs-on: ubuntu-latest
