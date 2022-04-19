@@ -23,7 +23,7 @@ jobs:
         id: set-matrix
         run: |
           echo "::set-output name=matrix::\
-          $(curl https://play.instruqt.com/graphql \
+          $(curl -s https://play.instruqt.com/graphql \
           -H "Content-Type: application/json" \
           -H "Accept: application/json" \
           -H "Authorization: Bearer $INSTRUQT_API_KEY" \
