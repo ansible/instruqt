@@ -34,7 +34,7 @@ jobs:
           INSTRUQT_ORG: ${{ secrets.INSTRUQT_ORG }}
           
       - name: show output
-        run: echo ${{ outputs.matrix }}
+        run: echo ${{ steps.set-matrix.outputs.matrix }}
   
   run-track-test:
     runs-on: ubuntu-latest
