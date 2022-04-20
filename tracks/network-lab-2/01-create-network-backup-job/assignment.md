@@ -2,15 +2,15 @@
 slug: create-network-backup-job
 id: bnipuvvmmz6o
 type: challenge
-title: Create a backup automation job template
-teaser: Lab 1, challenge 1, learn how to create a backup job template in automation
+title: Create a network report automation job template
+teaser: Lab 1, challenge 1, learn how to create a network report job template in automation
   controller
 notes:
 - type: text
   contents: |
-    # Lab 1 - Config Backup and Restore
+    # Lab 2 - Infrastructure Awareness
 
-    This lab will walk you through using Automation controller to automate backup and restore the configuration of a Cisco CSR (cloud services router) running IOS-XE.
+    This lab will walk you through using Automation controller to create some **Dynamic Documentation** to retrieve and display information about a Cisco CSR (cloud services router) running IOS-XE.
 
     Please click the Green Start button <img src="https://github.com/IPvSean/pictures_for_github/blob/master/start_button.png?raw=true" width="100px" align="left"> on the bottom right corner if it did not already start provisioning.
 - type: text
@@ -24,7 +24,11 @@ notes:
   contents: |-
     # Quick Automation Victories
 
-    We know that network backup and restores are fairly uninteresting in the grand scheme of things, but they are a very common and ubiquitous use-case that all network operators will need. This provides an easy turn key use-case for network engineers to start their automation journey.
+    Infrastructure Awareness is a great introductory use case for network operators because it is:
+
+    - Read-only, no changing of production configs
+    - Normalizes configs into structured data
+    - Provides valuable information via Dynamic Documentation
 - type: text
   contents: |-
     # Automation controller
@@ -44,9 +48,9 @@ notes:
     - A **Project** which contains Ansible Playbooks
 - type: text
   contents: |-
-    # Challenge 1 - Creating a backup Job Template
+    # Challenge 1 - Creating a Network Report Job Template
 
-    For this challenge exercise you are going to create a Job Template in Automation controller.  We are going to use the Network Toolkit Collection (https://github.com/network-automation/toolkit) that contains multi-vendor playbooks for Backup, restore and more.
+    For this challenge exercise you are going to create a Job Template in Automation controller.  We are going to use the Network Toolkit Collection (https://github.com/network-automation/toolkit) that contains multi-vendor playbooks for creating a network report, backups, and more.
 
     The **credentials** (username and password), **inventory** (a single Cisco router) and **project** (the network toolkit repository listed above) are already added.  We simply need to tie them together into a simple re-usable Job Template for our organization to use.
 - type: text
@@ -91,7 +95,7 @@ password: `ansible123!`
   </tr>
   <tr>
     <td>Name</td>
-    <td><code>Network Automation - Backup</code></td>
+    <td><code>Network Automation - Report</code></td>
   </tr>
   <tr>
     <td>Job Type</td>
@@ -111,15 +115,13 @@ password: `ansible123!`
   </tr>
   <tr>
     <td>Playbook</td>
-    <td><code>playbooks/network_backup.yml</code></td>
+    <td><code>playbooks/network_report.yml</code></td>
   </tr>
   <tr>
-    <td>Credentials<br><b>NOTE:</b> there are two credentials</td>
-    <td><ul><li><code>Network Credential</code><li><code>AAP controller credential</code></li></ul></td>
+    <td>Credentials<br></td>
+    <td><code>Network Credential</code></td>
   </tr>
 </table>
-
-To find the `AAP controller credential` change the **Selected Category** to `Red Hat Ansible Automation Platform`
 
 - Click the blue **Save** button to save your job template.
 

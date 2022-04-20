@@ -10,7 +10,7 @@ variable "zone" {
 
 variable "image_name" {
     type    = string
-    default = "automation-controller-sean"
+    default = "automation-controller"
 }
 
 variable "ansible_vars_file" {

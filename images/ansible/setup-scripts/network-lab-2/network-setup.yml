@@ -46,6 +46,7 @@
             ansible_connection: network_cli
             ansible_become: true
             ansible_become_method: enable
+            ansible_host: "cisco"
 
     - name: Add backup server host
       awx.awx.host:
@@ -95,14 +96,14 @@
     - name: Add project
       awx.awx.project:
         name: "Network Toolkit"
-        scm_url: "https://github.com/ipvsean/toolkit"
+        scm_url: "https://github.com/network-automation/toolkit"
         scm_type: git
         organization: "Default"
         scm_update_on_launch: False
         scm_update_cache_timeout: 60
         controller_config_file: "{{ playbook_dir }}/../controller.cfg"
 
-    - name: Add backup server host
+    - name: Add ansible-1 server host
       awx.awx.host:
         name: "ansible-1"
         description: "this is the report server"

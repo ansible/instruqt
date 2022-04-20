@@ -16,7 +16,7 @@ description: |+
   When network operators realize a simple playbook, that is just a few lines of YAML, can be run from their laptop across hundreds of routers and switches, they will get hooked on automation and see infinite possibilities.
 
 
-icon: https://github.com/network-automation/networking-icons/blob/master/switches/switch_pool_small.png?raw=true
+icon: https://github.com/network-automation/networking-icons/blob/master/switches/switch_red_small.png?raw=true
 level: beginner
 tags:
 - network automation
@@ -27,4 +27,4 @@ developers:
 private: true
 published: true
 skipping_enabled: true
-checksum: "5990436022549611842"
+checksum: "11910431153744473046"
