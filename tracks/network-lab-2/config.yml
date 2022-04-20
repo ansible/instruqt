@@ -1,0 +1,11 @@
+version: "3"
+virtualmachines:
+- name: cisco
+  image: red-hat-mbu/cisco-ios-csr-1731
+  machine_type: n1-standard-1
+- name: controller
+  image: red-hat-mbu/automation-controller-sean
+  shell: /bin/su - rhel -s /bin/bash
+  machine_type: n1-standard-2
+  allow_external_ingress:
+  - high-ports

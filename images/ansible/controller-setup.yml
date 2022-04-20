@@ -51,7 +51,19 @@
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/10_image_cleanup.yml"
 
-    - name: copy setup-scripts to tower node
+    - name: copy rh-cloud.repo to control node
+      ansible.builtin.copy:
+        src: ./files/rh-cloud.repo
+        dest: /etc/yum.repos.d/rh-cloud.repo
+        owner: root
+        group: root
+        mode: '644'
+
+    - name: install httpd for report labs
+      ansible.builtin.dnf:
+        name: httpd
+
+    - name: copy setup-scripts to control node
       ansible.builtin.copy:
         src: ./setup-scripts
         dest: /tmp

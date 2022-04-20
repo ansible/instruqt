@@ -46,6 +46,7 @@
             ansible_connection: network_cli
             ansible_become: true
             ansible_become_method: enable
+            ansible_host: "cisco"
 
     - name: Add backup server host
       awx.awx.host:
@@ -98,26 +99,20 @@
         scm_url: "https://github.com/network-automation/toolkit"
         scm_type: git
         organization: "Default"
-        scm_update_on_launch: True
+        scm_update_on_launch: False
         scm_update_cache_timeout: 60
         controller_config_file: "{{ playbook_dir }}/../controller.cfg"
 
-    # make students do this
-    # - name: Create network backup job template
-    #   awx.awx.job_template:
-    #     name: "Network Automation - Backup"
-    #     job_type: "run"
-    #     organization: "Default"
-    #     inventory: Network Inventory
-    #     project: "Network Toolkit"
-    #     playbook: "playbooks/network_backup.yml"
-    #     credentials:
-    #       - "Network Credential"
-    #       - "AAP controller credential"
-    #     state: "present"
-    #     extra_vars:
-    #       restore_inventory: "Network Inventory"
-    #       restore_project: "Network Toolkit"
-    #       restores_playbook: "playbooks/network_restore.yml"
-    #       restore_credential: "Network Credential"
-    #     controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+    - name: Add ansible-1 server host
+      awx.awx.host:
+        name: "ansible-1"
+        description: "this is the report server"
+        inventory: "Network Inventory"
+        state: present
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        variables:
+            note: in production these passwords would be encrypted in vault
+            ansible_user: rhel
+            ansible_password: ansible123!
+            ansible_host: controller
+            ansible_become_password: ansible123!

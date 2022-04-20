@@ -1,0 +1,3 @@
+#!/bin/bash
+
+ansible-playbook /tmp/setup-scripts/network-lab-2/solution_challenge_2.yml
