@@ -1,4 +1,4 @@
-version: "2"
+version: "3"
 virtualmachines:
 - name: code-server
   image: red-hat-mbu/ansible
