@@ -35,9 +35,7 @@ developers:
 - colin@redhat.com
 private: true
 published: true
-maintenance: true
 show_timer: true
-skipping_enabled: true
 challenges:
 - slug: ansible-navigator-intro
   id: rhdswz55nmob
@@ -236,6 +234,14 @@ challenges:
   type: challenge
   title: Using execution environments
   teaser: Configure navigator to use an execution environment
+  notes:
+  - type: text
+    contents: |-
+      When it's time to share the playbooks you have written on your local workstation, how do you communicate the dependencies (collections, roles, modules, python packages, system packages, etc.) to your teammates who will run these playbooks?
+
+      This is where execution environments come in! Execution environment images bundle all necessary dependencies into container images that can be easily shared so that automation executes reliably everywhere.
+
+      Ansible Navigator is built to use these execution environments together with playbooks you create.
   assignment: |-
     Up to this point, `ansible-navigator` has been running with just the built in modules and executing without an execution environment.
 
@@ -301,4 +307,4 @@ challenges:
   - 3
   difficulty: basic
   timelimit: 60
-checksum: "16967642467345356097"
+checksum: "6162558309974128442"
