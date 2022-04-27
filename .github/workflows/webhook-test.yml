@@ -1,6 +1,11 @@
 on:
-  # publish blog using webhook
   repository_dispatch:
     types: [review_created]
  
- # steps
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: test
+        run: echo "hello world"
+  
