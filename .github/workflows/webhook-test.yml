@@ -1,0 +1,6 @@
+on:
+  # publish blog using webhook
+  repository_dispatch:
+    types: [review_created]
+ 
+ # steps
