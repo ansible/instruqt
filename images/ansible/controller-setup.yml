@@ -106,3 +106,4 @@
 
   roles:
     - {role: redhat_cop.controller_configuration.credential_types, when: controller_credential_types is defined}
+    - {role: redhat_cop.controller_configuration.credentials, when: controller_credentials is defined}
