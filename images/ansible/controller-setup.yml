@@ -73,7 +73,7 @@
         credential_type: Red Hat Ansible Automation Platform
         inputs:
           host: "{{ tmm_controller }}"
-          token: "{{ tmm_controller_token }}"
+          oauth_token: "{{ tmm_controller_token }}"
     controller_credential_types:
       - name: "servicenow.itsm"
         description: "servicenow.itsm credential"
