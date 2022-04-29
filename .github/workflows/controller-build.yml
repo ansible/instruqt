@@ -31,3 +31,5 @@ jobs:
       REDHAT_PASSWORD: ${{ secrets.REDHAT_PASSWORD }}
       REDHAT_USERNAME: ${{ secrets.REDHAT_USERNAME }}
       GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+      TMM_CONTROLLER: ${{ secrets.TMM_CONTROLLER }}
+      TMM_CONTROLLER_TOKEN: ${{ secrets.TMM_CONTROLLER_TOKEN }}
