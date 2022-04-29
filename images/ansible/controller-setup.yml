@@ -60,6 +60,8 @@
   hosts: all
 
   vars:
+    tmm_controller: "{{ lookup('env', 'TMM_CONTROLLER') }}"
+    tmm_controller_token: "{{ lookup('env', 'TMM_CONTROLLER_TOKEN') }}"
     controller_hostname: https://localhost:443
     controller_username: admin
     controller_password: ansible123!
