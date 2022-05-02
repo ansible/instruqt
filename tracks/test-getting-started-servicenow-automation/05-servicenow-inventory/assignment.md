@@ -46,7 +46,7 @@ This just kicked of a series of jobs to update the inventory we're pulling out o
 - Once the two jobs have finished, click `Hosts` on the left hand navigation and notice all of the hosts pulled from CMDB.
 - Also, explore the hosts and groups in Inventories > ServiceNow inventory > Hosts
 
-This inventory can be carved up in many different ways. The inventory query provided for this inventory is shown below. 
+This inventory can be carved up in many different ways. The inventory query provided for this inventory is shown below.
 ```
 # Group hosts automatically, according to values of manufacturer and os columns.
 # Include only records with the specified operating systems.
@@ -61,4 +61,4 @@ group_by:
 ```
 > The above inventory is querying the CMDB for Linux and Windows XP operating systems and grouping the restults by manufacturer.
 
-All finished! 
+All finished!

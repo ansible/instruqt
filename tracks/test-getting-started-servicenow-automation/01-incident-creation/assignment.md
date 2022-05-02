@@ -6,7 +6,11 @@ title: Incident creation
 teaser: Automate incident creation
 notes:
 - type: text
-  contents: The ServiceNow integration for Ansible Automation Platform is made possible
+  contents: |-
+    <p align="center">
+    <img width="400" src="../assets/snow-aap.jpg">
+    </p>
+    The ServiceNow integration for Ansible Automation Platform is made possible
     through a certified content collection called `servicenow.itsm`.  This collection
     is made available on Automation Hub on `console.redhat.com`. The environment that
     is being created for you includes this collection in an execution environment
