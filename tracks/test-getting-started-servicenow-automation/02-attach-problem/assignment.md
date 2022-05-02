@@ -35,7 +35,7 @@ Another playbook has been added to your working directory in VS Code and a templ
 
 > Notice that this playbook will first query for existing incident numbers that you have created and will use the value returned in the task that creates the problem.
 
-- Next, execute the new job template from Automation Controller by pressing the rocket icon next to the template `Attach problem (problem-attach.yml)`.
+- Next, execute the new job template from Automation Controller by pressing the rocket icon next to the template `2 - Attach problem (problem-attach.yml)`.
 
 That should have completed successfully! Go back to ServiceNow and check under your assigned problems for a new problem number:
 

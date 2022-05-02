@@ -178,3 +178,28 @@ su - rhel -c 'tee -a /home/rhel/servicenow_project/readme.md << EOF
 - password: $(echo $INSTRUQT_PARTICIPANT_ID)
 
 EOF'
+
+# set vscode default settings
+su - $USER -c 'cat >/home/$USER/.local/share/code-server/User/settings.json <<EOL
+{
+    "git.ignoreLegacyWarning": true,
+    "window.menuBarVisibility": "visible",
+    "git.enableSmartCommit": true,
+    "workbench.tips.enabled": false,
+    "workbench.startupEditor": "readme",
+    "telemetry.enableTelemetry": false,
+    "search.smartCase": true,
+    "git.confirmSync": false,
+    "workbench.colorTheme": "Solarized Dark",
+    "update.showReleaseNotes": false,
+    "update.mode": "none",
+    "ansible.ansibleLint.enabled": false,
+    "ansible.ansible.useFullyQualifiedCollectionNames": true,
+    "redhat.telemetry.enabled": true,
+    "markdown.preview.doubleClickToSwitchToEditor": false,
+    "files.exclude": {
+        "**/.*": true
+    }
+}
+EOL
+cat /home/$USER/.local/share/code-server/User/settings.json'
