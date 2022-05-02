@@ -69,7 +69,7 @@
     controller_user_accounts:
       - user: student
         is_superuser: false
-        password: ansible123!
+        password: learn_ansible
     controller_credentials:
       - name: Automation Controller
         description: Token for TMM Automation Controller
