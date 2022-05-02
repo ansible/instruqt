@@ -44,9 +44,9 @@ A new inventory has been added to Automation Controller, but it hasn't synced an
 This just kicked of a series of jobs to update the inventory we're pulling out of ServiceNow CMDB!
 - Select `Jobs` from the left hand navigation pane and you'll be able to monitor the progress of this update.
 - Once the two jobs have finished, click `Hosts` on the left hand navigation and notice all of the hosts pulled from CMDB.
-- Also, explore the hosts and groups in `Inventories > ServiceNow inventory`.
+- Also, explore the hosts and groups in Inventories > ServiceNow inventory > Hosts
 
-This inventory can be carved up in many different ways. The inventory query provided for this inventory is:
+This inventory can be carved up in many different ways. The inventory query provided for this inventory is shown below. 
 ```
 # Group hosts automatically, according to values of manufacturer and os columns.
 # Include only records with the specified operating systems.
@@ -59,3 +59,6 @@ group_by:
       - Linux Red Hat
       - Windows XP
 ```
+> The above inventory is querying the CMDB for Linux and Windows XP operating systems and grouping the restults by manufacturer.
+
+All finished! 

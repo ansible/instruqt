@@ -53,10 +53,10 @@ A playbook as been created in the `VS Code` tab called `incident-create.yml`.
 If the previous step completed successfully, you should see a new incident has been created. To verify that this is the case:
 - Use the ServiceNow credentials from `readme.md` to access ServiceNow from the `ServiceNow` tab.
 
-- In ServiceNow, click the star icon to access pre-configured favorites:
+- In ServiceNow, click the star icon to access pre-configured favorites and select `Self-service - Incidents`:
 ![servicenow screenshot](../assets/snow-star.png)
 
 
-You should see a new Incident has been created! To verify this was done by you, your unique username for this environment should be shown in the Incident description. The incident number should also match the incident number displayed in the job execution output within Automation Controller.
+You should see a new Incident has been created! To verify this was done by you, access your newly created incident using the bullet and screenshot above. Your unique username for this environment should be shown in the Incident description. The incident number should also match the incident number displayed in the job execution output within Automation Controller.
 
 Move onto the next section by selecting the green "Next" button below.

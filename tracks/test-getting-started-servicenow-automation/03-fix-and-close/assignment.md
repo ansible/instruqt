@@ -27,13 +27,13 @@ tabs:
 difficulty: basic
 timelimit: 330
 ---
-A change is anything added, removed, or modified to address a problem that may be related to a past or ongoing incident.
+A ServiceNow change is anything added, removed, or modified to address a problem that may be related to a past or ongoing incident.
 
 A new playbook has been created in your `VS Code` tab.
 - Review the new playbook called `change-attach.yml` as before
-- launch the job template `3 - Attach change request (change-attach.yml)` in Automation Controller
-- Watch for job completion in Automation Controller
+- Navigate to Resources > Job Templates in automation controller and launch the job template 3 - Attach change request (change-attach.yml)
+- Watch for job completion in automation controller
 
 Going back to ServiceNow, select `Change - Open` under your favorites. This should list out all open change requests. You should see a new change request has been created with the title `"Reboot the webserver"`. Notice how other relevant fields (such as 'Description' and 'On hold reason') have been updated as well.
 
-Lets assume that we're ready to resolve our issues and mark our created records closed. To clean things up, head to the next exercise!
+Move onto the next section by selecting the green "Next" button below.
