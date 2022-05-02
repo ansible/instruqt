@@ -25,7 +25,7 @@ tabs:
   url: https://ansible.service-now.com
   new_window: true
 difficulty: basic
-timelimit: 330
+timelimit: 400
 ---
 Up to this point, we've explored some of the modules from `servicenow.itsm` that we can leverage as a part of an automated incident management process. The interaction we've had while exporing these modules probably isn't how we would implement these modules in production.
 

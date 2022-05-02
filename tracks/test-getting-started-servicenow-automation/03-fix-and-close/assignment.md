@@ -25,7 +25,7 @@ tabs:
   url: https://ansible.service-now.com
   new_window: true
 difficulty: basic
-timelimit: 330
+timelimit: 400
 ---
 A ServiceNow change is anything added, removed, or modified to address a problem that may be related to a past or ongoing incident.
 
