@@ -27,6 +27,12 @@ on:
       GPG_PASSPHRASE:
         description: 'decrypt manifest.zip.gpg'
         required: false
+      TMM_CONTROLLER:
+        description: 'URL for TMM maintained Controller'
+        required: false
+      TMM_CONTROLLER_TOKEN:
+        description: 'service account token for TMM Controller'
+        required: false
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -81,3 +87,5 @@ jobs:
         REDHAT_OFFLINE_TOKEN: ${{ secrets.REDHAT_OFFLINE_TOKEN }}
         REDHAT_USERNAME: ${{ secrets.REDHAT_USERNAME }}
         REDHAT_PASSWORD: ${{ secrets.REDHAT_PASSWORD }}
+        TMM_CONTROLLER: ${{ secrets.TMM_CONTROLLER }}
+        TMM_CONTROLLER_TOKEN: ${{ secrets.TMM_CONTROLLER_TOKEN }}

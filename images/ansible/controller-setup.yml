@@ -72,10 +72,24 @@
   hosts: all
 
   vars:
+    tmm_controller: "{{ lookup('env', 'TMM_CONTROLLER') }}"
+    tmm_controller_token: "{{ lookup('env', 'TMM_CONTROLLER_TOKEN') }}"
     controller_hostname: https://localhost:443
     controller_username: admin
     controller_password: ansible123!
     controller_validate_certs: false
+    controller_user_accounts:
+      - user: student
+        is_superuser: false
+        password: learn_ansible
+    controller_credentials:
+      - name: Automation Controller
+        description: Token for TMM Automation Controller
+        organization: Default
+        credential_type: Red Hat Ansible Automation Platform
+        inputs:
+          host: "{{ tmm_controller }}"
+          oauth_token: "{{ tmm_controller_token }}"
     controller_credential_types:
       - name: "servicenow.itsm"
         description: "servicenow.itsm credential"
@@ -107,4 +121,6 @@
     - redhat_cop.controller_configuration
 
   roles:
+    - {role: redhat_cop.controller_configuration.users, when: controller_user_accounts is defined}
     - {role: redhat_cop.controller_configuration.credential_types, when: controller_credential_types is defined}
+    - {role: redhat_cop.controller_configuration.credentials, when: controller_credentials is defined}
