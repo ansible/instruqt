@@ -18,6 +18,7 @@ owner: redhat
 developers:
 - colin@redhat.com
 private: true
-published: false
+published: true
+maintenance: true
 show_timer: true
-checksum: "16999713883728445313"
+checksum: "12280893663978895127"

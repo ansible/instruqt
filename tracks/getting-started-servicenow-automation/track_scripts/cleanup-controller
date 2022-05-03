@@ -1,0 +1,198 @@
+#!/bin/bash
+USER=rhel
+
+# make dir
+su - rhel -c 'mkdir /home/rhel/cleanup'
+
+# creates a playbook to create a user in SNOW
+tee /home/rhel/servicenow_project/create-snow-user.yml << EOF
+---
+- name: Run JT from Controller
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    cleanup: true
+  tasks:
+
+  - name: run jt
+    awx.awx.job_launch:
+      job_template: "SNOW - Configure/Destroy demo account"
+      extra_vars:
+        demo_username: "{{ lookup('env', 'SN_USERNAME') }}"
+        demo_password: "{{ lookup('env', 'SN_USERNAME') }}"
+        cleanup: "{{ cleanup }}"
+
+EOF
+
+# chown above file
+sudo chown rhel:rhel /home/rhel/servicenow_project/create-snow-user.yml
+
+# Create a playbook for the user to execute which will create a SN incident
+tee /home/rhel/servicenow_project/close-records-by-user.yml << EOF
+---
+- name: close user created records 
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    demo_username: "{{ lookup('env', 'SN_USERNAME') }}"
+    incident_list: []
+    problem_list: []
+    change_list: []
+
+  tasks:
+
+  - name: find user created incidents
+    servicenow.itsm.incident_info:
+      query:
+        - sys_created_by: LIKE {{ demo_username }}
+          active: = true
+    register: incidents
+
+  - name: find user created problems
+    servicenow.itsm.problem_info:
+      query:
+        - sys_created_by: LIKE {{ demo_username }}
+          active: = true
+    register: problems
+
+  - name: find user created change requests
+    servicenow.itsm.change_request_info:
+      query:
+        - sys_created_by: LIKE {{ demo_username }}
+          active: = true
+    register: changes
+
+  - name: query incident number and creation time 
+    set_fact:
+      incident_list: '{{ incident_list + [{"number": item.number, "opened_at": item.opened_at}] }}'
+    loop: "{{ incidents.records }}"
+    when: incidents
+
+  - name: query problem number and creation time 
+    set_fact:
+      problem_list: '{{ problem_list + [{"number": item.number, "opened_at": item.opened_at}] }}'
+    loop: "{{ problems.records }}"
+    when: problems
+
+  - name: query change request number and creation time 
+    set_fact:
+      change_list: '{{ change_list + [{"number": item.number, "opened_at": item.opened_at}] }}'
+    loop: "{{ changes.records }}"
+    when: changes
+  
+  - name: close incidents from list
+    servicenow.itsm.incident:
+      state: closed
+      number: "{{ item.number }}"
+      close_code: "Solved (Permanently)"
+      close_notes: "Closed with ansible servicenow.itsm"
+      other:
+        active: false
+    with_items: "{{ incident_list }}"
+    when: 
+      - incident_list is defined
+
+  - name: close problems from list
+    servicenow.itsm.problem:
+      state: absent
+      assigned_to: "{{ demo_username }}"
+      number: "{{ item.number }}"
+      other:
+        active: false
+    with_items: "{{ problem_list }}"
+    when: 
+      - problem_list is defined
+    
+  - name: close change requests from list
+    servicenow.itsm.change_request:
+      state: closed
+      close_code: "successful"
+      close_notes: "Closed with ansible servicenow.itsm"
+      number: "{{ item.number }}"
+      other:
+        active: false
+    with_items: "{{ change_list }}"
+    when: 
+      - change_list is defined
+
+EOF
+
+# chown above file
+sudo chown rhel:rhel /home/rhel/servicenow_project/close-records-by-user.yml
+
+# creates a playbook to cleanup snow records and remove demo user from SNOW 
+tee /home/rhel/cleanup/cleanup.yml << EOF
+---
+- name: Run JT from Controller
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  collections:
+    - awx.awx
+  vars:
+
+  tasks:
+
+    - name: Post change-attach job template
+      job_template:
+        name: "4 - Query and close records by user (close-records-by-user.yml)"
+        job_type: "run"
+        organization: "Default"
+        inventory: "Demo Inventory"
+        project: "ServiceNow"
+        playbook: "close-records-by-user.yml"
+        execution_environment: "ServiceNow EE"
+        credentials:
+          - "servicenow credential"
+        state: "present"
+        ask_variables_on_launch: false
+        controller_host: "https://localhost"
+        controller_username: admin
+        controller_password: ansible123!
+        validate_certs: false
+
+    - awx.awx.job_launch:
+        job_template: "4 - Query and close records by user (close-records-by-user.yml)"
+        controller_host: https://localhost:443
+        controller_username: admin
+        controller_password: ansible123!
+        validate_certs: false
+
+    - name: Post SNOW user create job template
+      job_template:
+        name: "0 - Create SNOW demo user"
+        job_type: "run"
+        organization: "Default"
+        inventory: "Demo Inventory"
+        project: "ServiceNow"
+        playbook: "create-snow-user.yml"
+        execution_environment: "ServiceNow EE"
+        use_fact_cache: true
+        ask_variables_on_launch: true
+        credentials:
+          - "servicenow credential"
+          - "Automation Controller"
+        state: "present"
+        controller_host: "https://localhost"
+        controller_username: admin
+        controller_password: ansible123!
+        validate_certs: false
+      
+    - awx.awx.job_launch:
+        job_template: "0 - Create SNOW demo user"
+        extra_vars:
+          cleanup: true
+        controller_host: https://localhost
+        controller_username: admin
+        controller_password: ansible123!
+        validate_certs: false
+
+EOF
+
+# chown above file
+sudo chown rhel:rhel /home/rhel/cleanup/cleanup.yml
+
+# Execute above playbook
+su - rhel -c 'ansible-playbook /home/rhel/cleanup/cleanup.yml'
