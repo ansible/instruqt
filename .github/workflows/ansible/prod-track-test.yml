@@ -1,0 +1,33 @@
+---
+- name: Test all production tracks 
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    INSTRUQT_API_KEY: "{{ lookup('env', 'INSTRUQT_API_KEY') }}" 
+    INSTRUQT_ORG: "{{ lookup('env', 'INSTRUQT_ORG') }}"
+
+  tasks:
+  
+  - name: Get all tracks by API
+    ansible.builtin.uri:
+      url: https://play.instruqt.com/graphql
+      method: POST
+      body_format: json
+      body: "{{ lookup('template','./query-tracks.json') }}"
+      force_basic_auth: true
+      return_content: true
+      headers:
+        Authorization: "Bearer {{ INSTRUQT_API_KEY }}"
+    register: tracks
+
+  - name: Create list of production tracks (maintenance==false) 
+    ansible.builtin.set_fact:
+      prod_tracks: "{{ tracks.json | community.general.json_query('data.tracks[?maintenance==`false`].slug') }}"
+
+#   - name: Run instruqt track test on list of production tracks
+#     shell: "INSTRUQT_TOKEN={{ INSTRUQT_API_KEY }} instruqt track test {{ INSTRUQT_ORG }}/{{ item }}"
+#     loop: "{{ prod_tracks }}"
+
+  - debug:
+      var: "{{ prod_tracks }}"

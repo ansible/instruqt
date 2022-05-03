@@ -1,0 +1,25 @@
+# creates a playbook to slove challenge
+tee /home/rhel/challenge-1/solve.yml << EOF
+---
+- name: Run JT from Controller
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+
+  tasks:
+
+    - awx.awx.job_launch:
+        job_template: "1 - Create incident (incident-create.yml)"
+        controller_host: https://localhost
+        controller_username: admin
+        controller_password: ansible123!
+        validate_certs: false
+
+EOF
+
+# chown above file
+sudo chown rhel:rhel /home/rhel/challenge-1/solve.yml
+
+# Execute above playbook
+su - rhel -c 'ansible-playbook /home/rhel/challenge-1/solve.yml'

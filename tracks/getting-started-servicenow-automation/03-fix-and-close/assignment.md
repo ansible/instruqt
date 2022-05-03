@@ -3,6 +3,12 @@ slug: fix-and-close
 id: ywwa9cznygjx
 type: challenge
 title: Root cause, fix and close
+teaser: Query previous created records and link a new change request record
+notes:
+- type: text
+  contents: |-
+    **Did you know?**
+    Ansible playbooks and other ansible content types are typically stored in version control as plain text. This means that common approaches to continuous integration and continuous deployment are easily applied to automation content.
 tabs:
 - title: VS Code
   type: service
@@ -19,15 +25,15 @@ tabs:
   url: https://ansible.service-now.com
   new_window: true
 difficulty: basic
-timelimit: 330
+timelimit: 400
 ---
-A change is anything added, removed, or modified to address a problem that may be related to a past or ongoing incident.
+A ServiceNow change is anything added, removed, or modified to address a problem that may be related to a past or ongoing incident.
 
 A new playbook has been created in your `VS Code` tab.
-- Review the new playbook called `change-attach.yml` as before and then
-- launch the new job template using the rocketship icon next to the 3rd job template in Automation Controller. Before the job executues, you'll notice another prompt to specify the value for `problem_number` - find this value in ServiceNow under `Problem - Assigned to me` in your user's configured favorites.
-- Watch for job completion in Automation Controller
+- Review the new playbook called `change-attach.yml` as before
+- Navigate to Resources > Job Templates in automation controller and launch the job template 3 - Attach change request (change-attach.yml)
+- Watch for job completion in automation controller
 
 Going back to ServiceNow, select `Change - Open` under your favorites. This should list out all open change requests. You should see a new change request has been created with the title `"Reboot the webserver"`. Notice how other relevant fields (such as 'Description' and 'On hold reason') have been updated as well.
 
-Finally, lets assume that our fictional board meeting that was holding up the reboot of the webserver has now completed and we can safely perform our change request and update the status of the problem and incident to indicate that everything has been resolved.
+Move onto the next section by selecting the green "Next" button below.

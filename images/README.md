@@ -140,3 +140,12 @@ Execute the following command in the `images\ansible` folder to build the mesh w
 When generating windows images from macos, there's an env var that needs to be set in your active shell: `export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES`
 
 Want to open code-server with a specific working directory? In the tabs configuration of your challenge, use something like `/editor/?folder=vscode-remote%3A%2F%2F%2fhome%2Frhel` which would open code-server at with a CWD of `/home/rhel/`
+
+# Words of wisdom from Colin
+
+As a developer, I want to interact with GCP via gcloud.
+gcloud auth login
+
+
+As a developer, I want my code to interact with GCP via SDK.
+gcloud auth application-default login

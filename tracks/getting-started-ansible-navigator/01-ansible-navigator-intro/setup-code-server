@@ -1,0 +1,11 @@
+#!/bin/bash
+USER=rhel
+
+while [ ! -f /opt/instruqt/bootstrap/host-bootstrap-completed ]
+do
+    echo "Waiting for Instruqt to finish booting the VM"
+    sleep 1
+done
+
+# remove a dir that was created at image build time
+su - $USER -c 'rm -rf /home/$USER/test'

@@ -1,0 +1,39 @@
+slug: network-lab-2
+id: rzwsflepd6vk
+type: track
+title: Ansible Network Automation - Lab 2 - Infrastructure Awareness
+teaser: Learn how to use Ansible Automation Platform to create Dynamic Documentation
+description: |+
+  # Overview
+
+  Infrastructure Awareness is the ability to retrieve information from network devices and quickly gain accurate information and insights to the configuration and state of network devices. In many organizations the running configuration is the "source of truth" which means that whenever there is a problem the first few steps are performing various show commands and looking at the configuration on the box.  In fact, when opening a ticket with most network vendors, they will use scripts or aliases to simply dump every show command and output they can because they don't trust network diagrams, IPAM (IP addressmanagement) tools or even the network administrator who opened the issue.
+
+  <center><img src="https://github.com/IPvSean/pictures_for_github/blob/master/infrastructure_awareness.png?raw=true"></center>
+
+  # Dynamic Documentation
+
+  Red Hat Ansible Automation Platform allows you to quickly transform network configuration and network device state into structured data, transform that structured data into whatever output you want.  For example in this lab we will transform the output into a simple HTML webiste.  This concept is commonly referred to as **Dynamic Documentation** and can be used in many different uses cases.
+
+  # Why is this important?
+
+  This is an excellent beginning use-case for network operators because it can add increasingly incremental value as you learn Ansible.
+
+  **Infrastructure Awareness**
+   - Allows network operators to understand and audit their network
+   - Read-only and requires no production configuration change.
+   - Is highly configurable.  Once you have structured data you can transform network devices into websites, markdown files or even upload the data into an ITSM like ServiceNow.
+
+
+
+icon: https://github.com/network-automation/networking-icons/blob/master/switches/switch_red_small.png?raw=true
+level: beginner
+tags:
+- network automation
+- ' cisco'
+owner: redhat
+developers:
+- seanc@redhat.com
+private: true
+published: true
+skipping_enabled: true
+checksum: "11376281117266780690"

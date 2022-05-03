@@ -1,0 +1,4 @@
+#!/bin/bash
+USER=rhel
+
+su - $USER -c 'echo -e "\n" > /home/$USER/ansible-navigator.log'

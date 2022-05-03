@@ -2,11 +2,15 @@ slug: getting-started-ansible-navigator
 id: edt5xzxm8ld5
 type: track
 title: Getting started with ansible-navigator
-teaser: In this lab, we'll install ansible-navigator and take a closer look at the command line
+teaser: In this lab, we'll install ansible-navigator and take a closer look at the
+  command line
 description: |+
-  Automation content navigator (ansible-navigator)
-  ======
+  <img src="https://github.com/ansible/instruqt/blob/devel/assets/logos/Logo-Red_Hat-Ansible_Automation_Platform-A-Standard-RGB.png?raw=true" alt="drawing" style=";width:400px"/>
+  <br>
 
+  # Automation content navigator (ansible-navigator)
+  * * *
+  <br>
 
   [`ansible-navigator`](https://github.com/ansible/ansible-navigator) is the new command-line tool that provides a more cohesive and consistent experience for automation creators.
 
@@ -17,7 +21,8 @@ description: |+
   In this series of challenges, we'll install [`ansible-navigator`](https://github.com/ansible/ansible-navigator) and run through simple use-cases to highlight it's functionality and enhancements.
 
 
-icon: https://www.shellandco.net/wp-content/uploads/2019/06/Ansible_logo.svg_-1-150x150.png
+icon: https://raw.githubusercontent.com/ansible/instruqt/devel/assets/icons/navigator/Product_icon-Red_Hat-Ansible-Automation_content_navigator-RGB.png
+level: beginner
 tags:
 - aap
 - ansible
@@ -30,239 +35,5 @@ developers:
 - colin@redhat.com
 private: true
 published: true
-skipping_enabled: true
-challenges:
-- slug: ansible-navigator-install
-  id: rhdswz55nmob
-  type: challenge
-  title: Installing ansible-navigator
-  teaser: In this challenge, we'll install *ansible-navigator* and cover a couple basic commands
-  notes:
-  - type: text
-    contents: |-
-      [`ansible-navigator`](https://github.com/ansible/ansible-navigator) is being introduced in Ansible Automation Platform 2 and enables automation developers to execute and test automation.
-      <br><br><br>
-      `ansible-navigator` also functions as a drop-in replacement for `ansible-playbook`, among other `ansible-*` utilities, and will be the standard way of executing automation moving into Ansible Automation Platform 2.
-  assignment: |
-    In this challenge, we'll install *ansible-navigator* and cover a few basics when using the tool.
-
-    `ansible-navigator` has been built to fit into common developer workflows and will be used from within the [`code-server`](https://github.com/cdr/code-server) integrated terminal. ***Note that `code-server` is not packaged with Ansible Automation Platform and is not at all affilliated with Red Hat***
-
-    Open the integrated terminal `Terminal > New Terminal` and:
-
-    **1.** Create a new python virtual environment and activate it:
-    ```
-    python3 -m venv venv && source venv/bin/activate
-    ```
-
-    ***
-
-    **2.** Install `ansible-navigator`:
-    ```
-    pip install ansible-navigator
-    ```
-
-    ***
-
-    **3.** Quickly test that navigator has been installed, run:
-    ```
-    ansible-navigator --help
-    ```
-
-    ***
-
-    **4.** Now that we know `ansible-navigator` was installed succesfully, try writing a quick playbook called `test.yml` to ping localhost. It could look something like this:
-    ```
-    ---
-    - name: this is just a test
-      hosts: localhost
-      tasks:
-
-      - name: ping test
-        ping:
-    ```
-
-    Now, run it with `ansible-navigator`:
-    ```
-    ansible-navigator run ./test.yml -m stdout
-    ```
-
-    **Note:** `-m stdout` will run in standard out mode which will display execution results just like `ansible-playbook`
-  tabs:
-  - title: code-server
-    type: service
-    hostname: controller
-    path: /editor/?folder=vscode-remote%3A%2F%2F%2fhome%2Frhel
-    port: 443
-  difficulty: basic
-  timelimit: 3000
-- slug: ansible-navigator-explore-ui
-  id: cjpyrstazxxx
-  type: challenge
-  title: Exploring the ansible-navigator interface
-  teaser: This challenge will explore the [`ansible-navigator`](https://github.com/ansible/ansible-navigator) user interface
-  notes:
-  - type: text
-    contents: |-
-      # The *ansible-navigator* interface
-      <br><br>
-      ### Improved developer experience
-      --------
-      [`ansible-navigator`](https://github.com/ansible/ansible-navigator) provides a context-aware user interface improving the development and testing experience for creators. It offers integration with Ansible documentation, IDEs (e.g. VScode) and a more prescriptive approach to creating automation
-      <br><br>
-      ## Enhanced navigation
-      ---------------
-      [`ansible-navigator`](https://github.com/ansible/ansible-navigator) makes it easier to navigate and filter through playbook outputs.
-  assignment: |
-    # [`ansible-navigator`](https://github.com/ansible/ansible-navigator)
-    <br>
-
-    In this challenge, we'll explore the [`ansible-navigator`](https://github.com/ansible/ansible-navigator) interface and highlight new features.
-
-    **1.** First, either re-run your simple playbook, or just run:
-    ```
-    ansible-navigator
-    ```
-    **Note:** you may need to reactivate your python virtual environment. This command should do it:
-    ```
-    source ~/venv/bin/activate
-    ```
-
-    There are many sub-commands available within `ansible-navigator` to help in developing, testing and inspecting your local environment.
-
-    **2.** Run the `:welcome` sub-command to see a quick overview of the commands you can run. Run `:help` to see more info.
-
-    **3.** Run your simple playbook again to ping local host, but this time leave off the `-m stdout` option:
-    ```
-    ansible-navigator run ./test.yml
-    ```
-
-    **4.** Explore the play that was run by pressing the number corresponding to that line. You should be taken to the next screen that will contain a list of the tasks that ran as a part of that play. Inspect the tasks by pressing the number of the corresponding line.
-
-
-    **5.** Select the ping task by pressing <kbd>1</kbd> and issue the subcommand `:doc`
-
-    Using `ansible-navigator` is very helpful for quickly referencing documentation for specific tasks while debugging playbooks.
-
-    **Note:** Pressing the corresponding number should expand that particular item, <kbd>ESC</kbd> will move you to the previous screen.
-  tabs:
-  - title: code-server
-    type: service
-    hostname: controller
-    path: /editor/?folder=vscode-remote%3A%2F%2F%2fhome%2Frhel
-    port: 443
-  - title: node1
-    type: terminal
-    hostname: node1
-  difficulty: basic
-  timelimit: 3000
-- slug: configure-ansible-navigator
-  id: hggv2ubzmllg
-  type: challenge
-  title: Configuring common ansible-navigator options
-  teaser: Let's take a look at common configuration directives!
-  notes:
-  - type: text
-    contents: |-
-      `ansible-navigator` has been introduced as a way to unify the development experience. For this reason, there are a lot of configration directives that can be customized for each developer/project.
-
-      `ansible-navigator.yml` is the config file present in each project that will determine how automation is created and executed with `ansible-navigator`
-
-      Let's take a look at some of these options.
-  assignment: |-
-    `ansible-navigator` gets it's own configuration file and can be configured on a per-project basis. This is useful if your projects span multiple execution environments, for example.
-
-    Additionally, developers can use these settings to adapt `ansible-navigator` to their development styles, code editor/IDE, etc..
-
-    Let's take a look at some of the common options.
-
-    **1.** In the directory `/home/rhel` you should see a file called `ansible-navigator.yml`. Open it up and check out the contents. Notice that there's currently some execution environment configuration already there that directs `ansible-navigator` to run without an execution environment.
-
-    As you may also have noticed, we're operating in a VS Code-like environment called [`code-server`](https://github.com/cdr/code-server). As a developer, I'd love the ability to not only run navigator within the integrated terminal, but I want to be able to pass task output back to my code editor for inspection.
-
-    **2.** `ansible-navigator` can configure a preferred editor for the `:open` sub-command. Let's do that now. Open `ansible-navigator.yml` and set your preferred editor to the code-server instance in your environment. The file should look like this:
-    ```
-    ---
-    ansible-navigator:
-      execution-environment:
-        container-runtime: podman
-        enabled: false
-
-      editor:
-        command: code-server {filename}
-    ```
-
-    **3.** Execute your test playbook again
-    ```
-    ansible-navigator run ./test.yml
-    ```
-
-    **4.** Inspect the play by pressing <kbd>0</kbd>, inspect the first task by pressing <kbd>0</kbd> again and issue the subcommand `:open`.
-
-    You should now have a new tab within your code editor with the output of that task as the file contents.
-  tabs:
-  - title: code-server
-    type: service
-    hostname: controller
-    path: /editor/?folder=vscode-remote%3A%2F%2F%2fhome%2Frhel
-    port: 443
-  difficulty: basic
-  timelimit: 3000
-- slug: ansible-navigator-using-execution-environments
-  id: dilqtnpyq0ye
-  type: challenge
-  title: Using execution environments
-  teaser: Configure navigator to use an execution environment
-  assignment: |-
-    Up to this point, `ansible-navigator` has been running with just the built in modules and executing without an execution environment.
-
-    Let's see what happens when we change `ansible-navigator.yml` to use the defaul execution environment.
-
-    **1.** Open `ansible-navigator.yml` and change `enabled: false` to `enabled: true` under the `execution-environment` configuration block. The file should look like this:
-    ```
-    ---
-    ansible-navigator:
-      execution-environment:
-        container-engine: podman
-        enabled: true
-
-      editor:
-        command: code-server {filename}
-    ```
-
-    **2.** Re-reun your test playbook:
-    ```
-    ansible-navigator run ./test.yml
-    ```
-
-    Notice that `ansible-navigator` knows that it should be using an execution environment but none are currently present. You should see a pull process happening now where an execution environment is being pulled from container registry. `ansible-navigator` can be configured in the same yaml file to pull from your own Private Automation Hub.
-
-    **3.** Your `test.yml` file should have executed successfully. You can now use `ansible-navigator` to inspect this execution environment by issuing the `:collections` subcommand.
-  tabs:
-  - title: code-server
-    type: service
-    hostname: controller
-    path: /editor/?folder=vscode-remote%3A%2F%2F%2fhome%2Frhel
-    port: 443
-  difficulty: basic
-  timelimit: 3000
-- slug: ansible-language-server
-  id: 28ldwmdwj1yp
-  type: challenge
-  title: Using ansible language server
-  teaser: Tech preview components live here!
-  assignment: |-
-    Ansible language server allows for a tighter integration between writing and testing automation content using `ansible-navigator`
-
-    **1.** `wget https://open-vsx.org/api/redhat/ansible/0.4.5/file/redhat.ansible-0.4.5.vsix`
-
-    **2.** `code-server --install-extension redhat.ansible-0.4.5.vsix`
-  tabs:
-  - title: code-server
-    type: service
-    hostname: controller
-    path: /editor/?folder=vscode-remote%3A%2F%2F%2fhome%2Frhel
-    port: 443
-  difficulty: basic
-  timelimit: 3000
-checksum: "18275050044642689778"
+show_timer: true
+checksum: "6162558309974128442"

@@ -1,0 +1,30 @@
+slug: network-lab-1
+id: cevsyxodjoe8
+type: track
+title: Ansible Network Automation - Lab 1 - Config Backup and Restore
+teaser: Learn how to perform network configurations and backups using Ansible Automation
+  Platform
+description: |+
+  # Overview
+
+  We know that network backup and restores are fairly uninteresting in the grand scheme of things, but they are a very common and ubiquitous use-case that all network operators will need. This provides an easy turn key use-case for network engineers to start their automation journey.
+
+  <center><img src="https://github.com/IPvSean/pictures_for_github/blob/master/lab1-overview.png?raw=true"></center>
+
+  # First steps towards network as code
+
+  When network operators realize a simple playbook, that is just a few lines of YAML, can be run from their laptop across hundreds of routers and switches, they will get hooked on automation and see infinite possibilities.
+
+
+icon: https://github.com/network-automation/networking-icons/blob/master/switches/switch_red_small.png?raw=true
+level: beginner
+tags:
+- network automation
+- ' cisco'
+owner: redhat
+developers:
+- seanc@redhat.com
+private: true
+published: true
+skipping_enabled: true
+checksum: "11910431153744473046"

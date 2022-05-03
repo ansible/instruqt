@@ -5,7 +5,7 @@
   become: true
 
   tasks:
-  
+
     - name: add azure credential to automation controller
       awx.awx.credential:
         name: azure_credential
@@ -110,4 +110,3 @@
         - { playbook: '05-create_network_security_group.yml', name: 'Workflow - 05 - Create Network Security Group' }
         - { playbook: '06-create_virtual_network_interface_card.yml', name: 'Workflow - 06 - Create Virtual Network Interface Card' }
         - { playbook: '07-create_windows_2022_vm.yml', name: 'Workflow - 07 - Create Windows 2022 Virtual Machine' }
-        
