@@ -1,6 +1,6 @@
 ---
 slug: incident-creation
-id: imhhndnintee
+id: rc1xlariikhg
 type: challenge
 title: Incident creation
 teaser: Automate incident creation

@@ -1,6 +1,6 @@
 ---
 slug: attach-problem
-id: ec25ugmxhttm
+id: qipyytx3xglz
 type: challenge
 title: Attaching a problem
 teaser: Query existing incident number and attach a problem referencing incident

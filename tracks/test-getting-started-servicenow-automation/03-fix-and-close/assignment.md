@@ -1,6 +1,6 @@
 ---
 slug: fix-and-close
-id: ywwa9cznygjx
+id: uqqamri47d4n
 type: challenge
 title: Root cause, fix and close
 teaser: Query previous created records and link a new change request record

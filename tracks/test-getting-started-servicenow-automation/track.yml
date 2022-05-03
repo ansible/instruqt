@@ -1,7 +1,7 @@
-slug: getting-started-servicenow-automation
-id: faoq9b1onz2h
+slug: test-getting-started-servicenow-automation
+id: toryi20tndal
 type: track
-title: Getting started with ServiceNow automation
+title: 'DEV: Getting started with ServiceNow automation'
 teaser: Explore base functionality provided by the ServiceNow collection for Ansible
   Automation Platform
 description: Ansible Automation Platform brings certified integrations to some of
@@ -18,7 +18,7 @@ owner: redhat
 developers:
 - colin@redhat.com
 private: true
-published: true
+published: false
 maintenance: true
 show_timer: true
-checksum: "12280893663978895127"
+checksum: "1089882177660750898"
