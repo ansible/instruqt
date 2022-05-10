@@ -31,7 +31,7 @@ jobs:
           ref: ${{github.event.pull_request.head.ref}}
           repository: ${{github.event.pull_request.head.repo.full_name}}
       - id: set-matrix
-        run: echo "::set-output name=matrix::$(ls images/*.pkr.hcl | jq -R -s -c 'split("\n")[:-1]')"
+        run: echo "::set-output name=matrix::$(ls images/packer/*.pkr.hcl | jq -R -s -c 'split("\n")[:-1]')"
   
   # The `validate` job spins up for each packer file within the array created above
   validate:
