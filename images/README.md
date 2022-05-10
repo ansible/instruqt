@@ -14,15 +14,46 @@ Under **GCP Console -> Compute Engine -> Storage -> Images**
 Image name | Description | connection | machine type | usage in challenge
 --- | --- | --- | --- | ---
 `red-hat-mbu/ansible` | cli Ansible on RHEL 8 | Root ssh keys already there<br>Able to SSH as user/pass: <br> `rhel` / `ansible123!` | `n1-standard-1` | `type: terminal`
-`red-hat-mbu/automation-controller` [![controller build](https://github.com/ansible/instruqt/actions/workflows/controller-build.yml/badge.svg)](https://github.com/ansible/instruqt/actions/workflows/controller-build.yml) | Automation controller on RHEL8 | `admin/ansible123!` | n1-standard-4 | **Controller**: `type: service`, `port: 443`
+`red-hat-mbu/automation-controller` [![controller build](https://github.com/ansible/instruqt/actions/workflows/controller-build.yml/badge.svg?branch=main)](https://github.com/ansible/instruqt/actions/workflows/controller-build.yml) | Automation controller on RHEL8 | `admin/ansible123!` | n1-standard-4 | **Controller**: `type: service`, `port: 443`
 `red-hat-mbu/arista-eos` | Arista EOS virtual switch | user / pass <br> `ansible` / `ansible123!` | `n1-standard-4` | *Terminal not supported yet. SSH from a linux node* |
 `red-hat-mbu/cisco-ios-csr-1731` | Cisco IOS-XE virtual router | user / pass <br> `ansible` / `ansible123!` | `n1-standard-1` | *Terminal not supported yet. SSH from a linux node* |
 `red-hat-mbu/windows` | Windows 2016 | SSH user/pass: `admin/Password123` | `n1-standard-2` | *Terminal not supported yet. SSH from a linux node*
-`red-hat-mbu/rhel8` [![rhel8 build](https://github.com/ansible/instruqt/actions/workflows/rhel8-build.yml/badge.svg)](https://github.com/ansible/instruqt/actions/workflows/rhel8-build.yml)  | RHEL 8 latest | none | `n1-standard-2` | none
+`red-hat-mbu/rhel8` [![rhel8 build](https://github.com/ansible/instruqt/actions/workflows/rhel8-build.yml/badge.svg?branch=main)](https://github.com/ansible/instruqt/actions/workflows/rhel8-build.yml)  | RHEL 8 latest | none | `n1-standard-2` | none
 `red-hat-mbu/mesh-node` | Mesh worker base image | SSH user/pass: `rhel/ansible123!` | n1-standard-2 | none
 `red-hat-mbu/mesh-hop1-mesh` | Mesh hop node | SSH user/pass: `rhel/ansible123!` | n1-standard-2 | none
 `red-hat-mbu/mesh-exec1-mesh` | Mesh execution node | SSH user/pass: `rhel/ansible123!` | n1-standard-2 | none
 `red-hat-mbu/automation-controller21-mesh` | Mesh execution node | SSH user/pass: `rhel/ansible123!` | n1-standard-4 | `type: service, port: 443`
+## Containers
+Upstream container images can also be used. 
+### Gitea
+Gitea will likely be used in order to show off SCM for automation projects. A working gitea configuration in `config.yml` looks like:
+```
+- name: gitea
+  image: gitea/gitea
+  ports:
+  - 3000
+  environment:
+    GITEA__DEFAULT__RUN_MODE: dev
+    GITEA__database__DB_TYPE: sqlite3
+    GITEA__database__PATH: /data/gitea/gitea.db
+    GITEA__picture__DISABLE_GRAVATAR: "true"
+    GITEA__security__INSTALL_LOCK: "true"
+    GITEA__server__DOMAIN: http://localhost
+    GITEA__server__OFFLINE_MODE: "true"
+    GITEA__server__ROOT_URL: http://localhost:3000
+    GITEA__server__SSH_DOMAIN: http://localhost
+    GITEA__service__DISABLE_REGISTRATION: "true"
+    GITEA__service__REQUIRE_SIGNIN_VIEW: "true"
+    USER_GID: "1000"
+    USER_UID: "1000"
+  memory: 512
+```
+To create a student user automatically, use the following line in the gitea lifecycle setup script:
+```
+# create a student user account
+su - git -c '/usr/local/bin/gitea admin user create --admin --username student --password learn_ansible --email root@localhost'
+```
+
 ## Setup-scripts
 
 Everything contained in `ansible/setup-scripts` will be copied to the tmp dir on Tower when the image is built. These scripts are used to configure Tower for that particular exercise (e.g. remove all non windows modules from the adhoc drop down for windows tracks). Unfortunately, just dropping the playbooks into the challenge directory for that track and then running `ansible-playbook` from the bash script doesn't do it. This is temporary until figuring out something more elegant.

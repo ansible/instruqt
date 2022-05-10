@@ -22,6 +22,10 @@ source "googlecompute" "windows" {
 
 build {
     sources = ["sources.googlecompute.windows"]
+    
+    provisioner "shell" {
+      inline = ["pip install pywinrm requests requests-credssp"]
+    } 
 
     provisioner "ansible" {
       playbook_file = "${path.root}/../ansible/windows-setup.yml"
