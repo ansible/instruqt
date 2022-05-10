@@ -23,7 +23,7 @@ source "googlecompute" "windows" {
 build {
     sources = ["sources.googlecompute.windows"]
     
-    provisioner "shell" {
+    provisioner "shell-local" {
       inline = ["pip install pywinrm requests requests-credssp"]
     } 
 
