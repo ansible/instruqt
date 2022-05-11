@@ -4,8 +4,8 @@
   gather_facts: false
 
   tasks:
-#    - name: get yourself some updated workshop roles
-#      command: ansible-galaxy collection install --verbose --force-with-deps ansible.workshops
+    - name: get yourself some updated workshop roles
+      command: ansible-galaxy collection install --verbose --force-with-deps ansible.workshops
 
     - name: download aap
       vars:
