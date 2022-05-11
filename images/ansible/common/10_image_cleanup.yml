@@ -12,6 +12,7 @@
   when: 
     - item != "rhel"
     - item != "awx"
+    - item!= "pulp"
     
 - name: disable dnf automatic services
   ansible.builtin.service:
@@ -51,4 +52,3 @@
 
 - name: Clear bash history
   ansible.builtin.shell: history -c; history -w
-  

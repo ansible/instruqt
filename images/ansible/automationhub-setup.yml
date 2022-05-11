@@ -1,0 +1,38 @@
+---
+- name: download aap.tar.gz to install controller
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+#    - name: get yourself some updated workshop roles
+#      command: ansible-galaxy collection install --verbose --force-with-deps ansible.workshops
+
+    - name: download aap
+      vars:
+        offline_token: "{{ lookup('file', 'offline_token.txt') }}"
+      include_role:
+        name: ansible.workshops.aap_download
+
+- name: configures automation hub node
+  hosts: all
+  gather_facts: true
+  become: true
+  vars:
+    admin_password: ansible123!
+    aap_dir: "/home/{{ username }}/aap_install"
+    username: "{{ ansible_user }}"
+    teardown: false
+
+  tasks:
+    - name: Install subsciption-manager
+      ansible.builtin.dnf:
+        name:
+          - subscription-manager
+
+    - name: install automation hub
+      ansible.builtin.include_role:
+        name: ansible.workshops.private_automation_hub
+
+    - name: Include common image cleanup tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/10_image_cleanup.yml"
