@@ -1,0 +1,22 @@
+#!/bin/bash
+USER=rhel
+# set ansible-navigator default settings
+su - $USER -c 'cat >/home/$USER/ansible-navigator.yml <<EOL
+---
+ansible-navigator:
+  enabled: false
+  mode: stdout
+  execution-environment:
+    container-engine: podman
+    image: ee-supported-rhel8
+    enabled: false
+    pull-policy: never
+
+  playbook-artifact:
+    save-as: /home/rhel/{playbook_name}-artifact-{ts_utc}.json
+
+  logging:
+    level: debug
+
+EOL
+cat /home/$USER/ansible-navigator.yml'
