@@ -140,6 +140,7 @@ Place the `manifest.zip` in the `images\ansible` folder.
 **Required extra variables**
 
 Please ensure the following Ansible variables are declared in your `extra_vars.yml` file:
+
 - redhat_username
 - redhat_password
 - registry_username
