@@ -1,0 +1,2 @@
+dnf config-manager --enable rhui*
+systemctl stop nginx
