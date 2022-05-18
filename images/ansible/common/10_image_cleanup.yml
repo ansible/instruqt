@@ -2,17 +2,18 @@
   ansible.builtin.shell: >
     cut -d: -f1,3 /etc/passwd | egrep ':[0-9]{4}$' | cut -d: -f1
   register: _standard_users
-  
+ 
 - name: Remove all normal users except rhel and awx
   ansible.builtin.user:
     name: "{{ item }}"
     state: absent
     remove: true
   loop: "{{ _standard_users.stdout_lines }}"
-  when: 
+  when:
     - item != "rhel"
     - item != "awx"
-    
+    - item != "pulp"
+
 - name: disable dnf automatic services
   ansible.builtin.service:
     name: "dnf-automatic.timer"
@@ -40,7 +41,7 @@
     state: absent
 
 - name: remove AAP install dir
-  file:
+  ansible.builtin.file:
     path: "{{ aap_dir }}"
     state: absent
 
@@ -51,4 +52,3 @@
 
 - name: Clear bash history
   ansible.builtin.shell: history -c; history -w
-  
