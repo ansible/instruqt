@@ -1,0 +1,34 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.40">
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.90">
+    <script>#!/usr/bin/env groovy
+
+stage(&apos;Get code from SCM&apos;) {
+    node {
+        checkout([$class: &apos;GitSCM&apos;, branches: [[name: &apos;*/master&apos;]], userRemoteConfigs: [[url: &apos;https://github.com/craig-br/juice-shop.git&apos;]]])
+    } 
+}
+
+stage(&apos;Secure the App!&apos;) {
+    node {
+        ansibleTower(
+            towerServer: &apos;JuiceShop Tower&apos;,
+            templateType: &apos;job&apos;,
+            jobTemplate: &apos;Secure JuiceShop App&apos;,
+            importTowerLogs: true,
+            jobTags: &apos;&apos;,
+            skipJobTags: &apos;&apos;,
+            limit: &apos;&apos;,
+            removeColor: false,
+            verbose: true,
+            credential: &apos;&apos;,
+        )
+    }
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
