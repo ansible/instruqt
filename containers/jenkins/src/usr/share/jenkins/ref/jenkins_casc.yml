@@ -112,7 +112,7 @@ unclassified:
     storage: "file"
   location:
     adminAddress: "address not configured yet <nobody@nowhere>"
-    url: "http://127.0.0.1:8080/"
+    url: "http://jankins:8080/"
   mailer:
     charset: "UTF-8"
     useSsl: false
