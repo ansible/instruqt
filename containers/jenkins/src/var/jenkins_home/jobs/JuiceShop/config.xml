@@ -1,8 +1,8 @@
 <?xml version='1.1' encoding='UTF-8'?>
-<flow-definition plugin="workflow-job@1174.vdcb_d054cf74a_">
+<flow-definition plugin="workflow-job@1181.va_25d15548158">
   <actions>
-    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@2.2064.v5eef7d0982b_e"/>
-    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@2.2064.v5eef7d0982b_e">
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@2.2081.v3919681ffc1e"/>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@2.2081.v3919681ffc1e">
       <jobProperties/>
       <triggers/>
       <parameters/>
@@ -11,8 +11,17 @@
   </actions>
   <description></description>
   <keepDependencies>false</keepDependencies>
-  <properties/>
-  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2682.va_473dcddc941">
+  <properties>
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers>
+        <hudson.triggers.SCMTrigger>
+          <spec></spec>
+          <ignorePostCommitHooks>false</ignorePostCommitHooks>
+        </hudson.triggers.SCMTrigger>
+      </triggers>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2692.v76b_089ccd026">
     <script>#!/usr/bin/env groovy
 
 pipeline {
@@ -20,7 +29,8 @@ pipeline {
     stages {
         stage(&apos;SCM Get Code&apos;) {
             steps {
-                checkout([$class: &apos;GitSCM&apos;, branches: [[name: &apos;*/master&apos;]], userRemoteConfigs: [[url: &apos;https://github.com/craig-br/juice-shop.git&apos;]]])
+                // checkout([$class: &apos;GitSCM&apos;, branches: [[name: &apos;*/main&apos;]], userRemoteConfigs: [[url: &apos;http://10.88.0.6:3000/student/acme_corp.git&apos;]]])
+                checkout([$class: &apos;GitSCM&apos;, branches: [[name: &apos;*/main&apos;]], extensions: [], userRemoteConfigs: [[url: &apos;http://localhost:3000/student/acme_corp.git&apos;]]])
             }
         }
         
