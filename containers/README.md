@@ -50,5 +50,7 @@ The container is deployed without a default configuration. So during first acces
   - `JENKINS_ADMIN_PASSWORD`: Jenkins admin password. Default `learn_ansible`
   - `REPO_TOKEN`: Access token to pull repo code into Jenkins
   - `CONTROLLER_URL`: Controller URL. Default `https://controller`
-  - `GITEA_SERVER_URL`: GITEA server URL. Default `http://gitea:3000`
+  - `GITEA_SERVER_URL`: Gitea server URL. Default `http://gitea:3000`
+  - `REPO_PASSWORD`: Gitea repo password. Default `learn_ansible`
+
 - Memory: `2048`
