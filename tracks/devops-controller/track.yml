@@ -9,9 +9,9 @@ icon: ""
 level: beginner
 tags:
 - controller
-- ' automation controller'
-- ' devops'
-- ' jenkins'
+- automation controller
+- devops
+- jenkins
 owner: redhat
 developers:
 - cbrandt@redhat.com
@@ -19,4 +19,4 @@ private: true
 published: false
 maintenance: true
 show_timer: true
-checksum: "12912143485001454848"
+checksum: "11642716943051042584"

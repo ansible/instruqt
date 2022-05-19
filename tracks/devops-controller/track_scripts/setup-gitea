@@ -1,0 +1,21 @@
+#!/bin/bash
+
+while [ ! -f /opt/instruqt/bootstrap/host-bootstrap-completed ]
+do
+    echo "Waiting for Instruqt to finish booting the VM"
+    sleep 1
+done
+
+/sbin/apk add subversion
+/bin/su - git
+/usr/bin/svn export https://github.com/craig-br/instruqt/branches/devops-controller-track/images/ansible/setup-scripts/devops-controller/files/gitea-dump.zip /tmp
+/bin/su - git -c '/usr/local/bin/gitea admin user create --admin --username student --password learn_ansible --email root@localhost'
+/usr/bin/unzip /tmp/gitea-dump.zip -d /tmp/gitea-restore
+
+/bin/mkdir -p /data/git/repositories
+/bin/mv /tmp/gitea-restore/data/* /data/gitea/
+/bin/mv /tmp/gitea-restore/repos/* /data/git/repositories/
+/bin/chown -R git:git /data
+
+/bin/su git -c  '/usr/local/bin/gitea -c '/data/gitea/conf/app.ini' admin regenerate hooks'
+/bin/su git -c  '/usr/local/bin/gitea -c '/data/gitea/conf/app.ini' manager restart'

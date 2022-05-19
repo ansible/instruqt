@@ -27,6 +27,9 @@ tabs:
   type: service
   hostname: gitea
   port: 3000
+- title: gittea-cmd
+  type: terminal
+  hostname: gitea
 difficulty: basic
 timelimit: 9000
 ---

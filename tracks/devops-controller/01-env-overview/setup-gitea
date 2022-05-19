@@ -1,2 +1,0 @@
-
-su - git -c '/usr/local/bin/gitea admin user create --admin --username student --password learn_ansible --email root@localhost'
