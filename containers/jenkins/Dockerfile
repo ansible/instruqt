@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-pip \
     build-essential \
     git && \
+    subversion && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/\* /tmp/\* /var/tmp/*
 RUN chown -R jenkins:jenkins /var/jenkins_home && \
