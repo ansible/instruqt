@@ -1,0 +1,22 @@
+slug: devops-controller
+id: fdmojwyucfu9
+type: track
+title: Dev - DevOps with automation controller
+teaser: In this lab, we'll trigger a Jenkins CI/CD pipeline and integrate it with
+  the controller API to apply the desired host configuration and deploy the application
+description: WIP
+icon: ""
+level: beginner
+tags:
+- controller
+- ' automation controller'
+- ' devops'
+- ' jenkins'
+owner: redhat
+developers:
+- cbrandt@redhat.com
+private: true
+published: false
+maintenance: true
+show_timer: true
+checksum: "6573556464967222296"
