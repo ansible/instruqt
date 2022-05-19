@@ -3,21 +3,21 @@ credentials:
     domainCredentials:
     - credentials:
       - usernamePassword:
-          description: "controller creds"
+          description: "Student controller user"
           id: "controller"
-          password: "${jenkins_admin_password:-admin}"
+          password: "${CONTROLLER_PASSWORD:-learn_ansible}"
           scope: GLOBAL
-          username: "admin"
+          username: "student"
       - usernamePassword:
           id: "Jenkins controller user"
-          password: "${jenkins_admin_password:-admin}"
+          password: "${JENKINS_ADMIN_PASSWORD:-learn_ansible}"
           scope: GLOBAL
           username: "jenkins"
       - usernamePassword:
-          id: "juiceshop_repo"
-          password: ${juiceshop_gh_token}
+          id: "ACME Corp repo"
+          password: ${REPO_TOKEN}
           scope: GLOBAL
-          username: "craig-br"
+          username: "student"
 jenkins:
   agentProtocols:
   - "JNLP4-connect"
@@ -46,7 +46,7 @@ jenkins:
       enableCaptcha: false
       users:
       - id: "admin"
-        password: ${JENKINS_ADMIN_PASSWORD:-admin}
+        password: ${JENKINS_ADMIN_PASSWORD:-learn_ansible}
   slaveAgentPort: 0
   updateCenter:
     sites:
@@ -68,9 +68,9 @@ unclassified:
     towerInstallation:
     - enableDebugging: true
       towerCredentialsId: "Jenkins controller user"
-      towerDisplayName: "JuiceShop controller"
+      towerDisplayName: "ACME Corp controller"
       towerTrustCert: true
-      towerURL: "https://192.168.20.40"
+      towerURL: ${CONTROLLER_URL:-https://controller}
   bitbucketEndpointConfiguration:
     endpoints:
     - bitbucketCloudEndpoint:
@@ -100,6 +100,12 @@ unclassified:
     hideCredentials: false
     showEntireCommitSummaryInChanges: false
     useExistingAccountWithSameEmail: false
+  giteaServers:
+    servers:
+    - credentialsId: "ACME Corp repo"
+      displayName: "ACME Corp Repo Server"
+      manageHooks: true
+      serverUrl: ${GITEA_SERVER_URL:-http://gitea:3000}
   globalDefaultFlowDurabilityLevel:
     durabilityHint: PERFORMANCE_OPTIMIZED
   junitTestResultStorage:

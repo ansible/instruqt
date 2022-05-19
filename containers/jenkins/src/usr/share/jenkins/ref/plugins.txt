@@ -16,3 +16,4 @@ ws-cleanup:latest
 matrix-auth:latest
 pipeline-utility-steps:latest
 groovy:latest
+gitea:latest

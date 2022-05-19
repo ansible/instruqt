@@ -35,3 +35,20 @@ The container is deployed without a default configuration. So during first acces
 1. register a user
 1. configure the SSH key for the user
 1. create a first repository
+
+## Jenkins DevOps Instruqt Image
+### Environment configuration
+
+- Name: `jenkins` or custom choice
+- Image: `quay.io/acme_corp/instruqt-jenkins-devops`
+- Entrypoint: (empty)
+- Cmd: (empty)
+- Ports: 8080
+- Shell (empty)
+- Environment Variables:
+  - `CONTROLLER_PASSWORD`: Controller password for Jenkins. Default `learn_ansible`
+  - `JENKINS_ADMIN_PASSWORD`: Jenkins admin password. Default `learn_ansible`
+  - `REPO_TOKEN`: Access token to pull repo code into Jenkins
+  - `CONTROLLER_URL`: Controller URL. Default `https://controller`
+  - `GITEA_SERVER_URL`: GITEA server URL. Default `http://gitea:3000`
+- Memory: `2048`
