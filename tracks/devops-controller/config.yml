@@ -1,14 +1,5 @@
 version: "3"
 containers:
-- name: jenkins
-  image: quay.io/acme_corp/instruqt-jenkins-devops
-  ports:
-  - 8080
-  environment:
-    JENKINS_ADMIN_PASSWORD: learn_ansible
-    CONTROLLER_PASSWORD: learn_ansible
-    CONTROLLER_URL: "https://controller"
-  memory: 2048
 - name: gitea
   image: gitea/gitea
   ports:
@@ -25,7 +16,17 @@ containers:
     GITEA__server__SSH_DOMAIN: http://gitea
     GITEA__service__DISABLE_REGISTRATION: "true"
     GITEA__service__REQUIRE_SIGNIN_VIEW: "false"
-    GITEA__webhook__ALLOWED_HOST_LIST: "*"
+    GITEA__webhook__ALLOWED_HOST_LIST: '*'
+  memory: 2048
+- name: jenkins
+  image: quay.io/acme_corp/instruqt-jenkins-devops
+  ports:
+  - 8080
+  environment:
+    CONTROLLER_PASSWORD: learn_ansible
+    CONTROLLER_URL: https://controller
+    GITEA_SERVER_URL: http://gitea:3000
+    JENKINS_ADMIN_PASSWORD: learn_ansible
   memory: 2048
 virtualmachines:
 - name: controller
