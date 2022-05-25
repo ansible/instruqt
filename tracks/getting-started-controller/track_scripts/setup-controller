@@ -6,11 +6,16 @@ do
     sleep 1
 done
 
+# Setup rhel user
 touch /etc/sudoers.d/rhel_sudoers
 echo "%rhel ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/rhel_sudoers
 cp -a /root/.ssh/* /home/rhel/.ssh/.
 chown -R rhel:rhel /home/rhel/.ssh
 
-curl https://raw.githubusercontent.com/craig-br/instruqt/getting-started-controller-review/images/ansible/setup-scripts/getting-started-controller/getting-started-controller-setup.yml -o /tmp/setup-scripts/getting-started-controller-setup.yml
+#Switch to correct Python version
+/usr/sbin/alternatives --set python3 /usr/bin/python3.8
 
-/bin/ansible-playbook /tmp/setup-scripts/getting-started-controller-setup.yml --tags install-packages
+# Get playbook from repo
+/usr/bin/curl https://raw.githubusercontent.com/craig-br/instruqt-tracks/devel/setup-scripts/getting-started-controller/getting-started-controller-setup.yml -o /tmp/setup-scripts/getting-started-controller/getting-started-controller-setup.yml
+# Use playbook to setup environment
+/bin/ansible-playbook /tmp/setup-scripts/getting-started-controller/getting-started-controller-setup.yml --tags setup-env
