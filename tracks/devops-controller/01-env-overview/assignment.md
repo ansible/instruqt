@@ -10,26 +10,25 @@ tabs:
   type: service
   hostname: jenkins
   port: 8080
-- title: VS Code
+- title: gitea
+  type: service
+  hostname: gitea
+  port: 3000
+- title: vscode
   type: service
   hostname: controller
   path: /editor/
   port: 443
   new_window: true
-- title: Controller UI
-  type: service
-  hostname: controller
-  port: 443
 - title: controller cmd
   type: terminal
   hostname: controller
-- title: gitea
-  type: service
-  hostname: gitea
-  port: 3000
 - title: gittea-cmd
   type: terminal
   hostname: gitea
+- title: jenkins cmd
+  type: terminal
+  hostname: jenkins
 difficulty: basic
 timelimit: 9000
 ---

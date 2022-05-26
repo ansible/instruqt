@@ -17,3 +17,4 @@ matrix-auth:latest
 pipeline-utility-steps:latest
 groovy:latest
 gitea:latest
+warnings-ng:latest

@@ -1,0 +1,18 @@
+#!/bin/bash
+while [ ! -f /opt/instruqt/bootstrap/host-bootstrap-completed ]
+do
+    echo "Waiting for Instruqt to finish booting the VM"
+    sleep 1
+done
+/usr/bin/svn export https://github.com/craig-br/instruqt/branches/devops-controller-track/images/ansible/setup-scripts/devops-controller /tmp/setup-scripts/devops-controller
+/bin/su - jenkins
+timeout 20 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' jenkins:8080)" != "200" ]]
+do
+        sleep 2;
+done' || false
+/usr/bin/curl http://jenkins:8080/jnlpJars/jenkins-cli.jar --output jenkins-cli.jar
+
+/opt/java/openjdk/bin/java -jar jenkins-cli.jar -s http://jenkins:8080 -auth "admin":"learn_ansible" create-job ACMECorp < /tmp/setup-scripts/devops-controller/files/acme.xml
+/opt/java/openjdk/bin/java -jar jenkins-cli.jar -s http://jenkins:8080 -auth "admin":"learn_ansible" create-job PollRepo < /tmp/setup-scripts/devops-controller/files/poll.xml
+
+

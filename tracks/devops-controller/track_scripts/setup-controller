@@ -1,0 +1,37 @@
+#!/bin/bash
+
+while [ ! -f /opt/instruqt/bootstrap/host-bootstrap-completed ]
+do
+    echo "Waiting for Instruqt to finish booting the VM"
+    sleep 1
+done
+
+
+# Setup rhel user
+cp -a /root/.ssh/* /home/rhel/.ssh/.
+chown -R rhel:rhel /home/rhel/.ssh
+
+# Get instruqt lab content
+/usr/bin/svn export https://github.com/craig-br/instruqt/branches/devops-controller-track/images/ansible/setup-scripts/devops-controller /tmp/setup-scripts/devops-controller
+
+# mkdir acme_corp && cd acme_corp
+# git init
+# git config --local user.email student@rhel
+# git config --local user.name Student
+# echo http://student:learn_ansible@gitea%3a3000 > /tmp/git-cred.yml
+
+# git config credential.helper 'store --file=/tmp/git-cred.yml'
+# git remote add origin http://gitea:3000/student/acme_corp.git
+# git checkout -b main 
+# /usr/bin/tar zxvf /tmp/setup-scripts/devops-controller/files/acme_repo.tar.gz
+# git add .
+# git commit -m"Initial commit"
+# git push -u origin main
+
+
+# git clone http://gitea:3000/student/acme_corp
+# cd acme_corp/
+# git config --global user.email student@rhel
+# git config --global user.name student
+# git config credential.helper 'store --file=/tmp/git-cred.yml'
+# echo http://student:learn_ansible@gitea%3a3000 > /tmp/git-cred.yml

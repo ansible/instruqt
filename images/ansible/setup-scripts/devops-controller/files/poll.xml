@@ -18,7 +18,12 @@
     </branches>
     <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
     <submoduleCfg class="empty-list"/>
-    <extensions/>
+    <extensions>
+      <hudson.plugins.git.extensions.impl.UserExclusion>
+        <excludedUsers>student
+jenkins</excludedUsers>
+      </hudson.plugins.git.extensions.impl.UserExclusion>
+    </extensions>
   </scm>
   <canRoam>true</canRoam>
   <disabled>false</disabled>
