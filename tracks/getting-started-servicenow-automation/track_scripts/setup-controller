@@ -77,6 +77,59 @@ tee /home/rhel/setup-controller.yml << EOF
         SN_PASSWORD: "{{ lookup('env', 'INSTRUQT_PARTICIPANT_ID') }}"
         SN_HOST: https://ansible.service-now.com
 
+  - name: add rhel machine credential
+    awx.awx.credential:
+      name: 'rhel credential'
+      organization: Default
+      credential_type: Machine
+      controller_host: "https://{{ ansible_host }}"
+      controller_username: admin
+      controller_password: ansible123!
+      validate_certs: false
+      inputs:
+        username: rhel
+        password: ansible123!
+
+  - name: add rhel inventory
+    awx.awx.inventory:
+      name: "rhel inventory"
+      description: "rhel servers in demo environment"
+      organization: "Default"
+      state: present
+      controller_host: "https://localhost"
+      controller_username: admin
+      controller_password: ansible123!
+      validate_certs: false
+
+  - name: add hosts
+    awx.awx.host:
+      name: "{{ item }}"
+      description: "rhel host"
+      inventory: "rhel inventory"
+      state: present
+      controller_host: "https://localhost"
+      controller_username: admin
+      controller_password: ansible123!
+      validate_certs: false
+    loop:
+      - node1
+      - node2
+
+  - name: Add group
+    awx.awx.group:
+      name: nodes
+      description: "rhel host group"
+      inventory: rhel inventory
+      hosts:
+        - node1
+        - node2
+      variables:
+        ansible_user: rhel
+      controller_host: "https://localhost"
+      controller_username: admin
+      controller_password: ansible123!
+      validate_certs: false
+
   - name: Add student project
     awx.awx.project:
       name: "ServiceNow"

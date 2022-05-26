@@ -1,6 +1,6 @@
 ---
 slug: fix-and-close
-id: ywwa9cznygjx
+id: hn8b5ufi2bfp
 type: challenge
 title: Root cause, fix and close
 teaser: Query previous created records and link a new change request record
@@ -27,13 +27,24 @@ tabs:
 difficulty: basic
 timelimit: 400
 ---
+👋 Introduction
+====
 A ServiceNow change is anything added, removed, or modified to address a problem that may be related to a past or ongoing incident.
 
 A new playbook has been created in your `VS Code` tab.
 - Review the new playbook called `change-attach.yml` as before
-- Navigate to Resources > Job Templates in automation controller and launch the job template 3 - Attach change request (change-attach.yml)
+
+▶️ Create a change request
+====
+- Navigate to `Resources > Job Templates` in automation controller and launch the job template `3 - Attach change request (change-attach.yml)`
 - Watch for job completion in automation controller
 
-Going back to ServiceNow, select `Change - Open` under your favorites. This should list out all open change requests. You should see a new change request has been created with the title `"Reboot the webserver"`. Notice how other relevant fields (such as 'Description' and 'On hold reason') have been updated as well.
+🔍 Inspect results
+====
+Go back to ServiceNow, select `Change - Open` under your favorites. This should list out all open change requests. You should see a new change request has been created with the title `"Reboot the webserver"`. Notice how other relevant fields (such as 'Description' and 'On hold reason') have been updated as well.
 
 Move onto the next section by selecting the green "Next" button below.
+
+🐛 Encountered an issue?
+====
+If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new?labels=getting-started-servicenow-automation&title=New+servicenow+issue:+fix-and-close&assignees=cloin).
