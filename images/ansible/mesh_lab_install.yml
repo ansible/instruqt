@@ -146,7 +146,7 @@
         - create-instances
         - install-controller
 
-    - name: Generate temp OpenSSH keypair for nodes
+    - name: Generate temp OpenSSH key pair for nodes
       community.crypto.openssh_keypair:
         path: "{{ _ssh_tempdir.path }}/instruqt_lab"
       tags:

@@ -34,7 +34,7 @@ Now you should be ready to run your playbook:
 ansible-navigator run apache.yml -i hosts
 ```
 
-You might have to accept the SSH fingerprint during thist first connection to the host.
+You might have to accept the SSH fingerprint during this first connection to the host.
 
 The output should not report any errors but provide an overview of the tasks executed and a play recap summarizing what has been done. There is also a task called “Gathering Facts” listed there: this is an built-in task that runs automatically at the beginning of each play. It collects information about the managed nodes. Exercises later on will cover this in more detail.
 
