@@ -12,4 +12,3 @@
 
     - name: install awx.awx
       command: ansible-galaxy collection install awx.awx
-

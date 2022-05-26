@@ -1,12 +1,12 @@
 ---
 - name: Download code-server 3 rpm
-  get_url:
+  ansible.builtin.get_url:
     url: https://github.com/cdr/code-server/releases/download/v3.10.2/code-server-3.10.2-amd64.rpm
     dest: /tmp/code-server.rpm
     mode: '0440'
 
 - name: install code-server 3 rpm from local rpm and certbot
-  dnf:
+  ansible.builtin.dnf:
     name:
       - /tmp/code-server.rpm
 #      - certbot
@@ -16,27 +16,27 @@
 # solves error
 # pkg_resources.DistributionNotFound: The 'requests>=2.14.2' distribution was not found and is required by acme
 - name: Install requests python package
-  pip:
+  ansible.builtin.pip:
     name: requests>=2.14.2
 
 - name: Apply our systemd service file (instead of RPM file)
-  template:
+  ansible.builtin.template:
     src: ../templates/code-server.service.j2
     dest: /etc/systemd/system/code-server.service
-    owner: "{{username}}"
+    owner: "{{ username }}"
     group: wheel
     mode: '0744'
 
 # source: https://vscode.readthedocs.io/en/latest/getstarted/settings/
 - name: ensure custom facts directory exists
-  file:
+  ansible.builtin.file:
     path: "/home/{{ username }}/.local/share/code-server/User/"
     recurse: true
     state: directory
     owner: "{{ username }}"
 
 - name: apply code server defaults
-  template:
+  ansible.builtin.template:
     src: ../templates/settings.json
     dest: "/home/{{ username }}/.local/share/code-server/User/settings.json"
     owner: "{{ username }}"
@@ -49,7 +49,7 @@
     group: "{{ username }}"
 
 - name: Download files for vscode
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ item }}"
     dest: /home/{{ username }}/.local/share/code-server/extensions/
     owner: "{{ username }}"
@@ -61,7 +61,7 @@
 
 - name: install ansible and markdown extensions
   become_user: "{{ username }}"
-  command: "/bin/code-server --install-extension /home/{{ username }}/.local/share/code-server/extensions/{{ item }}"
+  ansible.builtin.command: "/bin/code-server --install-extension /home/{{ username }}/.local/share/code-server/extensions/{{ item }}"
   loop:
     - bierner.markdown-preview-github-styles-0.1.6.vsix
     - hnw.vscode-auto-open-markdown-preview-0.0.4.vsix
@@ -72,25 +72,25 @@
   retries: 5
 
 - name: daemon-reload, enable and start code-server
-  systemd:
+  ansible.builtin.systemd:
     name: code-server
     enabled: true
     state: started
     daemon_reload: true
 
 - name: "install nginx"
-  dnf:
+  ansible.builtin.dnf:
     name: ['nginx']
     state: latest
 
 - name: delete all commented lines nginx.conf
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/nginx/nginx.conf
     state: absent
     regexp: '#.*'
 
 - name: instruqt - update nginx configuration to support code server
-  blockinfile:
+  ansible.builtin.blockinfile:
     block: "{{ lookup('template', '../templates/nginx.conf') }}"
     dest: /etc/nginx/nginx.conf
     insertafter: "location /"
@@ -98,11 +98,10 @@
 - name: Set httpd_can_network_connect flag on and keep it persistent across reboots
   ansible.posix.seboolean:
     name: httpd_can_network_connect
-    state: yes
-    persistent: yes
+    state: true
+    persistent: true
 
 - name: "enable nginx"
-  service:
+  ansible.builtin.service:
     name: nginx
-    enabled: yes
-
+    enabled: true

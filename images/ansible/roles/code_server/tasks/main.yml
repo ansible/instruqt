@@ -6,7 +6,7 @@
 - name: check to see if SSL cert already applied
   become: false
   get_certificate:
-    host: "{{username}}-code.{{ec2_name_prefix|lower}}.{{workshop_dns_zone}}"
+    host: "{{ username }}-code.{{ ec2_name_prefix|lower }}.{{ workshop_dns_zone }}"
     port: 443
   delegate_to: localhost
   run_once: true
@@ -21,18 +21,18 @@
     - name: setup vscode for web browser access
       include_tasks: "codeserver.yml"
   rescue:
-    - debug:
+    - ansible.builtin.debug:
         msg: 'VS code integration has failed'
 
     - name: remove additional nginx configuration because of failure
-      blockinfile:
+      ansible.builtin.blockinfile:
         block: "{{ lookup('template', 'nginx.conf') }}"
         dest: /etc/nginx/nginx.conf
         state: absent
         insertafter: "http {"
 
-    - name: Smake sure tower is on
-      service:
+    - name: make sure tower is on
+      ansible.builtin.service:
         name: ansible-tower.service
         state: started
       register: install_tower
@@ -40,7 +40,7 @@
       retries: 5
 
     - name: fail on purpose now to let user know code server failed
-      debug:
+      ansible.builtin.debug:
         msg: "VS code integration has failed in provisioner/roles/code_server/tasks/main.yml"
       failed_when: true
   when:
