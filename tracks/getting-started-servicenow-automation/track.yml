@@ -11,14 +11,13 @@ description: Ansible Automation Platform brings certified integrations to some o
 icon: ""
 level: beginner
 tags:
-- itsm
-- ' servicenow'
-- ' cmdb'
+  - itsm
+  - ' servicenow'
+  - ' cmdb'
 owner: redhat
 developers:
-- colin@redhat.com
-private: true
+  - colin@redhat.com
+private: false
 published: true
-maintenance: true
 show_timer: true
-checksum: "12280893663978895127"
+checksum: "16419792645424383740"

@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # make challenge dir
-su - rhel -c 'mkdir /home/rhel/challenge-4'
+su - rhel -c 'mkdir /home/rhel/challenge-6'
 
 # Create a playbook for the user to execute which will create a SN incident
-tee /home/rhel/challenge-4/create-inventory-project.yml << EOF
+tee /home/rhel/challenge-6/create-inventory-project.yml << EOF
 ---
 - name: Configure SCM project 
   hosts: localhost
@@ -31,19 +31,20 @@ tee /home/rhel/challenge-4/create-inventory-project.yml << EOF
 EOF
 
 # chown above file
-su chown rhel:rhel /home/rhel/challenge-4/create-inventory-project.yml
+su chown rhel:rhel /home/rhel/challenge-6/create-inventory-project.yml
 
 # execute above playbook
-su - rhel -c 'ansible-playbook /home/rhel/challenge-4/create-inventory-project.yml'
+su - rhel -c 'ansible-playbook /home/rhel/challenge-6/create-inventory-project.yml'
 
 
 
 # Write a new playbook to create an inventory sourcing project above
-tee /home/rhel/challenge-4/create-inventory.yml << EOF
+tee /home/rhel/challenge-6/create-inventory.yml << EOF
 ---
 - name: Configure servicenow inventory
   hosts: localhost
   connection: local
+  gather_facts: false
   collections:
     - awx.awx
 
@@ -77,10 +78,24 @@ tee /home/rhel/challenge-4/create-inventory.yml << EOF
       controller_password: ansible123!
       validate_certs: false
 
+  - name: Add created inventory role to student
+    role:
+      user: student
+      role: "{{ item }}"
+      inventories:
+        - "ServiceNow inventory"
+      controller_username: admin
+      controller_password: ansible123!
+      validate_certs: false
+    loop:
+      - "read"
+      - "use"
+      - "update"
+
 EOF
 
 # chown above file
-sudo chown rhel:rhel /home/rhel/challenge-4/create-inventory.yml
+sudo chown rhel:rhel /home/rhel/challenge-6/create-inventory.yml
 
 # Execute above playbook
-su - rhel -c 'ansible-playbook /home/rhel/challenge-4/create-inventory.yml'
+su - rhel -c 'ansible-playbook /home/rhel/challenge-6/create-inventory.yml'

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # make challenge dir
-su - rhel -c 'mkdir /home/rhel/challenge-4'
+su - rhel -c 'mkdir /home/rhel/challenge-5'
 
 # Create a playbook for the user to execute which will create a SN incident
 tee /home/rhel/servicenow_project/close-records-by-user.yml << EOF
@@ -15,6 +15,7 @@ tee /home/rhel/servicenow_project/close-records-by-user.yml << EOF
     incident_list: []
     problem_list: []
     change_list: []
+    config_list: []
 
   tasks:
 
@@ -39,6 +40,13 @@ tee /home/rhel/servicenow_project/close-records-by-user.yml << EOF
           active: = true
     register: changes
 
+  - name: find user created configuration items
+    servicenow.itsm.configuration_item_info:
+      query:
+        - sys_created_by: LIKE {{ demo_username }}
+          active: = true
+    register: configs
+
   - name: query incident number and creation time 
     set_fact:
       incident_list: '{{ incident_list + [{"number": item.number, "opened_at": item.opened_at}] }}'
@@ -56,6 +64,12 @@ tee /home/rhel/servicenow_project/close-records-by-user.yml << EOF
       change_list: '{{ change_list + [{"number": item.number, "opened_at": item.opened_at}] }}'
     loop: "{{ changes.records }}"
     when: changes
+
+  - name: query configuration item sys_id and creation time 
+    set_fact:
+      config_list: '{{ config_list + [{"number": item.sys_id, "opened_at": item.sys_created_on}] }}'
+    loop: "{{ configs.records }}"
+    when: configs
   
   - name: close incidents from list
     servicenow.itsm.incident:
@@ -92,6 +106,14 @@ tee /home/rhel/servicenow_project/close-records-by-user.yml << EOF
     when: 
       - change_list is defined
 
+  - name: remove configuration items from list
+    servicenow.itsm.configuration_item:
+      state: absent
+      sys_id: "{{ item.number }}"
+    with_items: "{{ config_list }}"
+    when: 
+      - config_list is defined
+
 
 EOF
 
@@ -99,7 +121,7 @@ EOF
 sudo chown rhel:rhel /home/rhel/servicenow_project/change-attach.yml
 
 # Write a new playbook to create a template from above playbook
-tee /home/rhel/challenge-4/template-create.yml << EOF
+tee /home/rhel/challenge-5/template-create.yml << EOF
 ---
 - name: Create job template for problem-attach
   hosts: localhost
@@ -111,7 +133,7 @@ tee /home/rhel/challenge-4/template-create.yml << EOF
 
     - name: Post change-attach job template
       job_template:
-        name: "4 - Query and close records by user (close-records-by-user.yml)"
+        name: "5 - Query and close records by user (close-records-by-user.yml)"
         job_type: "run"
         organization: "Default"
         inventory: "Demo Inventory"
@@ -122,21 +144,6 @@ tee /home/rhel/challenge-4/template-create.yml << EOF
           - "servicenow credential"
         state: "present"
         ask_variables_on_launch: false
-        # extra_vars:
-        #   mapping:
-        #     problem:
-        #       state:
-        #         1: "open"
-        #         2: "known_error"
-        #         3: "pending_change"
-        #         4: "closed_resolved"
-        #         5: "closed"
-        #       problem_state:
-        #         1: "open"
-        #         2: "known_error"
-        #         3: "pending_change"
-        #         4: "closed_resolved"
-        #         5: "closed"
         controller_host: "https://localhost"
         controller_username: admin
         controller_password: ansible123!
@@ -145,13 +152,13 @@ tee /home/rhel/challenge-4/template-create.yml << EOF
 EOF
 
 # chown above file
-sudo chown rhel:rhel /home/rhel/challenge-4/template-create.yml
+sudo chown rhel:rhel /home/rhel/challenge-5/template-create.yml
 
 # Execute above playbook
-su - rhel -c 'ansible-playbook /home/rhel/challenge-4/template-create.yml'
+su - rhel -c 'ansible-playbook /home/rhel/challenge-5/template-create.yml'
 
 # Grant student account access to challenge job template  
-tee /home/rhel/challenge-4/role-update.yml << EOF
+tee /home/rhel/challenge-5/role-update.yml << EOF
 ---
 - name: Create job template for create-incident
   hosts: localhost
@@ -170,7 +177,11 @@ tee /home/rhel/challenge-4/role-update.yml << EOF
           - "1 - Create incident (incident-create.yml)"
           - "2 - Attach problem (problem-attach.yml)"
           - "3 - Attach change request (change-attach.yml)"
-          - "4 - Query and close records by user (close-records-by-user.yml)"
+          # - "4.1 - Collect node information (collect-node-info.yml)"
+          # - "4.2 - Create/update configuration items (create-update-config-items.yml)"
+          - "5 - Query and close records by user (close-records-by-user.yml)"
+        workflows:
+          - "4.0 - Query node info and update CMDB (multiple job templates)"
         controller_username: admin
         controller_password: ansible123!
         validate_certs: false
@@ -178,7 +189,7 @@ tee /home/rhel/challenge-4/role-update.yml << EOF
 EOF
 
 # chown above file
-sudo chown rhel:rhel /home/rhel/challenge-4/role-update.yml
+sudo chown rhel:rhel /home/rhel/challenge-5/role-update.yml
 
 # Execute above playbook
-su - rhel -c 'ansible-playbook /home/rhel/challenge-4/role-update.yml'
+su - rhel -c 'ansible-playbook /home/rhel/challenge-5/role-update.yml'
