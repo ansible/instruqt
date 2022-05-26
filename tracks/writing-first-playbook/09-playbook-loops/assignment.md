@@ -11,7 +11,7 @@ notes:
     do that in a single task.
 - type: text
   contents: |-
-    Loops can also iterate over more than just basic lists. For example, if you have a list of users with their coresponding group, loop can iterate over them as well.
+    Loops can also iterate over more than just basic lists. For example, if you have a list of users with their corresponding group, loop can iterate over them as well.
 
     Find out more about loops in the [Ansible Loops documentation](https://docs.ansible.com/ansible/latest/user_guide/playbooks_loops.html).
 tabs:

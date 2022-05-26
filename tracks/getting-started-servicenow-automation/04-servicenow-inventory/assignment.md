@@ -31,7 +31,7 @@ A new inventory has been added to Automation Controller, but it hasn't synced an
 
 ---
 
-- First, open the Automation Controller tab and navigator the right hand navigation pane to `Hosts`. You should only see 1 called `localhost`. This is because the integration between Ansible Automation Platform and ServiceNow is an API to API integration where the endpoints we're targetting are not individual hosts, but an API.
+- First, open the Automation Controller tab and navigator the right hand navigation pane to `Hosts`. You should only see 1 called `localhost`. This is because the integration between Ansible Automation Platform and ServiceNow is an API to API integration where the endpoints we're targeting are not individual hosts, but an API.
 
 - Next, using the left hand side navigation pane, select `Inventories`. What's new here is the `ServiceNow inventory` - click on it. Now, select the `Sources` tab and the `Sync all` button.
 

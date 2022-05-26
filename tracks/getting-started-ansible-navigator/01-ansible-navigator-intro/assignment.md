@@ -31,7 +31,7 @@ ansible-navigator --help
 
 ***
 
-**2.** Now that we know `ansible-navigator` was installed succesfully, try writing a quick playbook called `test.yml` to ping localhost. It could look something like this:
+**2.** Now that we know `ansible-navigator` was installed successfully, try writing a quick playbook called `test.yml` to ping localhost. It could look something like this:
 ```
 ---
 - name: this is just a test
