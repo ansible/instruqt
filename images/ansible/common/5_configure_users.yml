@@ -5,7 +5,7 @@
     shell: /bin/bash
     password: "{{ admin_password | password_hash('sha512', 'mysecretsalt') }}"
     groups: wheel
-    append: yes
+    append: true
 
 - name: enable sshd password auth
   lineinfile:
@@ -23,16 +23,16 @@
 - name: create receptor group
   ansible.builtin.group:
     name: receptor
-    state: present 
-    
+    state: present
+
 - name: Create awx user and add to receptor group
   ansible.builtin.user:
     name: awx
     groups: receptor
-    append: yes
+    append: true
     home: /var/lib/awx
     shell: /bin/bash
-    
+
 - name: restart sshd
   ansible.builtin.systemd:
     name: sshd
