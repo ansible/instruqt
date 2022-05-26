@@ -7,7 +7,7 @@ teaser: Let's take a look at common navigator settings!
 notes:
 - type: text
   contents: |-
-    `ansible-navigator` has been introduced as a way to unify the development experience. For this reason, there are a lot of configration directives that can be customized for each developer/project.
+    `ansible-navigator` has been introduced as a way to unify the development experience. For this reason, there are a lot of configuration directives that can be customized for each developer/project.
 
     `ansible-navigator.yml` is the config file present in each project that will determine how automation is created and executed with `ansible-navigator`
 
