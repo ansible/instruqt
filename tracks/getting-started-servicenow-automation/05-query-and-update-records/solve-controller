@@ -1,5 +1,5 @@
 # creates a playbook to create a user in SNOW
-tee /home/rhel/challenge-4/solve.yml << EOF
+tee /home/rhel/challenge-5/solve.yml << EOF
 ---
 - name: Run JT from Controller
   hosts: localhost
@@ -10,7 +10,7 @@ tee /home/rhel/challenge-4/solve.yml << EOF
   tasks:
 
     - awx.awx.job_launch:
-        job_template: "4 - Query and close records by user (close-records-by-user.yml)"
+        job_template: "5 - Query and close records by user (close-records-by-user.yml)"
         controller_host: https://localhost
         controller_username: admin
         controller_password: ansible123!
@@ -19,7 +19,7 @@ tee /home/rhel/challenge-4/solve.yml << EOF
 EOF
 
 # chown above file
-sudo chown rhel:rhel /home/rhel/challenge-4/solve.yml
+sudo chown rhel:rhel /home/rhel/challenge-5/solve.yml
 
 # Execute above playbook
-su - rhel -c 'ansible-playbook /home/rhel/challenge-4/solve.yml'
+su - rhel -c 'ansible-playbook /home/rhel/challenge-5/solve.yml'

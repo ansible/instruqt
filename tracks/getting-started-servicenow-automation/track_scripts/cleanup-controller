@@ -40,6 +40,7 @@ tee /home/rhel/servicenow_project/close-records-by-user.yml << EOF
     incident_list: []
     problem_list: []
     change_list: []
+    config_list: []
 
   tasks:
 
@@ -64,6 +65,13 @@ tee /home/rhel/servicenow_project/close-records-by-user.yml << EOF
           active: = true
     register: changes
 
+  - name: find user created configuration items
+    servicenow.itsm.configuration_item_info:
+      query:
+        - sys_created_by: LIKE {{ demo_username }}
+          active: = true
+    register: configs
+
   - name: query incident number and creation time 
     set_fact:
       incident_list: '{{ incident_list + [{"number": item.number, "opened_at": item.opened_at}] }}'
@@ -81,6 +89,12 @@ tee /home/rhel/servicenow_project/close-records-by-user.yml << EOF
       change_list: '{{ change_list + [{"number": item.number, "opened_at": item.opened_at}] }}'
     loop: "{{ changes.records }}"
     when: changes
+
+  - name: query configuration item sys_id and creation time 
+    set_fact:
+      config_list: '{{ config_list + [{"number": item.sys_id, "opened_at": item.sys_created_on}] }}'
+    loop: "{{ configs.records }}"
+    when: configs
   
   - name: close incidents from list
     servicenow.itsm.incident:
@@ -117,6 +131,14 @@ tee /home/rhel/servicenow_project/close-records-by-user.yml << EOF
     when: 
       - change_list is defined
 
+  - name: remove configuration items from list
+    servicenow.itsm.configuration_item:
+      state: absent
+      sys_id: "{{ item.number }}"
+    with_items: "{{ config_list }}"
+    when: 
+      - config_list is defined
+
 EOF
 
 # chown above file
@@ -137,7 +159,7 @@ tee /home/rhel/cleanup/cleanup.yml << EOF
 
     - name: Post change-attach job template
       job_template:
-        name: "4 - Query and close records by user (close-records-by-user.yml)"
+        name: "5 - Query and close records by user (close-records-by-user.yml)"
         job_type: "run"
         organization: "Default"
         inventory: "Demo Inventory"
@@ -154,7 +176,7 @@ tee /home/rhel/cleanup/cleanup.yml << EOF
         validate_certs: false
 
     - awx.awx.job_launch:
-        job_template: "4 - Query and close records by user (close-records-by-user.yml)"
+        job_template: "5 - Query and close records by user (close-records-by-user.yml)"
         controller_host: https://localhost:443
         controller_username: admin
         controller_password: ansible123!

@@ -1,6 +1,6 @@
 ---
 slug: servicenow-inventory
-id: ran98gznv2eo
+id: vyoxhzmu9zr5
 type: challenge
 title: Use ServiceNow as an inventory source
 teaser: Perform advanced queries against your CMDB and act on the results
@@ -27,22 +27,27 @@ tabs:
 difficulty: basic
 timelimit: 400
 ---
-Up to this point, we've explored some of the modules from `servicenow.itsm` that we can leverage as a part of an automated incident management process. The interaction we've had while exporing these modules probably isn't how we would implement these modules in production.
+👋 Introduction
+====
+Up to this point, we've explored some of the modules from `servicenow.itsm` that we can leverage as a part of an automated incident management process. While the interaction we've had while exploring these modules probably isn't how we would implement these modules in production, the modules contained in this collection are very flexible and can be applied to many different use cases within ITSM.
 
-Rather, we'd probably use these playbooks as a part of an Automation Controller workflow where we can drag and drop incident creation, updates, resolution, etc. in an entire change management/problem resolution workflow.
+Apart from ITSM tasks, `servicenow.itsm` collection also has a really useful inventory script which allows you to query endpoints from the CMDB.
 
-Apart from ITSM tasks, `servicenow.itsm` collection also has a really useful inventory script.
+A new inventory has been added to Automation Controller, but it hasn't queried any hosts yet. Take a look!
 
-A new inventory has been added to Automation Controller, but it hasn't synced any hosts yet. Take a look!
-
----
-
+👀 Review inventories
+====
 - First, open the Automation Controller tab and navigator the right hand navigation pane to `Hosts`. Notice that this list is empty. This is because the integration between Ansible Automation Platform and ServiceNow is an API to API integration where the endpoints we're targeting are not individual hosts, but an API.
 
-- Next, using the left hand side navigation pane, select `Inventories`. What's new here is the `ServiceNow inventory` - click on it. Now, select the `Sources` tab and the `Sync all` button.
+▶️ Sync ServiceNow inventory
+====
+- Next, using the left hand side navigation pane, select `Inventories`. What's new here is the `ServiceNow inventory` - click on it. Now, select the `Sources` tab and the `Sync` 🔄 button.
 
 This just kicked of a series of jobs to update the inventory we're pulling out of ServiceNow CMDB!
 - Select `Jobs` from the left hand navigation pane and you'll be able to monitor the progress of this update.
+
+🔍 Inspect results
+====
 - Once the two jobs have finished, click `Hosts` on the left hand navigation and notice all of the hosts pulled from CMDB.
 - Also, explore the hosts and groups in Inventories > ServiceNow inventory > Hosts
 
@@ -61,4 +66,8 @@ group_by:
 ```
 > The above inventory is querying the CMDB for Linux and Windows XP operating systems and grouping the restults by manufacturer.
 
-All finished!
+🎉 All finished! 🎉
+
+🐛 Encountered an issue?
+====
+If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new?labels=getting-started-servicenow-automation&title=New+servicenow+issue:+servicenow-inventory&assignees=cloin).

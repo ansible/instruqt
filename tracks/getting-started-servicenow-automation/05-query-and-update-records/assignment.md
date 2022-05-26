@@ -1,6 +1,6 @@
 ---
 slug: query-and-update-records
-id: mec4mlotoknj
+id: wsjpclhp57g6
 type: challenge
 title: Query and update records
 teaser: Query and update multiple records of multiple types
@@ -27,14 +27,24 @@ tabs:
 difficulty: basic
 timelimit: 400
 ---
-Finally, lets assume that our fictional board meeting that was holding up the reboot of the webserver has now completed and we can safely perform our change request and update the status of the problem and incident to indicate that everything has been resolved.
+👋 Introduction
+====
+It's now time to cleanup the records that were created as a part of this learning track. To do this, we're going to leverage different modules to locate records created by your ServiceNow user.
 
 To do this, inspect the playbook `close-records-by-user.yml` in VS Code. There are a few new modules here. These `*_info` modules are being used to query for different record types (incident, problem, and change_request) for active records created by your username. Ansible then transforms these returned records into simple lists of objects and passes the lists to their respective modules to update/close the records. For any fields not implemented by the module itself, there is a module parameter called `other` that can be used to specify any other field or custom fields for that particular table.
 
+▶️ Query and close records
+====
 To perform this automation:
-- Launch the job template `4 - Query and close records by user (close-records-by-user.yml` in automation controller
+- Navigate to `Resources > Templates` and launch the job template `5 - Query and close records by user (close-records-by-user.yml` in automation controller
 - Monitor the output of the job template and wait for the job to complete
 
+🔍 Inspect results
+====
 Once the job completes, all records that you had created in previous challenges should be closed or removed! The job output should show all the relevant record numbers that were cleaned up. Refresh your views in ServiceNow to see the updates.
 
-Now that everything has been cleaned up, move onto the next challenge!
+Now that everything has been cleaned up, move onto the next challenge! Click the green "Next" button below.
+
+🐛 Encountered an issue?
+====
+If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new?labels=getting-started-servicenow-automation&title=New+servicenow+issue:+query-and-update-records&assignees=cloin).
