@@ -19,7 +19,7 @@ credentials:
           id: "gitea_repo"
           password: "${REPO_PASSWORD:-learn_ansible}"
           scope: GLOBAL
-          username: "student"
+          username: "jenkins"
 jenkins:
   agentProtocols:
   - "JNLP4-connect"

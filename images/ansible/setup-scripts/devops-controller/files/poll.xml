@@ -20,8 +20,7 @@
     <submoduleCfg class="empty-list"/>
     <extensions>
       <hudson.plugins.git.extensions.impl.UserExclusion>
-        <excludedUsers>student
-jenkins</excludedUsers>
+        <excludedUsers>jenkins</excludedUsers>
       </hudson.plugins.git.extensions.impl.UserExclusion>
     </extensions>
   </scm>
