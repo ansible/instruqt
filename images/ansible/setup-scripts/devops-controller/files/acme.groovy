@@ -35,14 +35,14 @@ pipeline {
                             // echo https://${env.GIT_USERNAME}:${env.GIT_PASSWORD}@github.com &gt;&gt; \$HOME/.git-credentials
                                                     // git add .
                         // git push origin main
+                    // git checkout main
+                        // git fetch --tags --all --prune
+                        // git pull --force origin main
             steps {
                 withCredentials([gitUsernamePassword(credentialsId: 'gitea_repo', gitToolName: 'git')]) {
                     sh """
                         git config --replace-all user.name ${env.GIT_USERNAME}
                         git config --replace-all user.email ${env.GIT_USERNAME}
-                        git checkout main
-                        git fetch --tags --all --prune
-                        git pull --force origin main
                         cd app && /usr/bin/python3 -m bumpversion --config-file setup.cfg --allow-dirty --verbose minor --list > build_vars.env
 
                     """
@@ -54,6 +54,7 @@ pipeline {
                         echo " NEW  - ${newPkgVersion}"
                     }
                     sh """
+                        pwd
                         git tag --force v${newPkgVersion}
                         git add .
                         git commit -m"Bump version from  v${pkgVersion} to v${newPkgVersion}"
