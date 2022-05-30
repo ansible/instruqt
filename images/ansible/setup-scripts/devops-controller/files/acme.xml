@@ -21,7 +21,7 @@
       </triggers>
     </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
   </properties>
-  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2705.v0449852ee36f">
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2706.v71dd22b_c5a_a_2">
     <script>#!/usr/bin/env groovy
 
 pipeline {
@@ -53,6 +53,8 @@ pipeline {
         //     }
         // }
         stage(&apos;Build and Tag&apos;) {
+                                                            
+                                                            //    git pull origin main --force --allow-unrelated-histories // git checkout main
                                        // git config credential.helper store
                             // echo https://${env.GIT_USERNAME}:${env.GIT_PASSWORD}@github.com &amp;gt;&amp;gt; \$HOME/.git-credentials
                                                     // git add .
@@ -60,26 +62,31 @@ pipeline {
             steps {
                 withCredentials([gitUsernamePassword(credentialsId: &apos;gitea_repo&apos;, gitToolName: &apos;git&apos;)]) {
                     sh &quot;&quot;&quot;
-                        git config --replace-all user.name jenkins-build
+                        git config --replace-all user.name ${env.GIT_USERNAME}
                         git config --replace-all user.email ${env.GIT_USERNAME}
                         git checkout main
-                        cd app &amp;&amp; /usr/bin/python3 -m bumpversion --allow-dirty --verbose minor --list &gt; build_vars.env
+                        git fetch --tags --all --prune
+                        git pull --force origin main
+                        cd app &amp;&amp; /usr/bin/python3 -m bumpversion --config-file setup.cfg --allow-dirty --verbose minor --list &gt; build_vars.env
 
+                    &quot;&quot;&quot;
+                    script {
+                        def build_vars = readProperties file: &apos;app/build_vars.env&apos;
+                        env.newPkgVersion = build_vars.new_version
+                        env.pkgVersion = build_vars.current_version
+                        echo &quot; CURRENT - ${pkgVersion}&quot;
+                        echo &quot; NEW  - ${newPkgVersion}&quot;
+                    }
+                    sh &quot;&quot;&quot;
+                        git tag --force v${newPkgVersion}
+                        git add .
+                        git commit -m&quot;Bump version from  v${pkgVersion} to v${newPkgVersion}&quot;
+                        git push --force origin main v${newPkgVersion}
                     &quot;&quot;&quot;
                 }
                
-                script {
-                    def build_vars = readProperties file: &apos;app/build_vars.env&apos;
-                    env.newPkgVersion = build_vars.new_version
-                    env.pkgVersion = build_vars.current_version
-                    // env.pkgVersion = sh (
-                    //     script: &apos;cd app &amp;&amp; /usr/bin/python3 -c &quot;import _version; print(_version.__version__)&quot;&apos;,
-                    //     returnStdout: true
-                    //     ).trim()
-                    echo &quot; CURRENT - ${pkgVersion}&quot;
-                    echo &quot; NEW  - ${newPkgVersion}&quot;
-                    
-                }
+
+                
                 
                 // withCredentials([gitUsernamePassword(credentialsId: &apos;gitea_repo&apos;, gitToolName: &apos;git&apos;)]) {
                 //     sh &quot;&quot;&quot;

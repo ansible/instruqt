@@ -29,8 +29,8 @@ pipeline {
         //     }
         // }
         stage('Build and Tag') {
-                                                              // git add .
-                        // git commit -m "v${newPkgVersion}"
+                                                            
+                                                            //    git pull origin main --force --allow-unrelated-histories // git checkout main
                                        // git config credential.helper store
                             // echo https://${env.GIT_USERNAME}:${env.GIT_PASSWORD}@github.com &gt;&gt; \$HOME/.git-credentials
                                                     // git add .
@@ -41,28 +41,36 @@ pipeline {
                         git config --replace-all user.name ${env.GIT_USERNAME}
                         git config --replace-all user.email ${env.GIT_USERNAME}
                         git checkout main
-                        cd app && /usr/bin/python3 -m bumpversion --allow-dirty --verbose minor --list > build_vars.env
+                        git fetch --tags --all --prune
+                        git pull --force origin main
+                        cd app && /usr/bin/python3 -m bumpversion --config-file setup.cfg --allow-dirty --verbose minor --list > build_vars.env
+
+                    """
+                    script {
+                        def build_vars = readProperties file: 'app/build_vars.env'
+                        env.newPkgVersion = build_vars.new_version
+                        env.pkgVersion = build_vars.current_version
+                        echo " CURRENT - ${pkgVersion}"
+                        echo " NEW  - ${newPkgVersion}"
+                    }
+                    sh """
+                        git tag --force v${newPkgVersion}
+                        git add .
+                        git commit -m"Bump version from  v${pkgVersion} to v${newPkgVersion}"
+                        git push --force origin main v${newPkgVersion}
                     """
                 }
                
-                script {
-                    def build_vars = readProperties file: 'app/build_vars.env'
-                    env.newPkgVersion = build_vars.new_version
-                    env.pkgVersion = build_vars.current_version
-                    // env.pkgVersion = sh (
-                    //     script: 'cd app && /usr/bin/python3 -c "import _version; print(_version.__version__)"',
-                    //     returnStdout: true
-                    //     ).trim()
-                    echo " CURRENT - ${pkgVersion}"
-                    echo " NEW  - ${newPkgVersion}"
-                    
-                }
+
                 
-                withCredentials([gitUsernamePassword(credentialsId: 'gitea_repo', gitToolName: 'git')]) {
-                    sh """
-                        git push origin main v${newPkgVersion}
-                    """
-                }
+                
+                // withCredentials([gitUsernamePassword(credentialsId: 'gitea_repo', gitToolName: 'git')]) {
+                //     sh """
+                //         git add .
+                //         git commit -m "v${newPkgVersion}"
+                //         git push origin main "${newPkgVersion}"
+                //     """
+                // }
                 
                 // ansibleTower(
                 //     towerServer: 'JuiceShop controller',
