@@ -13,12 +13,7 @@
   <keepDependencies>false</keepDependencies>
   <properties>
     <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
-      <triggers>
-        <hudson.triggers.SCMTrigger>
-          <spec></spec>
-          <ignorePostCommitHooks>false</ignorePostCommitHooks>
-        </hudson.triggers.SCMTrigger>
-      </triggers>
+      <triggers/>
     </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
   </properties>
   <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2706.v71dd22b_c5a_a_2">
@@ -59,14 +54,14 @@ pipeline {
                             // echo https://${env.GIT_USERNAME}:${env.GIT_PASSWORD}@github.com &amp;gt;&amp;gt; \$HOME/.git-credentials
                                                     // git add .
                         // git push origin main
+                    // git checkout main
+                        // git fetch --tags --all --prune
+                        // git pull --force origin main
             steps {
                 withCredentials([gitUsernamePassword(credentialsId: &apos;gitea_repo&apos;, gitToolName: &apos;git&apos;)]) {
                     sh &quot;&quot;&quot;
                         git config --replace-all user.name ${env.GIT_USERNAME}
                         git config --replace-all user.email ${env.GIT_USERNAME}
-                        git checkout main
-                        git fetch --tags --all --prune
-                        git pull --force origin main
                         cd app &amp;&amp; /usr/bin/python3 -m bumpversion --config-file setup.cfg --allow-dirty --verbose minor --list &gt; build_vars.env
 
                     &quot;&quot;&quot;
@@ -78,6 +73,7 @@ pipeline {
                         echo &quot; NEW  - ${newPkgVersion}&quot;
                     }
                     sh &quot;&quot;&quot;
+                        pwd
                         git tag --force v${newPkgVersion}
                         git add .
                         git commit -m&quot;Bump version from  v${pkgVersion} to v${newPkgVersion}&quot;
