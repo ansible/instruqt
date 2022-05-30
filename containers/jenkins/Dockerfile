@@ -6,6 +6,7 @@ ENV CASC_JENKINS_CONFIG=/usr/share/jenkins/ref/jenkins_casc.yml \
 USER root
 COPY --chown=jenkins:jenkins src /
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    ansible \
     subversion \
     python3 \
     python3-pip \

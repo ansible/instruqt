@@ -124,6 +124,7 @@ unclassified:
 tool:
   ansibleInstallation:
     installations:
+    - home: "/usr/bin/"
     - name: "Ansible"
   git:
     installations:

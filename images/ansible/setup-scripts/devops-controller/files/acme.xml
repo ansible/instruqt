@@ -48,19 +48,11 @@ pipeline {
         //     }
         // }
         stage(&apos;Build and Tag&apos;) {
-                                                            
-                                                            //    git pull origin main --force --allow-unrelated-histories // git checkout main
-                                       // git config credential.helper store
-                            // echo https://${env.GIT_USERNAME}:${env.GIT_PASSWORD}@github.com &amp;gt;&amp;gt; \$HOME/.git-credentials
-                                                    // git add .
-                        // git push origin main
-                    // git checkout main
-                        // git fetch --tags --all --prune
-                        // git pull --force origin main
             steps {
                 withCredentials([gitUsernamePassword(credentialsId: &apos;gitea_repo&apos;, gitToolName: &apos;git&apos;)]) {
                     sh &quot;&quot;&quot;
                         git checkout main
+                        git pull origin main --force
                         git fetch --tags --all --prune
                         git config --replace-all user.name ${env.GIT_USERNAME}
                         git config --replace-all user.email ${env.GIT_USERNAME}
@@ -75,7 +67,6 @@ pipeline {
                         echo &quot; NEW  - ${newPkgVersion}&quot;
                     }
                     sh &quot;&quot;&quot;
-                        pwd
                         git tag --force v${newPkgVersion}
                         git add .
                         git commit -m&quot;Bump version from  v${pkgVersion} to v${newPkgVersion}&quot;
@@ -108,7 +99,11 @@ pipeline {
                 // )                         
             }
         }
-        
+        stage(&quot;AAP - Create Release&quot;) {
+            steps {
+                ansiblePlaybook extras: &apos;-e tag_name=${newPkgVersion}&apos;, installation: &apos;Ansible&apos;, playbook: &apos;./playbooks/app_release.yml&apos;
+            }
+        }
         // stage(&apos;Build and Tag&apos;) {
         //     steps {
         //         nodejs(nodeJSInstallationName: &apos;nodejs&apos;) {

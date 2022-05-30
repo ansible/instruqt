@@ -29,19 +29,11 @@ pipeline {
         //     }
         // }
         stage('Build and Tag') {
-                                                            
-                                                            //    git pull origin main --force --allow-unrelated-histories // git checkout main
-                                       // git config credential.helper store
-                            // echo https://${env.GIT_USERNAME}:${env.GIT_PASSWORD}@github.com &gt;&gt; \$HOME/.git-credentials
-                                                    // git add .
-                        // git push origin main
-                    // git checkout main
-                        // git fetch --tags --all --prune
-                        // git pull --force origin main
             steps {
                 withCredentials([gitUsernamePassword(credentialsId: 'gitea_repo', gitToolName: 'git')]) {
                     sh """
                         git checkout main
+                        git pull origin main --force
                         git fetch --tags --all --prune
                         git config --replace-all user.name ${env.GIT_USERNAME}
                         git config --replace-all user.email ${env.GIT_USERNAME}
@@ -56,7 +48,6 @@ pipeline {
                         echo " NEW  - ${newPkgVersion}"
                     }
                     sh """
-                        pwd
                         git tag --force v${newPkgVersion}
                         git add .
                         git commit -m"Bump version from  v${pkgVersion} to v${newPkgVersion}"
@@ -89,7 +80,11 @@ pipeline {
                 // )                         
             }
         }
-        
+        stage("AAP - Create Release") {
+            steps {
+                ansiblePlaybook extras: '-e tag_name=${newPkgVersion}', installation: 'Ansible', playbook: './playbooks/app_release.yml'
+            }
+        }
         // stage('Build and Tag') {
         //     steps {
         //         nodejs(nodeJSInstallationName: 'nodejs') {
