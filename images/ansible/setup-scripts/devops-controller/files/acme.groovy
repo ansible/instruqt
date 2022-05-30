@@ -41,6 +41,8 @@ pipeline {
             steps {
                 withCredentials([gitUsernamePassword(credentialsId: 'gitea_repo', gitToolName: 'git')]) {
                     sh """
+                        git checkout main
+                        git fetch --tags --all --prune
                         git config --replace-all user.name ${env.GIT_USERNAME}
                         git config --replace-all user.email ${env.GIT_USERNAME}
                         cd app && /usr/bin/python3 -m bumpversion --config-file setup.cfg --allow-dirty --verbose minor --list > build_vars.env
