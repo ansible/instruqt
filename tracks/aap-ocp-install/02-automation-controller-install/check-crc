@@ -1,0 +1,11 @@
+#!/bin/bash
+
+#Get deployment names
+deployment_names=`oc get pods -o custom-columns=POD:.metadata.name --no-headers -n ansible-automation-platform | grep postgres | awk -F '-postgres' '{ print $1 }'`
+
+#Separate the 2 deployment names
+controller_deployment=`echo $deployment_names | cut -d ' ' -f 1`
+ahub_deployment=`echo $deployment_names | cut -d ' ' -f 2`
+
+#Wait for the deployment to be rolled out and ready
+oc rollout status deployment "$controller_deployment" -n ansible-automation-platform

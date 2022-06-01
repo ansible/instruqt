@@ -1,0 +1,6 @@
+!#/bin/bash
+
+#Wait for the rollouts to happen before moving on
+oc rollout status deployment automation-controller-operator-controller-manager -n ansible-automation-platform
+oc rollout status deployment automation-hub-operator-controller-manager -n ansible-automation-platform
+oc rollout status deployment resource-operator-controller-manager  -n ansible-automation-platform
