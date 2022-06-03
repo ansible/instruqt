@@ -66,6 +66,7 @@ jobs:
         INSTRUQT_TOKEN: ${{ secrets.INSTRUQT_API_KEY }}
       
     - name: test slugs
-      run: instruqt track test ${{ matrix.track-slug }}
+      run: instruqt track test $INSTRUQT_ORG/${{ matrix.track-slug }}
       env:
         INSTRUQT_TOKEN: ${{ secrets.INSTRUQT_API_KEY }}
+        INSTRUQT_ORG: ${{ secrets.INSTRUQT_ORG }}
