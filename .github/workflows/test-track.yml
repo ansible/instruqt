@@ -27,12 +27,11 @@ jobs:
 #         run: echo "::set-output name=matrix::$(ansible-playbook .github/workflows/ansible/prod-track-test.yml)"
         run: |
           echo "::set-output name=matrix::$(\
-          curl -s https://play.instruqt.com/graphql \
+          curl https://play.instruqt.com/graphql \
           -H "Content-Type: application/json" \
           -H "Accept: application/json" \
-          -H "Connection: keep-alive" \
           -H "Authorization: Bearer $INSTRUQT_API_KEY" \
-          -d '{"query":"query tracks {\n  tracks(organizationSlug: \"redhat\") {\n    slug\n    maintenance\n  }\n}\n","variables":{}}' | jq -s '.[].data.tracks[] | select(.maintenance==false) | .slug' | jq -R -s -c 'split("\n")[:-1]'\
+          -d '{"query":"query tracks {\n  tracks(organizationSlug: \"redhat\") {\n    slug\n    maintenance\n  }\n}\n","variables":{}}' --compressed | jq -s '.[].data.tracks[] | select(.maintenance==false) | .slug' | jq -R -s -c 'split("\n")[:-1]' | sed 's/\\//g' | sed 's/\"\"/"/g'\
           )"
         env:
           INSTRUQT_API_KEY: ${{ secrets.INSTRUQT_API_KEY }}
