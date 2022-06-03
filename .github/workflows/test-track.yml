@@ -41,6 +41,7 @@ jobs:
         run: echo ${{ steps.set-matrix.outputs.matrix }}
   
   run-track-test:
+    needs: get-instruqt-prod-tracks
     runs-on: ubuntu-latest
     environment: test
     strategy:
