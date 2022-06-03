@@ -12,15 +12,15 @@ on:
   workflow_dispatch:
 
 jobs:
-  install-instruqt-cli:
-    runs-on: ubuntu-latest
-    environment: test
-    steps:
-      - run: curl -L https://github.com/instruqt/cli/releases/download/2036-df08c03/instruqt-linux-2036-df08c03.zip -o /tmp/instruqt.zip
-      - run: unzip /tmp/instruqt.zip -d /usr/local/bin/
-      - run: instruqt update
-        env:
-          INSTRUQT_TOKEN: ${{ secrets.INSTRUQT_API_KEY }}
+#   install-instruqt-cli:
+#     runs-on: ubuntu-latest
+#     environment: test
+#     steps:
+#       - run: curl -L https://github.com/instruqt/cli/releases/download/2036-df08c03/instruqt-linux-2036-df08c03.zip -o /tmp/instruqt.zip
+#       - run: unzip /tmp/instruqt.zip -d /usr/local/bin/
+#       - run: instruqt update
+#         env:
+#           INSTRUQT_TOKEN: ${{ secrets.INSTRUQT_API_KEY }}
 
   get-instruqt-prod-tracks:
     runs-on: ubuntu-latest
@@ -57,8 +57,13 @@ jobs:
         track-slug: ${{ fromJSON(needs.get-instruqt-prod-tracks.outputs.matrix) }}
         
     steps:
-    - name: dump slugs
-      run: echo ${{ matrix.track-slug }}
+    - name: Install instruqt cli
+      run: |
+        curl -L https://github.com/instruqt/cli/releases/download/2036-df08c03/instruqt-linux-2036-df08c03.zip -o /tmp/instruqt.zip
+        unzip /tmp/instruqt.zip -d /usr/local/bin/
+        instruqt update
+      env:
+        INSTRUQT_TOKEN: ${{ secrets.INSTRUQT_API_KEY }}
       
     - name: test slugs
       run: instruqt track test ${{ matrix.track-slug }}
