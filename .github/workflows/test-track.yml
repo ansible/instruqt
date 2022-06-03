@@ -12,6 +12,16 @@ on:
   workflow_dispatch:
 
 jobs:
+  install-instruqt-cli:
+    runs-on: ubuntu-latest
+    environment: test
+    steps:
+      - run: curl -L https://github.com/instruqt/cli/releases/download/2036-df08c03/instruqt-linux-2036-df08c03.zip -o /tmp/instruqt.zip
+      - run: unzip /tmp/instruqt.zip -d /usr/local/bin/
+      - run: instruqt update
+        env:
+          INSTRUQT_TOKEN: ${{ secrets.INSTRUQT_API_KEY }}
+
   get-instruqt-prod-tracks:
     runs-on: ubuntu-latest
     environment: test
@@ -19,12 +29,9 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
 
     steps:
-#       - uses: actions/checkout@v2
-#       - run: pip install jmespath
       
       - name: get production tracks
         id: set-matrix
-#         run: echo "::set-output name=matrix::$(ansible-playbook .github/workflows/ansible/prod-track-test.yml)"
         run: |
           echo "::set-output name=matrix::$(\
           curl https://play.instruqt.com/graphql \
@@ -52,3 +59,8 @@ jobs:
     steps:
     - name: dump slugs
       run: echo ${{ matrix.track-slug }}
+      
+    - name: test slugs
+      run: instruqt track test ${{ matrix.track-slug }}
+      env:
+        INSTRUQT_TOKEN: ${{ secrets.INSTRUQT_API_KEY }}
