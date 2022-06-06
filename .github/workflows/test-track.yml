@@ -49,7 +49,7 @@ jobs:
       env:
         INSTRUQT_TOKEN: ${{ secrets.INSTRUQT_API_KEY }}
       
-    - name: test slugs
+    - name: run track test
       shell: bash {0}
       run: |
         testtrack="$(/usr/local/bin/instruqt track test $INSTRUQT_ORG/${{ matrix.track-slug }})"
