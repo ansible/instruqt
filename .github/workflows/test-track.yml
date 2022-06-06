@@ -55,18 +55,15 @@ jobs:
         testtrack="$(/usr/local/bin/instruqt track test $INSTRUQT_ORG/${{ matrix.track-slug }})"
         if [ $? -eq 0 ]
         then
-          echo "::group::Track test"
           echo "$testtrack"
-          echo "::endgroup"
           exit 0
         elif [ $? -eq 1 ]
         then
-          echo "::group::Track test"
+          echo "::group::Track test results"
           echo "$testtrack"
           echo "::endgroup::"
           error="$(echo "$testtrack" | grep "ERROR" | sed -e 's/\x1b\[[0-9;]*m//g')"
           echo "$error" >> $GITHUB_STEP_SUMMARY
-          sleep 2
           exit 1
         fi
       env:
