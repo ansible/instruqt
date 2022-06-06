@@ -78,7 +78,7 @@ jobs:
           echo "$testtrack"
           sleep 2
           error="$(echo "$testtrack" | grep "[ERROR]")"
-          sleep2
+          sleep 2
           echo "::error::$error::"
           exit 1
         fi
