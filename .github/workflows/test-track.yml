@@ -76,7 +76,9 @@ jobs:
         elif [ $? -eq 1 ]
         then
           echo "$testtrack"
+          sleep 2
           error="$(echo "$testtrack" | grep "[ERROR]")"
+          sleep2
           echo "::error::$error::"
           exit 1
         fi
