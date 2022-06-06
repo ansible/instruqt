@@ -69,10 +69,10 @@ jobs:
       shell: bash
       run: |
         testtrack="$(/usr/local/bin/instruqt track test $INSTRUQT_ORG/${{ matrix.track-slug }})"
-        if [ $? -eq 0 ]
+        if [ $? -gt 0 ]
         then
           echo "$testtrack"
-        elif [ $? -eq 1 ]
+        elif [ $? -eq 0 ]
         then
           echo "$testtrack"
         fi
