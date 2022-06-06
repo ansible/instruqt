@@ -72,9 +72,8 @@ jobs:
         then
           echo "$testtrack"
           exit 0
-        else
-          # error="$(echo "$testtrack" | grep "Error")"
-          # echo "::error::$error::"
+        elif [ $? -eq 0 ]
+        then
           echo "$testtrack"
           exit 1
         fi
