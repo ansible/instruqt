@@ -67,7 +67,7 @@ jobs:
       
     - name: test slugs
       run: |
-        testtrack="$(/usr/local/bin/instruqt track test redhat/writing-first-playbook)"
+        testtrack="$(/usr/local/bin/instruqt track test $INSTRUQT_ORG/${{ matrix.track-slug }})"
         if [ $? -eq 0 ]
         then
           echo "$testtrack"
@@ -78,7 +78,6 @@ jobs:
           echo "$testtrack"
           exit 1
         fi
-    
       env:
         INSTRUQT_TOKEN: ${{ secrets.INSTRUQT_API_KEY }}
         INSTRUQT_ORG: ${{ secrets.INSTRUQT_ORG }}
