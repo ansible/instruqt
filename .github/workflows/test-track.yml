@@ -79,7 +79,7 @@ jobs:
         then
           echo "::group::Track test"
           echo "$testtrack"
-          echo "::engroup::"
+          echo "::endgroup::"
           echo "::group::Track error"
           error="$(echo "$testtrack" | grep "ERROR")"
           echo "::debug::$error"
