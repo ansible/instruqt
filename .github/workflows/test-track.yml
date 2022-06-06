@@ -77,7 +77,6 @@ jobs:
           exit 0
         elif [ $? -eq 1 ]
         then
-          exit 1
           echo "::group::Track test"
           echo "$testtrack"
           echo "::engroup::"
@@ -85,6 +84,8 @@ jobs:
           error="$(echo "$testtrack" | grep "ERROR")"
           echo "::error::$error"
           echo "::endgroup::"
+          sleep 2
+          exit 1
         fi
       env:
         INSTRUQT_TOKEN: ${{ secrets.INSTRUQT_API_KEY }}
