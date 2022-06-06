@@ -66,7 +66,7 @@ jobs:
         INSTRUQT_TOKEN: ${{ secrets.INSTRUQT_API_KEY }}
       
     - name: test slugs
-      shell: bash -o pipefail {0}
+      shell: bash -e {0}
       run: |
         testtrack="$(/usr/local/bin/instruqt track test $INSTRUQT_ORG/${{ matrix.track-slug }})"
         if [ $? -gt 0 ]
