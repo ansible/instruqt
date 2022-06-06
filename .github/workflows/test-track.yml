@@ -67,8 +67,16 @@ jobs:
       
     - name: test slugs
       run: |
-        testResults=$(instruqt track test $INSTRUQT_ORG/${{ matrix.track-slug }}2>&1)
-        echo "::error::$testResults::"
+        testtrack="$(/usr/local/bin/instruqt track test redhat/writing-first-playbook)"
+        if [ $? -eq 0 ]
+        then
+          echo "$testtrack"
+          exit 0
+        else
+          echo "$(echo "$testtrack" | grep "Error")"
+          echo "::error::"$testtrack"::"
+          exit 1
+        fi
     
       env:
         INSTRUQT_TOKEN: ${{ secrets.INSTRUQT_API_KEY }}
