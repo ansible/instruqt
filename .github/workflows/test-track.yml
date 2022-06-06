@@ -71,13 +71,19 @@ jobs:
         testtrack="$(/usr/local/bin/instruqt track test $INSTRUQT_ORG/${{ matrix.track-slug }})"
         if [ $? -eq 0 ]
         then
+          echo "::group::Track test"
           echo "$testtrack"
+          echo "::endgroup"
           exit 0
         elif [ $? -eq 1 ]
         then
+          echo "::group::Track test"
           echo "$testtrack"
+          echo "::engroup::"
+          echo "::group::Track error"
           error="$(echo "$testtrack" | grep "ERROR")"
           echo "::error::$error"
+          echo "::endgroup::"
           exit 1
         fi
       env:
