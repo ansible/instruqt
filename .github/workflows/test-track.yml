@@ -80,10 +80,8 @@ jobs:
           echo "::group::Track test"
           echo "$testtrack"
           echo "::endgroup::"
-          echo "::group::Track error"
           error="$(echo "$testtrack" | grep "ERROR")"
-          echo "::debug::$error"
-          echo "::endgroup::"
+          echo "$error" >> $GITHUB_STEP_SUMMARY
           sleep 2
           exit 1
         fi
