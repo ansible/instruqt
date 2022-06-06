@@ -47,7 +47,7 @@ jobs:
       - name: show output
         run: echo ${{ steps.set-matrix.outputs.matrix }}
   
-  run-track-test:
+  test-track:
     needs: get-instruqt-prod-tracks
     runs-on: ubuntu-latest
     environment: test
