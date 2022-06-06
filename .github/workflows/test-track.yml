@@ -82,7 +82,7 @@ jobs:
           echo "::engroup::"
           echo "::group::Track error"
           error="$(echo "$testtrack" | grep "ERROR")"
-          echo "::error::$error"
+          echo "::debug::$error"
           echo "::endgroup::"
           sleep 2
           exit 1
