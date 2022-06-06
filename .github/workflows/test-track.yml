@@ -84,7 +84,6 @@ jobs:
           error="$(echo "$testtrack" | grep "ERROR")"
           echo "::error::$error"
           echo "::endgroup::"
-          exit 1
         fi
       env:
         INSTRUQT_TOKEN: ${{ secrets.INSTRUQT_API_KEY }}
