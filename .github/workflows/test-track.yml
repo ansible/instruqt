@@ -52,7 +52,7 @@ jobs:
     - name: run track test
       shell: bash {0}
       run: |
-        testtrack="$(/usr/local/bin/instruqt track test $INSTRUQT_ORG/${{ matrix.track-slug }})"
+        testtrack="$(/usr/local/bin/instruqt track test --skip-fail-check $INSTRUQT_ORG/${{ matrix.track-slug }})"
         if [ $? -eq 0 ]
         then
           echo "$testtrack"
