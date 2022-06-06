@@ -1,26 +1,10 @@
 name: prod track test
 on:
-  # Run CI against all pushes (direct commits, also merged PRs), Pull Requests
-#   push:
-#   pull_request:
-  # Run CI once per day (at 06:00 UTC)
-  # This ensures that even if there haven't been commits that we are still
-  # testing. This is particularly important to validate the scenarios against
-  # changes in ansible-core or ansible-test
   schedule:
     - cron: '0 6 * * *'
   workflow_dispatch:
 
 jobs:
-#   install-instruqt-cli:
-#     runs-on: ubuntu-latest
-#     environment: test
-#     steps:
-#       - run: curl -L https://github.com/instruqt/cli/releases/download/2036-df08c03/instruqt-linux-2036-df08c03.zip -o /tmp/instruqt.zip
-#       - run: unzip /tmp/instruqt.zip -d /usr/local/bin/
-#       - run: instruqt update
-#         env:
-#           INSTRUQT_TOKEN: ${{ secrets.INSTRUQT_API_KEY }}
 
   get-instruqt-prod-tracks:
     runs-on: ubuntu-latest
@@ -80,7 +64,7 @@ jobs:
           echo "::group::Track test"
           echo "$testtrack"
           echo "::endgroup::"
-          error="$(echo "$testtrack" | grep "ERROR")"
+          error="$(echo "$testtrack" | grep "ERROR" | sed -e 's/\x1b\[[0-9;]*m//g')"
           echo "$error" >> $GITHUB_STEP_SUMMARY
           sleep 2
           exit 1
