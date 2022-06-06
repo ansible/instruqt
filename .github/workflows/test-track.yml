@@ -66,15 +66,17 @@ jobs:
         INSTRUQT_TOKEN: ${{ secrets.INSTRUQT_API_KEY }}
       
     - name: test slugs
-      shell: bash -e {0}
+      shell: bash {0}
       run: |
         testtrack="$(/usr/local/bin/instruqt track test $INSTRUQT_ORG/${{ matrix.track-slug }})"
-        if [ $? -gt 0 ]
+        if [ $? -eq 0 ]
         then
           echo "$testtrack"
-        elif [ $? -eq 0 ]
+          exit 0
+        elif [ $? -eq 1 ]
         then
           echo "$testtrack"
+          exit 1
         fi
       env:
         INSTRUQT_TOKEN: ${{ secrets.INSTRUQT_API_KEY }}
