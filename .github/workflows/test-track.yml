@@ -72,7 +72,7 @@ jobs:
         then
           echo "$testtrack"
           exit 0
-        elif [ $? -eq 0 ]
+        elif [ $? -eq 1 ]
         then
           echo "$testtrack"
           exit 1
