@@ -1,0 +1,2 @@
+curl -s -u admin:ansible123! -H "Content-Type: application/json" -X POST https://privatehub-01/api/galaxy/v3/collections/ansible/test_collection/versions/1.0.0/move/staging/published/ -k
+curl -s -u admin:ansible123! -H "Content-Type: application/json" -X POST https://privatehub-01/api/galaxy/v3/collections/community/lab_collection/versions/1.0.0/move/staging/published/ -k

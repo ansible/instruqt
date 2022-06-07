@@ -1,0 +1,3 @@
+cd /home/rhel/
+ansible-galaxy collection publish /home/rhel/ansible-test_collection-1.0.0.tar.gz -c
+ansible-galaxy collection publish /home/rhel/community-lab_collection-1.0.0.tar.gz -c

@@ -1,0 +1,4 @@
+if [[ ! -f /home/rhel/.ansible/collections/ansible_collections/community/lab_collection/docs/README.md ]]
+then
+    fail-message "You did not create the expected file for verification."
+fi
