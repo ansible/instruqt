@@ -1,0 +1,27 @@
+slug: aap-ocp-install
+id: mxin1twsyurv
+type: track
+title: Installing Ansible Automation Platform via Operator on OpenShift
+description: |
+  ## Goal
+
+  Install Ansible Automation Platform (AAP) via Operator on OpenShift
+
+  ## Learn to
+
+  * Install the AAP Operator
+  * Install automation controller
+  * Install Automation Hub
+  * Access the newly installed AAP environment
+icon: ""
+level: beginner
+tags:
+- ansible
+- openshift
+owner: redhat
+developers:
+- rlopez@redhat.com
+private: false
+published: true
+show_timer: true
+checksum: "13023472960821117513"

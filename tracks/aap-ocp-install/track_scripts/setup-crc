@@ -1,0 +1,212 @@
+#!/bin/bash
+set -x
+
+# setup vars
+export TERM=xterm-color
+export KUBECONFIG=/opt/kubeconfig
+
+ENS4IP=$(ip -4 -o addr show ens4 | awk '{print $4}' | cut -d "/" -f 1)
+
+# set hostname
+#INSTRUQT_HOSTNAME=$(curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/hostname)
+
+# Don't do this below causes issues later on, i believe.
+# hostnamectl set-hostname $HOSTNAME
+
+eval $(curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/startup-script | grep INSTRUQT_PARTICIPANT_ID)
+
+# dnsmasq config for crc-dnsmasq.service
+cat << EOF > /var/srv/dnsmasq.conf
+user=root
+port= 53
+bind-interfaces
+expand-hosts
+log-queries
+local=/crc.testing/
+domain=crc.testing
+address=/apps-crc.testing/$ENS4IP
+address=/api.crc.testing/$ENS4IP
+address=/api-int.crc.testing/$ENS4IP
+address=/$HOSTNAME.crc.testing/192.168.126.11
+EOF
+
+sed -i '/^search.*/a nameserver 10.88.0.8' /etc/resolv.conf
+
+# start openshift
+systemctl start crc-dnsmasq.service
+systemctl start kubelet
+
+# INGRESS
+
+# Check for cert expiration
+CLIENT_CERT="/var/lib/kubelet/pki/kubelet-client-current.pem"
+CLIENT_SIGNER_NAME="kubernetes.io/kube-apiserver-client-kubelet"
+EXPIRE=$(date --date="$(sudo openssl x509 -in $CLIENT_CERT -noout -enddate | cut -d= -f 2)" --iso-8601=seconds)
+NOW=$(date --iso-8601=seconds)
+
+if [[ "$NOW" > "$EXPIRE" ]]
+then
+  echo "Kubelet certificates have expired; expect kubelet to renew... [will take up to 8 minutes.]"
+  # https://github.com/code-ready/crc/blob/1ddff4b80fdda77f10087574666d27a142eeab42/pkg/crc/cluster/cert-renewal.go
+  # Kubelet will automatically request a new client, when it shows up as pending an admin must approve.
+  # wait for pending CSR
+
+  #wait for csr's to approve
+
+  csr_approvals=$(oc get csr 2>/dev/null | grep $CLIENT_SIGNER_NAME | grep Pending)
+  while [ "${csr_approvals}" == "" ]
+  do
+    sleep 5
+    csr_approvals=$(oc get csr 2>/dev/null | grep $CLIENT_SIGNER_NAME | grep Pending)
+  done
+
+  oc delete csr system:openshift:openshift-authenticator
+  sleep 5
+  echo "Approve Pending certs"
+  oc get csr -oname | xargs oc adm certificate approve
+
+  echo "Waiting for Server cert..."
+  # Server CSR doesn't require approval, but will take a little longer to show up in
+  # our csr list. Giving it 60 seconds.
+  sleep 60
+  oc get csr -oname | xargs oc adm certificate approve
+fi
+
+# Wait a little bit for all pods to start
+# Check with crictl ps
+echo "### Boostrap START ###"
+date
+
+until oc get pods -A 2>/dev/null 1>&2; do 
+  echo "Waiting for pods to start..";
+  sleep 5;
+done
+
+until oc get co 2>/dev/null 1>&2; do 
+  echo "Waiting for Cluster Operators to complete first rollout";
+  sleep 5;
+done
+
+for co in $(oc get co -oname)
+do
+    # skip this one
+    if [ $co == "clusteroperator.config.openshift.io/machine-config" -o $co == "clusteroperator.config.openshift.ioopenshift-controller-manager" ]
+    then
+      continue
+    fi
+    
+    echo -n "Waiting for $co ..."
+    co_available=$(oc get $co 2>/dev/null | awk -v col=AVAILABLE 'NR==1{for(i=1;i<=NF;i++){if($i==col){c=i;break}} print $c} NR>1{print $c}' | grep True)
+
+    while [ "${co_available}" == "" ]
+    do
+      sleep 5
+      echo -n "."
+      co_available=$(oc get $co 2>/dev/null | awk -v col=AVAILABLE 'NR==1{for(i=1;i<=NF;i++){if($i==col){c=i;break}} print $c} NR>1{print $c}' | grep True)
+    done
+    echo "AVAILABLE"
+done
+
+
+
+# INGRESS
+
+# check if ingresses.config.openshift.io cluster is present
+oc patch -p '{"spec": {"domain": "'$HOSTNAME'.crc.'$INSTRUQT_PARTICIPANT_ID'.instruqt.io"}}' ingresses.config.openshift.io cluster --type=merge
+
+# Wait 30 seconds for the old pod to be terminated
+sleep 30
+
+oc delete -n openshift-ingress-operator ingresscontroller/default
+
+cat <<EOF | oc apply -n openshift-ingress-operator -f -
+apiVersion: operator.openshift.io/v1
+kind: IngressController
+metadata:
+  name: default
+  namespace: openshift-ingress-operator
+spec:
+  replicas: 1
+  domain: $HOSTNAME.crc.$INSTRUQT_PARTICIPANT_ID.instruqt.io
+EOF
+
+oc rollout status deploy/oauth-openshift -n openshift-authentication
+
+oc rollout status deploy/apiserver -n openshift-apiserver
+
+
+until oc get routes -A 2>/dev/null 1>&2; do echo "Changing routes, waiting for cluster operators..."; sleep 5; done
+
+
+oc patch -p '{"spec": {"host": "console-openshift-console.'$HOSTNAME'.crc.'$INSTRUQT_PARTICIPANT_ID'.instruqt.io"}}' route console -n openshift-console --type=merge
+
+oc patch -p '{"spec": {"host": "downloads-openshift-console.'$HOSTNAME'.crc.'$INSTRUQT_PARTICIPANT_ID'.instruqt.io"}}' route downloads -n openshift-console --type=merge
+
+oc patch -p '{"spec": {"host": "default-route-openshift-image-registry.'$HOSTNAME'.crc.'$INSTRUQT_PARTICIPANT_ID'.instruqt.io"}}' route default-route -n openshift-image-registry --type=merge
+
+
+#wait until cluster operators are "available"
+for co in $(oc get co -oname)
+do
+    # skip this one
+    if [ $co == "clusteroperator.config.openshift.io/machine-config" -o $co == "clusteroperator.config.openshift.ioopenshift-controller-manager" ]
+    then
+      continue
+    fi
+    
+    echo -n "Waiting for $co ..."
+    co_available=$(oc get $co 2>/dev/null | awk -v col=AVAILABLE 'NR==1{for(i=1;i<=NF;i++){if($i==col){c=i;break}} print $c} NR>1{print $c}' | grep True)
+
+    while [ "${co_available}" == "" ]
+    do
+      sleep 5
+      echo -n "."
+      co_available=$(oc get $co 2>/dev/null | awk -v col=AVAILABLE 'NR==1{for(i=1;i<=NF;i++){if($i==col){c=i;break}} print $c} NR>1{print $c}' | grep True)
+    done
+    echo "AVAILABLE"
+
+    co_progressing=$(oc get $co 2>/dev/null | awk -v col=PROGRESSING 'NR==1{for(i=1;i<=NF;i++){if($i==col){c=i;break}} print $c} NR>1{print $c}' | grep False)
+
+    while [ "${co_progressing}" == "" ]
+    do
+      echo "Cluster Operator $co still progressing"
+      sleep 5
+      echo -n "."
+      co_progressing=$(oc get $co 2>/dev/null | awk -v col=PROGRESSING 'NR==1{for(i=1;i<=NF;i++){if($i==col){c=i;break}} print $c} NR>1{print $c}' | grep False)
+    done
+done
+
+# do twice since cluster operator rolls out continuously
+for co in $(oc get co -oname)
+do
+    # skip this one
+    if [ $co == "clusteroperator.config.openshift.io/machine-config" -o $co == "clusteroperator.config.openshift.ioopenshift-controller-manager" ]
+    then
+      continue
+    fi
+    
+    echo -n "Waiting for $co ..."
+    co_available=$(oc get $co 2>/dev/null | awk -v col=AVAILABLE 'NR==1{for(i=1;i<=NF;i++){if($i==col){c=i;break}} print $c} NR>1{print $c}' | grep True)
+
+    while [ "${co_available}" == "" ]
+    do
+      sleep 5
+      echo -n "."
+      co_available=$(oc get $co 2>/dev/null | awk -v col=AVAILABLE 'NR==1{for(i=1;i<=NF;i++){if($i==col){c=i;break}} print $c} NR>1{print $c}' | grep True)
+    done
+    echo "AVAILABLE"
+
+    co_progressing=$(oc get $co 2>/dev/null | awk -v col=PROGRESSING 'NR==1{for(i=1;i<=NF;i++){if($i==col){c=i;break}} print $c} NR>1{print $c}' | grep False)
+
+    while [ "${co_progressing}" == "" ]
+    do
+      echo "Cluster Operator $co still progressing"
+      sleep 5
+      echo -n "."
+      co_progressing=$(oc get $co 2>/dev/null | awk -v col=PROGRESSING 'NR==1{for(i=1;i<=NF;i++){if($i==col){c=i;break}} print $c} NR>1{print $c}' | grep False)
+    done
+done
+
+date
+echo "### Boostrap END ###"
+
