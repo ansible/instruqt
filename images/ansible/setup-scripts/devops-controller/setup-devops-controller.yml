@@ -1,0 +1,115 @@
+---
+- name: Manage devops-controller Instruqt lab
+  hosts: controller
+  gather_facts: false
+  become: true
+  vars:
+    ansible_user: vagrant
+    username: rhel
+    download_url: https://github.com/craig-br/instruqt/branches/devops-controller-track/images/ansible/setup-scripts/devops-controller
+    ansible_python_interpreter: /usr/bin/python3
+    student_name: student
+    student_password: learn_ansible
+  tags:
+    - setup-env
+
+  tasks:
+    - name: Download lab content to controller tmp directory
+      ansible.builtin.subversion:
+        repo: "{{ download_url }}"
+        dest: /tmp/setup-scripts/devops-controller
+        export: true
+        force: true
+
+    - name: Remove repo dir if it exists
+      ansible.builtin.file:
+        path: "/home/{{ username }}/acme_corp"
+        state: absent
+
+    - name: Create repo dir
+      ansible.builtin.file:
+        path: "/home/{{ username }}/acme_corp"
+        state: directory
+        mode: 0755
+        owner: "{{ username }}"
+        group: "{{ username }}"
+
+    - name: Configure git to use main repo by default
+      community.general.git_config:
+        name: init.defaultBranch
+        scope: global
+        value: main
+      become_user: "{{ username }}"
+      tags:
+        - git
+
+    - name: Initialise track repo
+      ansible.builtin.command:
+        cmd: /usr/bin/git init
+        chdir: "/home/{{ username }}/acme_corp"
+        creates: "/home/{{ username }}/acme_corp/.git"
+      become_user: "{{ username }}"
+      tags:
+        - git  
+
+    - name: Configure git to store credentials
+      community.general.git_config:
+        name: credential.helper
+        scope: global
+        value: store --file /tmp/git-creds
+      become_user: "{{ username }}"
+      tags:
+        - git
+
+    - name: Store repo credentials in git-creds file
+      ansible.builtin.copy:
+        dest: /tmp/git-creds
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: 0644
+        content: "http://{{ student_name }}:{{ student_password }}@{{ 'gitea:3000' | urlencode }}"
+      tags:
+        - git
+
+    - name: Configure git username
+      community.general.git_config:
+        name: user.name
+        scope: global
+        value: "{{ username }}"
+      become_user: "{{ username }}"
+      tags:
+        - git
+
+    - name: Configure git email address
+      community.general.git_config:
+        name: user.email
+        scope: global
+        value: "{{ username }}@local"
+      become_user: "{{ username }}"
+      tags:
+        - git
+
+    - name: Extract initial repo files
+      ansible.builtin.unarchive:
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        src: /tmp/setup-scripts/devops-controller/files/acme_repo.tar.gz
+        dest: /home/{{ username }}/acme_corp
+        creates: /home/{{ username }}/acme_corp/app
+        remote_src: true
+
+    - name: Add remote origin to repo
+      ansible.builtin.command:
+        cmd: "{{ item }}"
+        chdir: "/home/{{ username }}/acme_corp"
+      become_user: "{{ username }}"      
+      register: __output
+      changed_when: __output.rc == 0
+      loop:
+        - "git remote add origin http://gitea:3000/{{ student_name }}/acme_corp.git"
+        - "git checkout -b main"
+        - "git add ."
+        - "git commit -m'Initial commit'"
+        - "git push -u origin main --force"
+      tags:
+        - git
