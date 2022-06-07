@@ -38,10 +38,11 @@ jobs:
     - name: test tracks
       shell: bash {0}
       run: |
-        for i in "${env.tracks[@]}"
+        for i in "${!tracks[@]}"
         do
           echo "$i"
         done
       env:
         INSTRUQT_TOKEN: ${{ secrets.INSTRUQT_API_KEY }}
         INSTRUQT_ORG: ${{ secrets.INSTRUQT_ORG }}
+        tracks: env.tracks
