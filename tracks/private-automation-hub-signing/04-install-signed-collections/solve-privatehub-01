@@ -1,3 +1,7 @@
-su - rhel
-ansible-galaxy collection install ansible.test_collection -c
-ansible-galaxy collection install community.lab_collection --keyring /home/rhel/keyring.kbx -c -vvvv
+/bin/su - rhel -s /bin/bash
+cd /home/rhel/
+gpg --import --no-default-keyring --keyring /home/rhel/keyring.kbx galaxy_signing_service.asc
+mkdir -p /home/rhel/.ansible/collections/
+ansible-galaxy collection install ansible.test_collection -c -p /home/rhel/.ansible/collections/
+ansible-galaxy collection install community.lab_collection --keyring /home/rhel/keyring.kbx -p /home/rhel/.ansible/collections/ -c -vvvv
+chown -R rhel:rhel /home/rhel/.ansible/collections/
