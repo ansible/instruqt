@@ -1,0 +1,32 @@
+touch /etc/sudoers.d/rhel_sudoers
+echo "%rhel ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/rhel_sudoers
+cp -a /root/.ssh/* /home/rhel/.ssh/.
+chown -R rhel:rhel /home/rhel/.ssh
+dnf config-manager --enable rhui*
+
+host_ip=`hostname -I`
+host_ip=$(echo $host_ip | tr -d ' ')
+sudo sed -i -r 's/(\b[0-9]{1,3}\.){3}[0-9]{1,3}\b'/"$host_ip"/ /etc/pulp/settings.py
+sudo systemctl restart pulpcore-*
+sudo systemctl restart nginx
+
+token=`curl -s -u admin:ansible123! -H "Content-Type: application/json" -X POST https://privatehub-01/api/galaxy/v3/auth/token/ -k | jq .token`
+
+cat <<EOF >>/home/rhel/ansible.cfg
+[galaxy]
+server_list = published_repo
+
+[galaxy_server.published_repo]
+url=https://privatehub-01/api/galaxy/content/published/
+token=$token
+EOF
+
+chown rhel:rhel /home/rhel/ansible.cfg
+
+curl -s -u admin:ansible123! -H "Content-Type: application/json" -X POST -d '{"name":"ansible", "groups":[]}' https://privatehub-01/api/galaxy/v3/namespaces/ -k
+curl -s -u admin:ansible123! -H "Content-Type: application/json" -X POST -d '{"name":"community", "groups":[]}' https://privatehub-01/api/galaxy/v3/namespaces/ -k
+
+wget https://github.com/anshulbehl/demo-ee/raw/master/images/ansible-test_collection-1.0.0.tar.gz -P /home/rhel/
+chown rhel:rhel /home/rhel/ansible-test_collection-1.0.0.tar.gz
+wget https://github.com/anshulbehl/demo-ee/raw/master/images/community-lab_collection-1.0.0.tar.gz -P /home/rhel/
+chown rhel:rhel community-lab_collection-1.0.0.tar.gz
