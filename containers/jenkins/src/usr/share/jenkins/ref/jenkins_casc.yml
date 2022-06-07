@@ -125,7 +125,7 @@ tool:
   ansibleInstallation:
     installations:
     - home: "/usr/bin/"
-    - name: "Ansible"
+      name: "Ansible"
   git:
     installations:
     - home: "git"
