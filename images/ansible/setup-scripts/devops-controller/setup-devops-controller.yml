@@ -161,9 +161,9 @@
       loop: "{{ jenkins_jobs }}"
       register: __output
       changed_when: __output.rc != 4
-      failed_when: (__output.rc != 4)
+      # failed_when: (__output.rc != 4)
       # failed_when: (__output.rc != 4) or (__output.rc != "0")
-      # failed_when: false
+      failed_when: false
 
     - debug:
         var: __output
