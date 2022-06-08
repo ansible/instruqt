@@ -5,7 +5,7 @@
 # Tags:
 # setup-env - Setup all lifecycle scripts
 # auth-token - create controller auth-token
-# <hostname>-setup - Lifecycle script for host
+# <hostname>-config - Lifecycle setup script for host
 # <challenge-slug>-check - check challenge 
 # <challenge-slug>-solve - solve challenge 
 # <challenge-slug>-setup - setup challenge
@@ -18,7 +18,7 @@
   become: true
   tags:
     - gitea-config
-
+  
   tasks:
     - name: Install Python3 on Gitea
       ansible.builtin.raw: /sbin/apk add python3
@@ -41,6 +41,54 @@
         dest: /tmp/setup-scripts/devops-controller
         export: true
         force: true
+
+    - name: Create repo users
+      ansible.builtin.command: "{{ item }}"
+      become_user: git
+      register: __output
+      failed_when: __output.rc not in [ 0, 1 ]
+      changed_when: '"user already exists" not in __output.stdout'
+      loop:
+        - "/usr/local/bin/gitea admin user create --admin --username jenkins --password {{ student_password }} --must-change-password=false --email jenkins@localhost"
+        - "/usr/local/bin/gitea admin user create --admin --username {{ student_user }} --password {{ student_password }} --must-change-password=false --email {{ student_user }}@localhost"
+      tags:
+        - repo
+        
+    - name: Create repo
+      ansible.builtin.uri:
+        url: http://gitea:3000/api/v1/user/repos
+        method: POST
+        body_format: json
+        body:
+          name: acme_corp
+          auto_init: false
+          private: false
+        force_basic_auth: true
+        url_password: "{{ student_password }}"
+        url_username: "{{ student_user }}"
+        status_code: [ 201, 409 ]
+      tags:
+        - repo
+
+    - name: Create repo webhook
+      ansible.builtin.uri:
+        url: "http://gitea:3000/api/v1/repos/{{ student_user }}/acme_corp/hooks"
+        method: POST
+        body_format: json
+        body:
+          type: gitea
+          config:
+            content_type: json
+            url: http://jenkins:8080/gitea-webhook/post
+          active: true
+          events:
+            - push
+        force_basic_auth: true
+        url_password: "{{ student_password }}"
+        url_username: "{{ student_user }}"
+        status_code: [ 201, 409 ]
+      tags:
+        - repo
 
     - name: Remove repo dir if it exists
       ansible.builtin.file:
@@ -89,7 +137,7 @@
       ansible.builtin.copy:
         dest: /tmp/git-creds
         mode: 0644
-        content: "http://{{ student_name }}:{{ student_password }}@{{ 'gitea:3000' | urlencode }}"
+        content: "http://{{ student_user }}:{{ student_password }}@{{ 'gitea:3000' | urlencode }}"
       tags:
         - git
 
@@ -123,7 +171,7 @@
       register: __output
       changed_when: __output.rc == 0
       loop:
-        - "git remote add origin http://gitea:3000/{{ student_name }}/acme_corp.git"
+        - "git remote add origin http://gitea:3000/{{ student_user }}/acme_corp.git"
         - "git checkout -b main"
         - "git add ."
         - "git commit -m'Initial commit'"
@@ -166,26 +214,7 @@
       loop: "{{ jenkins_jobs }}"
       register: __output
       changed_when: __output.rc != 4
-      # failed_when: (__output.rc != 4)
-      # failed_when: (__output.rc != 4) or (__output.rc != "0")
-      failed_when: false
-
-    - debug:
-        var: __output
-
-
-# /usr/bin/svn export https://github.com/craig-br/instruqt/branches/devops-controller-track/images/ansible/setup-scripts/devops-controller /tmp/setup-scripts/devops-controller
-# /bin/su - jenkins
-# timeout 20 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' jenkins:8080)" != 200 ]]
-# do
-#     echo " Waiting for Jenkins to start"
-#     sleep 3;
-# done' || false
-
-# /usr/bin/curl http://jenkins:8080/jnlpJars/jenkins-cli.jar --output jenkins-cli.jar
-
-# /opt/java/openjdk/bin/java -jar jenkins-cli.jar -s http://jenkins:8080 -auth "admin":"learn_ansible" create-job ACMECorp < /tmp/setup-scripts/devops-controller/files/acme.xml
-# /opt/java/openjdk/bin/java -jar jenkins-cli.jar -s http://jenkins:8080 -auth "admin":"learn_ansible" create-job PollRepo < /tmp/setup-scripts/devops-controller/files/poll.xml
+      failed_when: __output.rc not in [ 0, 4 ]
     
 # Controller setup
 - name: Controller config for devops-controller
@@ -222,7 +251,7 @@
     - name: Store repo credentials in git-creds file
       ansible.builtin.copy:
         dest: /tmp/git-creds
-        content: "http://{{ student_name }}:{{ student_password }}@{{ 'gitea:3000' | urlencode }}"
+        content: "http://{{ student_user }}:{{ student_password }}@{{ 'gitea:3000' | urlencode }}"
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
         mode: 0644
@@ -344,5 +373,6 @@
         auth_token: "{{ ansible_local.custom_facts.controller_token }}"
         cacheable: true
       check_mode: false
+      when: ansible_local.custom_facts is defined
       tags:
         - always

@@ -2,7 +2,7 @@
 # setup-env vars
 download_url: https://github.com/craig-br/instruqt/branches/devops-controller-track/images/ansible/setup-scripts/devops-controller
 ansible_python_interpreter: /usr/bin/python3
-student_name: student
+student_user: student
 student_password: learn_ansible
 host_key_checking: false
 custom_facts_dir: "/etc/ansible/facts.d"
