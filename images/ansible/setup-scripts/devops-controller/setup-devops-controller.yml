@@ -1,19 +1,35 @@
 ---
-- name: Manage devops-controller Instruqt lab
-  hosts: localhost
-  connection: local
+##
+# https://play.instruqt.com/redhat/tracks/devops-controller/
+#
+# Tags:
+# setup-env - Setup all lifecycle scripts
+# auth-token - create controller auth-token
+# <hostname>-setup - Lifecycle script for host
+# <challenge-slug>-check - check challenge 
+# <challenge-slug>-solve - solve challenge 
+# <challenge-slug>-setup - setup challenge
+##
+
+#Gitea config
+- name: Configure Gitea host
+  hosts: gitea
   gather_facts: false
   become: true
-  vars:
-    username: rhel
-    download_url: https://github.com/craig-br/instruqt/branches/devops-controller-track/images/ansible/setup-scripts/devops-controller
-    ansible_python_interpreter: /usr/bin/python3
-    student_name: student
-    student_password: learn_ansible
   tags:
-    - setup-env
+    - gitea-config
 
   tasks:
+    - name: Install Gitea packages
+      community.general.apk:
+        name: subversion, python3, tar
+        state: present
+        
+    - name: Create setup-scripts directory
+      ansible.builtin.file:
+        path: /tmp/setup-scripts/devops-controller
+        state: directory
+        
     - name: Download lab content to controller tmp directory
       ansible.builtin.subversion:
         repo: "{{ download_url }}"
@@ -23,32 +39,28 @@
 
     - name: Remove repo dir if it exists
       ansible.builtin.file:
-        path: "/home/{{ username }}/acme_corp"
+        path: "/root/acme_corp"
         state: absent
 
     - name: Create repo dir
       ansible.builtin.file:
-        path: "/home/{{ username }}/acme_corp"
+        path: "/root/acme_corp"
         state: directory
         mode: 0755
-        owner: "{{ username }}"
-        group: "{{ username }}"
 
     - name: Configure git to use main repo by default
       community.general.git_config:
         name: init.defaultBranch
         scope: global
         value: main
-      become_user: "{{ username }}"
       tags:
         - git
 
     - name: Initialise track repo
       ansible.builtin.command:
         cmd: /usr/bin/git init
-        chdir: "/home/{{ username }}/acme_corp"
-        creates: "/home/{{ username }}/acme_corp/.git"
-      become_user: "{{ username }}"
+        chdir: "/root/acme_corp"
+        creates: "/acme_corp/.git"
       tags:
         - git  
 
@@ -57,15 +69,20 @@
         name: credential.helper
         scope: global
         value: store --file /tmp/git-creds
-      become_user: "{{ username }}"
+      tags:
+        - git
+
+    - name: Configure repo dir as git safe dir
+      community.general.git_config:
+        name: safe.directory
+        scope: global
+        value: "/root/acme_corp"
       tags:
         - git
 
     - name: Store repo credentials in git-creds file
       ansible.builtin.copy:
         dest: /tmp/git-creds
-        owner: "{{ username }}"
-        group: "{{ username }}"
         mode: 0644
         content: "http://{{ student_name }}:{{ student_password }}@{{ 'gitea:3000' | urlencode }}"
       tags:
@@ -75,8 +92,7 @@
       community.general.git_config:
         name: user.name
         scope: global
-        value: "{{ username }}"
-      become_user: "{{ username }}"
+        value: "{{ ansible_user }}"
       tags:
         - git
 
@@ -84,25 +100,21 @@
       community.general.git_config:
         name: user.email
         scope: global
-        value: "{{ username }}@local"
-      become_user: "{{ username }}"
+        value: "{{ ansible_user }}@local"
       tags:
         - git
 
     - name: Extract initial repo files
       ansible.builtin.unarchive:
-        owner: "{{ username }}"
-        group: "{{ username }}"
         src: /tmp/setup-scripts/devops-controller/files/acme_repo.tar.gz
-        dest: /home/{{ username }}/acme_corp
-        creates: /home/{{ username }}/acme_corp/app
+        dest: "/root/acme_corp"
+        creates: /root/acme_corp/app
         remote_src: true
 
     - name: Add remote origin to repo
       ansible.builtin.command:
         cmd: "{{ item }}"
-        chdir: "/home/{{ username }}/acme_corp"
-      become_user: "{{ username }}"      
+        chdir: "/root/acme_corp"   
       register: __output
       changed_when: __output.rc == 0
       loop:
@@ -113,3 +125,219 @@
         - "git push -u origin main --force"
       tags:
         - git
+
+# Jenkins config
+- name: Jenkins config for devops-controller
+  hosts: jenkins
+  gather_facts: false
+  tags:
+    - jenkins-config
+
+  tasks:
+    - name: Create setup-scripts directory
+      ansible.builtin.file:
+        path: /tmp/setup-scripts/devops-controller
+        state: directory
+
+    - name: Download lab content to tmp directory
+      ansible.builtin.subversion:
+        repo: "{{ download_url }}"
+        dest: /tmp/setup-scripts/devops-controller
+        export: true
+        force: true
+
+    - name: Install jenkins-cli
+      ansible.builtin.get_url:
+        url: http://jenkins:8080/jnlpJars/jenkins-cli.jar
+        dest: /var/jenkins_home/jenkins-cli.jar
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: "0644"
+
+    - name: Create Jenkins jobs
+      ansible.builtin.shell:
+        chdir: /var/jenkins_home
+        cmd: "/opt/java/openjdk/bin/java -jar /var/jenkins_home/jenkins-cli.jar -s http://jenkins:8080 -auth {{ jenkins_user }}:{{ student_password }} create-job {{ item.name }} < {{ item.template_file }}"
+      loop: "{{ jenkins_jobs }}"
+      register: __output
+      changed_when: __output.rc != 4
+      failed_when: (__output.rc != 4)
+      # failed_when: (__output.rc != 4) or (__output.rc != "0")
+      # failed_when: false
+
+    - debug:
+        var: __output
+
+
+# /usr/bin/svn export https://github.com/craig-br/instruqt/branches/devops-controller-track/images/ansible/setup-scripts/devops-controller /tmp/setup-scripts/devops-controller
+# /bin/su - jenkins
+# timeout 20 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' jenkins:8080)" != 200 ]]
+# do
+#     echo " Waiting for Jenkins to start"
+#     sleep 3;
+# done' || false
+
+# /usr/bin/curl http://jenkins:8080/jnlpJars/jenkins-cli.jar --output jenkins-cli.jar
+
+# /opt/java/openjdk/bin/java -jar jenkins-cli.jar -s http://jenkins:8080 -auth "admin":"learn_ansible" create-job ACMECorp < /tmp/setup-scripts/devops-controller/files/acme.xml
+# /opt/java/openjdk/bin/java -jar jenkins-cli.jar -s http://jenkins:8080 -auth "admin":"learn_ansible" create-job PollRepo < /tmp/setup-scripts/devops-controller/files/poll.xml
+    
+# Controller setup
+- name: Controller config for devops-controller
+  hosts: controller
+  gather_facts: true
+  tags:
+    - controller-config
+    
+  tasks:
+  # Setup student git repo
+    - name: Remove repo dir if it exists
+      ansible.builtin.file:
+        path: "/home/{{ ansible_user }}/acme_corp"
+        state: absent
+
+    - name: Configure git to use main repo by default
+      community.general.git_config:
+        name: init.defaultBranch
+        scope: global
+        value: main
+
+    - name: Configure git to store credentials
+      community.general.git_config:
+        name: credential.helper
+        scope: global
+        value: store --file /tmp/git-creds
+
+    - name: Configure repo dir as git safe dir
+      community.general.git_config:
+        name: safe.directory
+        scope: global
+        value: "/home/{{ ansible_user }}/acme_corp"
+
+    - name: Store repo credentials in git-creds file
+      ansible.builtin.copy:
+        dest: /tmp/git-creds
+        content: "http://{{ student_name }}:{{ student_password }}@{{ 'gitea:3000' | urlencode }}"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: 0644
+
+    - name: Configure git username
+      community.general.git_config:
+        name: user.name
+        scope: global
+        value: "{{ ansible_user }}"
+
+    - name: Configure git email address
+      community.general.git_config:
+        name: user.email
+        scope: global
+        value: "{{ ansible_user }}@local"
+
+    - name: Pull repo from SCM
+      ansible.builtin.git:
+        repo: "{{ git_repo }}"
+        dest: "/home/{{ ansible_user }}/acme_corp"
+      become_user: "{{ ansible_user }}"
+      tags:
+        - controller-git
+
+    - name: Ensure tower/controller is online and working
+      uri:
+        url: https://localhost/api/v2/ping/
+        method: GET
+        user: "{{ admin_username }}"
+        password: "{{ admin_password }}"
+        validate_certs: false
+        force_basic_auth: true
+      register: controller_online
+      until: controller_online is success
+      delay: 3
+      retries: 5
+      tags:
+        - setup-env
+
+   # Create auth login token
+    - name: get auth token and restart automation-controller if it fails
+      block:
+        - name: Refresh facts
+          setup:
+
+        - name: Create oauth token
+          awx.awx.token:
+            description: 'Instruqt lab'
+            scope: "write"
+            state: present
+            controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+          register: _auth_token
+          until: _auth_token is not failed
+          delay: 3
+          retries: 5
+      rescue:
+        - name: In rescue block for auth token
+          debug:
+            msg: "failed to get auth token. Restarting automation controller service"
+
+        - name: restart the controller service
+          ansible.builtin.service:
+            name: automation-controller
+            state: restarted
+
+        - name: Ensure tower/controller is online and working
+          uri:
+            url: https://localhost/api/v2/ping/
+            method: GET
+            user: "{{ admin_username }}"
+            password: "{{ admin_password }}"
+            validate_certs: false
+            force_basic_auth: true
+          register: controller_online
+          until: controller_online is success
+          delay: 3
+          retries: 5
+
+        - name: Retry getting auth token
+          awx.awx.token:
+            description: 'Instruqt lab'
+            scope: "write"
+            state: present
+            controller_config_file: "{{ playbook_dir }}/../controller.cfg"  
+            validate_certs: false
+          register: _auth_token
+          until: _auth_token is not failed
+          delay: 3
+          retries: 5
+      always:
+        - name: Create fact.d dir
+          ansible.builtin.file:
+            path: "{{ custom_facts_dir }}"
+            state: directory
+            recurse: yes
+            owner: "{{ ansible_user }}"
+            group: " {{ ansible_user }}"
+            mode: 0644
+
+        - name: Create _auth_token custom fact
+          ansible.builtin.copy:
+            content: "{{ _auth_token.ansible_facts }}"
+            dest: "{{ custom_facts_dir }}/{{ custom_facts_file }}"
+            owner: "{{ ansible_user }}"
+            group: " {{ ansible_user }}"
+            mode: 0644
+      check_mode: false
+      when: ansible_local.custom_facts.controller_token is undefined
+      tags:
+        - auth-token
+
+    - name: refresh facts
+      setup:
+      tags:
+        - always
+
+    - name: create auth token fact
+      ansible.builtin.set_fact:
+        auth_token: "{{ ansible_local.custom_facts.controller_token }}"
+        cacheable: true
+      check_mode: false
+      tags:
+        - always
