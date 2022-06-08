@@ -356,7 +356,7 @@
             content: "{{ _auth_token.ansible_facts }}"
             dest: "{{ custom_facts_dir }}/{{ custom_facts_file }}"
             owner: "{{ ansible_user }}"
-            group: " {{ ansible_user }}"
+            # group: " {{ ansible_user }}"
             mode: 0644
       check_mode: false
       when: ansible_local.custom_facts.controller_token is undefined
