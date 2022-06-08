@@ -220,9 +220,6 @@
 - name: Controller config for devops-controller
   hosts: controller
   gather_facts: true
-  # become_user: rhel
-  tags:
-    - controller-config
     
   tasks:
   # Setup student git repo
@@ -230,6 +227,8 @@
       ansible.builtin.file:
         path: "/home/{{ ansible_user }}/acme_corp"
         state: absent
+      tags:
+        - controller-config
 
     - name: Configure git to use main repo by default
       community.general.git_config:
@@ -237,6 +236,8 @@
         scope: global
         value: main
       become_user: rhel
+      tags:
+        - controller-config
 
     - name: Configure git to store credentials
       community.general.git_config:
@@ -244,6 +245,8 @@
         scope: global
         value: store --file /tmp/git-creds
       become_user: rhel
+      tags:
+        - controller-config
 
     - name: Configure repo dir as git safe dir
       community.general.git_config:
@@ -251,6 +254,8 @@
         scope: global
         value: "/home/{{ ansible_user }}/acme_corp"
       become_user: rhel
+      tags:
+        - controller-config
 
     - name: Store repo credentials in git-creds file
       ansible.builtin.copy:
@@ -259,6 +264,8 @@
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
         mode: 0644
+      tags:
+        - controller-config
 
     - name: Configure git username
       community.general.git_config:
@@ -266,6 +273,8 @@
         scope: global
         value: "{{ ansible_user }}"
       become_user: rhel
+      tags:
+        - controller-config
       
     - name: Configure git email address
       community.general.git_config:
@@ -273,6 +282,8 @@
         scope: global
         value: "{{ ansible_user }}@local"
       become_user: rhel
+      tags:
+        - controller-config
 
     - name: Pull repo from SCM
       ansible.builtin.git:
@@ -280,7 +291,7 @@
         dest: "/home/{{ ansible_user }}/acme_corp"
       become_user: "{{ ansible_user }}"
       tags:
-        - controller-git
+        - controller-config
 
     - name: Ensure tower/controller is online and working
       uri:
@@ -295,7 +306,7 @@
       delay: 3
       retries: 5
       tags:
-        - setup-env
+        - controller-config
 
    # Create auth login token
     - name: get auth token and restart automation-controller if it fails
