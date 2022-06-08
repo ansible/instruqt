@@ -20,6 +20,9 @@
     - gitea-config
 
   tasks:
+    - name: Install Python3 on Gitea
+      ansible.builtin.raw: apk add python3
+
     - name: Install Gitea packages
       community.general.apk:
         name: subversion, python3, tar
