@@ -1,5 +1,5 @@
 slug: devops-controller
-id: fdmojwyucfu9
+id: u5sh0k588dhx
 type: track
 title: Dev - DevOps with automation controller
 teaser: In this lab, we'll trigger a Jenkins CI/CD pipeline and integrate it with
@@ -19,4 +19,4 @@ private: true
 published: false
 maintenance: true
 show_timer: true
-checksum: "6821039488918642468"
+checksum: "1592173956797806883"

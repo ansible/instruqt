@@ -11,6 +11,20 @@
 # <challenge-slug>-setup - setup challenge
 ##
 
+# - name: Run config for all hosts
+#   hosts: ciservers
+#   gather_facts: false
+#   become: true
+#   tags:
+#     - gitea-config
+#     - jenkins-config
+#   tasks:
+#     - name: Install collections
+#       ansible.builtin.command: "/usr/bin/ansible-galaxy collection install --verbose {{ item }}"
+#       loop:
+#         - awx.awx
+#         - community.general
+
 #Gitea config
 - name: Configure Gitea host
   hosts: gitea
@@ -20,27 +34,27 @@
     - gitea-config
   
   tasks:
-    - name: Install Python3 on Gitea
-      ansible.builtin.raw: /sbin/apk add python3
-      args:
-        executable: /bin/bash
-
-    - name: Install Gitea packages
-      community.general.apk:
-        name: subversion, tar
-        state: present
+    # - name: Install Gitea packages
+    #   community.general.apk:
+    #     name: subversion, tar
+    #     state: present
         
-    - name: Create setup-scripts directory
-      ansible.builtin.file:
-        path: /tmp/setup-scripts/devops-controller
-        state: directory
+    # - name: Create setup-scripts directory
+    #   ansible.builtin.file:
+    #     path: /tmp/setup-scripts/devops-controller
+    #     state: directory
         
-    - name: Download lab content to controller tmp directory
-      ansible.builtin.subversion:
-        repo: "{{ download_url }}"
-        dest: /tmp/setup-scripts/devops-controller
-        export: true
-        force: true
+    # - name: Download lab content to controller tmp directory
+    #   ansible.builtin.subversion:
+    #     repo: "{{ download_url }}"
+    #     dest: /tmp/setup-scripts/devops-controller
+    #     export: true
+    #     force: true
+    - name: Install collections
+      ansible.builtin.command: "/usr/bin/ansible-galaxy collection install --verbose {{ item }}"
+      loop:
+        - awx.awx
+        - community.general
 
     - name: Create repo users
       ansible.builtin.command: "{{ item }}"
@@ -167,18 +181,23 @@
     - jenkins-config
 
   tasks:
-    - name: Create setup-scripts directory
-      ansible.builtin.file:
-        path: /tmp/setup-scripts/devops-controller
-        state: directory
+    # - name: Create setup-scripts directory
+    #   ansible.builtin.file:
+    #     path: /tmp/setup-scripts/devops-controller
+    #     state: directory
 
-    - name: Download lab content to tmp directory
-      ansible.builtin.subversion:
-        repo: "{{ download_url }}"
-        dest: /tmp/setup-scripts/devops-controller
-        export: true
-        force: true
-
+    # - name: Download lab content to tmp directory
+    #   ansible.builtin.subversion:
+    #     repo: "{{ download_url }}"
+    #     dest: /tmp/setup-scripts/devops-controller
+    #     export: true
+    #     force: true
+    # - name: Install collections
+    #   ansible.builtin.command: "/usr/bin/ansible-galaxy collection install --verbose {{ item }}"
+    #   loop:
+    #     - awx.awx
+    #     - community.general
+        
     - name: Install jenkins-cli
       ansible.builtin.get_url:
         url: http://jenkins:8080/jnlpJars/jenkins-cli.jar

@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -euxo pipefail
 while [ ! -f /opt/instruqt/bootstrap/host-bootstrap-completed ]
 do
     echo "Waiting for Instruqt to finish booting the VM"
@@ -14,6 +15,12 @@ chown -R rhel:rhel /home/rhel/.ssh
 # Get instruqt lab content
 /usr/bin/svn export https://github.com/craig-br/instruqt/branches/devops-controller-track/images/ansible/setup-scripts/devops-controller /tmp/setup-scripts/devops-controller
 
+# while [[ "$(curl --output /dev/null --write-out ''%{http_code}'' gitea:3000)" != 200 ]]; do
+#   sleep 3
+#   printf 'Waiting for gitea bootstrap to complete'
+# done
+cd /tmp/setup-scripts/devops-controller/
+/bin/ansible-playbook setup-devops-controller.yml -e extra_vars.yml -i inventory
 # mkdir acme_corp && cd acme_corp
 # git init
 # git config --local user.email student@rhel

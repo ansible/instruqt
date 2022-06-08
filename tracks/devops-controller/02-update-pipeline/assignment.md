@@ -1,6 +1,6 @@
 ---
 slug: update-pipeline
-id: k4m2imuqkwbb
+id: t2481h50besa
 type: challenge
 title: Configure the Jenkins pipeline
 teaser: In this challenge, we'll configure the Jenkins pipeline to trigger the automation
