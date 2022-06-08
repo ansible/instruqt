@@ -1,0 +1,18 @@
+---
+# setup-env vars
+download_url: https://github.com/craig-br/instruqt/branches/devops-controller-track/images/ansible/setup-scripts/devops-controller
+ansible_python_interpreter: /usr/bin/python3
+student_name: student
+student_password: learn_ansible
+host_key_checking: false
+custom_facts_dir: "/etc/ansible/facts.d"
+custom_facts_file: custom_facts.fact
+admin_username: admin
+admin_password: ansible123!
+git_repo: http://gitea:3000/{{ student_name }}/acme_corp.git
+jenkins_user: admin
+jenkins_jobs:
+  - name: ACMECorp
+    template_file: /tmp/setup-scripts/devops-controller/files/acme.xml
+  - name: PollRepo
+    template_file: /tmp/setup-scripts/devops-controller/files/poll.xml
