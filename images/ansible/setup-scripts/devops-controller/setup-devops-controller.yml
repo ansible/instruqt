@@ -51,9 +51,7 @@
       loop:
         - "/usr/local/bin/gitea admin user create --admin --username jenkins --password {{ student_password }} --must-change-password=false --email jenkins@localhost"
         - "/usr/local/bin/gitea admin user create --admin --username {{ student_user }} --password {{ student_password }} --must-change-password=false --email {{ student_user }}@localhost"
-      tags:
-        - repo
-        
+
     - name: Create repo
       ansible.builtin.uri:
         url: http://gitea:3000/api/v1/user/repos
@@ -67,8 +65,6 @@
         url_password: "{{ student_password }}"
         url_username: "{{ student_user }}"
         status_code: [ 201, 409 ]
-      tags:
-        - repo
 
     - name: Create repo webhook
       ansible.builtin.uri:
@@ -87,8 +83,6 @@
         url_password: "{{ student_password }}"
         url_username: "{{ student_user }}"
         status_code: [ 201, 409 ]
-      tags:
-        - repo
 
     - name: Remove repo dir if it exists
       ansible.builtin.file:
@@ -113,49 +107,37 @@
       ansible.builtin.command:
         cmd: /usr/bin/git init
         chdir: "/root/acme_corp"
-        creates: "/acme_corp/.git"
-      tags:
-        - git  
+        creates: "/acme_corp/.git" 
 
     - name: Configure git to store credentials
       community.general.git_config:
         name: credential.helper
         scope: global
         value: store --file /tmp/git-creds
-      tags:
-        - git
 
     - name: Configure repo dir as git safe dir
       community.general.git_config:
         name: safe.directory
         scope: global
         value: "/root/acme_corp"
-      tags:
-        - git
 
     - name: Store repo credentials in git-creds file
       ansible.builtin.copy:
         dest: /tmp/git-creds
         mode: 0644
         content: "http://{{ student_user }}:{{ student_password }}@{{ 'gitea:3000' | urlencode }}"
-      tags:
-        - git
 
     - name: Configure git username
       community.general.git_config:
         name: user.name
         scope: global
         value: "{{ ansible_user }}"
-      tags:
-        - git
 
     - name: Configure git email address
       community.general.git_config:
         name: user.email
         scope: global
         value: "{{ ansible_user }}@local"
-      tags:
-        - git
 
     - name: Extract initial repo files
       ansible.builtin.unarchive:
@@ -176,8 +158,6 @@
         - "git add ."
         - "git commit -m'Initial commit'"
         - "git push -u origin main --force"
-      tags:
-        - git
 
 # Jenkins config
 - name: Jenkins config for devops-controller
