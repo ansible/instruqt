@@ -16,4 +16,5 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/\* /tmp/\* /var/tmp/*
 RUN chown -R jenkins:jenkins /var/jenkins_home && \
     jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt
+RUN /usr/bin/ansible-galaxy collection install --verbose awx.awx community.general
 USER jenkins
