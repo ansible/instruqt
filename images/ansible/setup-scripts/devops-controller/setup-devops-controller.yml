@@ -21,11 +21,13 @@
 
   tasks:
     - name: Install Python3 on Gitea
-      ansible.builtin.raw: apk add python3
+      ansible.builtin.raw: /sbin/apk add python3
+      args:
+        executable: /bin/bash
 
     - name: Install Gitea packages
       community.general.apk:
-        name: subversion, python3, tar
+        name: subversion, tar
         state: present
         
     - name: Create setup-scripts directory
