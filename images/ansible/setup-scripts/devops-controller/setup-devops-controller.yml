@@ -348,7 +348,7 @@
             state: directory
             recurse: yes
             owner: "{{ ansible_user }}"
-            group: " {{ ansible_user }}"
+            # group: " {{ ansible_user }}"
             mode: 0644
 
         - name: Create _auth_token custom fact
