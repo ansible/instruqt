@@ -4,3 +4,6 @@ controller ansible_host=localhost ansible_user=rhel ansible_connection=local
 [ciservers]
 gitea ansible_user=root
 jenkins ansible_user=root
+
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
