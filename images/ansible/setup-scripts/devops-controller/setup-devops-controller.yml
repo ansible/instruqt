@@ -220,6 +220,7 @@
 - name: Controller config for devops-controller
   hosts: controller
   gather_facts: true
+  # become_user: rhel
   tags:
     - controller-config
     
@@ -235,18 +236,21 @@
         name: init.defaultBranch
         scope: global
         value: main
+      become_user: rhel
 
     - name: Configure git to store credentials
       community.general.git_config:
         name: credential.helper
         scope: global
         value: store --file /tmp/git-creds
+      become_user: rhel
 
     - name: Configure repo dir as git safe dir
       community.general.git_config:
         name: safe.directory
         scope: global
         value: "/home/{{ ansible_user }}/acme_corp"
+      become_user: rhel
 
     - name: Store repo credentials in git-creds file
       ansible.builtin.copy:
@@ -261,12 +265,14 @@
         name: user.name
         scope: global
         value: "{{ ansible_user }}"
-
+      become_user: rhel
+      
     - name: Configure git email address
       community.general.git_config:
         name: user.email
         scope: global
         value: "{{ ansible_user }}@local"
+      become_user: rhel
 
     - name: Pull repo from SCM
       ansible.builtin.git:
@@ -348,16 +354,18 @@
             state: directory
             recurse: yes
             owner: "{{ ansible_user }}"
-            # group: " {{ ansible_user }}"
+            group: "{{ ansible_user }}"
             mode: 0644
+          become: true
 
         - name: Create _auth_token custom fact
           ansible.builtin.copy:
             content: "{{ _auth_token.ansible_facts }}"
             dest: "{{ custom_facts_dir }}/{{ custom_facts_file }}"
             owner: "{{ ansible_user }}"
-            # group: " {{ ansible_user }}"
+            group: "{{ ansible_user }}"
             mode: 0644
+          become: true
       check_mode: false
       when: ansible_local.custom_facts.controller_token is undefined
       tags:
