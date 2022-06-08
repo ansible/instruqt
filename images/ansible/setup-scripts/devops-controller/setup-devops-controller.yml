@@ -215,7 +215,8 @@
         name: init.defaultBranch
         scope: global
         value: main
-      become_user: rhel
+      become: true
+      become_user: "{{ ansible_user }}"
       tags:
         - controller-config
 
@@ -224,7 +225,8 @@
         name: credential.helper
         scope: global
         value: store --file /tmp/git-creds
-      become_user: rhel
+      become: true
+      become_user: "{{ ansible_user }}"
       tags:
         - controller-config
 
@@ -233,7 +235,8 @@
         name: safe.directory
         scope: global
         value: "/home/{{ ansible_user }}/acme_corp"
-      become_user: rhel
+      become: true
+      become_user: "{{ ansible_user }}"
       tags:
         - controller-config
 
@@ -252,7 +255,8 @@
         name: user.name
         scope: global
         value: "{{ ansible_user }}"
-      become_user: rhel
+      become: true
+      become_user: "{{ ansible_user }}"
       tags:
         - controller-config
       
@@ -261,7 +265,8 @@
         name: user.email
         scope: global
         value: "{{ ansible_user }}@local"
-      become_user: rhel
+      become: true
+      become_user: "{{ ansible_user }}"
       tags:
         - controller-config
 
@@ -269,6 +274,7 @@
       ansible.builtin.git:
         repo: "{{ git_repo }}"
         dest: "/home/{{ ansible_user }}/acme_corp"
+      become: true
       become_user: "{{ ansible_user }}"
       tags:
         - controller-config
