@@ -188,7 +188,7 @@
     - name: Create Jenkins jobs
       ansible.builtin.shell:
         chdir: /var/jenkins_home
-        cmd: "/opt/java/openjdk/bin/java -jar /var/jenkins_home/jenkins-cli.jar -s http://jenkins:8080 -auth {{ jenkins_user }}:{{ student_password }} create-job {{ item.name }} < {{ item.template_file }}"
+        cmd: "/opt/java/openjdk/bin/java -jar /var/jenkins_home/jenkins-cli.jar -s http://jenkins:8080 -auth {{ student_user }}:{{ student_password }} create-job {{ item.name }} < {{ item.template_file }}"
       loop: "{{ jenkins_jobs }}"
       register: __output
       changed_when: __output.rc != 4
@@ -200,6 +200,96 @@
   gather_facts: true
     
   tasks:
+   # Create auth login token
+    - name: get auth token and restart automation-controller if it fails
+      block:
+        - name: Refresh facts
+          setup:
+
+        - name: Create oauth token
+          awx.awx.token:
+            description: 'Instruqt lab'
+            scope: "write"
+            state: present
+            controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+          register: _auth_token
+          until: _auth_token is not failed
+          delay: 3
+          retries: 5
+      rescue:
+        - name: In rescue block for auth token
+          debug:
+            msg: "failed to get auth token. Restarting automation controller service"
+
+        - name: restart the controller service
+          ansible.builtin.service:
+            name: automation-controller
+            state: restarted
+
+        - name: Ensure tower/controller is online and working
+          uri:
+            url: https://localhost/api/v2/ping/
+            method: GET
+            user: "{{ admin_username }}"
+            password: "{{ admin_password }}"
+            validate_certs: false
+            force_basic_auth: true
+          register: controller_online
+          until: controller_online is success
+          delay: 3
+          retries: 5
+
+        - name: Retry getting auth token
+          awx.awx.token:
+            description: 'Instruqt lab'
+            scope: "write"
+            state: present
+            controller_config_file: "{{ playbook_dir }}/../controller.cfg"  
+            validate_certs: false
+          register: _auth_token
+          until: _auth_token is not failed
+          delay: 3
+          retries: 5
+      always:
+        - name: Create fact.d dir
+          ansible.builtin.file:
+            path: "{{ custom_facts_dir }}"
+            state: directory
+            recurse: yes
+            owner: "{{ ansible_user }}"
+            group: "{{ ansible_user }}"
+            mode: 0755
+          become: true
+
+        - name: Create _auth_token custom fact
+          ansible.builtin.copy:
+            content: "{{ _auth_token.ansible_facts }}"
+            dest: "{{ custom_facts_dir }}/{{ custom_facts_file }}"
+            owner: "{{ ansible_user }}"
+            group: "{{ ansible_user }}"
+            mode: 0644
+          become: true
+      check_mode: false
+      when: ansible_local.custom_facts.controller_token is undefined
+      tags:
+        - auth-token
+
+    - name: refresh facts
+      setup:
+        filter:
+          - ansible_local
+      tags:
+        - always
+
+    - name: create auth token fact
+      ansible.builtin.set_fact:
+        auth_token: "{{ ansible_local.custom_facts.controller_token }}"
+        cacheable: true
+      check_mode: false
+      when: auth_token is undefined
+      tags:
+        - always
+
   # Setup student git repo
     - name: Remove repo dir if it exists
       ansible.builtin.file:
@@ -292,90 +382,68 @@
       tags:
         - controller-config
 
-   # Create auth login token
-    - name: get auth token and restart automation-controller if it fails
-      block:
-        - name: Refresh facts
-          setup:
-
-        - name: Create oauth token
-          awx.awx.token:
-            description: 'Instruqt lab'
-            scope: "write"
-            state: present
-            controller_config_file: "{{ playbook_dir }}/../controller.cfg"
-          register: _auth_token
-          until: _auth_token is not failed
-          delay: 3
-          retries: 5
-      rescue:
-        - name: In rescue block for auth token
-          debug:
-            msg: "failed to get auth token. Restarting automation controller service"
-
-        - name: restart the controller service
-          ansible.builtin.service:
-            name: automation-controller
-            state: restarted
-
-        - name: Ensure tower/controller is online and working
-          uri:
-            url: https://localhost/api/v2/ping/
-            method: GET
-            user: "{{ admin_username }}"
-            password: "{{ admin_password }}"
-            validate_certs: false
-            force_basic_auth: true
-          register: controller_online
-          until: controller_online is success
-          delay: 3
-          retries: 5
-
-        - name: Retry getting auth token
-          awx.awx.token:
-            description: 'Instruqt lab'
-            scope: "write"
-            state: present
-            controller_config_file: "{{ playbook_dir }}/../controller.cfg"  
-            validate_certs: false
-          register: _auth_token
-          until: _auth_token is not failed
-          delay: 3
-          retries: 5
-      always:
-        - name: Create fact.d dir
-          ansible.builtin.file:
-            path: "{{ custom_facts_dir }}"
-            state: directory
-            recurse: yes
-            owner: "{{ ansible_user }}"
-            group: "{{ ansible_user }}"
-            mode: 0644
-          become: true
-
-        - name: Create _auth_token custom fact
-          ansible.builtin.copy:
-            content: "{{ _auth_token.ansible_facts }}"
-            dest: "{{ custom_facts_dir }}/{{ custom_facts_file }}"
-            owner: "{{ ansible_user }}"
-            group: "{{ ansible_user }}"
-            mode: 0644
-          become: true
-      check_mode: false
-      when: ansible_local.custom_facts.controller_token is undefined
+# Controller objects
+    - name: Add Organization
+      awx.awx.organization:
+        name: "{{ lab_organization }}"
+        description: "ACME Corp Organization"
+        state: present
+        controller_oauthtoken: "{{ auth_token }}"
+        validate_certs: false
       tags:
-        - auth-token
+        - controller-config
+        - controller-objects
 
-    - name: refresh facts
-      setup:
+    - name: Add lab inventories
+      awx.awx.inventory:
+        name: "{{ item.name }}"
+        description: "{{ item.description }}"
+        organization: "{{ lab_organization }}"
+        state: present
+        controller_oauthtoken: "{{ auth_token }}"
+        validate_certs: false
+      loop: "{{ lab_inventories }}"
       tags:
-        - always
+        - controller-config
+        - controller-objects
 
-    - name: create auth token fact
-      ansible.builtin.set_fact:
-        auth_token: "{{ ansible_local.custom_facts.controller_token }}"
-        cacheable: true
-      check_mode: false
-      when: ansible_local.custom_facts is defined
+    - name: Create hosts
+      awx.awx.host:
+        name: "{{ item.lab_host_name }}"
+        inventory: "{{ item.lab_host_inventory }}"
+        state: present
+        controller_oauthtoken: "{{ auth_token }}"
+        validate_certs: false
+        variables:  "{{ item.lab_host_vars }}"
+      loop: "{{ lab_hosts }}"
       tags:
-        - always
+        - controller-config
+        - controller-objects
+
+    - name: Add the lab ssh credential
+      awx.awx.credential:
+        name: "{{ lab_credential_name }}"
+        organization: "{{ lab_organization }}"
+        credential_type: Machine
+        inputs:
+          ssh_key_data: "{{ lookup('file', '/home/rhel/.ssh/id_rsa') }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        validate_certs: false
+      tags:
+        - controller-config
+        - controller-objects
+
+    - name: Add the lab project
+      awx.awx.project:
+        name: "{{ lab_project_name }}"
+        scm_type: git
+        scm_url: "http://gitea:3000/{{ student_user }}/acme_corp.git"
+        organization: "{{ lab_organization }}"
+        scm_update_on_launch: false
+        scm_update_cache_timeout: 60
+        scm_branch: "main"
+        controller_oauthtoken: "{{ auth_token }}"
+        validate_certs: false
+      tags:
+        - controller-config
+        - controller-objects
