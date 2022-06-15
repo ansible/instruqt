@@ -12,7 +12,7 @@ pipeline {
         stage('Installing packages') {
             steps {
                 script {
-                    sh '/usr/bin/python3 -m pip install -r app/requirements.txt'
+                    sh '/usr/bin/python3 -m pip install -r app/requirements_test.txt'
                 }
             }
         }
@@ -32,6 +32,7 @@ pipeline {
             steps {
                 withCredentials([gitUsernamePassword(credentialsId: 'gitea_repo', gitToolName: 'git')]) {
                     sh """
+                        git reset --hard HEAD
                         git checkout main
                         git pull origin main --force
                         git fetch --tags --all --prune
@@ -54,7 +55,25 @@ pipeline {
                         git push --force origin main v${newPkgVersion}
                     """
                 }
-               
+            }
+        }
+        
+        stage('Controller call') {
+            steps {
+                ansibleTower(
+                    towerServer: 'ACME Corp controller',
+                    templateType: 'job',
+                    jobTemplate: 'Configure Webservers',
+                    importTowerLogs: true,
+                    removeColor: false,
+                    verbose: true,
+                        extraVars: '''---
+                        pkg_version: $pkgVersion
+                        tag_name: $newPkgVersion
+                        '''
+                )
+            }
+        }
 
                 
                 
@@ -80,11 +99,11 @@ pipeline {
                 // )                         
             }
         }
-        stage("AAP - Create Release") {
-            steps {
-                ansiblePlaybook extras: '-e tag_name=${newPkgVersion}', installation: 'Ansible', playbook: './playbooks/app_release.yml'
-            }
-        }
+        // stage("AAP - Create Release") {
+        //     steps {
+        //         ansiblePlaybook extras: '-e tag_name=${newPkgVersion}', installation: 'Ansible', playbook: './playbooks/app_release.yml'
+        //     }
+        // }
         // stage('Build and Tag') {
         //     steps {
         //         nodejs(nodeJSInstallationName: 'nodejs') {
@@ -197,8 +216,8 @@ pipeline {
         //         }
         //     }
         // }
-    }
-}
+    // }
+// }
 
 
 // Increment the minor part of a `MAJOR.MINOR.PATCH` semver version.

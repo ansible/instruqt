@@ -1,5 +1,5 @@
 <?xml version='1.1' encoding='UTF-8'?>
-<flow-definition plugin="workflow-job@1182.v60a_e6279b_579">
+<flow-definition plugin="workflow-job@1186.v8def1a_5f3944">
   <actions>
     <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@2.2086.v12b_420f036e5"/>
     <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@2.2086.v12b_420f036e5">
@@ -16,7 +16,7 @@
       <triggers/>
     </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
   </properties>
-  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2706.v71dd22b_c5a_a_2">
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2725.v7b_c717eb_12ce">
     <script>#!/usr/bin/env groovy
 
 pipeline {
@@ -31,7 +31,7 @@ pipeline {
         stage(&apos;Installing packages&apos;) {
             steps {
                 script {
-                    sh &apos;/usr/bin/python3 -m pip install -r app/requirements.txt&apos;
+                    sh &apos;/usr/bin/python3 -m pip install -r app/requirements_test.txt&apos;
                 }
             }
         }
@@ -51,6 +51,7 @@ pipeline {
             steps {
                 withCredentials([gitUsernamePassword(credentialsId: &apos;gitea_repo&apos;, gitToolName: &apos;git&apos;)]) {
                     sh &quot;&quot;&quot;
+                        git reset --hard HEAD
                         git checkout main
                         git pull origin main --force
                         git fetch --tags --all --prune
@@ -73,7 +74,25 @@ pipeline {
                         git push --force origin main v${newPkgVersion}
                     &quot;&quot;&quot;
                 }
-               
+            }
+        }
+        
+        stage(&apos;Controller call&apos;) {
+            steps {
+                ansibleTower(
+                    towerServer: &apos;ACME Corp controller&apos;,
+                    templateType: &apos;job&apos;,
+                    jobTemplate: &apos;Configure Webservers&apos;,
+                    importTowerLogs: true,
+                    removeColor: false,
+                    verbose: true,
+                        extraVars: &apos;&apos;&apos;---
+                        pkg_version: $pkgVersion
+                        tag_name: $newPkgVersion
+                        &apos;&apos;&apos;
+                )
+            }
+        }
 
                 
                 
@@ -99,11 +118,11 @@ pipeline {
                 // )                         
             }
         }
-        stage(&quot;AAP - Create Release&quot;) {
-            steps {
-                ansiblePlaybook extras: &apos;-e tag_name=${newPkgVersion}&apos;, installation: &apos;Ansible&apos;, playbook: &apos;./playbooks/app_release.yml&apos;
-            }
-        }
+        // stage(&quot;AAP - Create Release&quot;) {
+        //     steps {
+        //         ansiblePlaybook extras: &apos;-e tag_name=${newPkgVersion}&apos;, installation: &apos;Ansible&apos;, playbook: &apos;./playbooks/app_release.yml&apos;
+        //     }
+        // }
         // stage(&apos;Build and Tag&apos;) {
         //     steps {
         //         nodejs(nodeJSInstallationName: &apos;nodejs&apos;) {
@@ -216,8 +235,8 @@ pipeline {
         //         }
         //     }
         // }
-    }
-}
+    // }
+// }
 
 
 // Increment the minor part of a `MAJOR.MINOR.PATCH` semver version.
@@ -246,4 +265,3 @@ String bumpPatchVersion(String version) {
   </definition>
   <triggers/>
   <disabled>false</disabled>
-</flow-definition>
