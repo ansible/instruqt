@@ -446,4 +446,24 @@
         validate_certs: false
       tags:
         - controller-config
-        - controller-objects
+        - controller-project
+
+    - name: Create job templates
+      awx.awx.job_template:
+        name: "{{ item.jt_name }}"
+        state: present
+        become_enabled: "{{ item.jt_become }}"
+        project: "{{ lab_project_name }}"
+        credential: "{{ lab_credential_name }}"
+        inventory: "{{  item.jt_inventory }}"
+        playbook: "{{ item.jt_playbook }}"
+        survey_enabled: "{{ item.survey_enabled }}"
+        survey_spec: "{{ item.survey_spec | default(omit) }}"
+        ask_inventory_on_launch: "{{  item.jt_prompt_inventory }}"
+        extra_vars: "{{ item.jt_extra_vars | default(omit) }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        validate_certs: false
+      loop: "{{ lab_job_templates }}"
+      tags:
+        - controller-config
+        - controller-jts
