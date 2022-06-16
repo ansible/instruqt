@@ -393,6 +393,31 @@
       tags:
         - controller-config
         - controller-objects
+  
+    - name: Add Instruqt DevOps EE
+      awx.awx.execution_environment:
+        name: "{{ controller_devops_ee }}"
+        image: "quay.io/acme_corp/instruqt-devops-ee"
+        pull: missing
+        state: present
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - controller-config
+        - controller-ees
+
+    - name: Pull Instruqt DevOps EE
+      containers.podman.podman_image:
+        name: "quay.io/acme_corp/instruqt-devops-ee"
+      become_user: awx
+      register: podman_pull
+      until: podman_pull is not failed
+      retries: 5
+      delay: 15 
+      tags:
+        - controller-config
+        - controller-ees
 
     - name: Add lab inventories
       awx.awx.inventory:
@@ -452,6 +477,7 @@
       awx.awx.job_template:
         name: "{{ item.jt_name }}"
         state: present
+        execution_environment: "{{ item.execution_env | default ( controller_devops_ee ) }}"
         become_enabled: "{{ item.jt_become }}"
         project: "{{ lab_project_name }}"
         credential: "{{ lab_credential_name }}"
@@ -467,3 +493,84 @@
       tags:
         - controller-config
         - controller-jts
+
+# Controller users
+    ## Users
+    - name: Create Jenkins user
+      awx.awx.user:
+        username: "{{ jenkins_user }}"
+        password: "{{ jenkins_password }}"
+        email: jenkins@acme.example.com
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - controller-config
+        - controller-users
+
+    - name: Add jenkins as member of {{ lab_organization }}
+      awx.awx.role:
+        user: "{{ jenkins_user }}"
+        role: member
+        state: present
+        organization: "{{ lab_organization }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - controller-config
+        - controller-users
+
+    # - name: Give Jenkins user access to SSH key
+    #   awx.awx.role:
+    #     user: "{{ jenkins_user }}"
+    #     role: read
+    #     credential: "VM SSH Credential"
+    #     state: present
+    #     organization: "{{ lab_organization }}"
+    #     controller_oauthtoken: "{{ __auth_token }}"
+    #     controller_host: "{{ controller_hostname }}"
+    #     validate_certs: "{{ controller_validate_certs }}"
+    #   tags:
+    #     - controller-config
+    #     - controller-users
+
+    # - name: Give Jenkins user access to Workflows
+    #   awx.awx.role:
+    #     user: "{{ jenkins_user }}"
+    #     role: execute
+    #     workflow: "Cloud Instances Workflow"
+    #     state: present
+    #     controller_oauthtoken: "{{ auth_token }}"
+    #     controller_host: "{{ controller_hostname }}"
+    #     validate_certs: "{{ controller_validate_certs }}"
+    #   tags:
+    #     - configure-controller
+    #     - controller-users
+
+    - name: Give users access to job templates
+      awx.awx.role:
+        user: "{{ item.user }}"
+        role: "{{ item.role }}"
+        job_template: "{{ item.job_template }}"
+        state: "{{ item.state }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      loop: "{{ controller_user_vars }}"
+      tags:
+        - controller-config
+        - controller-users
+
+    - name: Create student admin user
+      awx.awx.user:
+        superuser: true
+        username: "{{ student_user }}"
+        password: "{{ student_password }}"
+        email: student@acme.example.com
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - controller-config
+        - controller-users
