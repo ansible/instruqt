@@ -392,7 +392,7 @@
         validate_certs: false
       tags:
         - controller-config
-        - controller-objects
+        - controller-org
   
     - name: Add Instruqt DevOps EE
       awx.awx.execution_environment:
@@ -443,7 +443,23 @@
       loop: "{{ lab_hosts }}"
       tags:
         - controller-config
-        - controller-objects
+        - controller-hosts
+    
+    - name: Create groups
+      awx.awx.group:
+        name: "{{ item.group_name }}"
+        description: "{{ item.group_desc }}"
+        state: present
+        inventory: "{{ item.group_inventory }}"
+        hosts: "{{ item.group_hosts }}"
+        # preserve_existing_hosts: "{{ item.group_preserve_hosts | default( true ) }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      loop: "{{ lab_groups }}"
+      tags:
+        - controller-config
+        - controller-groups
 
     - name: Add the lab ssh credential
       awx.awx.credential:
@@ -486,6 +502,7 @@
         survey_enabled: "{{ item.survey_enabled }}"
         survey_spec: "{{ item.survey_spec | default(omit) }}"
         ask_inventory_on_launch: "{{  item.jt_prompt_inventory }}"
+        ask_variables_on_launch: "{{  item.jt_prompt_inventory | default( omit )}}"
         extra_vars: "{{ item.jt_extra_vars | default(omit) }}"
         controller_oauthtoken: "{{ auth_token }}"
         validate_certs: false
