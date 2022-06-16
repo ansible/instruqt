@@ -20,6 +20,7 @@ jenkins_jobs:
   - name: PollRepo
     template_file: /tmp/setup-scripts/devops-controller/files/poll.xml
 controller_devops_ee: "ACME Corp EE"
+default_tag_name: "0.0.1"
 
 # Controller objects
 lab_credential_name: "ACME Corp Machine Credential"
@@ -82,7 +83,7 @@ lab_job_templates:
 lab_devops_worklow:
   - workflow_name: "DevOps Workflow"
     workflow_inventory: "ACME Corp DC"
-    workflow_vars: {"tag_name": "{{ tag_name }}"}
+    workflow_vars: {"tag_name": "{{ tag_name | default( default_tag_name ) }}"}
     workflow_org: "{{ lab_organization }}"
     workflow_prompt_vars: true
 lab_devops_worklow_nodes:
