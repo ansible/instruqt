@@ -93,8 +93,9 @@ pipeline {
                 )
             }
         }
+    }
 
-
+}
 // Increment the minor part of a `MAJOR.MINOR.PATCH` semver version.
 String bumpMinorVersion(String version) {
     def parts = version.tokenize(&apos;.&apos;)
@@ -115,8 +116,7 @@ String bumpPatchVersion(String version) {
     def newPatchVersion = parts[2].toInteger() + 1
 
     return &quot;${parts[0]}.${parts[1]}.${newPatchVersion}&quot;
-}
-</script>
+}</script>
     <sandbox>true</sandbox>
   </definition>
   <triggers/>
