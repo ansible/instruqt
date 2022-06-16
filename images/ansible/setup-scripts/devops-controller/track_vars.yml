@@ -60,7 +60,7 @@ lab_groups:
     group_hosts:
       - web1.acme.example.com
     group_preserve_hosts: true
-    group_inventory: ACME Corp DC
+    group_inventory: "ACME Corp DC"
 lab_job_templates:
   - jt_name: "Create App Release"
     jt_execution_env: "{{ controller_devops_ee }}"
@@ -78,8 +78,41 @@ lab_job_templates:
     jt_inventory: "ACME Corp DC"
     jt_become: false
     survey_enabled: false
+lab_devops_worklow:
+  - workflow_name: DevOps Workflow
+    workflow_inventory: "ACME Corp DC"
+    workflow_vars: {"tag_name": "{{ tag_name }}"}
+    workflow_schema:
+      - identifier: prod-approve
+        unified_job_template:
+          name: prod-approve
+          organization: 
+            name: "{{ lab_organization }}"
+          type: workflow_approval
+          related:
+            always_nodes:
+              - identifier: "Create App Release"
+      - identifier: "Create App Release"
+        # all_parents_must_converge: true
+        unified_job_template: 
+          organization: 
+            name: "{{ lab_organization }}"
+          name: "Create App Release"
+          type: job_template
 
-# Controller Users
+            
+  # - name: "Deploy the App?"
+
+  # - name: "Create App Release"
+  #   identifier: "app-release"
+  # - name: "Configure Webservers"
+  #   identifier: "configure-webservers"
+  #   # success_nodes:
+  #   #   - inv-update
+  # - name: Deploy Security Group
+  #   identifier: sg-deploy
+  #   success_nodes:
+  #     - instance-deploy
 controller_user_vars:
   - user: jenkins
     role: execute

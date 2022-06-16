@@ -511,6 +511,20 @@
         - controller-config
         - controller-jts
 
+    - name: Create Workflows
+      awx.awx.tower_workflow_job_template:
+        name: "{{ item.workflow_name }}"
+        inventory: "{{ item.workflow_inventory }}"
+        extra_vars: "{{ item.workflow_vars }}"
+        schema: "{{ item.workflow_schema }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      loop: "{{ lab_devops_worklow }}"
+      tags:
+        - controller-workflows
+        - controller-jts
+     
 # Controller users
     ## Users
     - name: Create Jenkins user
