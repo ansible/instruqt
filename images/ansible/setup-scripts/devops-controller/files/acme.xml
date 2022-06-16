@@ -1,4 +1,4 @@
-<?xml version='1.1' encoding='UTF-8'?>
+?xml version='1.1' encoding='UTF-8'?>
 <flow-definition plugin="workflow-job@1186.v8def1a_5f3944">
   <actions>
     <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@2.2086.v12b_420f036e5"/>
@@ -36,17 +36,17 @@ pipeline {
             }
         }
         
-        // stage(&apos;Static Code Checking&apos;) {
-        //     steps {
-        //         script {
-        //             sh &apos;find . -name \\*.py | xargs /usr/bin/python3 -m pylint --load-plugins=pylint_django -f parseable | tee pylint.log&apos;
-        //             recordIssues(
-        //                 tool: pyLint(pattern: &apos;pylint.log&apos;),
-        //                 failTotalHigh: 10,
-        //             )
-        //         }
-        //     }
-        // }
+        stage(&apos;Static Code Checking&apos;) {
+            steps {
+                script {
+                    sh &apos;find . -name \\*.py | xargs /usr/bin/python3 -m pylint --load-plugins=pylint_django -f parseable | tee pylint.log&apos;
+                    recordIssues(
+                        tool: pyLint(pattern: &apos;pylint.log&apos;),
+                        failTotalHigh: 10,
+                    )
+                }
+            }
+        }
         stage(&apos;Build and Tag&apos;) {
             steps {
                 withCredentials([gitUsernamePassword(credentialsId: &apos;gitea_repo&apos;, gitToolName: &apos;git&apos;)]) {
@@ -77,12 +77,12 @@ pipeline {
             }
         }
         
-        stage(&apos;Controller call&apos;) {
+        stage(&apos;Controller- DevOps&apos;) {
             steps {
                 ansibleTower(
                     towerServer: &apos;ACME Corp controller&apos;,
-                    templateType: &apos;job&apos;,
-                    jobTemplate: &apos;Configure Webservers&apos;,
+                    templateType: &apos;workflow&apos;,
+                    jobTemplate: &apos;DevOps Workflow&apos;,
                     importTowerLogs: true,
                     removeColor: false,
                     verbose: true,
@@ -93,150 +93,6 @@ pipeline {
                 )
             }
         }
-
-                
-                
-                // withCredentials([gitUsernamePassword(credentialsId: &apos;gitea_repo&apos;, gitToolName: &apos;git&apos;)]) {
-                //     sh &quot;&quot;&quot;
-                //         git add .
-                //         git commit -m &quot;v${newPkgVersion}&quot;
-                //         git push origin main &quot;${newPkgVersion}&quot;
-                //     &quot;&quot;&quot;
-                // }
-                
-                // ansibleTower(
-                //     towerServer: &apos;JuiceShop controller&apos;,
-                //     templateType: &apos;job&apos;,
-                //     jobTemplate: &apos;ACME Release&apos;,
-                //     importTowerLogs: true,
-                //     removeColor: false,
-                //     verbose: true,
-                //         extraVars: &apos;&apos;&apos;---
-                //         pkg_version: $pkgVersion
-                //         tag_name: $newPkgVersion
-                //         &apos;&apos;&apos;
-                // )                         
-            }
-        }
-        // stage(&quot;AAP - Create Release&quot;) {
-        //     steps {
-        //         ansiblePlaybook extras: &apos;-e tag_name=${newPkgVersion}&apos;, installation: &apos;Ansible&apos;, playbook: &apos;./playbooks/app_release.yml&apos;
-        //     }
-        // }
-        // stage(&apos;Build and Tag&apos;) {
-        //     steps {
-        //         nodejs(nodeJSInstallationName: &apos;nodejs&apos;) {
-        //             withCredentials([
-        //                 usernamePassword(credentialsId: &apos;juiceshop_repo&apos;, 
-        //                     passwordVariable: &apos;GITHUB_TOKEN&apos;,
-        //                     usernameVariable: &apos;GITHUB_USERNAME&apos;)]) {
-        //                 script {
-        //                     // Determine version number for next release.
-        //                     env.pkgVersion = sh (
-        //                       script: &apos;git tag --list | sort --version-sort --reverse | head -n1 | cut -d &quot;-&quot; -f1&apos;,
-        //                       returnStdout: true
-        //                     ).trim()
-        //                     env.newPkgVersion = bumpPatchVersion(pkgVersion)
-        //                 }
-                        
-        //                 // Configure author for tag and auth credentials for pushing tag to GitHub.
-        //                 // See https://git-scm.com/docs/git-credential-store.
-        //                 sh &quot;&quot;&quot;
-        //                     git config --replace-all user.name ${env.GITHUB_USERNAME}
-        //                     git config --replace-all user.email ${env.GITHUB_USERNAME}
-        //                     git config credential.helper store
-        //                     echo https://${env.GITHUB_USERNAME}:${env.GITHUB_TOKEN}@github.com &gt;&gt; \$HOME/.git-credentials
-        //                 &quot;&quot;&quot;
-                        
-        //                 // Bump the package version.
-        //                 sh &quot;&quot;&quot;
-        //                     git checkout master --force
-        //                     git tag ${newPkgVersion}
-        //                     npm --no-git-tag-version version ${newPkgVersion}
-        //                     git add .
-        //                     git commit -m ${newPkgVersion}
-        //                     git push origin master --force
-        //                     git push https://github.com/craig-br/juice-shop.git ${newPkgVersion}
-        //                 &quot;&quot;&quot;
-        //                 //sleep 2 // Give GitHub a moment to realize the tag exists
-        //                 // Install and Create the Dist Package. No time in demo
-        //                 //sh &quot;npm install --production &amp;&amp; grunt package&quot;
-        //             }
-        //         }
-        //     }
-        // }
-        
-        // // Create a release and deploy instances with Tower
-        // stage (&apos;Controller - Publish and Cloud&apos;) {
-        //     parallel {
-        //         stage(&apos;Controller - Create Release&apos;) {
-        //             steps {
-        //                 ansibleTower(
-        //                     towerServer: &apos;JuiceShop controller&apos;,
-        //                     templateType: &apos;job&apos;,
-        //                     jobTemplate: &apos;GitHub Release&apos;,
-        //                     importTowerLogs: true,
-        //                     removeColor: false,
-        //                     verbose: true,
-        //                         extraVars: &apos;&apos;&apos;---
-        //                         pkg_version: $pkgVersion
-        //                         tag_name: $newPkgVersion
-        //                         &apos;&apos;&apos;
-        //                 )                         
-        //             }
-        //         }
-        //         // Create instances with controller
-        //         stage(&apos;Controller - Instances&apos;) {
-        //             steps {
-        //                 ansibleTower(
-        //                     towerServer: &apos;JuiceShop controller&apos;,
-        //                     templateType: &apos;workflow&apos;,
-        //                     jobTemplate: &apos;Cloud Instances Workflow&apos;,
-        //                     importTowerLogs: true,
-        //                     removeColor: false,
-        //                     verbose: true,
-        //                     credential: &apos;&apos;,
-        //                 )   
-        //             }
-        //         }
-        //     }
-        // }
-        
-        // // Deploy app and create VS
-        // stage (&apos;Controller - Deploy App and Net&apos;) {
-        //     parallel {
-        //         stage(&apos;Controller - Deploy App&apos;) {
-        //             steps {
-        //                 ansibleTower(
-        //                     towerServer: &apos;JuiceShop controller&apos;,
-        //                     templateType: &apos;job&apos;,
-        //                     jobTemplate: &apos;Deploy JuiceShop App&apos;,
-        //                     importTowerLogs: true,
-        //                     removeColor: false,
-        //                     verbose: true,
-        //                     extraVars: &apos;&apos;&apos;---
-        //                     pkg_version: $pkgVersion
-        //                     tag_name: $newPkgVersion
-        //                     &apos;&apos;&apos;
-        //                 )                       
-        //             }
-        //         }
-        //         stage(&apos;Controller - Net&apos;) {
-        //             steps {
-        //                 ansibleTower(
-        //                     towerServer: &apos;JuiceShop controller&apos;,
-        //                     templateType: &apos;job&apos;,
-        //                     jobTemplate: &apos;Create JuiceShop App VS&apos;,
-        //                     importTowerLogs: true,
-        //                     removeColor: false,
-        //                     verbose: true,
-        //                 )
-        //             }
-        //         }
-        //     }
-        // }
-    // }
-// }
 
 
 // Increment the minor part of a `MAJOR.MINOR.PATCH` semver version.

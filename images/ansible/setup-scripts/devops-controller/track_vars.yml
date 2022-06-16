@@ -42,6 +42,7 @@ lab_hosts:
       ansible_host: controller 
       ansible_python_interpreter: /usr/bin/python3
       ansible_host_key_checking: false
+      ansible_connection: local
   - lab_host_name: "jenkins.acme.example.com"
     lab_host_inventory: "ACME Corp DC"
     lab_host_vars:
@@ -79,54 +80,40 @@ lab_job_templates:
     jt_become: false
     survey_enabled: false
 lab_devops_worklow:
-  - workflow_name: DevOps Workflow
+  - workflow_name: "DevOps Workflow"
     workflow_inventory: "ACME Corp DC"
     workflow_vars: {"tag_name": "{{ tag_name }}"}
-    workflow_schema:
-      - identifier: prod-approve
-        unified_job_template:
-          name: prod-approve
-          organization: 
-            name: "{{ lab_organization }}"
-          type: workflow_approval
-          related:
-            always_nodes:
-              - identifier: "Create App Release"
-      - identifier: "Create App Release"
-        # all_parents_must_converge: true
-        unified_job_template: 
-          organization: 
-            name: "{{ lab_organization }}"
-          name: "Create App Release"
-          type: job_template
-
-            
-  # - name: "Deploy the App?"
-
-  # - name: "Create App Release"
-  #   identifier: "app-release"
-  # - name: "Configure Webservers"
-  #   identifier: "configure-webservers"
-  #   # success_nodes:
-  #   #   - inv-update
-  # - name: Deploy Security Group
-  #   identifier: sg-deploy
-  #   success_nodes:
-  #     - instance-deploy
+    workflow_org: "{{ lab_organization }}"
+    workflow_prompt_vars: true
+lab_devops_worklow_nodes:
+  - workflow_node_id: "Deploy to Prod?"
+    workflow_node_jt: "DevOps Workflow"      
+    workflow_node_org: "{{ lab_organization }}"
+    workflow_node_approval:
+      description: "Deploy to Prod?"
+      name: "Deploy to Prod?"
+  - workflow_node_id: "Create App Release"
+    workflow_node_jt: "DevOps Workflow"      
+    workflow_node_org: "{{ lab_organization }}"
+    workflow_node_unified_jt: "Create App Release"
+  - workflow_node_id: "Config Webservers"
+    workflow_node_jt: "DevOps Workflow"      
+    workflow_node_org: "{{ lab_organization }}"
+    workflow_node_unified_jt: "Configure Webservers"
+  - workflow_node_id: "Deploy to Prod?"
+    workflow_node_jt: "DevOps Workflow"      
+    workflow_node_org: "{{ lab_organization }}"
+    workflow_node_success_nodes:
+      - "Config Webservers"
+      - "Create App Release"
 controller_user_vars:
   - user: jenkins
     role: execute
-    job_template: "Create App Release"
+    job_templates: 
+      - "Create App Release"
+      - "Configure Webservers"
     state: present
   - user: jenkins
     role: execute
-    job_template: "Configure Webservers"
+    workflows: "DevOps Workflow"
     state: present
-  # - user: jenkins
-  #   role: execute
-  #   job_template: "Secure JuiceShop App"
-  #   state: present
-  # - user: jenkins
-  #   role: execute
-  #   job_template: "GitHub Release"
-  #   state: present

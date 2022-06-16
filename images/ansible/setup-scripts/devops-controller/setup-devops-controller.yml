@@ -367,6 +367,26 @@
       tags:
         - controller-config
 
+    - name: Install OS packages
+      ansible.builtin.package:
+        name:
+          - python3-setuptools
+          - virtualenv
+        state: present
+      become: true
+      tags:
+        - controller-config
+        - controller-packages
+
+    - name: Install Python packages
+      ansible.builtin.pip:
+        requirements: "/home/rhel/acme_corp/playbooks/files/requirements_prod.txt"
+        virtualenv: /home/rhel/.virtualenvs/acme_corp
+      tags:
+        - controller-config
+        - controller-packages
+
+ 
     - name: Ensure tower/controller is online and working
       uri:
         url: https://localhost/api/v2/ping/
@@ -452,7 +472,6 @@
         state: present
         inventory: "{{ item.group_inventory }}"
         hosts: "{{ item.group_hosts }}"
-        # preserve_existing_hosts: "{{ item.group_preserve_hosts | default( true ) }}"
         controller_oauthtoken: "{{ auth_token }}"
         controller_host: "{{ controller_hostname }}"
         validate_certs: "{{ controller_validate_certs }}"
@@ -515,16 +534,34 @@
       awx.awx.tower_workflow_job_template:
         name: "{{ item.workflow_name }}"
         inventory: "{{ item.workflow_inventory }}"
-        extra_vars: "{{ item.workflow_vars }}"
-        schema: "{{ item.workflow_schema }}"
+        extra_vars: "{{ item.workflow_vars | default( omit ) }}"
+        ask_variables_on_launch: "{{ item.workflow_prompt_vars | default( true ) }}"
+        organization:  "{{ item.workflow_org }}"
+        schema: "{{ item.workflow_schema | default( omit )}}"
         controller_oauthtoken: "{{ auth_token }}"
         controller_host: "{{ controller_hostname }}"
         validate_certs: "{{ controller_validate_certs }}"
       loop: "{{ lab_devops_worklow }}"
       tags:
+        - controller-config
         - controller-workflows
-        - controller-jts
-     
+
+    - name: Add nodes to DevOps workflow
+      awx.awx.workflow_job_template_node:
+        state: present
+        identifier: "{{ item.workflow_node_id }}"
+        workflow_job_template: "{{ item.workflow_node_jt }}"
+        organization: "{{ item.workflow_node_org }}"
+        approval_node: "{{ item.workflow_node_approval | default( omit ) }}"
+        unified_job_template: "{{ item.workflow_node_unified_jt | default( omit ) }}"
+        success_nodes: "{{ item.workflow_node_success_nodes | default( omit ) }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      loop: "{{ lab_devops_worklow_nodes }}"
+      tags:
+        - controller-config
+        - controller-workflows
 # Controller users
     ## Users
     - name: Create Jenkins user
@@ -552,38 +589,12 @@
         - controller-config
         - controller-users
 
-    # - name: Give Jenkins user access to SSH key
-    #   awx.awx.role:
-    #     user: "{{ jenkins_user }}"
-    #     role: read
-    #     credential: "VM SSH Credential"
-    #     state: present
-    #     organization: "{{ lab_organization }}"
-    #     controller_oauthtoken: "{{ __auth_token }}"
-    #     controller_host: "{{ controller_hostname }}"
-    #     validate_certs: "{{ controller_validate_certs }}"
-    #   tags:
-    #     - controller-config
-    #     - controller-users
-
-    # - name: Give Jenkins user access to Workflows
-    #   awx.awx.role:
-    #     user: "{{ jenkins_user }}"
-    #     role: execute
-    #     workflow: "Cloud Instances Workflow"
-    #     state: present
-    #     controller_oauthtoken: "{{ auth_token }}"
-    #     controller_host: "{{ controller_hostname }}"
-    #     validate_certs: "{{ controller_validate_certs }}"
-    #   tags:
-    #     - configure-controller
-    #     - controller-users
-
     - name: Give users access to job templates
       awx.awx.role:
         user: "{{ item.user }}"
         role: "{{ item.role }}"
-        job_template: "{{ item.job_template }}"
+        job_templates: "{{ item.job_template  | default( omit ) }}"
+        workflows: "{{ item.workflows | default( omit )}}"
         state: "{{ item.state }}"
         controller_oauthtoken: "{{ auth_token }}"
         controller_host: "{{ controller_hostname }}"
