@@ -31,7 +31,7 @@ pipeline {
         stage(&apos;Installing packages&apos;) {
             steps {
                 script {
-                    sh &apos;/usr/bin/python3 -m pip install -r app/requirements_test.txt&apos;
+                    sh &apos;/usr/bin/python3 -m pip install -r playbooks/files/requirements_test.txt&apos;
                 }
             }
         }
@@ -96,27 +96,7 @@ pipeline {
     }
 
 }
-// Increment the minor part of a `MAJOR.MINOR.PATCH` semver version.
-String bumpMinorVersion(String version) {
-    def parts = version.tokenize(&apos;.&apos;)
-    if (parts.size() != 3) {
-        error &quot;${version} is not a valid MAJOR.MINOR.PATCH version&quot;
-    }
-    def newMinorVersion = parts[1].toInteger() + 1
-
-    return &quot;${parts[0]}.${newMinorVersion}.${parts[2]}&quot;
-}
-
-// Increment the patch part of a `MAJOR.MINOR.PATCH` semver version.
-String bumpPatchVersion(String version) {
-    def parts = version.tokenize(&apos;.&apos;)
-    if (parts.size() != 3) {
-        error &quot;${version} is not a valid MAJOR.MINOR.PATCH version&quot;
-    }
-    def newPatchVersion = parts[2].toInteger() + 1
-
-    return &quot;${parts[0]}.${parts[1]}.${newPatchVersion}&quot;
-}</script>
+</script>
     <sandbox>true</sandbox>
   </definition>
   <triggers/>

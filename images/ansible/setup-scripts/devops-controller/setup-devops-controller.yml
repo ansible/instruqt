@@ -382,6 +382,8 @@
       ansible.builtin.pip:
         requirements: "/home/rhel/acme_corp/playbooks/files/requirements_prod.txt"
         virtualenv: /home/rhel/.virtualenvs/acme_corp
+      become: true
+      become_user: "{{ ansible_user }}"
       tags:
         - controller-config
         - controller-packages
