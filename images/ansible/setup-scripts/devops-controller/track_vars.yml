@@ -83,7 +83,8 @@ lab_job_templates:
 lab_devops_worklow:
   - workflow_name: "DevOps Workflow"
     workflow_inventory: "ACME Corp DC"
-    workflow_vars: {"tag_name": "{{ tag_name | default( default_tag_name ) }}"}
+    workflow_vars: {"tag_name": "{{ tag_name | default( default_tag_name ) }}",
+                     "acme_venv": "{{ acme_venv }}"}
     workflow_org: "{{ lab_organization }}"
     workflow_prompt_vars: true
 lab_devops_worklow_nodes:

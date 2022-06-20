@@ -37,6 +37,7 @@ The container is deployed without a default configuration. So during first acces
 1. create a first repository
 
 ## Jenkins DevOps Instruqt Image
+# https://play.instruqt.com/redhat/tracks/devops-controller
 ### Environment configuration
 
 - Name: `jenkins` or custom choice
