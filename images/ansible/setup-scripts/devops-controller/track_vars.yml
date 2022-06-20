@@ -21,6 +21,7 @@ jenkins_jobs:
     template_file: /tmp/setup-scripts/devops-controller/files/poll.xml
 controller_devops_ee: "ACME Corp EE"
 default_tag_name: "0.0.1"
+acme_venv: /home/rhel/.virtualenvs/acme_corp
 
 # Controller objects
 lab_credential_name: "ACME Corp Machine Credential"
