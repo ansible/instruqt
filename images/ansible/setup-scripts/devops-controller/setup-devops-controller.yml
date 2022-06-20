@@ -367,16 +367,6 @@
       tags:
         - controller-config
 
-    - name: Create link to home.html
-      ansible.builtin.file:
-        state: link
-        src: "/home/{{ ansible_user }}/acme_corp/app/lets_quiz/templates/quiz/home.html"
-        dest: "/home/{{ ansible_user }}/acme_corp/home_page.html"
-      become: true
-      become_user: "{{ ansible_user }}"
-      tags:
-        - controller-config
-
     - name: Install OS packages
       ansible.builtin.package:
         name:

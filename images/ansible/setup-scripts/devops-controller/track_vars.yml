@@ -81,7 +81,7 @@ lab_job_templates:
     jt_become: false
   - jt_name: "Deploy ACMECorp App"
     jt_execution_env: "{{ controller_devops_ee }}"
-    jt_playbook: "playbooks/configure_webservers.yml"
+    jt_playbook: "playbooks/deploy_acme_app.yml"
     jt_prompt_inventory: true
     jt_prompt_vars: true
     jt_inventory: "ACME Corp DC"
