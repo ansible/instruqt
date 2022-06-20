@@ -79,6 +79,15 @@ lab_job_templates:
     jt_prompt_vars: true
     jt_inventory: "ACME Corp DC"
     jt_become: false
+  - jt_name: "Deploy ACMECorp App"
+    jt_execution_env: "{{ controller_devops_ee }}"
+    jt_playbook: "playbooks/configure_webservers.yml"
+    jt_prompt_inventory: true
+    jt_prompt_vars: true
+    jt_inventory: "ACME Corp DC"
+    jt_become: false
+    jt_extra_vars:
+      ansible_python_interpreter: "{{ acme_venv }}/bin/python3"
     survey_enabled: false
 lab_devops_worklow:
   - workflow_name: "DevOps Workflow"
@@ -102,12 +111,26 @@ lab_devops_worklow_nodes:
     workflow_node_jt: "DevOps Workflow"      
     workflow_node_org: "{{ lab_organization }}"
     workflow_node_unified_jt: "Configure Webservers"
+  - workflow_node_id: "Deploy ACME App"
+    workflow_node_jt: "DevOps Workflow"      
+    workflow_node_org: "{{ lab_organization }}"
+    workflow_node_unified_jt: "Deploy ACMECorp App"
   - workflow_node_id: "Deploy to Prod?"
     workflow_node_jt: "DevOps Workflow"      
     workflow_node_org: "{{ lab_organization }}"
     workflow_node_success_nodes:
       - "Config Webservers"
       - "Create App Release"
+  - workflow_node_id: "Create App Release"
+    workflow_node_jt: "DevOps Workflow"      
+    workflow_node_org: "{{ lab_organization }}"
+    workflow_node_success_nodes:
+      - "Deploy ACME App"
+  - workflow_node_id: "Config Webservers"
+    workflow_node_jt: "DevOps Workflow"      
+    workflow_node_org: "{{ lab_organization }}"
+    workflow_node_success_nodes:
+      - "Deploy ACME App"
 controller_user_vars:
   - user: jenkins
     role: execute

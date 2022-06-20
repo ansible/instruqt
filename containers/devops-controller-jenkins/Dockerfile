@@ -1,7 +1,7 @@
 FROM jenkins/jenkins:latest
 
 ENV CASC_JENKINS_CONFIG=/usr/share/jenkins/ref/jenkins_casc.yml \
-    JAVA_OPTS="-Djenkins.install.runSetupWizard=false -Djava.net.preferIPv4Stack=true"
+    JAVA_OPTS="-Djenkins.install.runSetupWizard=false -Djava.net.preferIPv4Stack=true -Dblueocean.collectRuns.threads=50"
 
 USER root
 COPY --chown=jenkins:jenkins src /
