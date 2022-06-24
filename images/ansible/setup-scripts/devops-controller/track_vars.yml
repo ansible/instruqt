@@ -16,7 +16,7 @@ admin_password: ansible123!
 git_repo: http://gitea:3000/{{ student_user }}/acme_corp.git
 jenkins_jobs:
   - name: ACMECorp
-    template_file: /tmp/setup-scripts/devops-controller/files/acme.xml
+    template_file: /tmp/setup-scripts/devops-controller/files/acme_initial.xml
   - name: PollRepo
     template_file: /tmp/setup-scripts/devops-controller/files/poll.xml
 controller_devops_ee: "ACME Corp EE"
