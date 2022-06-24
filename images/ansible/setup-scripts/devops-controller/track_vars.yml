@@ -64,6 +64,13 @@ lab_groups:
     group_preserve_hosts: true
     group_inventory: "ACME Corp DC"
 lab_job_templates:
+  - jt_name: "Configure Jenkins Job"
+    jt_execution_env: "{{ controller_devops_ee }}"
+    jt_playbook: "playbooks/configure_jenkins_job.yml"
+    jt_prompt_inventory: false
+    jt_prompt_vars: false
+    jt_inventory: "ACME Corp DC"
+    jt_become: false
   - jt_name: "Create App Release"
     jt_execution_env: "{{ controller_devops_ee }}"
     jt_playbook: "playbooks/app_release.yml"
