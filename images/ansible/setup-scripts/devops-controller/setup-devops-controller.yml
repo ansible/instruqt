@@ -196,7 +196,7 @@
     
 # Controller setup
 - name: Controller config for devops-controller
-  hosts: controller
+  hosts: controller.acme.example.com
   gather_facts: true
     
   tasks:
@@ -211,7 +211,10 @@
             description: 'Instruqt lab'
             scope: "write"
             state: present
-            controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+            controller_host: controller
+            controller_username: "{{ controller_admin_user }}"
+            controller_password: "{{ controller_admin_password }}"
+            validate_certs: false
           register: _auth_token
           until: _auth_token is not failed
           delay: 3
@@ -244,7 +247,9 @@
             description: 'Instruqt lab'
             scope: "write"
             state: present
-            controller_config_file: "{{ playbook_dir }}/../controller.cfg"  
+            controller_host: controller
+            controller_username: "{{ controller_admin_user }}"
+            controller_password: "{{ controller_admin_password }}"
             validate_certs: false
           register: _auth_token
           until: _auth_token is not failed
@@ -618,3 +623,28 @@
       tags:
         - controller-config
         - controller-users
+
+## Challenge check and solve
+    # - name: high-availability set mesh-exec1 instance id fact
+    #   ansible.builtin.set_fact:
+    #     __job_runs: "{{ __job_runs | default({}) | combine( {'name': item.hostname, 'id': item.id} ) }}"
+    #   loop: "{{ query('awx.awx.controller_api', 'instances', verify_ssl=False, oauth_token=auth_token, query_params={ 'hostname': lab_dbn_check_instance_name }) | list }}"
+    - name: Check {{ lab_jt_name }} controller job ran successfuly
+      awx.awx.job_list:
+        status: successful
+        query:
+          name: "{{ lab_jt_name }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      register: __controller_jobs
+      failed_when: not __controller_jobs.results
+      tags:
+        - update-pipeline-check
+
+    - name: debug
+      debug:
+        var: __controller_jobs
+        verbosity: 3
+      tags:
+        - update-pipeline-check

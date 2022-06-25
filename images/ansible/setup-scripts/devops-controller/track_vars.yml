@@ -8,6 +8,8 @@ student_user: student
 student_password: learn_ansible
 jenkins_user: jenkins
 jenkins_password: learn_ansible
+controller_admin_user: admin
+controller_admin_password: "ansible123!"
 host_key_checking: false
 custom_facts_dir: "/etc/ansible/facts.d"
 custom_facts_file: custom_facts.fact
