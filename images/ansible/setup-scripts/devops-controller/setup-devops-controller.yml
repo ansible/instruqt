@@ -624,7 +624,7 @@
         - controller-config
         - controller-users
 
-## Challenge check and solve
+## Challenges check and solve
     # - name: high-availability set mesh-exec1 instance id fact
     #   ansible.builtin.set_fact:
     #     __job_runs: "{{ __job_runs | default({}) | combine( {'name': item.hostname, 'id': item.id} ) }}"
@@ -637,14 +637,31 @@
         controller_oauthtoken: "{{ auth_token }}"
         controller_host: "{{ controller_hostname }}"
         validate_certs: "{{ controller_validate_certs }}"
-      register: __controller_jobs
-      failed_when: not __controller_jobs.results
+      register: __controller_job_check
+      failed_when: not __controller_job_check.results
       tags:
         - update-pipeline-check
 
-    - name: debug
-      debug:
-        var: __controller_jobs
-        verbosity: 3
+    - name: debug controller job check
+      ansible.builtin.debug:
+        var: __controller_job_check.results
+        verbosity: 2
       tags:
         - update-pipeline-check
+    
+    - name: Run {{ lab_jt_name }} to solve
+      awx.awx.job_launch:
+        job_template: "{{ lab_jt_name }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      register: __controller_job_run
+      tags:
+        - update-pipeline-solve
+
+    - name: debug controller job run
+      ansible.builtin.debug:
+        var: __controller_job_run.results
+        verbosity: 2
+      tags:
+        - update-pipeline-solve
