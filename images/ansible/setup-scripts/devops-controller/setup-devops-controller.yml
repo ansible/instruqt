@@ -383,10 +383,20 @@
         - controller-config
         - controller-packages
 
+    - name: Installl packages for user
+      ansible.builtin.pip:
+        name:
+          - python-jenkins
+        state: present
+        extra_args: --user
+      tags:
+        - controller-config
+        - controller-packages
+
     - name: Install Python packages in virtualenv
       ansible.builtin.pip:
         requirements: "/home/rhel/acme_corp/playbooks/files/requirements_prod.txt"
-        virtualenv: /home/rhel/.virtualenvs/acme_corp
+        virtualenv: "{{ acme_venv }}"
       become: true
       become_user: "{{ ansible_user }}"
       tags:
@@ -649,7 +659,7 @@
         - update-pipeline-solve
   
   # update-app  
-    - name: Check if Jenkins pipeline started
+    - name: update-app - check Jenkins pipeline started
       community.general.jenkins_job_info:
         name: "ACMECorp"
         url: http://jenkins:8080
@@ -659,4 +669,32 @@
       register: __jenkins_job_status
       failed_when: __jenkins_job_status.jobs.0.color | regex_search('^(.*)_anime$') is none
       tags:
-        - update-app-check
+        - update-app-check-pipeline
+
+    - name: update-app - home.html edits
+      ansible.builtin.lineinfile:
+        state: present
+        path: "/home/{{ ansible_user }}/acme_corp/app/lets_quiz/templates/quiz/home.html"
+        search_string: '<p class="display-4 d-none d-sm-block">Test your skills and become a master.</p>'
+        line: '       <p class="display-4 d-none d-sm-block">The latest and greatest version of the app deployed successfully.</p>'
+      check_mode: "{{ home_page_check_mode | default( false )}}"
+      register: __home_page_edits
+      tags:
+        - update-app-check-home-page
+        - update-app-solve
+
+    - name: update-app - debug home page edits
+      ansible.builtin.debug:
+        var: __home_page_edits
+        verbosity: 2
+      tags:
+        - update-app-check-home-page
+        - update-app-solve
+
+    - name: update-app - check if home.html was changed
+      ansible.builtin.assert:
+        that:
+          - not __home_page_edits.changed
+        fail_msg: The home.html page does not contain the correct line
+      tags:
+        - update-app-check-home-page
