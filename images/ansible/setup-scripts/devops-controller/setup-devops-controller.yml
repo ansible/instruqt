@@ -625,10 +625,6 @@
         - controller-users
 
 ## Challenges check and solve
-    # - name: high-availability set mesh-exec1 instance id fact
-    #   ansible.builtin.set_fact:
-    #     __job_runs: "{{ __job_runs | default({}) | combine( {'name': item.hostname, 'id': item.id} ) }}"
-    #   loop: "{{ query('awx.awx.controller_api', 'instances', verify_ssl=False, oauth_token=auth_token, query_params={ 'hostname': lab_dbn_check_instance_name }) | list }}"
     - name: Check {{ lab_jt_name }} controller job ran successfuly
       awx.awx.job_list:
         status: successful
@@ -641,13 +637,6 @@
       failed_when: not __controller_job_check.results
       tags:
         - update-pipeline-check
-
-    - name: debug controller job check
-      ansible.builtin.debug:
-        var: __controller_job_check.results
-        verbosity: 2
-      tags:
-        - update-pipeline-check
     
     - name: Run {{ lab_jt_name }} to solve
       awx.awx.job_launch:
@@ -658,10 +647,16 @@
       register: __controller_job_run
       tags:
         - update-pipeline-solve
-
-    - name: debug controller job run
-      ansible.builtin.debug:
-        var: __controller_job_run.results
-        verbosity: 2
+  
+  # update-app  
+    - name: Check if Jenkins pipeline started
+      community.general.jenkins_job_info:
+        name: "ACMECorp"
+        url: http://jenkins:8080
+        user: "{{ student_user }}"
+        password: "{{ student_password }}"
+        validate_certs: false
+      register: __jenkins_job_status
+      failed_when: __jenkins_job_status.jobs.0.color | regex_search('^(.*)_anime$') is none
       tags:
-        - update-pipeline-solve
+        - update-app-check
