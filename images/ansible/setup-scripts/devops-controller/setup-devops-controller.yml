@@ -656,6 +656,7 @@
         controller_oauthtoken: "{{ auth_token }}"
         controller_host: "{{ controller_hostname }}"
         validate_certs: "{{ controller_validate_certs }}"
+        wait: true
       register: __controller_job_run
       tags:
         - update-pipeline-solve
