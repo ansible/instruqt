@@ -388,9 +388,7 @@
         name:
           - python-jenkins
         state: present
-        extra_args: --user
       become: true
-      become_user: "{{ ansible_user }}"
       tags:
         - controller-config
         - controller-packages
