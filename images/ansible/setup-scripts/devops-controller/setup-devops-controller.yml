@@ -700,11 +700,12 @@
       tags:
         - update-app-check-home-page
 
-    - name: update-app Solve push code to repo
+    - name: update-app solve push code to repo
       ansible.builtin.command:
         cmd: "{{ item }}"
         chdir: "/home/{{ ansible_user }}/acme_corp"
-      register:
+      become: true
+      become_user: "{{ ansible_user }}"
       loop:
         - "git add ."
         - "git commit -m'Updated home.html'"
