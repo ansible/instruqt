@@ -179,7 +179,7 @@
 
     - name: Wait for Jenkins to start up before proceeding.
       uri:
-        url: "http://{{ jenkins_hostname }}:{{ jenkins_http_port }}{{ jenkins_url_prefix }}/cli/"
+        url: "http://jenkins:8080/cli/"
         method: GET
         return_content: "yes"
         timeout: 5
@@ -203,6 +203,7 @@
       until: "'OK' in __jarfile_get.msg or '304' in __jarfile_get.msg or 'file already exists' in __jarfile_get.msg"
       retries: 5
       delay: 10
+
     - name: Create Jenkins jobs
       ansible.builtin.shell:
         chdir: /var/jenkins_home
