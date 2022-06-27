@@ -177,6 +177,21 @@
         export: true
         force: true
 
+    - name: Wait for Jenkins to start up before proceeding.
+      uri:
+        url: "http://{{ jenkins_hostname }}:{{ jenkins_http_port }}{{ jenkins_url_prefix }}/cli/"
+        method: GET
+        return_content: "yes"
+        timeout: 5
+        body_format: raw
+        follow_redirects: "no"
+        status_code: 200,403
+      register: __jenkins_status
+      until: (__jenkins_status.status == 403 or __jenkins_status.status == 200) and (__jenkins_status.content.find("Please wait while") == -1)
+      retries: 5
+      delay: 3
+      changed_when: false
+
     - name: Install jenkins-cli
       ansible.builtin.get_url:
         url: http://jenkins:8080/jnlpJars/jenkins-cli.jar
@@ -184,7 +199,10 @@
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
         mode: "0644"
-
+      register: __jarfile_get
+      until: "'OK' in __jarfile_get.msg or '304' in __jarfile_get.msg or 'file already exists' in __jarfile_get.msg"
+      retries: 5
+      delay: 10
     - name: Create Jenkins jobs
       ansible.builtin.shell:
         chdir: /var/jenkins_home
@@ -635,6 +653,7 @@
         - controller-users
 
 ## Challenges check and solve
+# update-pipeline
     - name: Check {{ lab_jt_name }} controller job ran successfuly
       awx.awx.job_list:
         status: successful
@@ -659,7 +678,52 @@
       tags:
         - update-pipeline-solve
   
-  # update-app  
+  # update-app
+    # - name: debug
+    #   debug:
+    #     var: __jt_devops_jobs
+    #   # loop: "{{ query( 'awx.awx.controller_api', 'workflow_jobs', verify_ssl=False, oauth_token=auth_token, query_params={ 'name': 'DevOps Workflow', 'status': 'running' } ) | list }}"
+    #     # var: "{{ query('awx.awx.controller_api', 'workflow_jobs', verify_ssl=False, oauth_token=auth_token, query_params={ 'name': 'DevOps Workflow' }) | list }}"
+    #   tags:
+    #     - update-app-check-jt
+
+    # This is the best way to stop all Jenkins builds
+    - name: update-app-solve delete ACMECorp job
+      community.general.jenkins_job:
+        name: ACMECorp
+        url: http://jenkins:8080
+        user: "{{ student_user }}"
+        password: "{{ student_password }}"
+        validate_certs: false
+        state: absent
+      register: __jenkins_job_builds
+      tags:
+        - update-app-solve
+
+    - name: update-app-solve re-create ACMECorp job
+      community.general.jenkins_job:
+        name: ACMECorp
+        url: http://jenkins:8080
+        user: "{{ student_user }}"
+        password: "{{ student_password }}"
+        validate_certs: false
+        config: "{{ lookup('file', 'files/acme.xml') }}"
+        state: present
+      register: __jenkins_job_builds
+      tags:
+        - update-app-solve
+
+    - name: update-app - check Jenkins pipeline
+      community.general.jenkins_job_info:
+        name: "ACMECorp"
+        url: http://jenkins:8080
+        user: "{{ student_user }}"
+        password: "{{ student_password }}"
+        validate_certs: false
+      register: __jenkins_job_status_solve
+      tags:
+        - update-app-solve
+
     - name: update-app - check Jenkins pipeline started
       community.general.jenkins_job_info:
         name: "ACMECorp"
@@ -668,10 +732,13 @@
         password: "{{ student_password }}"
         validate_certs: false
       register: __jenkins_job_status
+      until: __jenkins_job_status.jobs.0.color | regex_search('^(.*)_anime$')
+      delay: 3
+      retries: 6
       failed_when: __jenkins_job_status.jobs.0.color | regex_search('^(.*)_anime$') is none
       tags:
         - update-app-check-pipeline
-
+      
     - name: update-app - home.html edits
       ansible.builtin.lineinfile:
         state: present
@@ -700,6 +767,18 @@
       tags:
         - update-app-check-home-page
 
+    # This is to trigger the pipeline each time the solve script runs
+    - name: update-app-solve add date/time line
+      ansible.builtin.lineinfile:
+        state: present
+        path: "/home/{{ ansible_user }}/acme_corp/app/lets_quiz/manage.py"
+        search_string: '# solve-script-run '
+        line: '# solve-script-run {{ ansible_date_time.iso8601 }}'
+      check_mode: "{{ home_page_check_mode | default( false )}}"
+      register: __home_page_edits
+      tags:
+        - update-app-solve      
+      
     - name: update-app solve push code to repo
       ansible.builtin.command:
         cmd: "{{ item }}"
@@ -712,3 +791,26 @@
         - "git push -u origin main --force"
       tags:
         - update-app-solve
+
+    - name: update-app-check set fact DevOps Workflow running jobs
+      ansible.builtin.set_fact:
+        __jt_devops_jobs: "{{ __jt_devops_jobs | default({}) | combine( {'name': item.name, 'status': item.status} ) }}"
+      loop: "{{ query( 'awx.awx.controller_api', 'workflow_jobs', verify_ssl=False, oauth_token=auth_token, query_params={ 'name': lab_jt_name, 'status': 'running' } ) | list }}"
+      until: __jt_devops_jobs | length > 0
+      delay: 3
+      retries: 6
+      tags:
+        - update-app-check-jt
+    
+    - debug:
+        var: __jt_devops_jobs
+      tags:
+        - update-app-check-jt
+
+    - name: update-app-check assert DevOps workflow running
+      ansible.builtin.assert:
+        that:
+          - __jt_devops_jobs | length > 0
+        fail_msg: "No DevOps workflow job were found in a running state"
+      tags:
+        - update-app-check-jt
