@@ -729,14 +729,6 @@
     #   tags:
     #     - update-app-solve-jenkins
     #     - update-app-solve
-    - name: update-app-check set fact DevOps Workflow running jobs
-      ansible.builtin.set_fact:
-        __jt_devops_jobs: "{{ __jt_devops_jobs | default([]) + ( [{'name': item.name, 'id': item.id, 'status': item.status}] ) }}"
-      loop: "{{ query( 'awx.awx.controller_api', 'workflow_jobs', verify_ssl=False, oauth_token=auth_token, query_params={ 'name': lab_jt_name } ) | list  }}"
-      tags:
-        - update-app-solve-workflow-jt
-        - update-app-solve
-        - update-app-check-workflow-jt
   
     - name: update-app-solve generate Jenkins crumb
       ansible.builtin.uri:
@@ -750,12 +742,6 @@
       tags:
         - update-app-solve
         - update-app-solve-crumb
-
-    # - name: debug jenkins crumb
-    #   debug:
-    #     var: __jenkins_crumb
-    #   tags:
-    #     - update-app-solve-crumb
 
     - name: update-app-solve get ACMECorp builds
       ansible.builtin.uri:
@@ -774,7 +760,7 @@
         - update-app-solve
         - update-app-solve-crumb
 
-    # - name: debug jenkins builds nlist
+    # - name: debug jenkins builds list
     #   ansible.builtin.debug:
     #     var: __jenkins_builds.json.builds
     #   tags:
@@ -810,11 +796,20 @@
         var: __remove_jenkins_builds
         # var: item
       # loop: "{{ __remove_jenkins_builds }}"
-      when: __remove_jenkins_builds is defined
+      # when: __remove_jenkins_builds is defined
       tags:
         - update-app-solve
         - update-app-solve-crumb
 
+    - name: update-app-check set fact DevOps Workflow running jobs
+      ansible.builtin.set_fact:
+        __jt_devops_jobs: "{{ __jt_devops_jobs | default([]) + ( [{'name': item.name, 'id': item.id, 'status': item.status}] ) }}"
+      loop: "{{ query( 'awx.awx.controller_api', 'workflow_jobs', verify_ssl=False, oauth_token=auth_token, query_params={ 'name': lab_jt_name } ) | list  }}"
+      tags:
+        - update-app-solve-workflow-jt
+        - update-app-solve
+        - update-app-check-workflow-jt
+  
     - name: update-app-check assert DevOps Workflow is running
       ansible.builtin.assert:
         that:
@@ -827,15 +822,15 @@
       tags:
         - update-app-check-workflow-jt
 
-    - debug:
-        msg: "{{ query( 'awx.awx.controller_api', 'workflow_jobs', verify_ssl=False, oauth_token=auth_token, query_params={ 'name': lab_jt_name } ) | list  }}"
-        # var: item.id
-      # loop: "{{ __jt_devops_jobs }}"
-      when: 
-        - __jt_devops_jobs is defined
-      tags:
-        - update-app-solve-workflow-jt
-        - update-app-solve
+    # - debug:
+    #     msg: "{{ query( 'awx.awx.controller_api', 'workflow_jobs', verify_ssl=False, oauth_token=auth_token, query_params={ 'name': lab_jt_name } ) | list  }}"
+    #     # var: item.id
+    #   # loop: "{{ __jt_devops_jobs }}"
+    #   # when: 
+    #   #   - __jt_devops_jobs is defined
+    #   tags:
+    #     - update-app-solve-workflow-jt
+    #     - update-app-solve
   
     - name: update-app-solve stop DevOps workflow jobs
       ansible.builtin.uri:
@@ -896,8 +891,9 @@
       ansible.builtin.lineinfile:
         state: present
         path: "/home/{{ ansible_user }}/acme_corp/app/lets_quiz/templates/quiz/home.html"
+        insertafter: '        <!-- FIX ME -->'
         search_string: '<p class="display-4 d-none d-sm-block">Test your skills and become a master.</p>'
-        line: '         <p class="display-4 d-none d-sm-block">The latest and greatest version of the app deployed successfully.</p>'
+        line: '        <p class="display-4 d-none d-sm-block">The latest and greatest version of the app deployed successfully.</p>'
       check_mode: "{{ home_page_check_mode | default( false )}}"
       register: __home_page_edits
       tags:
@@ -907,7 +903,7 @@
     - name: update-app - debug home page edits
       ansible.builtin.debug:
         var: __home_page_edits
-        verbosity: 2
+        # verbosity: 2
       tags:
         - update-app-check-home-page
         - update-app-solve
