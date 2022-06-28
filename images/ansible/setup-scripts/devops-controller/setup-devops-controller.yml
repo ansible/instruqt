@@ -817,7 +817,7 @@
           - __jt_devops_jobs | length > 0
       until:
         - __jt_devops_jobs is defined
-      retries: 10
+      retries: 15
       delay: 5
       tags:
         - update-app-check-workflow-jt
