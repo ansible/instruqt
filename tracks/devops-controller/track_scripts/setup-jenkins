@@ -1,12 +1,21 @@
 #!/bin/bash
-
 set -euxo pipefail
+
 while [ ! -f /opt/instruqt/bootstrap/host-bootstrap-completed ]
 do
     echo "Waiting for Instruqt to finish booting the VM"
     sleep 1
 done
 
+#Create setup-scripts dir
+# mkdir -p /tmp/setup-scripts/devops-controller
+
+# Get instruqt lab content
+# /usr/bin/svn export https://github.com/craig-br/instruqt/branches/devops-controller-track/images/ansible/setup-scripts/devops-controller /tmp/setup-scripts/devops-controller --force
+
+# Run Jenkins config
+# echo "Starting Jenkins config"
+# /usr/bin/ansible-playbook /tmp/setup-scripts/devops-controller/setup-devops-controller.yml -e @/tmp/setup-scripts/devops-controller/track_vars.yml  -i /tmp/setup-scripts/devops-controller/inventory.ini --tags jenkins-config --skip-tags always -v
 # Setup rhel user
 # touch /etc/sudoers.d/rhel_sudoers
 # echo "%rhel ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/rhel_sudoers

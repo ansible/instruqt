@@ -12,7 +12,7 @@ containers:
     REPO_PASSWORD: learn_ansible
   memory: 2048
 - name: gitea
-  image: gitea/gitea
+  image: gitea/gitea:1.16.8
   ports:
   - 3000
   environment:

@@ -679,7 +679,8 @@
       tags:
         - update-pipeline-solve
   
-  # update-app
+## update-app
+
     # This is the best way to stop all Jenkins builds
     # - name: update-app-solve delete ACMECorp job
     #   community.general.jenkins_job:
@@ -728,7 +729,15 @@
     #   tags:
     #     - update-app-solve-jenkins
     #     - update-app-solve
-
+    - name: update-app-check set fact DevOps Workflow running jobs
+      ansible.builtin.set_fact:
+        __jt_devops_jobs: "{{ __jt_devops_jobs | default([]) + ( [{'name': item.name, 'id': item.id, 'status': item.status}] ) }}"
+      loop: "{{ query( 'awx.awx.controller_api', 'workflow_jobs', verify_ssl=False, oauth_token=auth_token, query_params={ 'name': lab_jt_name } ) | list  }}"
+      tags:
+        - update-app-solve-workflow-jt
+        - update-app-solve
+        - update-app-check-workflow-jt
+  
     - name: update-app-solve generate Jenkins crumb
       ansible.builtin.uri:
         url: http://jenkins:8080/crumbIssuer/api/json
@@ -739,13 +748,14 @@
         return_content: true
       register: __jenkins_crumb
       tags:
+        - update-app-solve
         - update-app-solve-crumb
 
-    - name: debug jenkins crumb
-      debug:
-        var: __jenkins_crumb
-      tags:
-        - update-app-solve-crumb
+    # - name: debug jenkins crumb
+    #   debug:
+    #     var: __jenkins_crumb
+    #   tags:
+    #     - update-app-solve-crumb
 
     - name: update-app-solve get ACMECorp builds
       ansible.builtin.uri:
@@ -759,41 +769,24 @@
         url_password: "{{ student_password }}"
         return_content: true
         validate_certs: false
-      register: __current_jenkins_builds
+      register: __jenkins_builds
       tags:
+        - update-app-solve
         - update-app-solve-crumb
 
-    - name: debug jenkins builds nlist
-      ansible.builtin.debug:
-        var: __current_jenkins_builds.json.builds
-      tags:
-        - update-app-solve-crumb
+    # - name: debug jenkins builds nlist
+    #   ansible.builtin.debug:
+    #     var: __jenkins_builds.json.builds
+    #   tags:
+    #     - update-app-solve
+    #     - update-app-solve-crumb
 
-    - name: create Jenkins build fact
-      ansible.builtin.set_fact:
-        # jenkins_builds: "blah"
-        # cacheable: true
-        # __jenkins_builds: "{{ _jenkins_builds | default([]) }} + [{'number': item.number, 'url_name': item.url}] }}"
-        __jenkins_builds: "{{ __jenkins_builds | default([]) + [{'number': item.number, 'url_name': item.url}] }}"
-      loop: "{{ __current_jenkins_builds.json.builds | list }}"
-      # loop: "{{ query('dict', __jenkins_builds.json.builds )}}"
-      tags:
-        - update-app-solve-crumb
-
-    - name: debug jenkins builds
-      ansible.builtin.debug:
-        # var: __jenkins_builds
-        var: item
-      loop: "{{ __jenkins_builds }}"
-      tags:
-        - update-app-solve-crumb
-
-    - name: update-app solve delete ACMECorp Jenkins builds
+    - name: update-app-solve cancel ACMECorp Jenkins builds
       ansible.builtin.uri:
         headers:
           Cookie: "{{ __jenkins_crumb.cookies_string }}"
           Jenkins-Crumb: "{{ __jenkins_crumb.json.crumb }}"
-        url: http://jenkins:8080/job/ACMECorp/build/6/doDelete/api/json/
+        url: "http://jenkins:8080/job/ACMECorp/{{ item.number }}/doDelete/api/json"
         method: POST
         force_basic_auth: true
         url_username: "{{ student_user }}"
@@ -801,9 +794,15 @@
         return_content: true
         validate_certs: false
         follow_redirects: true
-        status_code: 201
+        status_code: 200
       register: __remove_jenkins_builds
+      failed_when: false
+      when:
+        - __jenkins_builds.json.builds is defined
+        - __jenkins_builds.json.builds | length > 0
+      loop: "{{ __jenkins_builds.json.builds }}"
       tags:
+        - update-app-solve
         - update-app-solve-crumb
 
     - name: debug jenkins delete
@@ -811,8 +810,52 @@
         var: __remove_jenkins_builds
         # var: item
       # loop: "{{ __remove_jenkins_builds }}"
+      when: __remove_jenkins_builds is defined
       tags:
+        - update-app-solve
         - update-app-solve-crumb
+
+    - name: update-app-check assert DevOps Workflow is running
+      ansible.builtin.assert:
+        that:
+          - __jt_devops_jobs is defined
+          - __jt_devops_jobs | length > 0
+      until:
+        - __jt_devops_jobs is defined
+      retries: 10
+      delay: 5
+      tags:
+        - update-app-check-workflow-jt
+
+    - debug:
+        msg: "{{ query( 'awx.awx.controller_api', 'workflow_jobs', verify_ssl=False, oauth_token=auth_token, query_params={ 'name': lab_jt_name } ) | list  }}"
+        # var: item.id
+      # loop: "{{ __jt_devops_jobs }}"
+      when: 
+        - __jt_devops_jobs is defined
+      tags:
+        - update-app-solve-workflow-jt
+        - update-app-solve
+  
+    - name: update-app-solve stop DevOps workflow jobs
+      ansible.builtin.uri:
+        url: "https://controller/api/v2/workflow_jobs/{{ item.id }}/cancel/"
+        method: POST
+        force_basic_auth: true
+        url_username: "{{ student_user }}"
+        url_password: "{{ student_password }}"
+        return_content: true
+        validate_certs: false
+        status_code: [202]
+      register: __job_cancel
+      loop:  "{{ __jt_devops_jobs }}"
+      when: 
+        - __jt_devops_jobs is defined
+        - __jt_devops_jobs | length > 0
+        - item.status != 'canceled'
+      tags:
+        - update-app-solve-workflow-jt
+        - update-app-solve
 
     # - name: get builds uri
     #   ansible.builtin.uri:
@@ -833,17 +876,6 @@
     #   register: __jenkins_crumb
     #   tags:
     #     - update-app-solve-crumb
-
-    # - name: Erase Jenkins jobs
-    #   community.general.jenkins_build:
-    #     name: "ACMECorp"
-    #     # build_number: 1
-    #     state: absent
-    #     user: "{{ student_user }}"
-    #     password: "{{ student_password }}"
-    #     url: http://jenkins:8080
-    #   tags:
-    #     - update-app-solve-jenkins
 
     - name: update-app - check Jenkins pipeline started
       community.general.jenkins_job_info:
@@ -913,17 +945,9 @@
       tags:
         - update-app-solve
 
-    # - name: update-app-check set fact DevOps Workflow running jobs
-    #   ansible.builtin.set_fact:
-    #     __jt_devops_jobs: "{{ __jt_devops_jobs | default( 'empty' ) | combine( {'name': item.name, 'status': item.status} ) }}"
-    #   loop: "{{ query( 'awx.awx.controller_api', 'workflow_jobs', verify_ssl=False, oauth_token=auth_token, query_params={ 'name': lab_jt_name, 'status': 'running' } ) | list }}"
+    #     # msg: "{{ query( 'awx.awx.controller_api', 'workflow_jobs', verify_ssl=False, oauth_token=auth_token, query_params={ 'name': lab_jt_name, 'status': 'running,pending' } ) }}"
     #   tags:
-    #     - update-app-check-jt
-    
-    # - debug:
-    #     var: __jt_devops_jobs
-    #   tags:
-    #     - update-app-check-jt
+    #     - update-app-check-jt-workflow
 
     # - name: update-app-check assert DevOps workflow running
     #   ansible.builtin.assert:
@@ -932,3 +956,14 @@
     #     fail_msg: "No DevOps workflow job were found in a running state"
     #   tags:
     #     - update-app-check-jt
+
+    # - name: update-app-solve stop DevOps workflow jobs
+    #   awx.awx.job_cancel:
+    #     job_id: "{{ item.id }}"
+    #     controller_oauthtoken: "{{ auth_token }}"
+    #     controller_host: "{{ controller_hostname }}"
+    #     validate_certs: "{{ controller_validate_certs }}"
+    #   loop:  "{{ __jt_devops_jobs }}"
+    #   when: item.status != 'canceled'
+    #   tags:
+    #     - update-app-check-jt-workflow

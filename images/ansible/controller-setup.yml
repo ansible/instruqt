@@ -42,7 +42,16 @@
         name: "{{ item }}"
       loop:
         - /var/lib/ansible-automation-platform-bundle/automation-controller-cli-4.1.1-2.el8ap.x86_64.rpm
+        - python3-setuptools
+        - virtualenv
 
+    - name: Installl pip packages
+      ansible.builtin.pip:
+        name:
+          - python-jenkins
+        state: present
+      become: true
+  
     - name: install code server
       ansible.builtin.include_role:
         name: ansible.workshops.code_server

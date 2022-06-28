@@ -35,12 +35,12 @@ jenkins:
   mode: NORMAL
   myViewsTabBar: "standard"
   noUsageStatistics: true
-  numExecutors: 2
+  numExecutors: 20
   primaryView:
     all:
       name: "all"
   projectNamingStrategy: "standard"
-  quietPeriod: 5
+  quietPeriod: 3
   scmCheckoutRetryCount: 0
   securityRealm:
     local:

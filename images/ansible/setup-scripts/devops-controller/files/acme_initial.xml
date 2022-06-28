@@ -53,7 +53,7 @@ pipeline {
                     sh &quot;&quot;&quot;
                         git reset --hard HEAD
                         git checkout main
-                        git pull origin main --force
+                        git pull origin main --force --rebase
                         git fetch --tags --all --prune
                         git config --replace-all user.name ${env.GIT_USERNAME}
                         git config --replace-all user.email ${env.GIT_USERNAME}
