@@ -691,15 +691,14 @@
       register: __jenkins_crumb
       tags:
         - update-app-solve
-        - update-app-solve-crumb
-        # - update-app-check-pipeline
+        - update-app-solve-jenkins
 
     - name: update-app-solve get ACMECorp builds
       ansible.builtin.uri:
         headers:
           Cookie: "{{ __jenkins_crumb.cookies_string }}"
           Jenkins-Crumb: "{{ __jenkins_crumb.json.crumb }}"
-        url: http://jenkins:8080/job/ACMECorp/api/json?pretty=true&tree=builds[number,url]
+        url: http://jenkins:8080/job/ACMECorp/api/json?pretty=true&tree=builds[number,status,url]
         method: GET
         force_basic_auth: true
         url_username: "{{ student_user }}"
@@ -709,7 +708,7 @@
       register: __jenkins_builds
       tags:
         - update-app-solve
-        - update-app-solve-crumb
+        - update-app-solve-jenkins
 
     - name: update-app-solve cancel ACMECorp Jenkins builds
       ansible.builtin.uri:
@@ -718,6 +717,7 @@
           Jenkins-Crumb: "{{ __jenkins_crumb.json.crumb }}"
         url: "http://jenkins:8080/job/ACMECorp/{{ item.number }}/doDelete/api/json"
         method: POST
+        mode: json
         force_basic_auth: true
         url_username: "{{ student_user }}"
         url_password: "{{ student_password }}"
@@ -733,11 +733,11 @@
       loop: "{{ __jenkins_builds.json.builds }}"
       tags:
         - update-app-solve
-        - update-app-solve-crumb
+        - update-app-solve-jenkins
 
     # - name: debug jenkins delete
     #   ansible.builtin.debug:
-    #     var: __remove_jenkins_builds
+    #     var: __jenkins_builds
     #     # var: item
     #   # loop: "{{ __remove_jenkins_builds }}"
     #   # when: __remove_jenkins_builds is defined
@@ -767,7 +767,7 @@
       register: __jt_devops_jobs_check
       until: __jt_devops_jobs_check is search('running')
       delay: 3
-      retries: 5
+      retries: 8
       tags:
         - update-app-check-workflow-jt-debug
         - update-app-check-workflow-jt
@@ -811,7 +811,8 @@
       register: __job_cancel
       loop:  "{{ query( 'awx.awx.controller_api', 'workflow_jobs', verify_ssl=False, oauth_token=auth_token, query_params={ 'name': lab_jt_name } ) | list  }}"
       when:
-        - item.status != ['canceled', 'successful']
+        - item.status != 'canceled'
+        - item.status != 'successful'
       tags:
         - update-app-solve-workflow-jt
         - update-app-solve
@@ -855,23 +856,7 @@
     #     - update-app-check-pipeline
     #     - update-app-check-pipeline-debug
 
-    - name: update-app - check Jenkins pipeline started
-      community.general.jenkins_job_info:
-        name: "ACMECorp"
-        url: http://jenkins:8080
-        user: "{{ student_user }}"
-        password: "{{ student_password }}"
-        validate_certs: false
-      register: __jenkins_job_status
-      until: __jenkins_job_status.jobs is search( 'anime' )
-      # until: __jenkins_job_status.jobs.0.color | regex_search('^(.*)_anime$')
-      delay: 3
-      retries: 6
-      # failed_when: __jenkins_job_status.jobs.0.color | regex_search('^(.*)_anime$') is none
-      # failed_when: __jenkins_job_status.jobs.0.color | regex_search('^(.*)_anime$') is none
-      tags:
-        - update-app-check-pipeline
-        - update-app-check-pipeline-debug
+
 
     # - debug:
     #     # var: item.result is none
@@ -961,3 +946,20 @@
     #   when: item.status != 'canceled'
     #   tags:
     #     - update-app-check-jt-workflow
+    - name: update-app - check Jenkins pipeline started
+      community.general.jenkins_job_info:
+        name: "ACMECorp"
+        url: http://jenkins:8080
+        user: "{{ student_user }}"
+        password: "{{ student_password }}"
+        validate_certs: false
+      register: __jenkins_job_status
+      until: __jenkins_job_status.jobs is search( 'anime' )
+      # until: __jenkins_job_status.jobs.0.color | regex_search('^(.*)_anime$')
+      delay: 3
+      retries: 6
+      # failed_when: __jenkins_job_status.jobs.0.color | regex_search('^(.*)_anime$') is none
+      # failed_when: __jenkins_job_status.jobs.0.color | regex_search('^(.*)_anime$') is none
+      tags:
+        - update-app-check-pipeline
+        - update-app-check-pipeline-debug
