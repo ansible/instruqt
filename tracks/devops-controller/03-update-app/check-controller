@@ -21,13 +21,12 @@ if home_page_edits.returncode > 0:
 jenkins_job_status = subprocess.run(["ansible-playbook", "/tmp/setup-scripts/devops-controller/setup-devops-controller.yml", "-e", "@/tmp/setup-scripts/devops-controller/track_vars.yml", "-i", "/tmp/setup-scripts/devops-controller/inventory.ini", "--tags", "auth-token,update-app-check-pipeline"])
 
 if jenkins_job_status.returncode > 0:
-    print ( "FAIL: The Jenkins pipeline failed or did not start. Please make sure you've edited home.html and pushed your changes to the repository")
+    print ( "FAIL: The Jenkins job is showing a failed status. Please make sure you've edited home.html and pushed your changes to the repository. If the check still fails, delete all running ACMECorp pipeline builds and try again.")
     exit(1)
 
 # Check DevOps workflow in running state
-devops_jt_status = subprocess.run(["ansible-playbook", "/tmp/setup-scripts/devops-controller/setup-devops-controller.yml", "-e", "lab_jt_name="+quote( "DevOps Workflow" ), "-e", "@/tmp/setup-scripts/devops-controller/track_vars.yml", "-i", "/tmp/setup-scripts/devops-controller/inventory.ini", "--tags", "auth-token,update-app-check-jt"])
+devops_jt_status = subprocess.run(["ansible-playbook", "/tmp/setup-scripts/devops-controller/setup-devops-controller.yml", "-e", "lab_jt_name="+quote( "DevOps Workflow" ), "-e", "@/tmp/setup-scripts/devops-controller/track_vars.yml", "-i", "/tmp/setup-scripts/devops-controller/inventory.ini", "--tags", "auth-token,update-app-check-workflow-jt"])
 
 if devops_jt_status.returncode > 0:
-    print ( "FAIL: The Jenkins pipeline failed or did not start. Please make sure you've edited home.html and pushed your changes to the repository")
+    print ( "FAIL: The controller DevOps Workflow did not start. Please make sure Jenkins pipeline started and the DevOps Workflow is running in controller.")
     exit(1)
-

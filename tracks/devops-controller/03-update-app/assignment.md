@@ -58,6 +58,9 @@ All the logins use the same credentials.
 
 ACME Corp needs to update the _Let’s Quiz!_ application home page. In this challenge, we’ll update the application in VS Code and trigger the Gitea webhook described in the initial _Environment overview_ challenge.
 
+>### **❗️ Note**
+> The checks in this challenge might take a few seconds longer than usual to complete due to the Jenkins pipeline speed.
+
 ☑️ Task 1 - Updating the ACME Corp home page
 ===
 
@@ -71,10 +74,20 @@ Let’s update the ACME Corp home page.
 We’ll edit the line directly under the  `<!-- FIX ME -->` comment in `home.html`.
 
 * Copy and paste the below line and replace the existing line directly under the  `<!-- FIX ME -->` comment.
+
 ```html
-<p class="display-4 d-none d-sm-block">The latest and greatest version of the app deployed successfully.</p>
+          <p class="display-4 d-none d-sm-block">The latest and greatest version of the app deployed successfully.</p>
 ```
+
+The new line should look like the below screenshot.
+
+![home.html edited](../assets/img/vscode_home_edit_note.png)
+
+>### **❗️ Note**
+> The updated line in `home.html` must have the same indentation as the `<!-- FIX ME -->` comment. The challenge checks will fail if it differs.
+
 * Save the file by either clicking on `File ⇒ Save` on the VS Code menu bar or the relevant keyboard shortcut.
+
 
 ☑️ Task 2 - Commit and push the code to start the pipeline
 ===
@@ -96,6 +109,19 @@ Updated home.html
 
 ![VSCode commit](../assets/img/vscode_push.png)
 
+>### **❗️ Note**
+> If you're receiving any errors using VS Code to sync your repository, please try the following.
+> * Open a new terminal in *VS Code* by clicking on `Terminal ==> New Terminal` located at the top menu.
+> * Copy and paste the below command into the terminal.
+>
+> ```bash
+> git pull origin main --rebase
+> ```
+> * Resolve any file conflicts, if any, and run the below command to update the repository.
+>  ```bash
+> git push origin main --force
+> ```
+
 ☑️ Task 3 - Check the pipeline status
 ===
 
@@ -115,11 +141,11 @@ The pipeline successfully created the new package version and initiated the auto
 
 ![Jenkins running](../assets/img/jenkins_acme_console_bottom.png)
 
+The `tag_name` variable contains the latest _Let’s Quiz!_ application version. In the image above, the `tag_name` variable is set to `2.52.0`. We’ll use the `tag_name` variable in controller for the following challenges.
+
 >**❗️ Note**
 >
 >The pipeline will not finish at this stage of the lab. We’ll continue with the DevOps workflow in the next challenge.
-
-The `tag_name` variable contains the latest _Let’s Quiz!_ application version. In the image above, the `tag_name` variable is set to `2.52.0`. We’ll use the `tag_name` variable in controller for the following challenges.
 
 ☑️ Task 4 - Check the ACME Corp repository
 ===
@@ -144,6 +170,9 @@ Press the `Check` button below to go to the next challenge once you’ve complet
 
 🐛 Encountered an issue?
 ====
+
+If you need to restart the entire workflow, we've includede the `Restart DevOps Workflow` job template in automation controller.
+
 If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new?labels=devops-controller&title=New+DevOps+with+automation+controller+issue+issue:+incident-creation&assignees=craig-br).
 
 <style type="text/css" rel="stylesheet">

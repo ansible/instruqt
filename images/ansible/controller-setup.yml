@@ -49,6 +49,7 @@
       ansible.builtin.pip:
         name:
           - python-jenkins
+          - jmespath
         state: present
       become: true
   
