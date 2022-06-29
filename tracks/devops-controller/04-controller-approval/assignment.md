@@ -3,8 +3,7 @@ slug: controller-approval
 id: xwdgcvhu6tgk
 type: challenge
 title: Approving the application deployment in controller
-teaser: Finally, we'll approve the controller workflow to build a new release, configure
-  the web server, and deploy the Let's Quiz! application.
+teaser: Finally, we'll approve the controller workflow to build a new release, configure the web server, and deploy the Let's Quiz! application.
 notes:
 - type: text
   contents: |-
@@ -96,7 +95,7 @@ The `DevOps Workflow` job template unifies multiple tasks into a logical, consis
 
 ACME Corp operations added a controller [approval node](https://docs.ansible.com/automation-controller/latest/html/userguide/workflow_templates.html#approval-nodes) called `Deploy to Prod` to the `DevOps Workflow` job template. This step enables ACME Corp decision-makers to perform last checks, such as ensuring enough capacity is available on the target servers for the _Let’s Quiz!_ application.
 
-Currently, the new _Let’s Quiz!_ application is not deployed.
+Currently, the new _Let’s Quiz!_ application is not deployed. 
 
 **Let’s confirm the controller approval status:**
 
@@ -108,15 +107,15 @@ You’ll see the following message in the _Let’s Quiz!_ tab indicating the app
 
 **Approving the _Let’s Quiz!_ application production deployment.**
 
-The _Workflow Approval_ interface is where authorized users can approve or deny an automation task.
-
 * Click on the *Controller* tab on the top of the browser window.
 * Please log in using the provided credentials if required.
 * Click on the _notification_ icon in the top right corner of the controller UI to open the _Workflow Approval_ interface.
 
 ![Approval notification](../assets/img/controller_approval_notification.png)
 
-* Click on the _checkbox_ on the left-hand side next to “**Deploy to Prod?”**
+The _Workflow Approval_ interface is where authorized users can approve or deny an automation task.
+
+* Click on the _checkbox_ on the left-hand side next to `Deploy to Prod?`.
 * Click on the **Approve** button located at the top of thew *Workflow Approvals* UI.
 
 ![Approval workflow](../assets/img/controller_approve_workflow.png)
@@ -126,16 +125,17 @@ The _Workflow Approval_ interface is where authorized users can approve or deny 
 
 Once the `DevOps Workflow` is approved, it will begin configuring the web server, creating a new _Let’s Quiz_ release, and deploying it to production.
 
-**Let’s look at the `DevOps Workflow` controller job.**
+**The `DevOps Workflow` controller job.**
 
-* In the _controller_ tab, click on `Jobs` located under `Views`.
+* In the _Controller_ tab, click on `Jobs` located under `Views`.
 * Click on the `DevOps Workflow` job.
 
 ![Jobs](../assets/img/controller_jobs_menu.png)
 
 This action opens up the `DevOps Workflow` _Output_ interface. The green indicates that all the tasks completed successfully.
 
-**We can also look more in-depth at the execution outcomes and details in the `DevOps Workflow` _Output_ interface.**
+We can also look more in-depth at the execution outcomes and details in the `DevOps Workflow` _Output_ interface.
+
 * Click on the `Create App Release` node.
 
 ![App release node](../assets/img/controller_app_release_node.png)

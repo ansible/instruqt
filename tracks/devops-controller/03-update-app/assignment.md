@@ -158,12 +158,13 @@ The pipeline pushed the code to _Gitea_ and created a new tag.
 
 ![Gitea updated](../assets/img/gitea_new_tag.png)
 
-* The Jenkins commit message shows the latest version number. In the screenshot below, the commit message is `Bump version from v2.51.0 to v2.52.0`.
+The Jenkins commit message shows the latest version number. In the screenshot below, the commit message is `Bump version from v2.51.0 to v2.52.0`.
+
 * Click on the `Tag` button in the right-hand corner.
 
 ![Gitea tag](../assets/img/gitea_tag_artifacts.png)
 
-_Gitea_ created `ZIP` and `TAR.GZ` files associated with the new tag. In the above screenshot, the tag name is `v2.52.0`.
+_Gitea_ created `ZIP` and `TAR.GZ` files associated with the new tag. In the above screenshot, the tag name is `v2.52.0`. 
 
 We’ll use this tag number and artefacts in the next challenge.
 
