@@ -4,7 +4,7 @@ id: 0lw2coaydkzw
 type: challenge
 title: Playground
 teaser: Use the remaining time to try it out yourself! This challenge has no checks
-  so feel free to experimaent and explore!
+  so feel free to experiment and explore!
 notes:
 - type: text
   contents: |-

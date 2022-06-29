@@ -1,10 +1,10 @@
 slug: devops-controller
 id: u5sh0k588dhx
 type: track
-title: Dev - DevOps with automation controller
-teaser: In this lab, we’ll integrate Ansible Automation Platform into a simple CI/CD
-  pipeline to demonstrate how it supports and expands DevOps processes to multiple
-  domains.
+title: DevOps with automation controller
+teaser: In this lab, we’ll integrate a simple CI/CD pipeline into automation controller
+  to demonstrate how Ansible Automation Platform supports and elevates DevOps practices
+  across the enterprise.
 description: |-
   # DevOps with automation controller
   ***
@@ -39,4 +39,4 @@ private: true
 published: false
 maintenance: true
 show_timer: true
-checksum: "6006994903795022501"
+checksum: "15629231257478874687"

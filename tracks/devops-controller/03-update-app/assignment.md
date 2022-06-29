@@ -2,9 +2,9 @@
 slug: update-app
 id: jixtci9el84k
 type: challenge
-title: Updating the ACME Corp application code
-teaser: We'll update the Let's Quiz! application home page to trigger the DevOps workflow.
-  buid.
+title: Update the Lets's Quiz! application code
+teaser: We'll update the Let's Quiz! application home page to trigger the DevOps workflow
+  build.
 notes:
 - type: text
   contents: |-
@@ -164,7 +164,7 @@ The Jenkins commit message shows the latest version number. In the screenshot be
 
 ![Gitea tag](../assets/img/gitea_tag_artifacts.png)
 
-_Gitea_ created `ZIP` and `TAR.GZ` files associated with the new tag. In the above screenshot, the tag name is `v2.52.0`. 
+_Gitea_ created `ZIP` and `TAR.GZ` files associated with the new tag. In the above screenshot, the tag name is `v2.52.0`.
 
 We’ll use this tag number and artefacts in the next challenge.
 

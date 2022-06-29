@@ -2,8 +2,9 @@
 slug: controller-approval
 id: xwdgcvhu6tgk
 type: challenge
-title: Approving the application deployment in controller
-teaser: Finally, we'll approve the controller workflow to build a new release, configure the web server, and deploy the Let's Quiz! application.
+title: Approve the application deployment in controller
+teaser: Finally, we'll approve the controller workflow to build a new release, configure
+  the web server, and deploy the Let's Quiz! application.
 notes:
 - type: text
   contents: |-
@@ -95,7 +96,7 @@ The `DevOps Workflow` job template unifies multiple tasks into a logical, consis
 
 ACME Corp operations added a controller [approval node](https://docs.ansible.com/automation-controller/latest/html/userguide/workflow_templates.html#approval-nodes) called `Deploy to Prod` to the `DevOps Workflow` job template. This step enables ACME Corp decision-makers to perform last checks, such as ensuring enough capacity is available on the target servers for the _Let’s Quiz!_ application.
 
-Currently, the new _Let’s Quiz!_ application is not deployed. 
+Currently, the new _Let’s Quiz!_ application is not deployed.
 
 **Let’s confirm the controller approval status:**
 

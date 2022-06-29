@@ -3,7 +3,7 @@ slug: env-overview
 id: 4zm4rievgnix
 type: challenge
 title: Environment overview
-teaser: In this challenge, we'll explore the different DevOps tools ACMECorp uses
+teaser: In this challenge, we'll explore the different DevOps tools ACME Corp uses
   to deploy the *Let's Quiz!* application.
 notes:
 - type: text

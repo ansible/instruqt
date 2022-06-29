@@ -3,7 +3,7 @@ slug: update-pipeline
 id: t2481h50besa
 type: challenge
 title: Configure the ACME Corp pipeline
-teaser: We'll configure and integarate the ACME Corp pipeline using automation controller.
+teaser: We'll configure and integrate the ACME Corp pipeline using automation controller.
 notes:
 - type: text
   contents: |-
