@@ -6,19 +6,19 @@
 # setup-env - Setup all lifecycle scripts
 # auth-token - create controller auth-token
 # <hostname>-config - Lifecycle setup script for host
-# <challenge-slug>-check - check challenge 
-# <challenge-slug>-solve - solve challenge 
+# <challenge-slug>-check - check challenge
+# <challenge-slug>-solve - solve challenge
 # <challenge-slug>-setup - setup challenge
 ##
 
-#Gitea config
+# Gitea config
 - name: Configure Gitea host
   hosts: gitea
   gather_facts: false
   become: true
   tags:
     - gitea-config
-  
+
   tasks:
     - name: Install python3 Gitea
       ansible.builtin.raw: /sbin/apk add python3
@@ -27,12 +27,12 @@
       community.general.apk:
         name: subversion, tar
         state: present
-        
+
     - name: Create setup-scripts directory
       ansible.builtin.file:
         path: /tmp/setup-scripts/devops-controller
         state: directory
-        
+
     - name: Download lab content to controller tmp directory
       ansible.builtin.subversion:
         repo: "{{ download_url }}"
@@ -62,7 +62,7 @@
         force_basic_auth: true
         url_password: "{{ student_password }}"
         url_username: "{{ student_user }}"
-        status_code: [ 201, 409 ]
+        status_code: [201, 409]
 
     - name: Create repo webhook
       ansible.builtin.uri:
@@ -80,7 +80,7 @@
         force_basic_auth: true
         url_password: "{{ student_password }}"
         url_username: "{{ student_user }}"
-        status_code: [ 201, 409 ]
+        status_code: [201, 409]
 
     - name: Remove repo dir if it exists
       ansible.builtin.file:
@@ -402,7 +402,7 @@
         - controller-config
         - controller-packages
 
-    - name: Installl packages for user
+    - name: Install packages for user
       ansible.builtin.pip:
         name:
           - python-jenkins
@@ -693,6 +693,7 @@
       tags:
         - update-app-solve
         - update-app-solve-jenkins
+        - controller-approval-solve
 
     - name: update-app-solve get ACMECorp builds
       ansible.builtin.uri:
@@ -710,6 +711,7 @@
       tags:
         - update-app-solve
         - update-app-solve-jenkins
+        - controller-approval-solve
 
     - name: update-app-solve cancel ACMECorp Jenkins builds
       ansible.builtin.uri:
@@ -735,11 +737,12 @@
       tags:
         - update-app-solve
         - update-app-solve-jenkins
-  
+        - controller-approval-solve
+ 
     # Need delay to give time for DevOps Workflow to start for check
     - name: update-app-check Get running DevOps jobs
       ansible.builtin.uri:
-        url: "https://controller/api/v2/workflow_jobs/?name={{ lab_jt_name | url_encode }}"
+        url: "https://controller/api/v2/workflow_jobs/?name={{ lab_jt_name | urlencode }}"
         method: GET
         force_basic_auth: true
         url_username: "{{ student_user }}"
@@ -752,7 +755,7 @@
       retries: 8
       tags:
         - update-app-check-workflow-jt
-  
+
     - name: update-app-solve stop DevOps workflow jobs
       ansible.builtin.uri:
         url: "https://controller/api/v2/workflow_jobs/{{ item.id }}/cancel/"
@@ -768,9 +771,11 @@
       when:
         - item.status != 'canceled'
         - item.status != 'successful'
+        - item.status != 'failed'
       tags:
         - update-app-solve-workflow-jt
         - update-app-solve
+        - controller-approval-solve
 
     - name: update-app - home.html edits
       ansible.builtin.lineinfile:
@@ -801,6 +806,20 @@
       tags:
         - update-app-check-home-page
 
+    # - name: controller-approval-solve get all approvals
+    #   ansible.builtin.uri:
+    #     url: "https://controller/api/v2/workflow_approvals/?name={{ 'Deploy to Prod?' | urlencode }}"
+    #     method: GET
+    #     force_basic_auth: true
+    #     url_username: "{{ student_user }}"
+    #     url_password: "{{ student_password }}"
+    #     return_content: true
+    #     validate_certs: false
+    #   register: __workflow_approvals
+    #   tags:
+    #     - controller-approval-solve-approval
+    #     - controller-approval-solve
+
     # This is to trigger the pipeline each time the solve script runs
     - name: update-app-solve add date/time line
       ansible.builtin.lineinfile:
@@ -811,7 +830,8 @@
       check_mode: "{{ home_page_check_mode | default( false )}}"
       register: __home_page_edits
       tags:
-        - update-app-solve  
+        - update-app-solve
+        - controller-approval-solve
       
     - name: update-app solve push code to repo
       ansible.builtin.command:
@@ -825,6 +845,7 @@
         - "git push -u origin main --force"
       tags:
         - update-app-solve
+        - controller-approval-solve
 
     - name: update-app - check Jenkins pipeline started
       community.general.jenkins_job_info:
@@ -842,7 +863,7 @@
         - update-app-check-pipeline-debug
 
   ## controller-approval
-    - name: controller-approval-check get approvals
+    - name: controller-approval-check get success approvals
       ansible.builtin.uri:
         url: "https://controller/api/v2/workflow_approvals/?name={{ 'Deploy to Prod?' | urlencode }}&status=successful"
         method: GET
@@ -852,24 +873,14 @@
         return_content: true
         validate_certs: false
       register: __workflow_approval_success
-      failed_when: __workflow_approval_success.json.count == 0
+      until: __workflow_approval_success.json.count > 0
+      delay: 3
+      retries: 8
       tags:
         - controller-approval-check-approval
 
-    - name: debug approval
-      debug:
-        var: __workflow_approval_success
-        # msg: "{{ __jt_devops_jobs_success is search( 'status' ) }}"
-
-        # var: __workflow_approval.json.results is not search('successful')
-        # var: item.status
-      # loop: "{{ __jt_devops_jobs_success.json.results }}"
-      tags:
-        - controller-approval-check-workflow-jt
-
     - name: controller-approval-check DevOps Workflow
       ansible.builtin.uri:
-        # url: "https://controller/api/v2/workflow_jobs/"
         url: "https://controller/api/v2/workflow_jobs/?name={{ lab_jt_name | urlencode }}&status=successful"
         method: GET
         force_basic_auth: true
@@ -883,8 +894,6 @@
       retries: 8
       tags:
         - controller-approval-check-workflow-jt
-
-
 
     - name: controller-approval-check home page
       ansible.builtin.uri:
@@ -901,3 +910,32 @@
       tags:
         - controller-approval-check-home-page
 
+    - name: controller-approval-solve get pending approvals
+      ansible.builtin.uri:
+        url: "https://controller/api/v2/workflow_approvals/?name={{ 'Deploy to Prod?' | urlencode }}&status=pending"
+        method: GET
+        force_basic_auth: true
+        url_username: "{{ student_user }}"
+        url_password: "{{ student_password }}"
+        return_content: true
+        validate_certs: false
+      register: __workflow_approval_pending
+      until: __workflow_approval_pending.json.count > 0
+      delay: 2
+      retries: 12
+      tags:
+        - controller-approval-solve
+
+    - name: controller-approval-solve approve pending workflow
+      awx.awx.workflow_approval:
+        workflow_job_id: "{{ item.summary_fields.source_workflow_job.id}}"
+        name: "Deploy to Prod?"
+        interval: 2
+        timeout: 10
+        action: approve
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      loop: "{{ __workflow_approval_pending.json.results }}"
+      tags:
+        - controller-approval-solve

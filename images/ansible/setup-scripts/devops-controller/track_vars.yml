@@ -16,6 +16,7 @@ custom_facts_file: custom_facts.fact
 admin_username: admin
 admin_password: ansible123!
 git_repo: http://gitea:3000/{{ student_user }}/acme_corp.git
+repo_user: rhel
 jenkins_jobs:
   - name: ACMECorp
     template_file: /tmp/setup-scripts/devops-controller/files/acme_initial.xml
@@ -39,7 +40,7 @@ lab_hosts:
       ansible_host: controller 
       ansible_python_interpreter: /usr/bin/python3
       ansible_host_key_checking: false
-      ansible_connection: local
+      # ansible_connection: local
   - lab_host_name: "web1.acme.example.com"
     lab_host_inventory: "ACME Corp DC"
     lab_host_vars:
@@ -90,6 +91,15 @@ lab_job_templates:
     jt_become: false
     jt_extra_vars:
       acme_venv: "{{ acme_venv }}"
+  - jt_name: "Restart DevOps Workflow"
+    jt_execution_env: "{{ controller_devops_ee }}"
+    jt_playbook: "playbooks/restart_workflow.yml"
+    jt_inventory: "ACME Corp DC"
+    jt_become: false
+    jt_prompt_inventory: false
+    jt_extra_vars:
+      repo_user: "{{ repo_user }}"
+      git_repo: "{{ git_repo }}"
   - jt_name: "Deploy ACMECorp App"
     jt_execution_env: "{{ controller_devops_ee }}"
     jt_playbook: "playbooks/deploy_acme_app.yml"
