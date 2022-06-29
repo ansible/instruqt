@@ -3,8 +3,8 @@ slug: env-overview
 id: 4zm4rievgnix
 type: challenge
 title: Environment overview
-teaser: In this challenge, we'll explore the different tools and configurations in
-  our DevOps workflow
+teaser: In this challenge, we'll explore the different DevOps tools ACMECorp uses
+  to deploy the *Let's Quiz!* application.
 notes:
 - type: text
   contents: |-
@@ -46,7 +46,7 @@ tabs:
   path: /job/ACMECorp/
   port: 8080
 difficulty: basic
-timelimit: 7200
+timelimit: 300
 ---
 🔐 Login credentials
 ===
@@ -116,8 +116,8 @@ The `ACMECorp` Jenkins job loads by default. The pipeline performs basic develop
 
 ![ACMECorp JTs ](../assets/img//controller_jt_list.png)
 
-* Click on the `DevOps Workflow` job template and then click on the `Visualizer` button on the top.
-
+* Select the `DevOps Workflow` job template by clicking on the checknbpox next to it
+* Click on the `Visualizer` button located at the right-hand side of the `DevOps Workflow` job template.
 
 ![DevOps Workflow button](../assets/img/controller_devops_visualizer.png)
 

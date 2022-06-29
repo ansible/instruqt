@@ -3,7 +3,7 @@ slug: update-app
 id: jixtci9el84k
 type: challenge
 title: Updating the ACME Corp application code
-teaser: In this lab, we'll update the *Let's Quiz!* application to trigger a pipeline
+teaser: We'll update the Let's Quiz! application home page to trigger the DevOps workflow.
   buid.
 notes:
 - type: text
@@ -59,7 +59,7 @@ All the logins use the same credentials.
 ACME Corp needs to update the _Let’s Quiz!_ application home page. In this challenge, we’ll update the application in VS Code and trigger the Gitea webhook described in the initial _Environment overview_ challenge.
 
 >### **❗️ Note**
-> The checks in this challenge might take a few seconds longer than usual to complete due to the Jenkins pipeline speed.
+> The checks in this challenge might take a few seconds longer due to the  possible variation in the Jenkins pipeline completion time.
 
 ☑️ Task 1 - Updating the ACME Corp home page
 ===
@@ -71,7 +71,7 @@ Let’s update the ACME Corp home page.
 
 ![VSCode home.html](../assets/img/vscode_home_edit.png)
 
-We’ll edit the line directly under the  `<!-- FIX ME -->` comment in `home.html`.
+**We’ll edit the line directly under the  `<!-- FIX ME -->` comment in `home.html`.**
 
 * Copy and paste the below line and replace the existing line directly under the  `<!-- FIX ME -->` comment.
 
@@ -92,10 +92,10 @@ The new line should look like the below screenshot.
 ☑️ Task 2 - Commit and push the code to start the pipeline
 ===
 
-Next, we’ll commit and push the updated code to the _Gitea_ repository.
+Committing and pushing the updated `home.html` file to the _Gitea_ repository.
 
 * On the left VS Code Explorer pane, click on the `Source Control` Git icon with the number banner. In the image below, the number banner is `1`.
-* Click on the + sign next to the `home.html` file.
+* Click on the + sign located on the right-hand side of the `home.html` file.
 * Enter a commit message in the `Message` text input. For example, a commit message could be.
 
 ```
@@ -125,11 +125,11 @@ Updated home.html
 ☑️ Task 3 - Check the pipeline status
 ===
 
-Let's see if the *Gitea* webhook started the pipeline.
+**Let's see if the *Gitea* webhook started the pipeline.**
 
 * Click on the _Jenkins_ tab at the top of the browser window.
 * In the _Pipeline ACMECorp_ window, you’ll see that the _Gitea_ webhook started the pipeline.
-* In the Jenkins UI, click on the *number* icon to open the Jenkins build. In the below image, the build number is `1`.
+* In the Jenkins UI, click on the *number* icon to open the Jenkins build. In the screenshot below, the build number is `1`.
 
 ![Jenkins running](../assets/img/jenkins_acme_job_running.png)
 
@@ -150,10 +150,11 @@ The `tag_name` variable contains the latest _Let’s Quiz!_ application version.
 ☑️ Task 4 - Check the ACME Corp repository
 ===
 
-Let’s look at the ACME Corp repository hosted in _Gitea_.
+**Let’s look at the ACME Corp repository hosted in _Gitea_.**
 
 * Click on the _Gitea_ tab at the top of the browser window.
-* The pipeline pushed the code to _Gitea_ and created a new tag.
+
+The pipeline pushed the code to _Gitea_ and created a new tag.
 
 ![Gitea updated](../assets/img/gitea_new_tag.png)
 
@@ -162,7 +163,9 @@ Let’s look at the ACME Corp repository hosted in _Gitea_.
 
 ![Gitea tag](../assets/img/gitea_tag_artifacts.png)
 
-_Gitea_ created `ZIP` and `TAR.GZ` files associated with the new tag. In the above screenshot, the tag name is `v2.52.0`. We’ll use this tag number and artefacts in the next challenge.
+_Gitea_ created `ZIP` and `TAR.GZ` files associated with the new tag. In the above screenshot, the tag name is `v2.52.0`.
+
+We’ll use this tag number and artefacts in the next challenge.
 
 ✅ Next Challenge
 ===
@@ -171,7 +174,7 @@ Press the `Check` button below to go to the next challenge once you’ve complet
 🐛 Encountered an issue?
 ====
 
-If you need to restart the entire workflow, we've includede the `Restart DevOps Workflow` job template in automation controller.
+If you need to restart the entire workflow, run the `Restart DevOps Workflow` job template in automation controller.
 
 If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new?labels=devops-controller&title=New+DevOps+with+automation+controller+issue+issue:+incident-creation&assignees=craig-br).
 

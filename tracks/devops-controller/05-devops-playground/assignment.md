@@ -3,8 +3,8 @@ slug: devops-playground
 id: 0lw2coaydkzw
 type: challenge
 title: Playground
-teaser: Use the remaining time to try it out yourself! This challenge has no checks.
-  Feel free to explore
+teaser: Use the remaining time to try it out yourself! This challenge has no checks
+  so feel free to experimaent and explore!
 notes:
 - type: text
   contents: |-
@@ -61,9 +61,24 @@ All the logins use the same credentials.
 👋 Introduction
 ===
 
-In this lab, we've used automation controller's enterprise features to enhance how the ACME Corp developemmt and operations teams integrate and automate together.
+In this lab, we've used automation controller's enterprise features to enhance how the ACME Corp developmemt and operations teams integrate and automate together.
 
 Now it's your turn try!
+
+✅ Where to go next
+===
+
+Whether you are beginning your automation journey or a seasoned veteran, there are a variety of resources to enhance your automation knowledge:
+
+* [Self-paced exercises](https://www.redhat.com/en/engage/redhat-ansible-automation-202108061218) - Explore our all self-paced labs
+* [Trial subscription](http://red.ht/try_ansible) - Are you ready to install in your environment? Get your trial subscription for unlimited access to all the components of Ansible Automation Platform.
+* [Subscribe to the Red Hat Ansible Automation Platform YouTube channel. ](https://www.youtube.com/ansibleautomation)
+
+🐛 Encountered an issue?
+====
+If you need to restart the entire workflow, run the `Restart DevOps Workflow` job template in automation controller.
+
+If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new?labels=devops-controller&title=New+DevOps+with+automation+controller+issue+issue:+incident-creation&assignees=craig-br).
 
 <style type="text/css" rel="stylesheet">
   img {

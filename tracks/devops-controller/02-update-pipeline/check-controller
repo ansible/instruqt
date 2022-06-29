@@ -14,5 +14,5 @@ parsed_extra_vars_file = yaml.load(extra_vars_file, yaml.loader.FullLoader)
 jt_output = subprocess.run(["ansible-playbook", "/tmp/setup-scripts/devops-controller/setup-devops-controller.yml", "-e", "lab_jt_name="+quote("Configure Jenkins Job"), "-e", "@/tmp/setup-scripts/devops-controller/track_vars.yml", "-i", "/tmp/setup-scripts/devops-controller/inventory.ini", "--tags", "auth-token,update-pipeline-check"])
 
 if jt_output.returncode > 0:
-    print ( "FAIL: Please make sure you've run the Configure Jenkins Job and it has completed successfully.")
+    print ( "FAIL: Please make sure you've run the Configure Jenkins Job in controller and it has completed successfully.")
     exit(1)

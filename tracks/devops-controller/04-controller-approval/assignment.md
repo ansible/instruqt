@@ -3,13 +3,13 @@ slug: controller-approval
 id: xwdgcvhu6tgk
 type: challenge
 title: Approving the application deployment in controller
-teaser: Finally, we'll approve the controller workflow to configure and deploy the
-  ACME Corp application on the hosts
+teaser: Finally, we'll approve the controller workflow to build a new release, configure
+  the web server, and deploy the Let's Quiz! application.
 notes:
 - type: text
   contents: |-
     # Challenge summary
-    In this challenge, we'll use controller to approve, confgure and deploy the *Let's Quiz!* application into production using automaiton controller workflows and approval nodes.
+    In this challenge, we'll use controller to approve, configure and deploy the *Let's Quiz!* application into production. We'll use automaiton controller Workflows and Approval nodes to accomplish this.
 
     ![env_tools](../assets/img/slides_4_approve_deploy.png)
 
@@ -69,7 +69,7 @@ ACME Corp operations created a [controller workflow](https://docs.ansible.com/au
 
 **Let’s explore the DevOps Workflow layout using the _visualizer_.**
 
-* The _controller_ tab should be open by default.
+* The _Controller_ tab should be open by default.
 * Please log in using the provided credentials if required.
 * Under `Resources`, click on `Templates`. This action displays the `DevOps Workflow` job template configured in controller.
 
@@ -79,22 +79,26 @@ ACME Corp operations created a [controller workflow](https://docs.ansible.com/au
 
 ![DevOps Workflow button](../assets/img/controller_devops_visualizer.png)
 
-**The `DevOps Workflow` job template unifies multiple tasks into a logical, consistent process.**
+The `DevOps Workflow` job template unifies multiple tasks into a logical, consistent process.
 
 ![DevOps Workflow visual](../assets/img/controller_devops_visualizer_workflow.png)
 
+**Exploring the `DevOps Workflow` job template nodes.**
+
 * **Deploy to Prod?** - This controller [approval node](https://docs.ansible.com/automation-controller/latest/html/userguide/workflow_templates.html#approval-nodes) enables decision-makers to authorize deploying the application into production.
-* **Create App Release** -This step, typically performed by developers, creates a new _Let’s Quiz!_ release in _Gitea_ using the `tag_name` variable generated in the _ACMECorp_ pipeline.
-* **Config Webservers** -This step, typically performed by operations, configures the web server by installing the required dependencies for the _Let’s Quiz!_ application.
+* **Create App Release** - This step, typically performed by developers, creates a new _Let’s Quiz!_ release in _Gitea_ using the `tag_name` variable generated in the _ACMECorp_ pipeline.
+* **Config Webservers** - This step, typically performed by operations, configures the web server by installing the required dependencies for the _Let’s Quiz!_ application.
 * **Deploy ACME App** - This step installs and runs the latest release of the application.
-* Once you’ve reviewed the **DevOps Workflow**, exit the _visualizer_ UI by clicking on **Close** button in the top right-hand corner.
+* Once you’ve reviewed the **DevOps Workflow**, exit the _visualizer_ UI by clicking on the Ｘ button in the top right-hand corner.
 
 ☑️ Task 2 - Approving the DevOps Workflow in controller
 ===
 
 ACME Corp operations added a controller [approval node](https://docs.ansible.com/automation-controller/latest/html/userguide/workflow_templates.html#approval-nodes) called `Deploy to Prod` to the `DevOps Workflow` job template. This step enables ACME Corp decision-makers to perform last checks, such as ensuring enough capacity is available on the target servers for the _Let’s Quiz!_ application.
 
-**Currently, the new _Let’s Quiz!_ application is not deployed. Let’s confirm this.**
+Currently, the new _Let’s Quiz!_ application is not deployed.
+
+**Let’s confirm the controller approval status:**
 
 * Click on the _Let’s Quiz!_ tab on the top of the browser window.
 
@@ -102,16 +106,16 @@ You’ll see the following message in the _Let’s Quiz!_ tab indicating the app
 
 ![App prerelease](../assets/img/app_page_prerelease.png)
 
-**Let’s approve the _Let’s Quiz!_ application production deployment.**
-* Click on the _notification_ icon in the top right corner of the controller UI to open the _Workflow Approval_ interface
-
-![Approval notification](../assets/img/controller_approval_notification.png)
+**Approving the _Let’s Quiz!_ application production deployment.**
 
 The _Workflow Approval_ interface is where authorized users can approve or deny an automation task.
 
-**Let's approve deploying *Let's Quiz!* into production.**
 * Click on the *Controller* tab on the top of the browser window.
 * Please log in using the provided credentials if required.
+* Click on the _notification_ icon in the top right corner of the controller UI to open the _Workflow Approval_ interface.
+
+![Approval notification](../assets/img/controller_approval_notification.png)
+
 * Click on the _checkbox_ on the left-hand side next to “**Deploy to Prod?”**
 * Click on the **Approve** button located at the top of thew *Workflow Approvals* UI.
 
@@ -223,12 +227,16 @@ Whether you are beginning your automation journey or a seasoned veteran, there a
 ✅ Next Challenge - Playground
 ===
 
+If you need to restart the entire workflow, run the `Restart DevOps Workflow` job template in automation controller.
+
 The next challenge is a place for you to explore and play with the remaining time. Feel free to try it out!
 
 Press the `Check` button below to go to the next challenge once you’ve completed the tasks.
 
 🐛 Encountered an issue?
 ====
+If you need to restart the entire workflow, run the `Restart DevOps Workflow` job template in automation controller.
+
 If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new?labels=devops-controller&title=New+DevOps+with+automation+controller+issue+issue:+incident-creation&assignees=craig-br).
 
 <style type="text/css" rel="stylesheet">

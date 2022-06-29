@@ -2,9 +2,8 @@
 slug: update-pipeline
 id: t2481h50besa
 type: challenge
-title: Configure the Jenkins pipeline
-teaser: In this challenge, we'll configure the Jenkins pipeline to trigger the automation
-  controller workflow.
+title: Configure the ACME Corp pipeline
+teaser: We'll configure and integarate the ACME Corp pipeline using automation controller.
 notes:
 - type: text
   contents: |-
@@ -49,7 +48,9 @@ All the logins use the same credentials.
 ===
 #### Estimated time to complete: _10 minutes_<p>
 
-ACME Corp uses _Jenkins_ to run basic development tasks and checks before manually handing over the code to operations for deployment. In this lab, we’ll edit the pipeline to integrate Jenkins into _automation controller_ using a [Job Template](https://docs.ansible.com/automation-controller/latest/html/userguide/job_templates.html).
+ACME Corp uses _Jenkins_ to run basic development tasks and checks before manually handing over the code to operations for deployment.
+
+In this lab, we’ll edit the pipeline to integrate Jenkins into _automation controller_ using a [Job Template](https://docs.ansible.com/automation-controller/latest/html/userguide/job_templates.html).
 
 
 >### **❗️ Note**
@@ -93,7 +94,7 @@ Run the `Configure Jenkins Job` job template:
 
 * Click on the *Controller* tab at the top of the browser window.
 * If not already logged in, log in using the provided credentials.
-* Under `Resources`, click on `Templates`. This menu displays the current _Job Templates_ configured in controller.
+* Under `Resources`, click on `Templates`. This action displays the current _Job Templates_ configured in controller.
 * Run `Configure Jenkins Job` by clicking on the _Rocket_ icon on the right-hand side.
 
 ![Controller Jenkins](../assets/img/controller_jenkins_jt.png)
@@ -102,13 +103,16 @@ In the _Job Output_ window, you’ll see that it successfully *changed* the curr
 
 ![JT output](../assets/img/controller_jt_jenkins_output.png)
 
-Next, we'll have a look at the updated Jenkins pipeline:
+☑️ Task 3 - Updated ACMECorp pipeline
+===
+
+**Next, we'll have a look at the updated Jenkins pipeline:**
 
 * Click on the _Jenkins_ tab at the top of the browser window.
 * Click on `ACME Corp` in the top menu, then click on `Configure`. This action refershes the Jenkins UI with the latest changes.
 * Scroll down to the pipeline section.
 
-You’ll see a new `Controller- DevOps` stage in the pipeline code.
+You’ll see a new `Controller - DevOps` stage in the pipeline code.
 
 ![Pipeline step](../assets/img/jenkins_acme_plugin.png)
 
@@ -149,6 +153,9 @@ Press the `Check` button below to go to the next challenge once you’ve complet
 
 🐛 Encountered an issue?
 ====
+
+If you need to restart the entire workflow, run the `Restart DevOps Workflow` job template in automation controller.
+
 If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new?labels=devops-controller&title=New+DevOps+with+automation+controller+issue+issue:+incident-creation&assignees=craig-br).
 
 <style type="text/css" rel="stylesheet">

@@ -14,7 +14,7 @@ parsed_extra_vars_file = yaml.load(extra_vars_file, yaml.loader.FullLoader)
 workflow_approvals = subprocess.run(["ansible-playbook", "/tmp/setup-scripts/devops-controller/setup-devops-controller.yml", "-e", "lab_jt_name="+quote( "DevOps Workflow" ), "-e", "@/tmp/setup-scripts/devops-controller/track_vars.yml", "-i", "/tmp/setup-scripts/devops-controller/inventory.ini", "--tags", "controller-approval-check-approval"])
 
 if workflow_approvals.returncode > 0:
-    print ( "FAIL: The DevOps Workflow job template has not been approved yet. Please approve the 'Deploy to Prod?' approval. If you need to restart the pipline. Create new file in your local repository and push the changes using VS Code.")
+    print ( "FAIL: The DevOps Workflow job template has not been approved yet. Please approve the 'Deploy to Prod?' approval. If you need to restart the pipeline, please run the Restart DevOps Workflow job template in controller.")
     exit(1)
 
 # Check if the DevOps Workflow has successful status
