@@ -47,10 +47,6 @@
       ansible.builtin.include_role:
         name: ansible.workshops.code_server
 
-    - name: Include common image cleanup tasks
-      ansible.builtin.include_tasks:
-        file: "{{ playbook_dir }}/common/10_image_cleanup.yml"
-
     - name: copy rh-cloud.repo to control node
       ansible.builtin.copy:
         src: ./files/rh-cloud.repo
@@ -62,6 +58,10 @@
     - name: install httpd for report labs
       ansible.builtin.dnf:
         name: httpd
+
+    - name: Include common image cleanup tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/10_image_cleanup.yml"
 
     - name: copy setup-scripts to control node
       ansible.builtin.copy:

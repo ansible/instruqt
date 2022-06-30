@@ -35,6 +35,10 @@
   ansible.builtin.command: >
     dnf config-manager --set-disabled rhui*
 
+- name: Disable codeready repos
+  ansible.builtin.command: >
+    dnf config-manager --set-disabled codeready*
+
 - name: remove AAP repo
   ansible.builtin.yum_repository:
     name: aap_installer
