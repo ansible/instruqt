@@ -17,6 +17,9 @@ notes:
     h1,h2{
       text-align: center;
     }
+    p {
+      text-align: center;
+    }
     img {
       display: block;
       margin-left: auto;
@@ -60,6 +63,9 @@ All the logins use the same credentials.
 
 Our last challenge initiated the Jenkins pipeline by editing the **home.html** page. In this challenge, we’ll use automation controller to approve and deploy the _Let’s Quiz!_ application.
 
+>### **❗️ Note**
+> The checks in this challenge might take a few seconds longer due to the  possible variation in the Jenkins pipeline completion time.
+
 ☑️ Task 1 - Exploring the DevOps Workflow in controller
 ===
 
@@ -73,15 +79,37 @@ ACME Corp operations created a [controller workflow](https://docs.ansible.com/au
 * Please log in using the provided credentials if required.
 * Under `Resources`, click on `Templates`. This action displays the `DevOps Workflow` job template configured in controller.
 
-![ACMECorp JTs ](../assets/img//controller_jt_list.png)
+<!-- ![ACMECorp JTs ](../assets/img//controller_jt_list.png) -->
+<a href="#controller_jt_list">
+  <img alt="Controller" src="../assets/img/controller_jt_list.png" />
+</a>
+
+<a href="#" class="lightbox" id="controller_jt_list">
+  <img alt="Controller" src="../assets/img/controller_jt_list.png" />
+</a>
+
 
 * Click on the `visualizer` button on the right hand side of the `DevOps Workflow` job template.
 
-![DevOps Workflow button](../assets/img/controller_devops_visualizer.png)
+<!-- ![DevOps Workflow button](../assets/img/controller_devops_visualizer.png) -->
+<a href="#controller_devops_visualizer">
+  <img alt="Controller" src="../assets/img/controller_devops_visualizer.png" />
+</a>
+
+<a href="#" class="lightbox" id="controller_devops_visualizer">
+  <img alt="Controller" src="../assets/img/controller_devops_visualizer.png" />
+</a>
 
 The `DevOps Workflow` job template unifies multiple tasks into a logical, consistent process.
 
-![DevOps Workflow visual](../assets/img/controller_devops_visualizer_workflow.png)
+<!-- ![DevOps Workflow visual](../assets/img/controller_devops_visualizer_workflow.png) -->
+<a href="#controller_devops_visualizer_workflow">
+  <img alt="Controller" src="../assets/img/controller_devops_visualizer_workflow.png" />
+</a>
+
+<a href="#" class="lightbox" id="controller_devops_visualizer_workflow">
+  <img alt="Controller" src="../assets/img/controller_devops_visualizer_workflow.png" />
+</a>
 
 **Exploring the `DevOps Workflow` job template nodes.**
 
@@ -98,28 +126,34 @@ ACME Corp operations added a controller [approval node](https://docs.ansible.com
 
 Currently, the new _Let’s Quiz!_ application is not deployed.
 
-**Let’s confirm the controller approval status:**
-
-* Click on the _Let’s Quiz!_ tab on the top of the browser window.
-
-You’ll see the following message in the _Let’s Quiz!_ tab indicating the application has not been deployed.
-
-![App prerelease](../assets/img/app_page_prerelease.png)
-
 **Approving the _Let’s Quiz!_ application production deployment.**
 
 * Click on the *Controller* tab on the top of the browser window.
 * Please log in using the provided credentials if required.
 * Click on the _notification_ icon in the top right corner of the controller UI to open the _Workflow Approval_ interface.
 
-![Approval notification](../assets/img/controller_approval_notification.png)
+<!-- ![Approval notification](../assets/img/controller_approval_notification.png) -->
+<a href="#controller_approval_notification">
+  <img alt="Controller" src="../assets/img/controller_approval_notification.png" />
+</a>
+
+<a href="#" class="lightbox" id="controller_approval_notification">
+  <img alt="Controller" src="../assets/img/controller_approval_notification.png" />
+</a>
 
 The _Workflow Approval_ interface is where authorized users can approve or deny an automation task.
 
 * Click on the _checkbox_ on the left-hand side next to `Deploy to Prod?`.
 * Click on the **Approve** button located at the top of thew *Workflow Approvals* UI.
 
-![Approval workflow](../assets/img/controller_approve_workflow.png)
+<!-- ![Approval workflow](../assets/img/controller_approve_workflow.png) -->
+<a href="#controller_approve_workflow">
+  <img alt="Controller" src="../assets/img/controller_approve_workflow.png" />
+</a>
+
+<a href="#" class="lightbox" id="controller_approve_workflow">
+  <img alt="Controller" src="../assets/img/controller_approve_workflow.png" />
+</a>
 
 ☑️ Task 3 - Viewing the DevOps Workflow outcomes
 ===
@@ -131,7 +165,14 @@ Once the `DevOps Workflow` is approved, it will begin configuring the web server
 * In the _Controller_ tab, click on `Jobs` located under `Views`.
 * Click on the `DevOps Workflow` job.
 
-![Jobs](../assets/img/controller_jobs_menu.png)
+<!-- ![Jobs](../assets/img/controller_jobs_menu.png) -->
+<a href="#controller_jobs_menu">
+  <img alt="Controller" src="../assets/img/controller_jobs_menu.png" />
+</a>
+
+<a href="#" class="lightbox" id="controller_jobs_menu">
+  <img alt="Controller" src="../assets/img/controller_jobs_menu.png" />
+</a>
 
 This action opens up the `DevOps Workflow` _Output_ interface. The green indicates that all the tasks completed successfully.
 
@@ -139,25 +180,52 @@ We can also look more in-depth at the execution outcomes and details in the `Dev
 
 * Click on the `Create App Release` node.
 
-![App release node](../assets/img/controller_app_release_node.png)
+<!-- ![App release node](../assets/img/controller_app_release_node.png) -->
+<a href="#controller_app_release_node">
+  <img alt="Controller" src="../assets/img/controller_app_release_node.png" />
+</a>
+
+<a href="#" class="lightbox" id="controller_app_release_node">
+  <img alt="Controller" src="../assets/img/controller_app_release_node.png" />
+</a>
 
 This action displays the `Create App Release`  [controller job](https://docs.ansible.com/automation-controller/latest/html/userguide/job_templates.html#view-completed-jobs) details.
 
 **Let's look at the `Create App Release` controller job in more detail.**
 * Note that the *Jenkins* user triggered the build. The controller provides [RBAC](https://docs.ansible.com/automation-controller/latest/html/userguide/users.html) functionality, and ACME Corp created the *Jenkins* user with the minimal privileges necessary to execute the workflow.
 
-![App release user](../assets/img/controller_app_release_launched_by.png)
+<!-- ![App release user](../assets/img/controller_app_release_launched_by.png) -->
+<a href="#controller_app_release_launched_by">
+  <img alt="Controller" src="../assets/img/controller_app_release_launched_by.png" />
+</a>
 
+<a href="#" class="lightbox" id="controller_app_release_launched_by">
+  <img alt="Controller" src="../assets/img/controller_app_release_launched_by.png" />
+</a>
 
 * Under the _Variables_ section, note that the `tag_name` variable was successfully used in the `Create App Release` job template.
 
-![App release vars](../assets/img/controller_app_release_vars.png)
+<!-- ![App release vars](../assets/img/controller_app_release_vars.png) -->
+<a href="#controller_app_release_vars">
+  <img alt="Controller" src="../assets/img/controller_app_release_vars.png" />
+</a>
+
+<a href="#" class="lightbox" id="controller_app_release_vars">
+  <img alt="Controller" src="../assets/img/controller_app_release_vars.png" />
+</a>
 
 * Click on the `Output` tab located next to the `Details` tab above.
 
 The `Details` interface displays the execution output for the `Create App Release` job template.
 
-![App release output](../assets/img/controller_app_release_output.png)
+<!-- ![App release output](../assets/img/controller_app_release_output.png) -->
+<a href="#controller_app_release_output">
+  <img alt="Controller" src="../assets/img/controller_app_release_output.png" />
+</a>
+
+<a href="#" class="lightbox" id="controller_app_release_output">
+  <img alt="Controller" src="../assets/img/controller_app_release_output.png" />
+</a>
 
 
 ☑️ Task 4 - New Let’s Quiz! release
@@ -171,7 +239,15 @@ The `Create App Release` job template created a new release in the `acme_corp` _
 * Log into _Gitea_ using the provided credentials if required.
 * Click on the `Releases` tab in the top menu.
 
-![Gitea release](../assets/img/gitea_new_release.png)
+<!-- ![Gitea release](../assets/img/gitea_new_release.png) -->
+<a href="#gitea_new_release">
+  <img alt="Gitea" src="../assets/img/gitea_new_release.png" />
+</a>
+
+<a href="#" class="lightbox" id="gitea_new_release">
+  <img alt="Gitea" src="../assets/img/gitea_new_release.png" />
+</a>
+
 
 * Note that the new release used the `tag_name` variable value generated in the ACME Corp pipeline.
 
@@ -184,11 +260,19 @@ ACME Corp operations used the associated `TAR.GZ` file to deploy the _Let’s Qu
 * Click on the _Jenkins_ tab located at the top of the browser window.
 * Log into _Jenkins_ using the provided credentials if required.
 
-![Gitea release](../assets/img/jenkins_acme_success.png)
+<!-- ![Gitea release](../assets/img/jenkins_acme_success.png) -->
+<a href="#jenkins_acme_success">
+  <img alt="Jenkins" src="../assets/img/jenkins_acme_success.png" />
+</a>
+
+<a href="#" class="lightbox" id="jenkins_acme_success">
+  <img alt="Jankins" src="../assets/img/jenkins_acme_success.png" />
+</a>
+
 
 The *ACMECorp pipeline* shows a _green_ status indicating it was completed successfully once the `DevOps Workflow` job template completed all the tasks.
 
-☑️ Task 6 - Visit the Let’s Quiz! home page
+☑️ Task 7 - Visit the Let’s Quiz! home page
 ===
 
 Last but not least, the _Let’s Quiz!_ application production deployment should be successful!
@@ -197,8 +281,14 @@ Last but not least, the _Let’s Quiz!_ application production deployment should
 * Click on the Let’s Quiz! tab located at the top of the browser window.
 * Note that the home page has the updated text we added in the previous challenge.
 
-![App working](../assets/img/app_page_updated.png)
+<!-- ![App working](../assets/img/app_page_updated.png) -->
+<a href="#app_page_updated">
+  <img alt="App" src="../assets/img/app_page_updated.png" />
+</a>
 
+<a href="#" class="lightbox" id="app_page_updated">
+  <img alt="App" src="../assets/img/app_page_updated.png" />
+</a>
 
 🎉 Congratulations!
 ===
@@ -241,6 +331,31 @@ If you need to restart the entire workflow, run the `Restart DevOps Workflow` jo
 If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new?labels=devops-controller&title=New+DevOps+with+automation+controller+issue+issue:+incident-creation&assignees=craig-br).
 
 <style type="text/css" rel="stylesheet">
+  .lightbox {
+    display: none;
+    position: fixed;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.8);
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+  }
+  .lightbox:target {
+    display: flex;
+  }
+  .lightbox img {
+    /* max-height: 100% */
+    max-width: 60%;
+    max-height: 60%;
+  }
   img {
     display: block;
     margin-left: auto;

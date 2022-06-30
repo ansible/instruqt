@@ -17,6 +17,9 @@ notes:
     h1,h2{
       text-align: center;
     }
+    p {
+      text-align: center;
+    }
     img {
       display: block;
       margin-left: auto;
@@ -64,15 +67,37 @@ Let’s look at the ACMECorp pipeline steps:
 * If not already logged in, log in using the provided credentials.
 * The default landing page is the `ACME Corp` pipeline.
 
-![ACMECorp Pipeline ](../assets/img/jenkins_acmecorp_job.png)
+<!-- ![ACMECorp Pipeline](../assets/img/jenkins_acmecorp_job.png) -->
+<a href="#jenkins_acmecorp_job">
+  <img alt="ACMECorp Pipeline" src="../assets/img/jenkins_acmecorp_job.png" />
+</a>
+
+<a href="#" class="lightbox" id="jenkins_acmecorp_job">
+  <img alt="ACMECorp Pipeline" src="../assets/img/jenkins_acmecorp_job.png" />
+</a>
+
 
 * On the left-hand side of the Jenkins UI window, click on `Configure`
 
-![ACMECorp Configure ](../assets/img/jenkins_acmecorp_configure.png)
+<!-- ![ACMECorp Configure ](../assets/img/jenkins_acmecorp_configure.png) -->
+<a href="#jenkins_acmecorp_configure">
+  <img alt="ACMECorp Pipeline" src="../assets/img/jenkins_acmecorp_configure.png" />
+</a>
+
+<a href="#" class="lightbox" id="jenkins_acmecorp_configure">
+  <img alt="ACMECorp Pipeline" src="../assets/img/jenkins_acmecorp_configure.png" />
+</a>
 
 * Scroll to the bottom of the page until you get to the *Pipeline* section, which contains _groovy_ code.
 
-![ACMECorp Job ](../assets/img/jenkins_acme_initial_pipe.png)
+<!-- ![ACMECorp Job](../assets/img/jenkins_acme_initial_pipe.png) -->
+<a href="#jenkins_acme_initial_pipe">
+  <img alt="ACMECorp Job" src="../assets/img/jenkins_acme_initial_pipe.png" />
+</a>
+
+<a href="#" class="lightbox" id="jenkins_acme_initial_pipe">
+  <img alt="ACMECorp Job" src="../assets/img/jenkins_acme_initial_pipe.png" />
+</a>
 
 ACME Corp developers have added the following steps to the pipeline:
 
@@ -80,8 +105,6 @@ ACME Corp developers have added the following steps to the pipeline:
 * **Installing packages** - Install the packages needed to test the application.
 * **Static Code Checking** - Run static code analysis
 * **Build and Tag** - Increment the _Let’s Quiz!_ application version and create a git tag. This new tag number will prove useful in the following steps.
-
-Unfortunately, manually handing the application to operations makes production deployments complex and fragile.
 
 ☑️ Task 2 - Controller and Jenkins integration
 ===
@@ -95,13 +118,28 @@ Run the `Configure Jenkins Job` job template:
 * Click on the *Controller* tab at the top of the browser window.
 * If not already logged in, log in using the provided credentials.
 * Under `Resources`, click on `Templates`. This action displays the current _Job Templates_ configured in controller.
-* Run `Configure Jenkins Job` by clicking on the _Rocket_ icon on the right-hand side.
+* Run `Configure Jenkins Job` by clicking on the <img src="https://github.com/IPvSean/pictures_for_github/blob/master/launch_job.png?raw=true" style="width:4%; display:inline-block; vertical-align: middle;" /> icon on the right-hand side.
 
-![Controller Jenkins](../assets/img/controller_jenkins_jt.png)
+<!-- ![Controller Jenkins](../assets/img/controller_jenkins_jt.png) -->
+<a href="#controller_jenkins_jt">
+  <img alt="Controller Jenkins"" src="../assets/img/controller_jenkins_jt.png" />
+</a>
+
+<a href="#" class="lightbox" id="controller_jenkins_jt">
+  <img alt="Controller Jenkins" src="../assets/img/controller_jenkins_jt.png" />
+</a>
 
 In the _Job Output_ window, you’ll see that it successfully *changed* the current ACMECorp pipeline.
 
-![JT output](../assets/img/controller_jt_jenkins_output.png)
+<!-- ![JT output](../assets/img/controller_jt_jenkins_output.png) -->
+<a href="#controller_jt_jenkins_output">
+  <img alt="JT output" src="../assets/img/controller_jt_jenkins_output.png" />
+</a>
+
+<a href="#" class="lightbox" id="controller_jt_jenkins_output">
+  <img alt="JT output" src="../assets/img/controller_jt_jenkins_output.png" />
+</a>
+
 
 ☑️ Task 3 - Updated ACMECorp pipeline
 ===
@@ -114,11 +152,19 @@ In the _Job Output_ window, you’ll see that it successfully *changed* the curr
 
 You’ll see a new `Controller - DevOps` stage in the pipeline code.
 
-![Pipeline step](../assets/img/jenkins_acme_plugin.png)
+<!-- ![Pipeline step](../assets/img/jenkins_acme_plugin.png) -->
+<a href="#jenkins_acme_plugin">
+  <img alt="Pipeline step" src="../assets/img/jenkins_acme_plugin.png" />
+</a>
+
+<a href="#" class="lightbox" id="jenkins_acme_plugin">
+  <img alt="Pipeline step" src="../assets/img/jenkins_acme_plugin.png" />
+</a>
+
 
 
 > **❗️ Note**<p>
->The [Ansible Tower Jenkins plugin](https://plugins.jenkins.io/ansible-tower/) is community-driven, and **Red Hat does not support this project**. This plugin is used in this lab for demonstration purposes only.
+>The [Ansible Tower Jenkins plugin](https://plugins.jenkins.io/ansible-tower/) is community-driven and used for demonstration purposes only in this lab.
 >
 >Although the plugin still refers to _Tower_, it successfully consumed the controller API for this lab task.
 
@@ -159,6 +205,31 @@ If you need to restart the entire workflow, run the `Restart DevOps Workflow` jo
 If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new?labels=devops-controller&title=New+DevOps+with+automation+controller+issue+issue:+incident-creation&assignees=craig-br).
 
 <style type="text/css" rel="stylesheet">
+  .lightbox {
+    display: none;
+    position: fixed;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.8);
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+  }
+  .lightbox:target {
+    display: flex;
+  }
+  .lightbox img {
+    /* max-height: 100% */
+    max-width: 60%;
+    max-height: 60%;
+  }
   img {
     display: block;
     margin-left: auto;

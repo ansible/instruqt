@@ -9,12 +9,15 @@ notes:
 - type: text
   contents: |-
     # Challenge summary
-    The is the playground. Feel free to experiment and try different options!
+    This is the playground. Feel free to experiment and try different options!
 
-    ![env_tools](../assets/img/env_tools.png)
+    ![env_tools](../assets/img/slides_5_cicd_complete.png)
 
     <style type="text/css" rel="stylesheet">
     h1,h2{
+      text-align: center;
+    }
+    p {
       text-align: center;
     }
     img {
@@ -44,10 +47,6 @@ tabs:
   hostname: jenkins
   path: /job/ACMECorp/
   port: 8080
-- title: Let's Quiz!
-  type: service
-  hostname: controller
-  port: 8000
 difficulty: intermediate
 timelimit: 600
 ---
@@ -81,6 +80,31 @@ If you need to restart the entire workflow, run the `Restart DevOps Workflow` jo
 If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new?labels=devops-controller&title=New+DevOps+with+automation+controller+issue+issue:+incident-creation&assignees=craig-br).
 
 <style type="text/css" rel="stylesheet">
+  .lightbox {
+    display: none;
+    position: fixed;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.8);
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+  }
+  .lightbox:target {
+    display: flex;
+  }
+  .lightbox img {
+    /* max-height: 100% */
+    max-width: 60%;
+    max-height: 60%;
+  }
   img {
     display: block;
     margin-left: auto;
