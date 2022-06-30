@@ -1,0 +1,13 @@
+namespace1=`curl -u admin:ansible123! https://privatehub-01/api/galaxy/_ui/v1/collection-versions/ -k | jq .data[1].namespace`
+namespace2=`curl -u admin:ansible123! https://privatehub-01/api/galaxy/_ui/v1/collection-versions/ -k | jq .data[0].namespace`
+if [ "$namespace1" == \"community\" ] || [ "$namespace1" == \"ansible\" ]
+then :
+else
+    fail-message "Either one of the collections is not pushed yet."
+fi
+
+if [ "$namespace2" == \"community\" ] || [ "$namespace2" == \"ansible\" ]
+then :
+else
+    fail-message "Either one of the collections is not pushed yet."
+fi

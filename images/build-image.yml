@@ -6,4 +6,4 @@
     - command: packer build --force automation-controller.pkr.hcl
       register: iloverhel
       until: iloverhel is not failed
-      retries: 20 
+      retries: 20

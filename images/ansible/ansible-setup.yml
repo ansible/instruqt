@@ -33,7 +33,7 @@
         shell: /bin/bash
         password: "{{ 'ansible123!' | password_hash('sha512', 'mysecretsalt') }}"
         groups: wheel
-        append: yes
+        append: true
 
     - name: Create test directory
       ansible.builtin.file:
@@ -84,7 +84,7 @@
         name: aap_installer
         description: aap_installer
         baseurl: file:///temp_dir/aap_install/bundle/el8/repos
-        gpgcheck: no
+        gpgcheck: false
     - name: Create temp_dir
       file: path=/temp_dir/aap_install state=directory
 

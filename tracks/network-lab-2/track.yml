@@ -12,7 +12,7 @@ description: |+
 
   # Dynamic Documentation
 
-  Red Hat Ansible Automation Platform allows you to quickly transform network configuration and network device state into structured data, transform that structured data into whatever output you want.  For example in this lab we will transform the output into a simple HTML webiste.  This concept is commonly referred to as **Dynamic Documentation** and can be used in many different uses cases.
+  Red Hat Ansible Automation Platform allows you to quickly transform network configuration and network device state into structured data, transform that structured data into whatever output you want.  For example in this lab we will transform the output into a simple HTML website.  This concept is commonly referred to as **Dynamic Documentation** and can be used in many different uses cases.
 
   # Why is this important?
 

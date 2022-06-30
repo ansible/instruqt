@@ -16,7 +16,7 @@ notes:
     group via the inventory.
 - type: text
   contents: As a best practice Ansible in real life applications playbooks are usually
-    written adressing the group `all` - the limitation to certain nodes or groups
+    written addressing the group `all` - the limitation to certain nodes or groups
     is enforced at execution time via command line flags or via tools like Ansible
     controller.
 tabs:

@@ -1,0 +1,3 @@
+su - rhel
+ansible-galaxy collection install ansible.test_collection -c
+ansible-galaxy collection install community.lab_collection --keyring /home/rhel/keyring.kbx -c -vvvv

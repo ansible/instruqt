@@ -1,0 +1,9 @@
+version: "3"
+virtualmachines:
+- name: crc
+  image: openshift-instruqt/crc-4-10-latest
+  machine_type: n1-highmem-4
+  allow_external_ingress:
+  - http
+  - https
+  - high-ports

@@ -1,0 +1,38 @@
+slug: private-automation-hub-signing
+id: qpj8xchyw3e4
+type: track
+title: Signing Ansible content collections with private automation hub.
+teaser: In this lab, we will look at how to sign Ansible content collections using
+  private automation hub and installing collections with ansible-galaxy CLI.
+description: |2-
+
+  # Content signing with Private automation hub.
+
+  ![](./assets/tech_preview.png)
+
+  Sign user-built content and/or third party Ansible Content Collections when publishing to an instance of private automation hub.
+
+  `This feature is available as Tech-Preview in Ansible Automation Platform v2.2`
+
+  This demo will take you through the following challenges:
+  * Understanding the lab environment.
+  * **Publishing** Ansible Content Collections to private automation hub instance.
+  * **Sign and Approve** the Ansible Content Collections from the private automation hub UI.
+  * Using the `ansible-galaxy` CLI to **pull the signed content collections** from the private automation hub instance.
+  * Bonus Challenge: **Verifying** the signed content collections using the ansible-galaxy CLI.
+
+
+  *Note:* Enabling content signing on Private Automation Hub needs to be performed during installation via the Ansible Automation Platform Installer.  Enabling this in Private Automation Hub is out of scope for this exercise.  Our focus here is on how to use this capability once enabled.
+icon: ./assets/Product_icon-Red_Hat-Ansible-Automation_hub_private-RGB.png
+level: intermediate
+tags:
+- ansible
+- ' private-automation-hub'
+- ' ansible-galaxy'
+owner: redhat
+developers:
+- abehl@redhat.com
+private: true
+published: false
+skipping_enabled: true
+checksum: "14443779278585205995"

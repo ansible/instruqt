@@ -1,0 +1,195 @@
+#!/bin/bash
+
+# make challenge dir
+su - rhel -c 'mkdir /home/rhel/challenge-5'
+
+# Create a playbook for the user to execute which will create a SN incident
+tee /home/rhel/servicenow_project/close-records-by-user.yml << EOF
+---
+- name: close user created records 
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    demo_username: "{{ lookup('env', 'SN_USERNAME') }}"
+    incident_list: []
+    problem_list: []
+    change_list: []
+    config_list: []
+
+  tasks:
+
+  - name: find user created incidents
+    servicenow.itsm.incident_info:
+      query:
+        - sys_created_by: LIKE {{ demo_username }}
+          active: = true
+    register: incidents
+
+  - name: find user created problems
+    servicenow.itsm.problem_info:
+      query:
+        - sys_created_by: LIKE {{ demo_username }}
+          active: = true
+    register: problems
+
+  - name: find user created change requests
+    servicenow.itsm.change_request_info:
+      query:
+        - sys_created_by: LIKE {{ demo_username }}
+          active: = true
+    register: changes
+
+  - name: find user created configuration items
+    servicenow.itsm.configuration_item_info:
+      query:
+        - sys_created_by: LIKE {{ demo_username }}
+          active: = true
+    register: configs
+
+  - name: query incident number and creation time 
+    set_fact:
+      incident_list: '{{ incident_list + [{"number": item.number, "opened_at": item.opened_at}] }}'
+    loop: "{{ incidents.records }}"
+    when: incidents
+
+  - name: query problem number and creation time 
+    set_fact:
+      problem_list: '{{ problem_list + [{"number": item.number, "opened_at": item.opened_at}] }}'
+    loop: "{{ problems.records }}"
+    when: problems
+
+  - name: query change request number and creation time 
+    set_fact:
+      change_list: '{{ change_list + [{"number": item.number, "opened_at": item.opened_at}] }}'
+    loop: "{{ changes.records }}"
+    when: changes
+
+  - name: query configuration item sys_id and creation time 
+    set_fact:
+      config_list: '{{ config_list + [{"number": item.sys_id, "opened_at": item.sys_created_on}] }}'
+    loop: "{{ configs.records }}"
+    when: configs
+  
+  - name: close incidents from list
+    servicenow.itsm.incident:
+      state: closed
+      number: "{{ item.number }}"
+      close_code: "Solved (Permanently)"
+      close_notes: "Closed with ansible servicenow.itsm"
+      other:
+        active: false
+    with_items: "{{ incident_list }}"
+    when: 
+      - incident_list is defined
+
+  - name: close problems from list
+    servicenow.itsm.problem:
+      state: absent
+      assigned_to: "{{ demo_username }}"
+      number: "{{ item.number }}"
+      other:
+        active: false
+    with_items: "{{ problem_list }}"
+    when: 
+      - problem_list is defined
+    
+  - name: close change requests from list
+    servicenow.itsm.change_request:
+      state: closed
+      close_code: "successful"
+      close_notes: "Closed with ansible servicenow.itsm"
+      number: "{{ item.number }}"
+      other:
+        active: false
+    with_items: "{{ change_list }}"
+    when: 
+      - change_list is defined
+
+  - name: remove configuration items from list
+    servicenow.itsm.configuration_item:
+      state: absent
+      sys_id: "{{ item.number }}"
+    with_items: "{{ config_list }}"
+    when: 
+      - config_list is defined
+
+
+EOF
+
+# chown above file
+sudo chown rhel:rhel /home/rhel/servicenow_project/change-attach.yml
+
+# Write a new playbook to create a template from above playbook
+tee /home/rhel/challenge-5/template-create.yml << EOF
+---
+- name: Create job template for problem-attach
+  hosts: localhost
+  connection: local
+  collections:
+    - awx.awx
+
+  tasks:
+
+    - name: Post change-attach job template
+      job_template:
+        name: "5 - Query and close records by user (close-records-by-user.yml)"
+        job_type: "run"
+        organization: "Default"
+        inventory: "Demo Inventory"
+        project: "ServiceNow"
+        playbook: "close-records-by-user.yml"
+        execution_environment: "ServiceNow EE"
+        credentials:
+          - "servicenow credential"
+        state: "present"
+        ask_variables_on_launch: false
+        controller_host: "https://localhost"
+        controller_username: admin
+        controller_password: ansible123!
+        validate_certs: false
+
+EOF
+
+# chown above file
+sudo chown rhel:rhel /home/rhel/challenge-5/template-create.yml
+
+# Execute above playbook
+su - rhel -c 'ansible-playbook /home/rhel/challenge-5/template-create.yml'
+
+# Grant student account access to challenge job template  
+tee /home/rhel/challenge-5/role-update.yml << EOF
+---
+- name: Create job template for create-incident
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  collections:
+    - awx.awx
+
+  tasks:
+
+    - name: Post create-incident job template
+      role:
+        user: student
+        role: execute
+        job_templates:
+          - "1 - Create incident (incident-create.yml)"
+          - "2 - Attach problem (problem-attach.yml)"
+          - "3 - Attach change request (change-attach.yml)"
+          # - "4.1 - Collect node information (collect-node-info.yml)"
+          # - "4.2 - Create/update configuration items (create-update-config-items.yml)"
+          - "5 - Query and close records by user (close-records-by-user.yml)"
+        workflows:
+          - "4.0 - Query node info and update CMDB (multiple job templates)"
+        controller_username: admin
+        controller_password: ansible123!
+        validate_certs: false
+
+EOF
+
+# chown above file
+sudo chown rhel:rhel /home/rhel/challenge-5/role-update.yml
+
+# Execute above playbook
+su - rhel -c 'ansible-playbook /home/rhel/challenge-5/role-update.yml'

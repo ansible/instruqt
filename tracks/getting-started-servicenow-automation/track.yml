@@ -17,8 +17,7 @@ tags:
 owner: redhat
 developers:
 - colin@redhat.com
-private: true
+private: false
 published: true
-maintenance: true
 show_timer: true
-checksum: "12280893663978895127"
+checksum: "17712047228775310334"
