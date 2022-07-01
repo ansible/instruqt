@@ -6,36 +6,3 @@ do
     echo "Waiting for Instruqt to finish booting the VM"
     sleep 1
 done
-
-# export GITEA__server__ROOT_URL=https://gitea-3000-${INSTRUQT_PARTICIPANT_ID}.${INSTRUQT_PARTICIPANTS_DNS}
-
-# Install Gitea packages
-# /sbin/apk add python3 ansible subversion tar
-
-# Get instruqt lab content
-# /usr/bin/svn export https://github.com/craig-br/instruqt/branches/devops-controller-track/images/ansible/setup-scripts/devops-controller /tmp/setup-scripts/devops-controller --force
-
-# Run Gitea config
-# echo "Starting Gitea config"
-# /usr/bin/ansible-playbook /tmp/setup-scripts/devops-controller/setup-devops-controller.yml -e @/tmp/setup-scripts/devops-controller/track_vars.yml  -i /tmp/setup-scripts/devops-controller/inventory.ini --tags gitea-config --skip-tags always -v
-
-# Setup rhel user
-# touch /etc/sudoers.d/rhel_sudoers
-# echo "%rhel ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/rhel_sudoers
-# cp -a /root/.ssh/* /home/rhel/.ssh/.
-# chown -R rhel:rhel /home/rhel/.ssh
-
-# # Users
-# echo "Creating users"
-# su - git -c '/usr/local/bin/gitea admin user create --admin --username student --password learn_ansible --must-change-password=false --email student@localhost'
-# su - git -c '/usr/local/bin/gitea admin user create --admin --username jenkins --password learn_ansible --must-change-password=false --email jenkins@localhost'
-
-# #Create repo
-# echo "Creating repo"
-# su - git -c 'curl -X POST "http://gitea:3000/api/v1/user/repos" -H "Content-Type: application/json" -u student:learn_ansible --data-raw "{\"name\": \"acme_corp\", \"auto_init\" : false, \"private\": false}"'
-
-# #Hooks
-# su - git -c 'curl -X POST "http://gitea:3000/api/v1/repos/student/acme_corp/hooks" -H "Content-Type: application/json"  -u student:learn_ansible  --data-raw "{\"type\":\"gitea\",\"config\":{\"content_type\":\"json\",\"url\":\"http://jenkins:8080/gitea-webhook/post\"},\"active\" : true,\"events\":[\"push\"]}"'
-
-# #Collaborator
-# su - git -c 'curl -X PUT "http://gitea:3000/api/v1/repos/student/acme_corp/collaborators/jenkins"  -H "Content-Type: application/json" -u student:learn_ansible --data-raw "{\"permission\": \"write\"}"'
