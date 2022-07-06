@@ -4,7 +4,7 @@ Here we document how to reuse existing containers within the Instruqt environmen
 
 ## Gitea
 
-Refer ot the [Gitea Configuration Cheat Sheet](https://docs.gitea.io/en-us/config-cheat-sheet/) for full environment variable options.
+Refer to the [Gitea Configuration Cheat Sheet](https://docs.gitea.io/en-us/config-cheat-sheet/) for full environment variable options.
 ### Environment configuration
 
 - Name: `gitea` or custom choice
@@ -20,7 +20,7 @@ Refer ot the [Gitea Configuration Cheat Sheet](https://docs.gitea.io/en-us/confi
   - `GITEA__security__INSTALL_LOCK`: `true`
   - `GITEA__server__SSH_LISTEN_PORT`: `2222`
 
-### Gitea user and repo configuraiton variables
+### Gitea user and repo configuration variables
 
 - Environment Variables:
   - `GITEA__repository__DEFAULT_PUSH_CREATE_PRIVATE: false`
