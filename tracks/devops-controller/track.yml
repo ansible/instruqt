@@ -25,7 +25,7 @@ description: |-
   * Integrating Jenkins into automation controller.
   * Creating a new application release, configuring a web server and deploying the updated *Let’s Quiz!* application with a [controller workflow](https://docs.ansible.com/automation-controller/latest/html/userguide/workflows.html).
   * Using a controller [approval](https://docs.ansible.com/automation-controller/4.2.0/html/userguide/workflow_templates.html#approval-nodes) to allow final checks and sign-off before deploying to production.
-icon: https://raw.githubusercontent.com/craig-br/instruqt-tracks/devel/assets/icons/automation_controller.png
+icon: ./assets/img/automation_controller.png
 level: intermediate
 tags:
 - controller
@@ -37,6 +37,6 @@ developers:
 - cbrandt@redhat.com
 private: true
 published: false
-maintenance: true
 show_timer: true
-checksum: "12520568517269368696"
+skipping_enabled: true
+checksum: "14190238509214331718"
