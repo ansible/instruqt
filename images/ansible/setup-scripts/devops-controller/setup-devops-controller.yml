@@ -1,0 +1,941 @@
+---
+##
+# https://play.instruqt.com/redhat/tracks/devops-controller/
+#
+# Tags:
+# setup-env - Setup all lifecycle scripts
+# auth-token - create controller auth-token
+# <hostname>-config - Lifecycle setup script for host
+# <challenge-slug>-check - check challenge
+# <challenge-slug>-solve - solve challenge
+# <challenge-slug>-setup - setup challenge
+##
+
+# Gitea config
+- name: Configure Gitea host
+  hosts: gitea
+  gather_facts: false
+  become: true
+  tags:
+    - gitea-config
+
+  tasks:
+    - name: Install python3 Gitea
+      ansible.builtin.raw: /sbin/apk add python3
+
+    - name: Install Gitea packages
+      community.general.apk:
+        name: subversion, tar
+        state: present
+
+    - name: Create setup-scripts directory
+      ansible.builtin.file:
+        path: /tmp/setup-scripts/devops-controller
+        state: directory
+
+    - name: Download lab content to controller tmp directory
+      ansible.builtin.subversion:
+        repo: "{{ download_url }}"
+        dest: /tmp/setup-scripts/devops-controller
+        export: true
+        force: true
+
+    - name: Create repo users
+      ansible.builtin.command: "{{ item }}"
+      become_user: git
+      register: __output
+      failed_when: __output.rc not in [ 0, 1 ]
+      changed_when: '"user already exists" not in __output.stdout'
+      loop:
+        - "/usr/local/bin/gitea admin user create --admin --username jenkins --password {{ student_password }} --must-change-password=false --email jenkins@localhost"
+        - "/usr/local/bin/gitea admin user create --admin --username {{ student_user }} --password {{ student_password }} --must-change-password=false --email {{ student_user }}@localhost"
+
+    - name: Create repo
+      ansible.builtin.uri:
+        url: http://gitea:3000/api/v1/user/repos
+        method: POST
+        body_format: json
+        body:
+          name: acme_corp
+          auto_init: false
+          private: false
+        force_basic_auth: true
+        url_password: "{{ student_password }}"
+        url_username: "{{ student_user }}"
+        status_code: [201, 409]
+
+    - name: Create repo webhook
+      ansible.builtin.uri:
+        url: "http://gitea:3000/api/v1/repos/{{ student_user }}/acme_corp/hooks"
+        method: POST
+        body_format: json
+        body:
+          type: gitea
+          config:
+            content_type: json
+            url: http://jenkins:8080/gitea-webhook/post
+          active: true
+          events:
+            - push
+        force_basic_auth: true
+        url_password: "{{ student_password }}"
+        url_username: "{{ student_user }}"
+        status_code: [201, 409]
+
+    - name: Remove repo dir if it exists
+      ansible.builtin.file:
+        path: "/root/acme_corp"
+        state: absent
+
+    - name: Create repo dir
+      ansible.builtin.file:
+        path: "/root/acme_corp"
+        state: directory
+        mode: 0755
+
+    - name: Configure git to use main repo by default
+      community.general.git_config:
+        name: init.defaultBranch
+        scope: global
+        value: main
+      tags:
+        - git
+
+    - name: Initialise track repo
+      ansible.builtin.command:
+        cmd: /usr/bin/git init
+        chdir: "/root/acme_corp"
+        creates: "/acme_corp/.git" 
+
+    - name: Configure git to store credentials
+      community.general.git_config:
+        name: credential.helper
+        scope: global
+        value: store --file /tmp/git-creds
+
+    - name: Configure repo dir as git safe dir
+      community.general.git_config:
+        name: safe.directory
+        scope: global
+        value: "/root/acme_corp"
+
+    - name: Store repo credentials in git-creds file
+      ansible.builtin.copy:
+        dest: /tmp/git-creds
+        mode: 0644
+        content: "http://{{ student_user }}:{{ student_password }}@{{ 'gitea:3000' | urlencode }}"
+
+    - name: Configure git username
+      community.general.git_config:
+        name: user.name
+        scope: global
+        value: "{{ ansible_user }}"
+
+    - name: Configure git email address
+      community.general.git_config:
+        name: user.email
+        scope: global
+        value: "{{ ansible_user }}@local"
+
+    - name: Extract initial repo files
+      ansible.builtin.unarchive:
+        src: /tmp/setup-scripts/devops-controller/files/acme_repo.tar.gz
+        dest: "/root/acme_corp"
+        creates: /root/acme_corp/app
+        remote_src: true
+
+    - name: Add remote origin to repo
+      ansible.builtin.command:
+        cmd: "{{ item }}"
+        chdir: "/root/acme_corp"   
+      register: __output
+      changed_when: __output.rc == 0
+      loop:
+        - "git remote add origin http://gitea:3000/{{ student_user }}/acme_corp.git"
+        - "git checkout -b main"
+        - "git add ."
+        - "git commit -m'Initial commit'"
+        - "git push -u origin main --force"
+
+# Jenkins config
+- name: Jenkins config for devops-controller
+  hosts: jenkins
+  gather_facts: false
+  tags:
+    - jenkins-config
+
+  tasks:
+    - name: Create setup-scripts directory
+      ansible.builtin.file:
+        path: /tmp/setup-scripts/devops-controller
+        state: directory
+
+    - name: Download lab content to tmp directory
+      ansible.builtin.subversion:
+        repo: "{{ download_url }}"
+        dest: /tmp/setup-scripts/devops-controller
+        export: true
+        force: true
+
+    - name: Wait for Jenkins to start up before proceeding.
+      uri:
+        url: "http://jenkins:8080/cli/"
+        method: GET
+        return_content: "yes"
+        timeout: 5
+        body_format: raw
+        follow_redirects: "no"
+        status_code: 200,403
+      register: __jenkins_status
+      until: (__jenkins_status.status == 403 or __jenkins_status.status == 200) and (__jenkins_status.content.find("Please wait while") == -1)
+      retries: 5
+      delay: 3
+      changed_when: false
+
+    - name: Install jenkins-cli
+      ansible.builtin.get_url:
+        url: http://jenkins:8080/jnlpJars/jenkins-cli.jar
+        dest: /var/jenkins_home/jenkins-cli.jar
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: "0644"
+      register: __jarfile_get
+      until: "'OK' in __jarfile_get.msg or '304' in __jarfile_get.msg or 'file already exists' in __jarfile_get.msg"
+      retries: 5
+      delay: 10
+
+    - name: Create Jenkins jobs
+      ansible.builtin.shell:
+        chdir: /var/jenkins_home
+        cmd: "/opt/java/openjdk/bin/java -jar /var/jenkins_home/jenkins-cli.jar -s http://jenkins:8080 -auth {{ student_user }}:{{ student_password }} create-job {{ item.name }} < {{ item.template_file }}"
+      loop: "{{ jenkins_jobs }}"
+      register: __output
+      changed_when: __output.rc != 4
+      failed_when: __output.rc not in [ 0, 4 ]
+    
+## Controller setup
+- name: Controller config for devops-controller
+  hosts: controller.acme.example.com
+  gather_facts: true
+    
+  tasks:
+   # Create auth login token
+    - name: get auth token and restart automation-controller if it fails
+      block:
+        - name: Refresh facts
+          setup:
+
+        - name: Create oauth token
+          awx.awx.token:
+            description: 'Instruqt lab'
+            scope: "write"
+            state: present
+            controller_host: controller
+            controller_username: "{{ controller_admin_user }}"
+            controller_password: "{{ controller_admin_password }}"
+            validate_certs: false
+          register: _auth_token
+          until: _auth_token is not failed
+          delay: 3
+          retries: 5
+      rescue:
+        - name: In rescue block for auth token
+          debug:
+            msg: "failed to get auth token. Restarting automation controller service"
+
+        - name: restart the controller service
+          ansible.builtin.service:
+            name: automation-controller
+            state: restarted
+
+        - name: Ensure tower/controller is online and working
+          uri:
+            url: https://localhost/api/v2/ping/
+            method: GET
+            user: "{{ admin_username }}"
+            password: "{{ admin_password }}"
+            validate_certs: false
+            force_basic_auth: true
+          register: controller_online
+          until: controller_online is success
+          delay: 3
+          retries: 5
+
+        - name: Retry getting auth token
+          awx.awx.token:
+            description: 'Instruqt lab'
+            scope: "write"
+            state: present
+            controller_host: controller
+            controller_username: "{{ controller_admin_user }}"
+            controller_password: "{{ controller_admin_password }}"
+            validate_certs: false
+          register: _auth_token
+          until: _auth_token is not failed
+          delay: 3
+          retries: 5
+      always:
+        - name: Create fact.d dir
+          ansible.builtin.file:
+            path: "{{ custom_facts_dir }}"
+            state: directory
+            recurse: yes
+            owner: "{{ ansible_user }}"
+            group: "{{ ansible_user }}"
+            mode: 0755
+          become: true
+
+        - name: Create _auth_token custom fact
+          ansible.builtin.copy:
+            content: "{{ _auth_token.ansible_facts }}"
+            dest: "{{ custom_facts_dir }}/{{ custom_facts_file }}"
+            owner: "{{ ansible_user }}"
+            group: "{{ ansible_user }}"
+            mode: 0644
+          become: true
+      check_mode: false
+      when: ansible_local.custom_facts.controller_token is undefined
+      tags:
+        - auth-token
+
+    - name: refresh facts
+      setup:
+        filter:
+          - ansible_local
+      tags:
+        - always
+
+    - name: create auth token fact
+      ansible.builtin.set_fact:
+        auth_token: "{{ ansible_local.custom_facts.controller_token }}"
+        cacheable: true
+      check_mode: false
+      when: auth_token is undefined
+      tags:
+        - always
+
+  # Setup student git repo
+    - name: Remove repo dir if it exists
+      ansible.builtin.file:
+        path: "/home/{{ ansible_user }}/acme_corp"
+        state: absent
+      tags:
+        - controller-config
+
+    - name: Configure git to use main repo by default
+      community.general.git_config:
+        name: init.defaultBranch
+        scope: global
+        value: main
+      become: true
+      become_user: "{{ ansible_user }}"
+      tags:
+        - controller-config
+
+    - name: Configure git to store credentials
+      community.general.git_config:
+        name: credential.helper
+        scope: global
+        value: store --file /tmp/git-creds
+      become: true
+      become_user: "{{ ansible_user }}"
+      tags:
+        - controller-config
+
+    - name: Configure repo dir as git safe dir
+      community.general.git_config:
+        name: safe.directory
+        scope: global
+        value: "/home/{{ ansible_user }}/acme_corp"
+      become: true
+      become_user: "{{ ansible_user }}"
+      tags:
+        - controller-config
+
+    - name: Store repo credentials in git-creds file
+      ansible.builtin.copy:
+        dest: /tmp/git-creds
+        content: "http://{{ student_user }}:{{ student_password }}@{{ 'gitea:3000' | urlencode }}"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: 0644
+      tags:
+        - controller-config
+
+    - name: Configure git username
+      community.general.git_config:
+        name: user.name
+        scope: global
+        value: "{{ ansible_user }}"
+      become: true
+      become_user: "{{ ansible_user }}"
+      tags:
+        - controller-config
+      
+    - name: Configure git email address
+      community.general.git_config:
+        name: user.email
+        scope: global
+        value: "{{ ansible_user }}@local"
+      become: true
+      become_user: "{{ ansible_user }}"
+      tags:
+        - controller-config
+
+    - name: Pull repo from SCM
+      ansible.builtin.git:
+        repo: "{{ git_repo }}"
+        dest: "/home/{{ ansible_user }}/acme_corp"
+      become: true
+      become_user: "{{ ansible_user }}"
+      tags:
+        - controller-config
+
+    - name: Install OS packages
+      ansible.builtin.package:
+        name:
+          - python3-setuptools
+          - virtualenv
+        state: present
+      become: true
+      tags:
+        - controller-config
+        - controller-packages
+
+    - name: Install packages for user
+      ansible.builtin.pip:
+        name:
+          - python-jenkins
+        state: present
+      become: true
+      tags:
+        - controller-config
+        - controller-packages
+
+    - name: Install Python packages in virtualenv
+      ansible.builtin.pip:
+        requirements: "/home/rhel/acme_corp/playbooks/files/requirements_prod.txt"
+        virtualenv: "{{ acme_venv }}"
+      become: true
+      become_user: "{{ ansible_user }}"
+      tags:
+        - controller-config
+        - controller-packages
+
+ 
+    - name: Ensure tower/controller is online and working
+      uri:
+        url: https://localhost/api/v2/ping/
+        method: GET
+        user: "{{ admin_username }}"
+        password: "{{ admin_password }}"
+        validate_certs: false
+        force_basic_auth: true
+      register: controller_online
+      until: controller_online is success
+      delay: 3
+      retries: 5
+      tags:
+        - controller-config
+
+# Controller objects
+    - name: Add Organization
+      awx.awx.organization:
+        name: "{{ lab_organization }}"
+        description: "ACME Corp Organization"
+        state: present
+        controller_oauthtoken: "{{ auth_token }}"
+        validate_certs: false
+      tags:
+        - controller-config
+        - controller-org
+  
+    - name: Add Instruqt DevOps EE
+      awx.awx.execution_environment:
+        name: "{{ controller_devops_ee }}"
+        image: "quay.io/acme_corp/instruqt-devops-ee"
+        pull: missing
+        state: present
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - controller-config
+        - controller-ees
+
+    - name: Pull Instruqt DevOps EE
+      containers.podman.podman_image:
+        name: "quay.io/acme_corp/instruqt-devops-ee"
+      become_user: awx
+      register: podman_pull
+      until: podman_pull is not failed
+      retries: 5
+      delay: 15 
+      tags:
+        - controller-config
+        - controller-ees
+
+    - name: Add lab inventories
+      awx.awx.inventory:
+        name: "{{ item.name }}"
+        description: "{{ item.description }}"
+        organization: "{{ lab_organization }}"
+        state: present
+        controller_oauthtoken: "{{ auth_token }}"
+        validate_certs: false
+      loop: "{{ lab_inventories }}"
+      tags:
+        - controller-config
+        - controller-objects
+
+    - name: Create hosts
+      awx.awx.host:
+        name: "{{ item.lab_host_name }}"
+        inventory: "{{ item.lab_host_inventory }}"
+        state: present
+        controller_oauthtoken: "{{ auth_token }}"
+        validate_certs: false
+        variables:  "{{ item.lab_host_vars }}"
+      loop: "{{ lab_hosts }}"
+      tags:
+        - controller-config
+        - controller-hosts
+    
+    - name: Create groups
+      awx.awx.group:
+        name: "{{ item.group_name }}"
+        description: "{{ item.group_desc }}"
+        state: present
+        inventory: "{{ item.group_inventory }}"
+        hosts: "{{ item.group_hosts }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      loop: "{{ lab_groups }}"
+      tags:
+        - controller-config
+        - controller-groups
+
+    - name: Add the lab ssh credential
+      awx.awx.credential:
+        name: "{{ lab_credential_name }}"
+        organization: "{{ lab_organization }}"
+        credential_type: Machine
+        inputs:
+          ssh_key_data: "{{ lookup('file', '/home/rhel/.ssh/id_rsa') }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        validate_certs: false
+      tags:
+        - controller-config
+        - controller-objects
+
+    - name: Add the lab project
+      awx.awx.project:
+        name: "{{ lab_project_name }}"
+        scm_type: git
+        scm_url: "http://gitea:3000/{{ student_user }}/acme_corp.git"
+        organization: "{{ lab_organization }}"
+        scm_update_on_launch: false
+        scm_update_cache_timeout: 60
+        scm_branch: "main"
+        controller_oauthtoken: "{{ auth_token }}"
+        validate_certs: false
+      tags:
+        - controller-config
+        - controller-project
+
+    - name: Create job templates
+      awx.awx.job_template:
+        name: "{{ item.jt_name }}"
+        state: present
+        execution_environment: "{{ item.execution_env | default ( controller_devops_ee ) }}"
+        become_enabled: "{{ item.jt_become }}"
+        project: "{{ lab_project_name }}"
+        credential: "{{ lab_credential_name }}"
+        inventory: "{{  item.jt_inventory }}"
+        playbook: "{{ item.jt_playbook }}"
+        survey_enabled: "{{ item.survey_enabled | default( omit ) }}"
+        survey_spec: "{{ item.survey_spec | default(omit) }}"
+        ask_inventory_on_launch: "{{  item.jt_prompt_inventory }}"
+        ask_variables_on_launch: "{{  item.jt_prompt_inventory | default( omit )}}"
+        extra_vars: "{{ item.jt_extra_vars | default( omit ) }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        validate_certs: false
+      loop: "{{ lab_job_templates }}"
+      tags:
+        - controller-config
+        - controller-jts
+
+    - name: Create Workflows
+      awx.awx.tower_workflow_job_template:
+        name: "{{ item.workflow_name }}"
+        inventory: "{{ item.workflow_inventory }}"
+        extra_vars: "{{ item.workflow_vars | default( omit ) }}"
+        ask_variables_on_launch: "{{ item.workflow_prompt_vars | default( true ) }}"
+        organization:  "{{ item.workflow_org }}"
+        schema: "{{ item.workflow_schema | default( omit )}}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      loop: "{{ lab_devops_worklow }}"
+      tags:
+        - controller-config
+        - controller-workflows
+
+    - name: Add nodes to DevOps workflow
+      awx.awx.workflow_job_template_node:
+        state: present
+        identifier: "{{ item.workflow_node_id }}"
+        workflow_job_template: "{{ item.workflow_node_jt }}"
+        organization: "{{ item.workflow_node_org }}"
+        approval_node: "{{ item.workflow_node_approval | default( omit ) }}"
+        unified_job_template: "{{ item.workflow_node_unified_jt | default( omit ) }}"
+        success_nodes: "{{ item.workflow_node_success_nodes | default( omit ) }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      loop: "{{ lab_devops_worklow_nodes }}"
+      tags:
+        - controller-config
+        - controller-workflows
+# Controller users
+    ## Users
+    - name: Create Jenkins user
+      awx.awx.user:
+        username: "{{ jenkins_user }}"
+        password: "{{ jenkins_password }}"
+        email: jenkins@acme.example.com
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - controller-config
+        - controller-users
+
+    - name: Add jenkins as member of {{ lab_organization }}
+      awx.awx.role:
+        user: "{{ jenkins_user }}"
+        role: member
+        state: present
+        organization: "{{ lab_organization }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - controller-config
+        - controller-users
+
+    - name: Give users access to job templates
+      awx.awx.role:
+        user: "{{ item.user }}"
+        role: "{{ item.role }}"
+        job_templates: "{{ item.job_template  | default( omit ) }}"
+        workflows: "{{ item.workflows | default( omit )}}"
+        state: "{{ item.state }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      loop: "{{ controller_user_vars }}"
+      tags:
+        - controller-config
+        - controller-users
+
+    - name: Create student admin user
+      awx.awx.user:
+        superuser: true
+        username: "{{ student_user }}"
+        password: "{{ student_password }}"
+        email: student@acme.example.com
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - controller-config
+        - controller-users
+
+## Challenges check and solve
+
+# update-pipeline
+    - name: Check {{ lab_jt_name }} controller job ran successfuly
+      awx.awx.job_list:
+        status: successful
+        query:
+          name: "{{ lab_jt_name }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      register: __controller_job_check
+      failed_when: not __controller_job_check.results
+      tags:
+        - update-pipeline-check
+    
+    - name: Run {{ lab_jt_name }} to solve
+      awx.awx.job_launch:
+        job_template: "{{ lab_jt_name }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+        wait: true
+      register: __controller_job_run
+      tags:
+        - update-pipeline-solve
+  
+## update-app
+    - name: update-app-solve generate Jenkins crumb
+      ansible.builtin.uri:
+        url: http://jenkins:8080/crumbIssuer/api/json
+        mode: json
+        force_basic_auth: true
+        url_username: "{{ student_user }}"
+        url_password: "{{ student_password }}"
+        return_content: true
+      register: __jenkins_crumb
+      tags:
+        - update-app-solve
+        - update-app-solve-jenkins
+        - controller-approval-solve
+
+    - name: update-app-solve get ACMECorp builds
+      ansible.builtin.uri:
+        headers:
+          Cookie: "{{ __jenkins_crumb.cookies_string }}"
+          Jenkins-Crumb: "{{ __jenkins_crumb.json.crumb }}"
+        url: http://jenkins:8080/job/ACMECorp/api/json?pretty=true&tree=builds[number,status,url]
+        method: GET
+        force_basic_auth: true
+        url_username: "{{ student_user }}"
+        url_password: "{{ student_password }}"
+        return_content: true
+        validate_certs: false
+      register: __jenkins_builds
+      tags:
+        - update-app-solve
+        - update-app-solve-jenkins
+        - controller-approval-solve
+
+    - name: update-app-solve cancel ACMECorp Jenkins builds
+      ansible.builtin.uri:
+        headers:
+          Cookie: "{{ __jenkins_crumb.cookies_string }}"
+          Jenkins-Crumb: "{{ __jenkins_crumb.json.crumb }}"
+        url: "http://jenkins:8080/job/ACMECorp/{{ item.number }}/doDelete/api/json"
+        method: POST
+        mode: json
+        force_basic_auth: true
+        url_username: "{{ student_user }}"
+        url_password: "{{ student_password }}"
+        return_content: true
+        validate_certs: false
+        follow_redirects: true
+        status_code: 200
+      register: __remove_jenkins_builds
+      failed_when: false
+      when:
+        - __jenkins_builds.json.builds is defined
+        - __jenkins_builds.json.builds | length > 0
+      loop: "{{ __jenkins_builds.json.builds }}"
+      tags:
+        - update-app-solve
+        - update-app-solve-jenkins
+        - controller-approval-solve
+ 
+    # Need delay to give time for DevOps Workflow to start for check
+    - name: update-app-check Get running DevOps jobs
+      ansible.builtin.uri:
+        url: "https://controller/api/v2/workflow_jobs/?name={{ lab_jt_name | urlencode }}"
+        method: GET
+        force_basic_auth: true
+        url_username: "{{ student_user }}"
+        url_password: "{{ student_password }}"
+        return_content: true
+        validate_certs: false
+      register: __jt_devops_jobs_running
+      until: __jt_devops_jobs_running is search('running')
+      delay: 3
+      retries: 8
+      tags:
+        - update-app-check-workflow-jt
+
+    - name: update-app-solve stop DevOps workflow jobs
+      ansible.builtin.uri:
+        url: "https://controller/api/v2/workflow_jobs/{{ item.id }}/cancel/"
+        method: POST
+        force_basic_auth: true
+        url_username: "{{ student_user }}"
+        url_password: "{{ student_password }}"
+        return_content: true
+        validate_certs: false
+        status_code: [202]
+      register: __devops_jt_jobs_cancel
+      loop: "{{ query( 'awx.awx.controller_api', 'workflow_jobs', verify_ssl=False, oauth_token=auth_token, query_params={ 'name': lab_jt_name } ) | list  }}"
+      when:
+        - item.status != 'canceled'
+        - item.status != 'successful'
+        - item.status != 'failed'
+      tags:
+        - update-app-solve-workflow-jt
+        - update-app-solve
+        - controller-approval-solve
+
+    - name: update-app - home.html edits
+      ansible.builtin.lineinfile:
+        state: present
+        path: "/home/{{ ansible_user }}/acme_corp/app/lets_quiz/templates/quiz/home.html"
+        insertafter: '        <!-- FIX ME -->'
+        search_string: '<p class="display-4 d-none d-sm-block">Test your skills and become a master.</p>'
+        line: '        <p class="display-4 d-none d-sm-block">The latest and greatest version of the app deployed successfully.</p>'
+      check_mode: "{{ home_page_check_mode | default( false )}}"
+      register: __home_page_edits
+      tags:
+        - update-app-check-home-page
+        - update-app-solve
+
+    - name: update-app - debug home page edits
+      ansible.builtin.debug:
+        var: __home_page_edits
+        verbosity: 2
+      tags:
+        - update-app-check-home-page
+        - update-app-solve
+
+    - name: update-app - check if home.html was changed
+      ansible.builtin.assert:
+        that:
+          - not __home_page_edits.changed
+        fail_msg: The home.html page does not contain the correct line
+      tags:
+        - update-app-check-home-page
+
+    # - name: controller-approval-solve get all approvals
+    #   ansible.builtin.uri:
+    #     url: "https://controller/api/v2/workflow_approvals/?name={{ 'Deploy to Prod?' | urlencode }}"
+    #     method: GET
+    #     force_basic_auth: true
+    #     url_username: "{{ student_user }}"
+    #     url_password: "{{ student_password }}"
+    #     return_content: true
+    #     validate_certs: false
+    #   register: __workflow_approvals
+    #   tags:
+    #     - controller-approval-solve-approval
+    #     - controller-approval-solve
+
+    # This is to trigger the pipeline each time the solve script runs
+    - name: update-app-solve add date/time line
+      ansible.builtin.lineinfile:
+        state: present
+        path: "/home/{{ ansible_user }}/acme_corp/app/lets_quiz/manage.py"
+        search_string: '# solve-script-run '
+        line: '# solve-script-run {{ ansible_date_time.iso8601 }}'
+      check_mode: "{{ home_page_check_mode | default( false )}}"
+      register: __home_page_edits
+      tags:
+        - update-app-solve
+        - controller-approval-solve
+      
+    - name: update-app solve push code to repo
+      ansible.builtin.command:
+        cmd: "{{ item }}"
+        chdir: "/home/{{ ansible_user }}/acme_corp"
+      become: true
+      become_user: "{{ ansible_user }}"
+      loop:
+        - "git add ."
+        - "git commit -m'Updated home.html'"
+        - "git push -u origin main --force"
+      tags:
+        - update-app-solve
+        - controller-approval-solve
+
+    - name: update-app - check Jenkins pipeline started
+      community.general.jenkins_job_info:
+        name: "ACMECorp"
+        url: http://jenkins:8080
+        user: "{{ student_user }}"
+        password: "{{ student_password }}"
+        validate_certs: false
+      register: __jenkins_job_status
+      until: __jenkins_job_status.jobs is search( 'anime' )
+      delay: 3
+      retries: 6
+      tags:
+        - update-app-check-pipeline
+        - update-app-check-pipeline-debug
+
+  ## controller-approval
+    - name: controller-approval-check get success approvals
+      ansible.builtin.uri:
+        url: "https://controller/api/v2/workflow_approvals/?name={{ 'Deploy to Prod?' | urlencode }}&status=successful"
+        method: GET
+        force_basic_auth: true
+        url_username: "{{ student_user }}"
+        url_password: "{{ student_password }}"
+        return_content: true
+        validate_certs: false
+      register: __workflow_approval_success
+      until: __workflow_approval_success.json.count > 0
+      delay: 3
+      retries: 8
+      tags:
+        - controller-approval-check-approval
+
+    - name: controller-approval-check DevOps Workflow
+      ansible.builtin.uri:
+        url: "https://controller/api/v2/workflow_jobs/?name={{ lab_jt_name | urlencode }}&status=successful"
+        method: GET
+        force_basic_auth: true
+        url_username: "{{ student_user }}"
+        url_password: "{{ student_password }}"
+        return_content: true
+        validate_certs: false
+      register: __jt_devops_jobs_success
+      until: __jt_devops_jobs_success.json.count > 0
+      delay: 3
+      retries: 8
+      tags:
+        - controller-approval-check-workflow-jt
+
+    - name: controller-approval-check home page
+      ansible.builtin.uri:
+        url: "http://controller:8000"
+        method: GET
+        validate_certs: false
+        status_code: 200
+        return_content: true
+      register: __home_page_status
+      until: __home_page_status.status == 200
+      failed_when: __home_page_status.content is not search('The latest and greatest version of the app deployed successfully.')
+      delay: 3
+      retries: 5
+      tags:
+        - controller-approval-check-home-page
+
+    - name: controller-approval-solve get pending approvals
+      ansible.builtin.uri:
+        url: "https://controller/api/v2/workflow_approvals/?name={{ 'Deploy to Prod?' | urlencode }}&status=pending"
+        method: GET
+        force_basic_auth: true
+        url_username: "{{ student_user }}"
+        url_password: "{{ student_password }}"
+        return_content: true
+        validate_certs: false
+      register: __workflow_approval_pending
+      until: __workflow_approval_pending.json.count > 0
+      delay: 2
+      retries: 12
+      tags:
+        - controller-approval-solve
+
+    - name: controller-approval-solve approve pending workflow
+      awx.awx.workflow_approval:
+        workflow_job_id: "{{ item.summary_fields.source_workflow_job.id}}"
+        name: "Deploy to Prod?"
+        interval: 2
+        timeout: 10
+        action: approve
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      loop: "{{ __workflow_approval_pending.json.results }}"
+      tags:
+        - controller-approval-solve

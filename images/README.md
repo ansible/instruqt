@@ -81,7 +81,7 @@ The `ansible_vars_file` packer variable enables you to specify a file with addit
 >**Note**<p>
 > Your `extra_vars.yml` file contains sensitive information.<p>
 > Ensure it's safe and excluded from repository pull requests and commits.<p>
-### Example `extra_vars.yml` file**
+### Example `extra_vars.yml` file
 
 ```
 # Extra vars example file for Instruqt automation mesh images
@@ -111,6 +111,8 @@ which is an offline token to download AAP from access.redhat.com.  This uses the
 
 This is a license file to apply to AAP.  Please refer to this video by Colin McNaughton [https://www.youtube.com/watch?v=FYtilnsk7sM](https://www.youtube.com/watch?v=FYtilnsk7sM) to figure out how to get your manifest.zip
 
+Place the `manifest.zip` in the `images\ansible` folder.
+
 To execute packer run the following command->
 
 ```packer build --force automation-controller.pkr.hcl```
@@ -135,7 +137,6 @@ The steps below create the following GCP images:
 
 This is a license file to apply to AAP.  Please refer to this video by Colin McNaughton [https://www.youtube.com/watch?v=FYtilnsk7sM](https://www.youtube.com/watch?v=FYtilnsk7sM) to figure out how to get your manifest.zip
 
-Place the `manifest.zip` in the `images\ansible` folder.
 
 **Required extra variables**
 

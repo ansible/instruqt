@@ -1,0 +1,20 @@
+#!/bin/bash
+
+set -euxo pipefail
+while [ ! -f /opt/instruqt/bootstrap/host-bootstrap-completed ]
+do
+    echo "Waiting for Instruqt to finish booting the VM"
+    sleep 1
+done
+
+
+# Setup rhel user
+cp -a /root/.ssh/* /home/rhel/.ssh/.
+chown -R rhel:rhel /home/rhel/.ssh
+
+# Get instruqt lab content
+/usr/bin/svn export https://github.com/ansible/instruqt/branches/devel/images/ansible/setup-scripts/devops-controller /tmp/setup-scripts/devops-controller --force
+
+# Download setup playbook
+echo "Starting controller config"
+/bin/ansible-playbook /tmp/setup-scripts/devops-controller/setup-devops-controller.yml -e @/tmp/setup-scripts/devops-controller/track_vars.yml  -i /tmp/setup-scripts/devops-controller/inventory.ini --tags gitea-config,jenkins-config,controller-config,auth-token -vv

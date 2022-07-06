@@ -46,6 +46,14 @@
           - subversion
           - python3-setuptools
 
+    - name: Installl pip packages
+      ansible.builtin.pip:
+        name:
+          - python-jenkins
+          - jmespath
+        state: present
+      become: true
+  
     - name: install code server
       ansible.builtin.include_role:
         name: ansible.workshops.code_server
