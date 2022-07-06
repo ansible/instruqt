@@ -1,0 +1,87 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@1186.v8def1a_5f3944">
+  <actions>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@2.2097.v33db_b_de764b_e"/>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@2.2097.v33db_b_de764b_e">
+      <jobProperties/>
+      <triggers/>
+      <parameters/>
+      <options/>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+  </actions>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers/>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2725.v7b_c717eb_12ce">
+    <script>#!/usr/bin/env groovy
+
+pipeline {
+    agent any
+    stages {
+        stage(&apos;SCM Get Code&apos;) {
+            steps {
+                checkout([$class: &apos;GitSCM&apos;, branches: [[name: &apos;*/main&apos;]], extensions: [], userRemoteConfigs: [[url: &apos;http://gitea:3000/student/acme_corp.git&apos;]]])
+            }
+        }
+
+        stage(&apos;Installing packages&apos;) {
+            steps {
+                script {
+                    sh &apos;/usr/bin/python3 -m pip install -r playbooks/files/requirements_test.txt&apos;
+                }
+            }
+        }
+        
+        stage(&apos;Static Code Checking&apos;) {
+            steps {
+                script {
+                    sh &apos;find . -name \\*.py | xargs /usr/bin/python3 -m pylint --load-plugins=pylint_django -f parseable | tee pylint.log&apos;
+                    recordIssues(
+                        tool: pyLint(pattern: &apos;pylint.log&apos;),
+                        failTotalHigh: 10,
+                    )
+                }
+            }
+        }
+        stage(&apos;Build and Tag&apos;) {
+            steps {
+                withCredentials([gitUsernamePassword(credentialsId: &apos;gitea_repo&apos;, gitToolName: &apos;git&apos;)]) {
+                    sh &quot;&quot;&quot;
+                        git reset --hard HEAD
+                        git checkout main
+                        git pull origin main --force --rebase
+                        git fetch --tags --all --prune
+                        git config --replace-all user.name ${env.GIT_USERNAME}
+                        git config --replace-all user.email ${env.GIT_USERNAME}
+                        cd app &amp;&amp; /usr/bin/python3 -m bumpversion --config-file setup.cfg --allow-dirty --verbose minor --list &gt; build_vars.env
+
+                    &quot;&quot;&quot;
+                    script {
+                        def build_vars = readProperties file: &apos;app/build_vars.env&apos;
+                        env.newPkgVersion = build_vars.new_version
+                        env.pkgVersion = build_vars.current_version
+                        echo &quot; CURRENT - ${pkgVersion}&quot;
+                        echo &quot; NEW  - ${newPkgVersion}&quot;
+                    }
+                    sh &quot;&quot;&quot;
+                        git tag --force v${newPkgVersion}
+                        git add .
+                        git commit -m&quot;Bump version from  v${pkgVersion} to v${newPkgVersion}&quot;
+                        git push --force origin main v${newPkgVersion}
+                    &quot;&quot;&quot;
+                }
+            }
+        }
+    }
+
+}
+</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>
