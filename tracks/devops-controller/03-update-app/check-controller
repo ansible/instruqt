@@ -1,0 +1,32 @@
+#!/usr/bin/env python3
+
+import subprocess
+import os
+import yaml
+from shlex import quote
+os.environ["ANSIBLE_STDOUT_CALLBACK"] = "community.general.yaml"
+
+# Load extra_vars.yml
+extra_vars_file = open("/tmp/setup-scripts/devops-controller/track_vars.yml")
+parsed_extra_vars_file = yaml.load(extra_vars_file, yaml.loader.FullLoader)
+
+# Check if home.html contains correct edits
+home_page_edits = subprocess.run(["ansible-playbook", "/tmp/setup-scripts/devops-controller/setup-devops-controller.yml", "-e", "home_page_check_mode="+quote( "true" ), "-e", "@/tmp/setup-scripts/devops-controller/track_vars.yml", "-i", "/tmp/setup-scripts/devops-controller/inventory.ini", "--tags", "auth-token,update-app-check-home-page"])
+
+if home_page_edits.returncode > 0:
+    print ( "FAIL: The home.html file does not have the correct line. Please make sure you copy and paste the line provided in the instructions.")
+    exit(1)
+
+# Check if Jenkins ACMECorp job started and pending
+jenkins_job_status = subprocess.run(["ansible-playbook", "/tmp/setup-scripts/devops-controller/setup-devops-controller.yml", "-e", "@/tmp/setup-scripts/devops-controller/track_vars.yml", "-i", "/tmp/setup-scripts/devops-controller/inventory.ini", "--tags", "auth-token,update-app-check-pipeline"])
+
+if jenkins_job_status.returncode > 0:
+    print ( "FAIL: The Jenkins job did not run successfully. Please make sure you've edited home.html and pushed your changes to the repository. If the check still fails, please run the Restart DevOps workflow template in controller.")
+    exit(1)
+
+# Check DevOps workflow in running state
+devops_jt_status = subprocess.run(["ansible-playbook", "/tmp/setup-scripts/devops-controller/setup-devops-controller.yml", "-e", "lab_jt_name="+quote( "DevOps Workflow" ), "-e", "@/tmp/setup-scripts/devops-controller/track_vars.yml", "-i", "/tmp/setup-scripts/devops-controller/inventory.ini", "--tags", "auth-token,update-app-check-workflow-jt"])
+
+if devops_jt_status.returncode > 0:
+    print ( "FAIL: The controller DevOps Workflow did not start. Please make sure Jenkins pipeline started and the DevOps Workflow is running in controller.")
+    exit(1)

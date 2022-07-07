@@ -1,0 +1,165 @@
+---
+# config vars
+controller_hostname: controller
+controller_validate_certs: false
+download_url: https://github.com/ansible/instruqt/branches/devel/images/ansible/setup-scripts/devops-controller
+ansible_python_interpreter: /usr/bin/python3
+student_user: student
+student_password: learn_ansible
+jenkins_user: jenkins
+jenkins_password: learn_ansible
+controller_admin_user: admin
+controller_admin_password: "ansible123!"
+host_key_checking: false
+custom_facts_dir: "/etc/ansible/facts.d"
+custom_facts_file: custom_facts.fact
+admin_username: admin
+admin_password: ansible123!
+git_repo: http://gitea:3000/{{ student_user }}/acme_corp.git
+repo_user: rhel
+jenkins_jobs:
+  - name: ACMECorp
+    template_file: /tmp/setup-scripts/devops-controller/files/acme_initial.xml
+  - name: PollRepo
+    template_file: /tmp/setup-scripts/devops-controller/files/poll.xml
+controller_devops_ee: "ACME Corp EE"
+default_tag_name: "0.0.1"
+acme_venv: /home/rhel/.virtualenvs/acme_corp
+
+# Controller objects
+lab_credential_name: "ACME Corp Machine Credential"
+lab_organization: "ACME Corp"
+lab_project_name: "ACME Corp Repo"
+lab_inventories:
+  - name: "ACME Corp DC"
+    description: "ACME Corp DC"
+lab_hosts:
+  - lab_host_name: "controller.acme.example.com"
+    lab_host_inventory: "ACME Corp DC"
+    lab_host_vars:
+      ansible_host: controller 
+      ansible_python_interpreter: /usr/bin/python3
+      ansible_host_key_checking: false
+      # ansible_connection: local
+  - lab_host_name: "web1.acme.example.com"
+    lab_host_inventory: "ACME Corp DC"
+    lab_host_vars:
+      ansible_host: controller 
+      ansible_python_interpreter: /usr/bin/python3
+      ansible_host_key_checking: false
+  - lab_host_name: "jenkins.acme.example.com"
+    lab_host_inventory: "ACME Corp DC"
+    lab_host_vars:
+      ansible_host: jenkins 
+      ansible_python_interpreter: /usr/bin/python3
+      ansible_host_key_checking: false
+  - lab_host_name: "repo.acme.example.com"
+    lab_host_inventory: "ACME Corp DC"
+    lab_host_vars:
+      ansible_host: gitea 
+      ansible_python_interpreter: /usr/bin/python3
+      ansible_host_key_checking: false
+lab_groups:
+  - group_name: webservers
+    group_desc: "ACME Corp Webservers"
+    group_hosts:
+      - web1.acme.example.com
+    group_preserve_hosts: true
+    group_inventory: "ACME Corp DC"
+lab_job_templates:
+  - jt_name: "Configure Jenkins Job"
+    jt_execution_env: "{{ controller_devops_ee }}"
+    jt_playbook: "playbooks/configure_jenkins_job.yml"
+    jt_prompt_inventory: false
+    jt_prompt_vars: false
+    jt_inventory: "ACME Corp DC"
+    jt_become: false
+  - jt_name: "Create App Release"
+    jt_execution_env: "{{ controller_devops_ee }}"
+    jt_playbook: "playbooks/app_release.yml"
+    jt_prompt_inventory: true
+    jt_prompt_vars: true
+    jt_inventory: "ACME Corp DC"
+    jt_become: false
+    survey_enabled: false
+  - jt_name: "Configure Webservers"
+    jt_execution_env: "{{ controller_devops_ee }}"
+    jt_playbook: "playbooks/configure_webservers.yml"
+    jt_prompt_inventory: true
+    jt_prompt_vars: true
+    jt_inventory: "ACME Corp DC"
+    jt_become: false
+    jt_extra_vars:
+      acme_venv: "{{ acme_venv }}"
+  - jt_name: "Restart DevOps Workflow"
+    jt_execution_env: "{{ controller_devops_ee }}"
+    jt_playbook: "playbooks/restart_workflow.yml"
+    jt_inventory: "ACME Corp DC"
+    jt_become: false
+    jt_prompt_inventory: false
+    jt_extra_vars:
+      repo_user: "{{ repo_user }}"
+      git_repo: "{{ git_repo }}"
+  - jt_name: "Deploy ACMECorp App"
+    jt_execution_env: "{{ controller_devops_ee }}"
+    jt_playbook: "playbooks/deploy_acme_app.yml"
+    jt_prompt_inventory: true
+    jt_prompt_vars: true
+    jt_inventory: "ACME Corp DC"
+    jt_become: false
+    jt_extra_vars:
+      ansible_python_interpreter: "{{ acme_venv }}/bin/python3"
+    survey_enabled: false
+lab_devops_worklow:
+  - workflow_name: "DevOps Workflow"
+    workflow_inventory: "ACME Corp DC"
+    workflow_vars: {"tag_name": "{{ tag_name | default( default_tag_name ) }}",
+                     "acme_venv": "{{ acme_venv }}"}
+    workflow_org: "{{ lab_organization }}"
+    workflow_prompt_vars: true
+lab_devops_worklow_nodes:
+  - workflow_node_id: "Deploy to Prod?"
+    workflow_node_jt: "DevOps Workflow"      
+    workflow_node_org: "{{ lab_organization }}"
+    workflow_node_approval:
+      description: "Deploy to Prod?"
+      name: "Deploy to Prod?"
+  - workflow_node_id: "Create App Release"
+    workflow_node_jt: "DevOps Workflow"      
+    workflow_node_org: "{{ lab_organization }}"
+    workflow_node_unified_jt: "Create App Release"
+  - workflow_node_id: "Config Webservers"
+    workflow_node_jt: "DevOps Workflow"      
+    workflow_node_org: "{{ lab_organization }}"
+    workflow_node_unified_jt: "Configure Webservers"
+  - workflow_node_id: "Deploy ACME App"
+    workflow_node_jt: "DevOps Workflow"      
+    workflow_node_org: "{{ lab_organization }}"
+    workflow_node_unified_jt: "Deploy ACMECorp App"
+  - workflow_node_id: "Deploy to Prod?"
+    workflow_node_jt: "DevOps Workflow"      
+    workflow_node_org: "{{ lab_organization }}"
+    workflow_node_success_nodes:
+      - "Config Webservers"
+      - "Create App Release"
+  - workflow_node_id: "Create App Release"
+    workflow_node_jt: "DevOps Workflow"      
+    workflow_node_org: "{{ lab_organization }}"
+    workflow_node_success_nodes:
+      - "Deploy ACME App"
+  - workflow_node_id: "Config Webservers"
+    workflow_node_jt: "DevOps Workflow"      
+    workflow_node_org: "{{ lab_organization }}"
+    workflow_node_success_nodes:
+      - "Deploy ACME App"
+controller_user_vars:
+  - user: jenkins
+    role: execute
+    job_templates: 
+      - "Create App Release"
+      - "Configure Webservers"
+    state: present
+  - user: jenkins
+    role: execute
+    workflows: "DevOps Workflow"
+    state: present

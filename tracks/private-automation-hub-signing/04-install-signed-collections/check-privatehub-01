@@ -1,0 +1,4 @@
+if [[ ! -f /home/rhel/.ansible/collections/ansible_collections/community.lab_collection-1.0.0.info/GALAXY.yml ]]
+then
+    fail-message "Cannot find signature file associated with community.lab_collection!"
+fi
