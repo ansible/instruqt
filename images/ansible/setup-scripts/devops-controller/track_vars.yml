@@ -2,7 +2,7 @@
 # config vars
 controller_hostname: controller
 controller_validate_certs: false
-download_url: https://github.com/craig-br/instruqt/branches/devops-controller-track/images/ansible/setup-scripts/devops-controller
+download_url: https://github.com/ansible/instruqt/branches/devel/images/ansible/setup-scripts/devops-controller
 ansible_python_interpreter: /usr/bin/python3
 student_user: student
 student_password: learn_ansible
