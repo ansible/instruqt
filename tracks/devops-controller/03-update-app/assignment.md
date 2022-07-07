@@ -89,7 +89,7 @@ Currently, the *Let's Quiz!* application is not deployed into production. You’
 
 Let’s update the ACME Corp home page.
 
-* The _VS Code_ tab should be open by default.
+* Open the _VS Code_ tab located at the top of the browser window.
 * On the VS Code Explorer pane, navigate to `app ⇒ lets_quiz ⇒ templates ⇒ quiz` and click on `home.html`.
 
 <!-- ![VSCode home.html](../assets/img/vscode_home_edit.png) -->
@@ -220,7 +220,6 @@ The pipeline successfully created the new package version and initiated the auto
 The `tag_name` variable contains the latest _Let’s Quiz!_ application version. In the image above, the `tag_name` variable is set to `2.52.0`. We’ll use the `tag_name` variable in controller for the following challenges.
 
 >**❗️ Note**
->
 >The pipeline will not finish at this stage of the lab. We’ll continue with the DevOps workflow in the next challenge.
 
 ☑️ Task 5 - Check the ACME Corp repository
@@ -229,8 +228,7 @@ The `tag_name` variable contains the latest _Let’s Quiz!_ application version.
 **Let’s look at the ACME Corp repository hosted in _Gitea_.**
 
 * Click on the _Gitea_ tab at the top of the browser window.
-
-The pipeline pushed the code to _Gitea_ and created a new tag.
+* Refresh the *Gitea* tab window by clicking the ↻ located at the top right hand side of the page or by refreshing the web page using your browser.
 
 <!-- ![Gitea updated](../assets/img/gitea_new_tag.png) -->
 <a href="#gitea_new_tag">
@@ -256,7 +254,7 @@ The Jenkins commit message shows the latest version number. In the screenshot be
 
 _Gitea_ created `ZIP` and `TAR.GZ` files associated with the new tag. In the above screenshot, the tag name is `v2.52.0`.
 
-We’ll use this tag number and artefacts in the next challenge.
+We’ll use this tag number and artifacts in the next challenge.
 
 ✅ Next Challenge
 ===
