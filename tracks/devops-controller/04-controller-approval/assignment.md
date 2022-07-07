@@ -69,8 +69,6 @@ Our last challenge initiated the Jenkins pipeline by editing the **home.html** p
 ☑️ Task 1 - Exploring the DevOps Workflow in controller
 ===
 
-[Automation controller workflows](https://docs.ansible.com/automation-controller/latest/html/userguide/workflows.html) enable you to logically chain smaller pieces of automation to solve more complex use-cases. This capability elevates your DevOps practices to automate multiple domains' IT processes.
-
 ACME Corp operations created a [controller workflow](https://docs.ansible.com/automation-controller/4.2.0/html/userguide/workflows.html) called `DevOps Workflow`. This workflow combines configuring a web server, creating an application release in the ACMECorp repository, and deploying the application to production into a single process.
 
 **Let’s explore the DevOps Workflow layout using the _visualizer_.**
@@ -128,7 +126,7 @@ Currently, the new _Let’s Quiz!_ application is not deployed.
 
 **Approving the _Let’s Quiz!_ application production deployment.**
 
-* Click on the *Controller* tab on the top of the browser window.
+* If the *Controller* tab is not open, click on the *Controller* tab on the top of the browser window.
 * Please log in using the provided credentials if required.
 * Click on the _notification_ icon in the top right corner of the controller UI to open the _Workflow Approval_ interface.
 
@@ -216,7 +214,7 @@ This action displays the `Create App Release`  [controller job](https://docs.ans
 
 * Click on the `Output` tab located next to the `Details` tab above.
 
-The `Details` interface displays the execution output for the `Create App Release` job template.
+The `Output` interface displays the execution output for the `Create App Release` job template.
 
 <!-- ![App release output](../assets/img/controller_app_release_output.png) -->
 <a href="#controller_app_release_output">
@@ -311,14 +309,12 @@ Last but not least, the _Let’s Quiz!_ application production deployment should
 
 Whether you are beginning your automation journey or a seasoned veteran, there are a variety of resources to enhance your automation knowledge:
 
-* [Self-paced exercises](https://www.redhat.com/en/engage/redhat-ansible-automation-202108061218) - Explore our all self-paced labs
+* [Self-paced exercises](https://www.redhat.com/en/engage/redhat-ansible-automation-202108061218) - Explore all our self-paced labs
 * [Trial subscription](http://red.ht/try_ansible) - Are you ready to install in your environment? Get your trial subscription for unlimited access to all the components of Ansible Automation Platform.
 * [Subscribe to the Red Hat Ansible Automation Platform YouTube channel. ](https://www.youtube.com/ansibleautomation)
 
 ✅ Next Challenge - Playground
 ===
-
-If you need to restart the entire workflow, run the `Restart DevOps Workflow` job template in automation controller.
 
 The next challenge is a place for you to explore and play with the remaining time. Feel free to try it out!
 
