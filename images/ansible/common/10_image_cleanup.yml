@@ -31,9 +31,16 @@
     regexp: '^apply_updates'
     line: apply_updates = no
 
-- name: Disable RHUI repos
-  ansible.builtin.command: >
-    dnf config-manager --set-disabled rhui*
+- name: Update dnf cache
+  ansible.builtin.command: dnf -y makecache
+
+- name: Enable selected RHUI repos
+  ansible.builtin.copy:
+    src: ../files/rh-cloud.repo
+    dest: /etc/yum.repos.d/rh-cloud.repo
+    owner: root
+    group: root
+    mode: '644'
 
 - name: remove AAP repo
   ansible.builtin.yum_repository:

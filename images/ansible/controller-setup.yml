@@ -36,14 +36,15 @@
     - name: install workshop dependencies
       ansible.builtin.command: "ansible-galaxy collection install --force-with-deps ansible.workshops  -p /usr/share/ansible/collections"
 
+    # Packages needed for Instruqt challenges
     - name: Install controller lab packages for controller lab
       ansible.builtin.dnf:
         state: present
-        name: "{{ item }}"
-      loop:
-        - /var/lib/ansible-automation-platform-bundle/automation-controller-cli-4.1.1-2.el8ap.x86_64.rpm
-        - python3-setuptools
-        - virtualenv
+        name:
+          - automation-controller-cli
+          - httpd
+          - subversion
+          - python3-setuptools
 
     - name: Installl pip packages
       ansible.builtin.pip:
@@ -57,21 +58,9 @@
       ansible.builtin.include_role:
         name: ansible.workshops.code_server
 
-    - name: Include common image cleanup tasks
+    - name: Include common repo and image cleanup tasks
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/10_image_cleanup.yml"
-
-    - name: copy rh-cloud.repo to control node
-      ansible.builtin.copy:
-        src: ./files/rh-cloud.repo
-        dest: /etc/yum.repos.d/rh-cloud.repo
-        owner: root
-        group: root
-        mode: '644'
-
-    - name: install httpd for report labs
-      ansible.builtin.dnf:
-        name: httpd
 
     - name: copy setup-scripts to control node
       ansible.builtin.copy:
