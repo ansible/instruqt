@@ -9,7 +9,7 @@ notes:
 - type: text
   contents: |-
     # Challenge summary
-    In this challenge, we'll use controller to approve, configure and deploy the *Let's Quiz!* application into production. We'll use automaiton controller Workflows and Approval nodes to accomplish this.
+    In this challenge, we'll use controller to approve, configure and deploy the *Let's Quiz!* application into production. We'll use automation controller Workflows and Approval nodes to accomplish this.
 
     ![env_tools](../assets/img/slides_4_approve_deploy.png)
 
@@ -266,7 +266,7 @@ ACME Corp operations used the associated `TAR.GZ` file to deploy the _Let’s Qu
 </a>
 
 <a href="#" class="lightbox" id="jenkins_acme_success">
-  <img alt="Jankins" src="../assets/img/jenkins_acme_success.png" />
+  <img alt="Jenkins" src="../assets/img/jenkins_acme_success.png" />
 </a>
 
 

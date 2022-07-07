@@ -60,7 +60,7 @@ All the logins use the same credentials.
 👋 Introduction
 ===
 
-In this lab, we've used automation controller's enterprise features to enhance how the ACME Corp developmemt and operations teams integrate and automate together.
+In this lab, we've used automation controller's enterprise features to enhance how the ACME Corp development and operations teams integrate and automate together.
 
 Now it's your turn try!
 

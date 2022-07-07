@@ -61,20 +61,23 @@ All the logins use the same credentials.
 👋 Introduction
 ===
 #### Estimated time to complete: *5 minutes*<p>
-ACME Corp use a variety of tools in ther DevOps pipeline. Let's have a look at each of these tools and how they're configured.
+ACME Corp use a variety of tools in their DevOps pipeline. Let's have a look at each of these tools and how they're configured.
 
 ☑️ Task 1 - VS Code editor
 ===
 
-* ACME Corp use the `VS Code` IDE.
-* The `VS Code` tab is open by default.
-* The *ACME Corp* repository and *git* configuration is already setup for you.
-* You'll see two folders under the *acme_corp* folder in the left pane:
+
+ACME Corp developers use the `VS Code` IDE. Let's explore.
+* The *VS Code* tab is open by default.
+
+You'll see two folders under the *acme_corp* folder in the left pane:
   *  The `app` folder contains the *Let's Quiz!* application code.
   *  The `playbooks` folder contains the playbooks we'll use in our lab.
-*  Click on the `playbooks` folder.
+
 
 The `playbooks` folder contains the playbooks they use to automate the *Let's Quiz!* application deployment.
+
+*  Click on the `playbooks` folder.
 
 <!-- ![VSCode folders](../assets/img/vscode_folders.png) -->
 <a href="#vscode_folders">
@@ -85,10 +88,15 @@ The `playbooks` folder contains the playbooks they use to automate the *Let's Qu
   <img alt="VSCode folders" src="../assets/img/vscode_folders.png" />
 </a>
 
+>### **❗️ Note**
+>The *ACME Corp* repository and *git* configuration is already setup for you.
+
 ☑️ Task 2 - Gitea
 ===
 
-* Click on the `Gitea` tab on the top of the browser window.
+ACME Corp uses *Gitea* for source code management and contains the *Let’s Quiz!* application code repository.
+
+* Click on the *Gitea* tab on the top of the browser window.
 * Log into *Gitea* by clicking the `Sign in` button in the top right-hand corner and using the provided credentials.
 
 <!-- ![Gitea signin](../assets/img/gitea_signin.png) -->
@@ -101,7 +109,6 @@ The `playbooks` folder contains the playbooks they use to automate the *Let's Qu
   <img alt="Gitea signin" src="../assets/img/gitea_signin.png" />
 </a>
 
-* ACME Corp uses *Gitea* for source code management and contains the *Let’s Quiz!* application code repository.
 * On the right-hand side, click on `Settings` and then `Webhooks`
 
 <!-- ![Gitea webhook](../assets/img/gitea_webhook.png) -->
@@ -122,7 +129,9 @@ The `playbooks` folder contains the playbooks they use to automate the *Let's Qu
 ☑️ Task 3 - Jenkins
 ===
 
-* Click on the `Jenkins` tab on the top of the browser window.
+ACME Corp uses Jenkins to run a few development tasks on the *Let's Quiz!* application.
+
+* Click on the *Jenkins* tab on the top of the browser window.
 * Log into *Jenkins* by clicking the `log in` button in the top right-hand corner and using the provided credentials.
 
 <!-- ![Jenkins login](../assets/img/jenkins_login.png) -->
@@ -148,7 +157,9 @@ The `ACMECorp` Jenkins job loads by default. The pipeline performs basic develop
 ☑️ Task 4 - Controller
 ===
 
-* Click on the `Controller` tab on the top and log in using the provided credentials.
+ACME Corp operations use automation controller extensively in the environments.
+
+* Click on the *Controller* tab on the top and log in using the provided credentials.
 * Log into *controller* by clicking the using the provided credentials and click on the `Log In` button.
 
 <!-- ![Controller login](../assets/img/controller_login.png) -->
@@ -172,7 +183,7 @@ The `ACMECorp` Jenkins job loads by default. The pipeline performs basic develop
   <img alt="ACMECorp JTs" src="../assets/img//controller_jt_list.png" />
 </a>
 
-* Select the `DevOps Workflow` job template by clicking on the checknbpox next to it
+* Select the `DevOps Workflow` job template by clicking on the checkbox next to it.
 * Click on the `Visualizer` button located at the right-hand side of the `DevOps Workflow` job template.
 
 <!-- ![DevOps Workflow button](../assets/img/controller_devops_visualizer.png) -->
@@ -184,7 +195,7 @@ The `ACMECorp` Jenkins job loads by default. The pipeline performs basic develop
   <img alt="DevOps Workflow button" src="../assets/img/controller_devops_visualizer.png" />
 </a>
 
-The *DevOps Workflow* job templates unifies multiple tasks into a logical, consistent process. We'll have a look at these tasks in more detail during this lab.
+The *DevOps Workflow* job template unifies multiple tasks into a logical, consistent process. We'll have a look at these tasks in more detail during this lab.
 
 <!-- ![DevOps Workflow visual](../assets/img/controller_devops_visualizer_workflow.png) -->
 <a href="#controller_devops_visualizer_workflow">
@@ -196,7 +207,6 @@ The *DevOps Workflow* job templates unifies multiple tasks into a logical, consi
 </a>
 
 >### **❗️ Note**<p>
->
 > Automation controller provides capabilities, such as an extensive API, Workflows and Webhooks to orchestrate DevOps tooling and workflows.<p>
 
 ✅ Next Challenge

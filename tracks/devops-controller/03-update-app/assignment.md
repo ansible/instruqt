@@ -256,7 +256,7 @@ The Jenkins commit message shows the latest version number. In the screenshot be
 
 _Gitea_ created `ZIP` and `TAR.GZ` files associated with the new tag. In the above screenshot, the tag name is `v2.52.0`.
 
-We’ll use this tag number and artefacts in the next challenge.
+We’ll use this tag number and artifacts in the next challenge.
 
 ✅ Next Challenge
 ===

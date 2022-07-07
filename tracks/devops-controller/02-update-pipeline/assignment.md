@@ -147,7 +147,7 @@ In the _Job Output_ window, you’ll see that it successfully *changed* the curr
 **Next, we'll have a look at the updated Jenkins pipeline:**
 
 * Click on the _Jenkins_ tab at the top of the browser window.
-* Click on `ACME Corp` in the top menu, then click on `Configure`. This action refershes the Jenkins UI with the latest changes.
+* Click on `ACME Corp` in the top menu, then click on `Configure`. This action reloads the Jenkins UI with the latest changes.
 * Scroll down to the pipeline section.
 
 You’ll see a new `Controller - DevOps` stage in the pipeline code.
