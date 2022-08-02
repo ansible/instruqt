@@ -4,6 +4,9 @@ USER=rhel
 su - $USER -c 'cat >/home/$USER/ansible-navigator.yml <<EOL
 ---
 ansible-navigator:
+  ansible:
+    inventories:
+    - /home/rhel/ansible-files/hosts
   enabled: false
   mode: stdout
   execution-environment:
