@@ -1,0 +1,31 @@
+---
+- name: Create new ACME Corp release
+  hosts: controller.acme.example.com
+  gather_facts: false
+
+  vars:
+    student_user: student
+    student_password: "CHANGEME!"
+
+  tasks:
+    # The tag_name variable is populated from the Jenkins pipeline
+    - name: Create new ACME release
+      ansible.builtin.uri:
+        url: "http://gitea:3000/api/v1/repos/{{ student_user }}/acme_corp/releases"
+        method: POST
+        user: "{{ student_user }}"
+        password: "{{ student_password }}"
+        body_format: json
+        force_basic_auth: true
+        body:
+          '{"target_commitish": "main",
+          "name": "ACME Corp Patch Release {{ tag_name }}",
+          "draft": false,
+          "prerelease": false,
+          "tag_name": "{{ tag_name }}"}'
+        status_code: 201
+      register: __result
+      until: __result.status == 201
+      retries: 3
+      delay: 3
+
