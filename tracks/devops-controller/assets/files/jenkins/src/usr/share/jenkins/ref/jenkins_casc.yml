@@ -1,0 +1,150 @@
+credentials:
+  system:
+    domainCredentials:
+    - credentials:
+      - usernamePassword:
+          description: "Student controller user"
+          id: "student_controller"
+          password: "${CONTROLLER_PASSWORD}"
+          scope: GLOBAL
+          username: "student"
+      - usernamePassword:
+          description: "Jenkins controller user"
+          id: "jenkins_controller"
+          password: "${JENKINS_ADMIN_PASSWORD}"
+          scope: GLOBAL
+          username: "jenkins"
+      - usernamePassword:
+          description: "ACME Corp Repo"
+          id: "gitea_repo"
+          password: "${REPO_PASSWORD}"
+          scope: GLOBAL
+          username: "jenkins"
+jenkins:
+  agentProtocols:
+  - "JNLP4-connect"
+  - "Ping"
+  authorizationStrategy: "loggedInUsersCanDoAnything"
+  crumbIssuer:
+    standard:
+      excludeClientIPFromCrumb: false
+  disableRememberMe: false
+  labelAtoms:
+  - name: "built-in"
+  markupFormatter: "plainText"
+  mode: NORMAL
+  myViewsTabBar: "standard"
+  noUsageStatistics: true
+  numExecutors: 20
+  primaryView:
+    all:
+      name: "all"
+  projectNamingStrategy: "standard"
+  quietPeriod: 3
+  scmCheckoutRetryCount: 0
+  securityRealm:
+    local:
+      allowsSignup: false
+      enableCaptcha: false
+      users:
+      - id: "admin"
+        password: ${JENKINS_ADMIN_PASSWORD}
+      - id: "student"
+        password: ${JENKINS_ADMIN_PASSWORD}        
+  slaveAgentPort: 0
+  updateCenter:
+    sites:
+    - id: "default"
+      url: "https://updates.jenkins.io/update-center.json"
+  views:
+  - all:
+      name: "all"
+  viewsTabBar: "standard"
+security:
+  apiToken:
+    creationOfLegacyTokenEnabled: false
+    tokenGenerationOnCreationEnabled: false
+    usageStatisticsEnabled: true
+  sSHD:
+    port: -1
+unclassified:
+  ansibleTowerGlobalConfig:
+    towerInstallation:
+    - enableDebugging: true
+      towerCredentialsId: "jenkins_controller"
+      towerDisplayName: "ACME Corp controller"
+      towerTrustCert: true
+      towerURL: ${CONTROLLER_URL:-https://controller}
+  bitbucketEndpointConfiguration:
+    endpoints:
+    - bitbucketCloudEndpoint:
+        enableCache: false
+        manageHooks: false
+        repositoriesCacheDuration: 0
+        teamCacheDuration: 0
+  buildDiscarders:
+    configuredBuildDiscarders:
+    - "jobBuildDiscarder"
+  defaultFolderConfiguration:
+    healthMetrics:
+    - worstChildHealthMetric:
+        recursive: true
+  fingerprints:
+    fingerprintCleanupDisabled: false
+    storage: "file"
+  gitHubConfiguration:
+    apiRateLimitChecker: ThrottleForNormalize
+  gitHubPluginConfig:
+    hookUrl: "http://127.0.0.1:8080/github-webhook/"
+  gitSCM:
+    addGitTagAction: false
+    allowSecondFetch: false
+    createAccountBasedOnEmail: false
+    disableGitToolChooser: false
+    hideCredentials: false
+    showEntireCommitSummaryInChanges: false
+    useExistingAccountWithSameEmail: false
+  giteaServers:
+    servers:
+    - credentialsId: "gitea_repo"
+      displayName: "ACME Corp Repo Server"
+      manageHooks: true
+      serverUrl: ${GITEA_SERVER_URL:-http://gitea:3000}
+  globalDefaultFlowDurabilityLevel:
+    durabilityHint: PERFORMANCE_OPTIMIZED
+  junitTestResultStorage:
+    storage: "file"
+  location:
+    adminAddress: "address not configured yet <nobody@nowhere>"
+    url: "http://jenkins:8080/"
+  mailer:
+    charset: "UTF-8"
+    useSsl: false
+    useTls: false
+  pollSCM:
+    pollingThreadCount: 10
+tool:
+  ansibleInstallation:
+    installations:
+    - home: "/usr/bin/"
+      name: "Ansible"
+  git:
+    installations:
+    - home: "git"
+      name: "git"
+  nodejs:
+    defaultProperties:
+    - installSource:
+        installers:
+        - nodeJSInstaller:
+            npmPackagesRefreshHours: 72
+    installations:
+    - name: "nodejs"
+      home: ""
+      properties:
+      - installSource:
+          installers:
+          - nodeJSInstaller:
+              id: "14.19.1"
+              npmPackages: "@angular/cli"
+              npmPackagesRefreshHours: 72

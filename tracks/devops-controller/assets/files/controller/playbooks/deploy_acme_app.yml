@@ -1,0 +1,29 @@
+---
+- name: Deploy ACME App
+  hosts: webservers
+  gather_facts: false
+
+  vars:
+    student_user: student
+    student_password: "CHANGEME!"
+
+  tasks:
+  # The tag_name variable is populated from the Jenkins pipeline
+    - name: Extract download
+      ansible.builtin.unarchive:
+        src: "http://gitea:3000/{{ student_user }}/acme_corp/archive/{{ tag_name }}.tar.gz"
+        remote_src: true
+        owner: rhel
+        group: rhel
+        dest: /usr/local/
+    
+    - name: Create database migrations
+      community.general.django_manage:
+        command: migrate
+        project_path: /usr/local/acme_corp/app/lets_quiz
+        virtualenv: /home/rhel/.virtualenvs/acme_corp
+ 
+    - name: Run the application
+      ansible.builtin.shell:
+        cmd: "nohup /home/rhel/.virtualenvs/acme_corp/bin/python3 manage.py runserver 0.0.0.0:8000 &"
+        chdir: /usr/local/acme_corp/app/lets_quiz
