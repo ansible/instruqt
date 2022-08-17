@@ -1,3 +1,4 @@
+---
 # Gitea config
 - name: Configure Gitea host
   hosts: gitea
@@ -8,17 +9,9 @@
     student_password: "CHANGEME!"
     student_user: student
 
-  tags:
-    - gitea-config
-
   tasks:
     - name: Install Python3 Gitea
       ansible.builtin.raw: /sbin/apk add python3
-
-    - name: Install Gitea packages
-      community.general.apk:
-        name: subversion, tar
-        state: present
 
     - name: Create student and jenkins repo users
       ansible.builtin.command: "{{ item }}"
@@ -27,7 +20,7 @@
       failed_when: __output.rc not in [ 0, 1 ]
       changed_when: '"user already exists" not in __output.stdout'
       loop:
-        - "/usr/local/bin/gitea admin user create --admin --username jenkins --password "{{ student_password }}" --must-change-password=false --email jenkins@localhost"
+        - "/usr/local/bin/gitea admin user create --admin --username jenkins --password {{ student_password }} --must-change-password=false --email jenkins@localhost"
         - "/usr/local/bin/gitea admin user create --admin --username {{ student_user }} --password {{ student_password }} --must-change-password=false --email {{ student_user }}@localhost"
 
     - name: Create repo
