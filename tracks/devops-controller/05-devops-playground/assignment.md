@@ -47,6 +47,10 @@ tabs:
   hostname: jenkins
   path: /job/ACMECorp/
   port: 8080
+- title: Let's Quiz!
+  type: service
+  hostname: controller
+  port: 8000
 difficulty: intermediate
 timelimit: 600
 ---
