@@ -1,0 +1,14 @@
+#!/bin/bash
+
+published_1=`curl -u curator:learn_ansible https://privatehub-01/api/galaxy/_ui/v1/collection-versions/ -k | jq .data[0].repository_list[0]`
+published_2=`curl -u curator:learn_ansible https://privatehub-01/api/galaxy/_ui/v1/collection-versions/ -k | jq .data[0].repository_list[0]`
+
+#Collection without tags was pushed?
+if [[ "$published_1" != "\"published\"" ]]
+then :
+    fail-message "Collections were not published."
+# Collection with tags was pushed?
+elif [[ "$published_2" != "\"published\"" ]]
+then :
+    fail-message "Collections were not published."
+fi
