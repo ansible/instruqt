@@ -11,18 +11,18 @@ description: |-
 
   This exercise covers the following Ansible fundamentals:
 
-  * Understanding Ansible Module parameters
+  * Understanding Ansible module parameters
   * Understanding and using the following modules
-    * yum module
-    * service module
-    * copy module
-  * Understanding Idempotence and how Ansible Modules can be idempotent
-
+    * ansible.builtin.package module
+    * ansible.builtin.service module
+    * ansible.builtin.copy module
+  * Understanding idempotence and how Ansible modules can be idempotent
 
   You can find more information about Ansible at [Ansible.com](https://www.ansible.com/)
 
   [**Try Ansible Automation Platform today!**](https://red.ht/try_ansible)
 icon: https://www.ansible.com/hubfs/Logo-Red_Hat-Ansible-A-Reverse-SVG.svg
+level: beginner
 tags:
 - ansible
 - infrastructure
@@ -30,7 +30,9 @@ tags:
 owner: redhat
 developers:
 - moshah@redhat.com
+- rlopez@redhat.com
 private: false
-published: true
+published: false
+maintenance: true
 show_timer: true
-checksum: "15003613039669190742"
+checksum: "17009515173693607495"
