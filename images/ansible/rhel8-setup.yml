@@ -3,6 +3,7 @@
   hosts: localhost
   gather_facts: false
   vars:
+    admin_password: 'ansible123!'
   tasks:
     - name: Include user setup tasks
       ansible.builtin.include_tasks:
