@@ -1,0 +1,16 @@
+
+# Make a Automation Hub admin group
+curl -s -u admin:ansible123! -H "Content-Type: application/json" -X POST -d '{"name": "Cloud Automation"}' https://privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/api/galaxy/_ui/v1/groups/
+
+# Give collection upload permissions to the group
+declare -a PermStringArray=( \
+	'{"permission":"galaxy.upload_to_namespace"}' \
+)
+for val in ${PermStringArray[@]}; do
+   curl -s -u admin:ansible123! -H "Content-Type: application/json" -X POST -d $val https://privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/api/galaxy/_ui/v1/groups/2/model-permissions/
+done
+curl -s -u admin:ansible123! -H "Content-Type: application/json" -X POST -d '{"username":"marie","first_name":"","last_name":"","email":"","password":"learn_ansible","groups":[{"name":"Cloud Automation","id":2}],"is_superuser":false}' https://privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/api/galaxy/_ui/v1/users/
+
+
+curl -s -u admin:ansible123! -H "Content-Type: application/json" -X POST -d '{"name":"cloud", "groups":[]}' https://privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/api/galaxy/v3/namespaces/ -k
+curl -s -u admin:ansible123! -H "Content-Type: application/json" -X PUT -d '{"id":1,"name":"cloud","company":"","email":"","avatar_url":"","description":"","links":[],"groups":[{"id":2,"name":"Cloud Automation","object_permissions":["upload_to_namespace"]}],"resources":"","related_fields":{}}' https://privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/api/galaxy/_ui/v1/my-namespaces/cloud/

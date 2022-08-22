@@ -1,0 +1,41 @@
+slug: hub-managing-user-access
+id: leuuxvbbcgp5
+type: track
+title: Managing user access and content upload policies using private automation hub
+teaser: Create groups for your automation hub users to provide them with appropriate
+  system permissions, or allow view-only access to unauthorized users.
+description: |2-
+
+  # Managing user access and content upload policies with private automation hub.
+  ***
+
+  We will focus on two main personas in this lab:
+  - Automation Curator - Someone who will manage content in the private automation hub for your organization. Curator is the manager/overseer of all automation content.
+  - Automation Developer - An automation developer who is associated with a specific group in your organization for example, a network, cloud or storage automation developer whose role is to write Ansible automation for their group.
+
+  For this lab, the curator wants to give permission to cloud and network automation developers by providing the ability to push content collections and automation execution environments to the private automation hub instance.
+
+  This lab explores a real-world scenario, where a curator can be viewed as an automation admin for the organization and only wants to publish content that comes from a specific group after the content is approved.
+
+  This lab covers:
+
+  * A curator setting up policies for the incoming content collections, that they can test and validate for approval.
+  * Create a "Cloud Automation" group with access to publish collections to cloud namespace.
+  * Create a "Network Automation" group with access to publish collections to network namespace.
+  * A cloud automation developer publishing a collection to the cloud namespace.
+  * A network automation developer publishing a collection to the network namespace.
+  * A curator approving the collection from the cloud and network groups based on their import logs.
+icon: ./assets/Product_icon-Red_Hat-Ansible-Automation_hub_private-RGB.png
+level: beginner
+tags:
+- ansible
+- ' private-automation-hub'
+- ' ansible-galaxy'
+owner: redhat
+developers:
+- abehl@redhat.com
+private: true
+published: true
+maintenance: true
+skipping_enabled: true
+checksum: "12845553861267606975"

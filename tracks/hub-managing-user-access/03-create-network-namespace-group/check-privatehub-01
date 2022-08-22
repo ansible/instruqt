@@ -1,0 +1,48 @@
+#!/bin/bash
+
+group_network=`curl -u admin:ansible123! https://privatehub-01/api/galaxy/_ui/v1/groups/ -k | jq .data[2].name`
+group_network_permissions=`curl -u admin:ansible123! https://privatehub-01/api/galaxy/_ui/v1/groups/3/model-permissions/ -k | jq .data[0].permission`
+#bob_user=`curl -u admin:ansible123! https://privatehub-01/api/galaxy/_ui/v1/users/ -k | jq .data[3].username`
+bob_user_group=`curl -u admin:ansible123! https://privatehub-01/api/galaxy/_ui/v1/users/4/ -k | jq .groups[0].name`
+network_namespace=`curl -u admin:ansible123! https://privatehub-01/api/galaxy/_ui/v1/namespaces/ -k | jq .data[1].name`
+users_call=`curl -u admin:ansible123! https://privatehub-01/api/galaxy/_ui/v1/users/ -k | jq .data`
+namespace_call=`curl -u admin:ansible123! https://privatehub-01/api/galaxy/_ui/v1/namespaces/ -k | jq .data`
+usernames=()
+namespaces=()
+for row in $(echo "${users_call}" | jq -r '.[] | @base64'); do
+    _jq() {
+     echo ${row} | base64 --decode | jq -r ${1}
+    }
+   usernames[${#usernames[@]}]=$(_jq '.username')
+done
+printf '%s\0' "${usernames[@]}" | grep -Fxqz -- 'bob'
+retValue_user=$?
+
+for row in $(echo "${namespace_call}" | jq -r '.[] | @base64'); do
+    _jq() {
+     echo ${row} | base64 --decode | jq -r ${1}
+    }
+   namespaces[${#namespaces[@]}]=$(_jq '.name')
+done
+printf '%s\0' "${namespaces[@]}" | grep -Fxqz -- 'network'
+retValue_namespaces=$?
+
+#Check if Network Automation group is created
+if [[ "$group_network" != "\"Network Automation\"" ]]
+then :
+    fail-message "Network Automation group was not created."
+# Check Network Automation group permissions
+elif [[ "$group_network_permissions" != "\"galaxy.upload_to_namespace\"" ]]
+then :
+    fail-message "Right permissions were not provided to the group"
+# Check if bob user is created
+elif [[ $retValue_user != 0 ]]
+then :
+    fail-message "bob user was not created."
+elif [[ "$bob_user_group" != "\"Network Automation\"" ]]
+then :
+    fail-message "User \"bob\" is not a part of Network Automation group"
+elif [[ $retValue_namespaces != 0 ]]
+then :
+    fail-message "Namespace \"network\" was not created."
+fi
