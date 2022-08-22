@@ -1,4 +1,9 @@
 # Configure rhel user
+- name: Ensure group "wheel" exists
+  ansible.builtin.group:
+    name: wheel
+    state: present
+
 - name: Configure user 'rhel'
   ansible.builtin.user:
     name: rhel
