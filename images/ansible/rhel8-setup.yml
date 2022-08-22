@@ -1,7 +1,8 @@
 ---
 - name: Configure base rhel8 image
   hosts: localhost
-  gather_facts: false
+  gather_facts: true
+  become: true
   vars:
     admin_password: 'ansible123!'
   tasks:
