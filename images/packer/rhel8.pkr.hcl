@@ -18,4 +18,9 @@ build {
     provisioner "shell" {
         inline = ["sudo dnf -y update"]
     }
+
+    provisioner "ansible" {
+        playbook_file = "${path.root}/../ansible/ansible-setup.yml"
+        user = "rhel"
+    }
 }

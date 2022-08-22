@@ -1,0 +1,86 @@
+touch /etc/sudoers.d/rhel_sudoers
+echo "%rhel ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/rhel_sudoers
+cp -a /root/.ssh/* /home/rhel/.ssh/.
+chown -R rhel:rhel /home/rhel/.ssh
+#dnf config-manager --enable rhui*
+
+sudo systemctl stop pulpcore-api
+sudo systemctl stop nginx
+sudo systemctl start snapd
+sudo certbot certonly --no-bootstrap --standalone -d privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io --email ansible-network@redhat.com --noninteractive --agree-tos
+sudo cp /etc/letsencrypt/live/privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/privkey.pem /etc/pulp/certs/pulp_webserver.key
+sudo cp /etc/letsencrypt/live/privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/cert.pem /etc/pulp/certs/pulp_webserver.crt
+sudo restorecon -v /etc/pulp/certs/pulp_webserver.crt
+sudo restorecon -v /etc/pulp/certs/pulp_webserver.key
+sudo systemctl start pulpcore-*
+sudo systemctl start nginx
+sudo sed -i "/127.0.0.1\sprivate/s/$/ privatehub-01-443-$INSTRUQT_PARTICIPANT_ID.env.play.instruqt.com/" /etc/hosts
+# Intermideate cert
+sudo wget https://letsencrypt.org/certs/lets-encrypt-r3.pem -P /etc/pki/ca-trust/source/anchors/
+sudo update-ca-trust
+
+host_ip=`getent ahostsv4 privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io | awk '{print $1}' | head -1`
+sudo sed -i -r 's/(\b[0-9]{1,3}\.){3}[0-9]{1,3}\b'/privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/ /etc/pulp/settings.py
+sudo systemctl restart pulpcore-api
+sudo systemctl restart nginx
+
+#curl -s -u admin:ansible123! -H "Content-Type: application/json" -X POST -d '{"name":"network", "groups":[]}' https://privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/api/galaxy/v3/namespaces/ -k
+#curl -s -u admin:ansible123! -H "Content-Type: application/json" -X POST -d '{"name":"cloud", "groups":[]}' https://privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/api/galaxy/v3/namespaces/ -k
+
+# Make a Automation Hub admin group
+curl -s -u admin:ansible123! -H "Content-Type: application/json" -X POST -d '{"name": "Automation Curators"}' https://privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/api/galaxy/_ui/v1/groups/
+
+# Give collection upload permissions to the group
+declare -a PermStringArray=( \
+	'{"permission":"galaxy.add_namespace"}' \
+	'{"permission":"galaxy.change_namespace"}' \
+	'{"permission":"galaxy.delete_namespace"}' \
+	'{"permission":"galaxy.upload_to_namespace"}' \
+	'{"permission":"ansible.delete_collection"}' \
+	'{"permission":"ansible.modify_ansible_repo_content"}' \
+	'{"permission":"galaxy.add_user"}' \
+	'{"permission":"galaxy.change_user"}' \
+	'{"permission":"galaxy.delete_user"}' \
+	'{"permission":"galaxy.view_user"}' \
+	'{"permission":"galaxy.add_group"}' \
+	'{"permission":"galaxy.change_group"}' \
+	'{"permission":"galaxy.delete_group"}' \
+	'{"permission":"galaxy.view_group"}' \
+	'{"permission":"ansible.change_collectionremote"}' \
+	'{"permission":"ansible.view_collectionremote"}' \
+	'{"permission":"container.change_containernamespace"}' \
+	'{"permission":"container.namespace_change_containerdistribution"}' \
+	'{"permission":"container.namespace_modify_content_containerpushrepository"}' \
+	'{"permission":"container.add_containernamespace"}' \
+	'{"permission":"container.delete_containerrepository"}' \
+	'{"permission":"container.namespace_push_containerdistribution"}' \
+	'{"permission":"container.namespace_push_containerdistribution"}' \
+	'{"permission":"container.namespace_push_containerdistribution"}' \
+	'{"permission":"container.namespace_push_containerdistribution"}' \
+	'{"permission":"galaxy.add_containerregistryremote"}' \
+	'{"permission":"galaxy.change_containerregistryremote"}' \
+	'{"permission":"galaxy.delete_containerregistryremote"}' \
+	'{"permission":"core.change_task"}' \
+	'{"permission":"core.change_task"}' \
+	'{"permission":"core.view_task"}' \
+)
+for val in ${PermStringArray[@]}; do
+   curl -s -u admin:ansible123! -H "Content-Type: application/json" -X POST -d $val https://privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/api/galaxy/_ui/v1/groups/1/model-permissions/
+done
+
+# Make a user in automation developers group
+curl -s -u admin:ansible123! -H "Content-Type: application/json" -X POST -d '{"username":"curator","first_name":"Curator","last_name":"","email":"curator@xyz.com","password":"learn_ansible","groups":[{"name":"Automation Curators","id":1}],"is_superuser":false}' https://privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/api/galaxy/_ui/v1/users/
+
+# Give the user permission to own ansible and community namespaces in hub
+#curl -s -u admin:ansible123! -H "Content-Type: application/json" -X PUT -d '{"id":1,"name":"ansible","company":"","email":"","avatar_url":"","description":"","links":[],"groups":[{"id":1,"name":"Automation Developers","object_permissions":["upload_to_namespace"]}],"resources":"","related_fields":{}}' https://privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/api/galaxy/_ui/v1/my-namespaces/ansible/
+#curl -s -u admin:ansible123! -H "Content-Type: application/json" -X PUT -d '{"id":1,"name":"community","company":"","email":"","avatar_url":"","description":"","links":[],"groups":[{"id":1,"name":"Automation Developers","object_permissions":["upload_to_namespace"]}],"resources":"","related_fields":{}}' https://privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/api/galaxy/_ui/v1/my-namespaces/community/
+
+#wget https://github.com/anshulbehl/demo-ee/raw/master/images/ansible-test_collection-1.0.0.tar.gz -P /home/rhel/
+#chown rhel:rhel /home/rhel/ansible-test_collection-1.0.0.tar.gz
+#wget https://github.com/anshulbehl/demo-ee/raw/master/images/community-lab_collection-1.0.0.tar.gz -P /home/rhel/
+#chown rhel:rhel /home/rhel/community-lab_collection-1.0.0.tar.gz
+
+sudo cat <<EOF >>/etc/galaxy-importer/galaxy-importer.cfg
+RUN_ANSIBLE_TEST = False
+CHECK_REQUIRED_TAGS = True
+EOF

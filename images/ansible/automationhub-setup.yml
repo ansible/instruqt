@@ -24,10 +24,12 @@
     teardown: false
 
   tasks:
-    - name: Install subsciption-manager
+    - name: Install packages
       ansible.builtin.dnf:
         name:
           - subscription-manager
+          - jq
+          - wget
 
     - name: install automation hub
       ansible.builtin.include_role:
