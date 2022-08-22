@@ -1,6 +1,6 @@
 ---
 - name: Configure base rhel8 image
-  hosts: localhost
+  hosts: all
   gather_facts: true
   become: true
   vars:
