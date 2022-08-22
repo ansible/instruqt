@@ -51,6 +51,7 @@
   ansible.builtin.file:
     path: "{{ aap_dir }}"
     state: absent
+  ignore_errors: true
 
 - name: Remove bash history file
   ansible.builtin.file:
