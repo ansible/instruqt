@@ -1,6 +1,7 @@
 - name: Gather current standard users
   ansible.builtin.shell: >
     cut -d: -f1,3 /etc/passwd | egrep ':[0-9]{4}$' | cut -d: -f1
+  changed_when: false
   register: _standard_users
 
 - name: Remove all normal users except rhel and awx

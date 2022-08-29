@@ -34,14 +34,6 @@ source "googlecompute" "mesh-node" {
 
 build {
     sources = ["sources.googlecompute.mesh-node"]
-
-    provisioner "ansible" {
-      command = "ansible-playbook"
-      playbook_file = "${path.root}/../ansible/workshop-collection-install.yml"
-      user = "rhel"
-      extra_arguments = local.extra_args
-    }
-
     provisioner "ansible" {
       command = "ansible-playbook"
       playbook_file = "${path.root}/../ansible/mesh-node-setup.yml"

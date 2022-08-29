@@ -13,15 +13,6 @@
       - subscription-manager-rhsm-certificates
       - rsync
       - git
-      - "@python38"
-    aap_dir: "/home/{{ ansible_user }}/aap_install"
-    admin_password: 'ansible123!'
-    username: "{{ ansible_user }}"
-    ee_registry_name: "registry.redhat.io"
-    ee_images:
-      - "{{ ee_registry_name }}/ansible-automation-platform-21/ee-29-rhel8:latest"
-      - "{{ ee_registry_name }}/ansible-automation-platform-21/ee-supported-rhel8:latest"
-      - "{{ ee_registry_name }}/ansible-automation-platform-21/ee-minimal-rhel8:latest"
 
   pre_tasks:
     - name: check variables are defined and not empty before building image
@@ -55,26 +46,9 @@
         name: "{{ receptor_packages }}"
         state: present
 
-    - name: Update appstream to python38
-      command: >
-        /usr/sbin/alternatives --set python3 /usr/bin/python3.8
-
     - name: Include common user tasks
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/5_configure_users.yml"
-
-    - name: Login to redhat registry
-      containers.podman.podman_login:
-        username: '{{ redhat_username }}'
-        password: '{{ redhat_password }}'
-        registry: "{{ ee_registry_name }}"
-      become_user: awx
-
-    - name: Pull supported images
-      containers.podman.podman_image:
-        name: "{{ item }}"
-      loop: "{{ ee_images }}"
-      become_user: awx
 
     - name: Include common image cleanup tasks
       ansible.builtin.include_tasks:
