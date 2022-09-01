@@ -16,16 +16,18 @@
 
   tasks:
     - name: download collections
-      ansible.builtin.command: "ansible-galaxy collection install {{ item }}"
+      ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
       loop:
         - ansible.workshops
         - google.cloud
         - ansible.posix
         - community.crypto
+        - awx.awx
       register: __collection_install
-      changed_when: '"All requested collections are already installed" not in __collection_install.stdout'
+      changed_when: '"Starting collection install process" in __collection_install.stdout'
       tags:
         - install-controller
+        - install-collections
 
     - name: Download AAP
       ansible.builtin.include_role:
@@ -57,7 +59,7 @@
         - create-instances
 
     - name: get gcp node instance info
-      google.cloud.gcp_compute_instance_info:
+      google.cloud.gcp_compute_instance_info: # noqa syntax-check
         zone: "{{ gcp_zone }}"
         filters:
         - labels.role = "instruqt-lab"
@@ -146,12 +148,13 @@
 
   tasks:
     - name: download collections
-      ansible.builtin.command: "ansible-galaxy collection install {{ item }}"
+      ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
       loop:
         - awx.awx
       register: __collection_install
-      changed_when: '"All requested collections are already installed" not in __collection_install.stdout'
+      changed_when: '"Starting collection install process" in __collection_install.stdout'
       tags:
+        - install-collections
         - install-controller
   
     - name: Copy instruqt_lab private key to controller
@@ -244,6 +247,7 @@
       poll: 15
       tags:
         - install-controller
+        - aap-install
 
     - name: wait for Automation Controller to be up
       uri:
@@ -541,6 +545,7 @@
         scm_update_on_launch: false
         scm_update_cache_timeout: 60
         scm_branch: "devel"
+        wait: true
         controller_oauthtoken: "{{ auth_token }}"
         controller_host: "{{ controller_hostname }}"
         validate_certs: "{{ controller_validate_certs }}"
