@@ -1,0 +1,15 @@
+#!/bin/bash
+
+without_tags=`curl -u marie:learn_ansible https://privatehub-01/api/galaxy/_ui/v1/imports/collections/ -k | jq .data[0].name`
+with_tags=`curl -u marie:learn_ansible https://privatehub-01/api/galaxy/_ui/v1/imports/collections/ -k | jq .data[1].name`
+
+#RFE add loop for checks
+#Collection without tags was pushed?
+if [[ "$without_tags" != "\"lab_collection_without_tags\"" ]]
+then :
+    fail-message "Cloud collection without tags was not pushed."
+# Collection with tags was pushed?
+elif [[ "$with_tags" != "\"lab_collection_with_tags\"" ]]
+then :
+    fail-message "Cloud collection with tags was not pushed."
+fi

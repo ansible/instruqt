@@ -1,0 +1,49 @@
+#!/bin/bash
+
+group_cloud=`curl -u admin:ansible123! https://privatehub-01/api/galaxy/_ui/v1/groups/ -k | jq .data[1].name`
+group_cloud_permissions=`curl -u admin:ansible123! https://privatehub-01/api/galaxy/_ui/v1/groups/2/model-permissions/ -k | jq .data[0].permission`
+#marie_user=`curl -u admin:ansible123! https://privatehub-01/api/galaxy/_ui/v1/users/ -k | jq .data[2].username`
+marie_user_group=`curl -u admin:ansible123! https://privatehub-01/api/galaxy/_ui/v1/users/3/ -k | jq .groups[0].name`
+cloud_namespace=`curl -u admin:ansible123! https://privatehub-01/api/galaxy/_ui/v1/namespaces/ -k | jq .data[0].name`
+users_call=`curl -u admin:ansible123! https://privatehub-01/api/galaxy/_ui/v1/users/ -k | jq .data`
+namespace_call=`curl -u admin:ansible123! https://privatehub-01/api/galaxy/_ui/v1/namespaces/ -k | jq .data`
+usernames=()
+usernames=()
+
+for row in $(echo "${namespace_call}" | jq -r '.[] | @base64'); do
+    _jq() {
+     echo ${row} | base64 --decode | jq -r ${1}
+    }
+   namespaces[${#namespaces[@]}]=$(_jq '.name')
+done
+printf '%s\0' "${namespaces[@]}" | grep -Fxqz -- 'cloud'
+retValue_namespaces=$?
+
+for row in $(echo "${users_call}" | jq -r '.[] | @base64'); do
+    _jq() {
+     echo ${row} | base64 --decode | jq -r ${1}
+    }
+   usernames[${#usernames[@]}]=$(_jq '.username')
+done
+printf '%s\0' "${usernames[@]}" | grep -Fxqz -- 'marie'
+retValue_user=$?
+
+#Check if Cloud Automation group is created
+if [[ "$group_cloud" != "\"Cloud Automation\"" ]]
+then :
+    fail-message "Cloud Automation group was not created."
+# Check Cloud Automation group permissions
+elif [[ "$group_cloud_permissions" != "\"galaxy.upload_to_namespace\"" ]]
+then :
+    fail-message "Right permissions were not provided to the group"
+# Check if marie user is created
+elif [[ $retValue_user != 0 ]]
+then :
+    fail-message "User \"marie\" was not created."
+elif [[ "$marie_user_group" != "\"Cloud Automation\"" ]]
+then :
+    fail-message "User \"marie\" is not a part of Cloud Automation group"
+elif [[ $retValue_namespaces != 0 ]]
+then :
+    fail-message "Namespace \"cloud\" was not created."
+fi

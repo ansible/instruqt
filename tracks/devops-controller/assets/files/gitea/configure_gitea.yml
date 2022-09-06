@@ -1,0 +1,56 @@
+---
+# Gitea config
+- name: Configure Gitea host
+  hosts: gitea
+  gather_facts: false
+  become: true
+
+  vars:
+    student_password: "CHANGEME!"
+    student_user: student
+
+  tasks:
+    - name: Install Python3 Gitea
+      ansible.builtin.raw: /sbin/apk add python3
+
+    - name: Create student and jenkins repo users
+      ansible.builtin.command: "{{ item }}"
+      become_user: git
+      register: __output
+      failed_when: __output.rc not in [ 0, 1 ]
+      changed_when: '"user already exists" not in __output.stdout'
+      loop:
+        - "/usr/local/bin/gitea admin user create --admin --username jenkins --password {{ student_password }} --must-change-password=false --email jenkins@localhost"
+        - "/usr/local/bin/gitea admin user create --admin --username {{ student_user }} --password {{ student_password }} --must-change-password=false --email {{ student_user }}@localhost"
+
+    - name: Create repo
+      ansible.builtin.uri:
+        url: http://gitea:3000/api/v1/user/repos
+        method: POST
+        body_format: json
+        body:
+          name: acme_corp
+          auto_init: false
+          private: false
+        force_basic_auth: true
+        url_password: "{{ student_password }}"
+        url_username: "{{ student_user }}"
+        status_code: [201, 409]
+
+    - name: Create repo webhook
+      ansible.builtin.uri:
+        url: "http://gitea:3000/api/v1/repos/{{ student_user }}/acme_corp/hooks"
+        method: POST
+        body_format: json
+        body:
+          type: gitea
+          config:
+            content_type: json
+            url: http://jenkins:8080/gitea-webhook/post
+          active: true
+          events:
+            - push
+        force_basic_auth: true
+        url_password: "{{ student_password }}"
+        url_username: "{{ student_user }}"
+        status_code: [201, 409]

@@ -1,2 +1,6 @@
-dnf config-manager --enable rhui*
+dnf config-manager --disable rhui*,google*
+dnf config-manager --enable rhui-rhel-8-for-x86_64-baseos-rhui-rpms,rhui-rhel-8-for-x86_64-appstream-rhui-rpms
+#Install a package to build metadata of the repo and not need to wait during labs
+dnf install -y cups-filesystem
 systemctl stop nginx
+setenforce 0

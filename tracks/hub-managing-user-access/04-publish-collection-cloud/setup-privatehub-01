@@ -1,0 +1,18 @@
+token=`curl -s -u marie:learn_ansible -H "Content-Type: application/json" -X POST https://privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/api/galaxy/v3/auth/token/ -k | jq .token`
+
+cat <<EOF >>/home/rhel/ansible.cfg
+[galaxy]
+server_list = published_repo
+
+[galaxy_server.published_repo]
+url=https://privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/api/galaxy/content/published/
+token=$token
+EOF
+chown rhel:rhel /home/rhel/ansible.cfg
+
+wget https://github.com/anshulbehl/demo-ee/raw/master/images/pah_instruqt/cloud-lab_collection_with_tags-1.0.0.tar.gz -P /home/rhel/
+chown rhel:rhel /home/rhel/cloud-lab_collection_with_tags-1.0.0.tar.gz
+wget https://github.com/anshulbehl/demo-ee/raw/master/images/pah_instruqt/cloud-lab_collection_without_tags-1.0.0.tar.gz -P /home/rhel/
+chown rhel:rhel /home/rhel/cloud-lab_collection_without_tags-1.0.0.tar.gz
+wget https://github.com/anshulbehl/demo-ee/raw/master/images/pah_instruqt/network-test_collection-1.0.0.tar.gz -P /home/rhel/
+chown rhel:rhel /home/rhel/network-test_collection-1.0.0.tar.gz

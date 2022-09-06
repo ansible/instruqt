@@ -1,0 +1,18 @@
+---
+- name: Configure ACMECorp Jenkins job
+  hosts: controller.acme.example.com
+  gather_facts: false
+
+  vars:
+    student_user: student
+    student_password: "CHANGEME!"
+
+  tasks:
+    - name: Create a jenkins job using basic authentication
+      community.general.jenkins_job:
+        config: "{{ lookup('file', 'acme.xml') }}"
+        name: ACMECorp
+        user: "{{ student_user }}"
+        password: "{{ student_password }}"
+        url: "http://jenkins:8080"
+        validate_certs: false

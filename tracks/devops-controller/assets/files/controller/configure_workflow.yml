@@ -1,0 +1,128 @@
+---
+# This playbook is a snippet to demonstrate creating a workflow using ansible.controller collection.
+# It won't work without the required controller configuration and completed playbook
+- name: Controller config for devops-controller
+  hosts: controller.acme.example.com
+  gather_facts: true
+
+  vars:
+    acme_venv: /home/rhel/.virtualenvs/acme_corp
+    lab_credential_name: "ACME Corp Machine Credential"
+    lab_organization: "ACME Corp"
+    lab_project_name: "ACME Corp Repo"
+    lab_job_templates:
+      - jt_name: "Create App Release"
+        jt_playbook: "playbooks/app_release.yml"
+        jt_prompt_inventory: true
+        jt_prompt_vars: true
+        jt_inventory: "ACME Corp DC"
+        jt_become: false
+        survey_enabled: false
+      - jt_name: "Configure Webservers"
+        jt_playbook: "playbooks/configure_webservers.yml"
+        jt_prompt_inventory: true
+        jt_prompt_vars: true
+        jt_inventory: "ACME Corp DC"
+        jt_become: false
+        jt_extra_vars:
+          acme_venv: "{{ acme_venv }}"
+      - jt_name: "Deploy ACMECorp App"
+        jt_playbook: "playbooks/deploy_acme_app.yml"
+        jt_prompt_inventory: true
+        jt_prompt_vars: true
+        jt_inventory: "ACME Corp DC"
+        jt_become: false
+        jt_extra_vars:
+          ansible_python_interpreter: "{{ acme_venv }}/bin/python3"
+        survey_enabled: false
+  lab_devops_worklow:
+    - workflow_name: "DevOps Workflow"
+      workflow_inventory: "ACME Corp DC"
+      workflow_vars: {"tag_name": "{{ tag_name | default( '0.1' ) }}",
+                      "acme_venv": "{{ acme_venv }}"}
+      workflow_org: "{{ lab_organization }}"
+      workflow_prompt_vars: true
+  lab_devops_worklow_nodes:
+    - workflow_node_id: "Deploy to Prod?"
+      workflow_node_jt: "DevOps Workflow"
+      workflow_node_org: "{{ lab_organization }}"
+      workflow_node_approval:
+        description: "Deploy to Prod?"
+        name: "Deploy to Prod?"
+    - workflow_node_id: "Create App Release"
+      workflow_node_jt: "DevOps Workflow"
+      workflow_node_org: "{{ lab_organization }}"
+      workflow_node_unified_jt: "Create App Release"
+    - workflow_node_id: "Config Webservers"
+      workflow_node_jt: "DevOps Workflow"
+      workflow_node_org: "{{ lab_organization }}"
+      workflow_node_unified_jt: "Configure Webservers"
+    - workflow_node_id: "Deploy ACME App"
+      workflow_node_jt: "DevOps Workflow"
+      workflow_node_org: "{{ lab_organization }}"
+      workflow_node_unified_jt: "Deploy ACMECorp App"
+    - workflow_node_id: "Deploy to Prod?"
+      workflow_node_jt: "DevOps Workflow"
+      workflow_node_org: "{{ lab_organization }}"
+      workflow_node_success_nodes:
+        - "Config Webservers"
+        - "Create App Release"
+    - workflow_node_id: "Create App Release"
+      workflow_node_jt: "DevOps Workflow"
+      workflow_node_org: "{{ lab_organization }}"
+      workflow_node_success_nodes:
+        - "Deploy ACME App"
+    - workflow_node_id: "Config Webservers"
+      workflow_node_jt: "DevOps Workflow"
+      workflow_node_org: "{{ lab_organization }}"
+      workflow_node_success_nodes:
+        - "Deploy ACME App"
+
+  tasks:
+    - name: Create job templates
+      ansible.controller.job_template:
+        name: "{{ item.jt_name }}"
+        state: present
+        become_enabled: "{{ item.jt_become }}"
+        project: "{{ lab_project_name }}"
+        credential: "{{ lab_credential_name }}"
+        inventory: "{{  item.jt_inventory }}"
+        playbook: "{{ item.jt_playbook }}"
+        survey_enabled: "{{ item.survey_enabled | default( omit ) }}"
+        survey_spec: "{{ item.survey_spec | default(omit) }}"
+        ask_inventory_on_launch: "{{  item.jt_prompt_inventory }}"
+        ask_variables_on_launch: "{{  item.jt_prompt_inventory | default( omit )}}"
+        extra_vars: "{{ item.jt_extra_vars | default( omit ) }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        validate_certs: false
+      loop: "{{ lab_job_templates }}"
+
+    - name: Create Workflows
+      ansible.controller.tower_workflow_job_template:
+        name: "{{ item.workflow_name }}"
+        inventory: "{{ item.workflow_inventory }}"
+        extra_vars: "{{ item.workflow_vars | default( omit ) }}"
+        ask_variables_on_launch: "{{ item.workflow_prompt_vars | default( true ) }}"
+        organization: "{{ item.workflow_org }}"
+        schema: "{{ item.workflow_schema | default( omit )}}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      loop: "{{ lab_devops_worklow }}"
+      tags:
+        - controller-config
+        - controller-workflows
+
+    - name: Add nodes to DevOps workflow
+      ansible.controller.workflow_job_template_node:
+        state: present
+        identifier: "{{ item.workflow_node_id }}"
+        workflow_job_template: "{{ item.workflow_node_jt }}"
+        organization: "{{ item.workflow_node_org }}"
+        approval_node: "{{ item.workflow_node_approval | default( omit ) }}"
+        unified_job_template: "{{ item.workflow_node_unified_jt | default( omit ) }}"
+        success_nodes: "{{ item.workflow_node_success_nodes | default( omit ) }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      loop: "{{ lab_devops_worklow_nodes }}"

@@ -1,0 +1,3 @@
+cd /home/rhel/
+ansible-galaxy collection publish /home/rhel/network-lab_collection_with_tags-1.0.0.tar.gz
+#ansible-galaxy collection publish /home/rhel/network-lab_collection_without_tags-1.0.0.tar.gz

@@ -1,0 +1,12 @@
+version: "3"
+virtualmachines:
+- name: privatehub-01
+  image: red-hat-mbu/automationhub
+  shell: /bin/su - rhel -s /bin/bash
+  environment:
+    TERM: xterm
+  machine_type: n1-standard-4
+  allow_external_ingress:
+  - http
+  - https
+  - high-ports
