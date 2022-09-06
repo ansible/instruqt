@@ -1,0 +1,74 @@
+---
+- node:
+    id: {{ controller_hostname }}
+    firewallrules:
+      - action: "reject"
+        tonode: "{{ controller_hostname }}"
+        toservice: "control"
+
+- work-signing:
+    privatekey: /etc/receptor/work_private_key.pem
+    tokenexpiration: 1m
+
+- work-verification:
+    publickey: /etc/receptor/work_public_key.pem
+
+
+# Log Level
+- log-level: info
+
+# Control Service
+- control-service:
+    service: control
+    filename: /var/run/awx-receptor/receptor.sock
+    permissions: 0660
+    tls: tls_server
+    
+# TLS
+- tls-server:
+    name: tls_server
+    cert: /etc/receptor/tls/{{ controller_hostname }}.crt
+    key: /etc/receptor/tls/{{ controller_hostname }}.key
+    clientcas: /etc/receptor/tls/ca/mesh-CA.crt
+    requireclientcert: true
+
+- tls-client:
+    name: tls_client
+    cert: /etc/receptor/tls/{{ controller_hostname }}.crt
+    key: /etc/receptor/tls/{{ controller_hostname }}.key
+    rootcas: /etc/receptor/tls/ca/mesh-CA.crt
+    insecureskipverify: false
+
+# Listener (single node)
+- local-only
+
+# Peers
+# {{ lab_exec_node_hostname }} peer removed
+- tcp-peer:
+    address: {{ lab_hop_node_hostname }}:27199
+    redial: true
+    tls: tls_client
+
+# Work-commands
+- work-command:
+    worktype: local
+    command: ansible-runner
+    params: worker
+    allowruntimeparams: true
+    verifysignature: true
+
+- work-kubernetes:
+    worktype: kubernetes-runtime-auth
+    authmethod: runtime
+    allowruntimeauth: true
+    allowruntimepod: true
+    allowruntimeparams: true
+    verifysignature: true
+
+- work-kubernetes:
+    worktype: kubernetes-incluster-auth
+    authmethod: incluster
+    allowruntimeauth: true
+    allowruntimepod: true
+    allowruntimeparams: true
+    verifysignature: true

@@ -1,7 +1,7 @@
 [automationcontroller]
 {% for node in _mesh_node_instance_info.resources %}
 {% if node.labels["mesh-type"] == "controller" %}
-{{ node.name }}
+{{ node.name }} ansible_connection=local
 {% endif %}
 {% endfor %}
 
@@ -9,23 +9,46 @@
 peers=direct_connected
 
 [execution_nodes]
-mesh-exec1
-mesh-hop1 node_type=hop peers=mesh-exec1
+{% for node in _mesh_node_instance_info.resources %}
+{% if ( node.labels["mesh-type"] == "exec" or node.labels["mesh-type"] == "hop" ) %}
+{{ node.name }}
+{% endif %}
+{% endfor %}
 
-[direct_connected]
-mesh-exec1
-mesh-hop1
+[dublin]
+{% for node in _mesh_node_instance_info.resources %}
+{% if node.labels["mesh-type"] == "hop" %}
+{{ node.name }}
+{% endif %}
+{% endfor %}
+
+[dublin:vars]
+node_type=hop
+peers=johannesburg
+
+[johannesburg]
+{% for node in _mesh_node_instance_info.resources %}
+{% if node.labels["mesh-type"] == "exec" %}
+{{ node.name }}
+{% endif %}
+{% endfor %}
+
+[direct_connected:children]
+dublin
+johannesburg
 
 [all:vars]
-admin_password='{{ admin_password }}'
-ansible_user='{{ username }}'
-ansible_ssh_private_key_file='/home/{{ username }}/.ssh/instruqt_lab'
-
 # PostgreSQL configuration
 pg_host=''
 pg_port=''
-
 pg_database='awx'
 pg_username='awx'
 pg_password='{{ admin_password }}'
 pg_sslmode='prefer'  # set to 'verify-full' for client-side enforced SSL
+
+ignore_preflight_errors=true
+create_preload_data=false
+admin_password='{{ admin_password }}'
+ansible_user='{{ username }}'
+ansible_ssh_private_key_file='/home/{{ username }}/.ssh/instruqt_lab'
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
