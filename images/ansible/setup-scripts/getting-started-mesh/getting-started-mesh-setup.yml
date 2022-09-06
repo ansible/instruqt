@@ -1,0 +1,572 @@
+---
+- name: Configure all hosts
+  hosts: all
+  become: true
+
+  tasks:
+    # For some reason, the authorized_key file disappears after instruqt setup sequence
+  - name: Add instruqt_lab ssh key to authorized keys on nodes # noqa no-jinja-nesting
+    ansible.posix.authorized_key:
+      user: "{{ ansible_user }}"
+      state: present
+      key: "{{ lookup('file', '/home/{{ ansible_user }}/.ssh/id_rsa.pub') }}"
+      comment: "Instruqt lab key"
+    tags:
+      - ssh-key
+      - setup-env
+##
+# https://play.instruqt.com/redhat/tracks/getting-started-mesh/
+#
+# Tags:
+# setup-env - Setup controller env for lab
+# auth-token - create controller auth-token
+# <challenge-slug>-check - check challenge
+# <challenge-slug>-solve - solve challenge
+# <challenge-slug>-setup - setup challenge
+##
+- name: Instruqt config getting started with controller
+  hosts: automationcontroller
+  gather_facts: true
+  become: true
+  tags:
+    - getting-started-mesh
+
+## Create auth token
+  tasks:
+    - name: get auth token and restart automation-controller if it fails
+      block:
+        - name: refresh facts
+          ansible.builtin.setup:
+            filter:
+              - ansible_local
+
+        - name: Create oauth token
+          awx.awx.token:
+            description: 'Instruqt lab'
+            scope: "write"
+            state: present
+            controller_host: "{{ controller_hostname }}"
+            controller_username: "{{ controller_admin_user }}"
+            controller_password: "{{ controller_admin_password }}"
+            validate_certs: false
+          register: _auth_token
+          until: _auth_token is not failed
+          delay: 3
+          retries: 5
+      rescue:
+        - name: In rescue block for auth token
+          ansible.builtin.debug:
+            msg: "failed to get auth token. Restarting automation controller service"
+
+        - name: restart the controller service
+          ansible.builtin.service:
+            name: automation-controller
+            state: restarted
+
+        - name: Ensure tower/controller is online and working
+          ansible.builtin.uri:
+            url: https://localhost/api/v2/ping/
+            method: GET
+            user: "{{ controller_admin_user }}"
+            password: "{{ controller_admin_password }}"
+            validate_certs: false
+            force_basic_auth: true
+          register: controller_online
+          until: controller_online is success
+          delay: 3
+          retries: 5
+
+        - name: Retry getting auth token
+          awx.awx.token:
+            description: 'Instruqt lab'
+            scope: "write"
+            state: present
+            controller_host: "{{ controller_hostname }}"
+            controller_username: "{{ controller_admin_user }}"
+            controller_password: "{{ controller_admin_password }}"
+            validate_certs: false
+          register: _auth_token
+          until: _auth_token is not failed
+          delay: 3
+          retries: 5
+      always:
+        - name: Create fact.d dir
+          ansible.builtin.file:
+            path: "{{ custom_facts_dir }}"
+            state: directory
+            recurse: true
+            owner: "{{ ansible_user }}"
+            group: "{{ ansible_user }}"
+            mode: 0755
+          become: true
+
+        - name: Create _auth_token custom fact
+          ansible.builtin.copy:
+            content: "{{ _auth_token.ansible_facts }}"
+            dest: "{{ custom_facts_dir }}/{{ custom_facts_file }}"
+            owner: "{{ ansible_user }}"
+            group: "{{ ansible_user }}"
+            mode: 0644
+          become: true
+      check_mode: false
+      when: ansible_local.custom_facts.controller_token is undefined
+      tags:
+        - auth-token
+
+    - name: refresh facts
+      ansible.builtin.setup:
+        filter:
+          - ansible_local
+      when: ansible_local.custom_facts.controller_token is undefined
+      tags:
+        - always
+
+    - name: create auth token fact
+      ansible.builtin.set_fact:
+        auth_token: "{{ ansible_local.custom_facts.controller_token }}"
+        cacheable: true
+      when:
+        - ansible_local.custom_facts.controller_token is defined
+        - auth_token is undefined
+      tags:
+        - always
+
+    # Update credential with Instruqt pvt ssh key
+    - name: Fetch the lab ssh private key
+      ansible.builtin.slurp:
+        src: "/home/{{ ansible_user }}/.ssh/id_rsa"
+      register: __instruqt_pvt_key
+      tags:
+        - setup-env
+        - lab-cred
+
+    - name: Update lab ssh credential
+      awx.awx.credential:
+        name: "{{ lab_credential_name }}"
+        organization: "{{ lab_organization }}"
+        credential_type: Machine
+        inputs:
+          ssh_key_data: "{{ __instruqt_pvt_key.content | b64decode }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - setup-env
+        - lab-cred
+
+    - name: Add instruqt_lab ssh key to authorized keys on nodes # noqa no-jinja-nesting
+      ansible.posix.authorized_key:
+        user: "{{ ansible_user }}"
+        state: present
+        key: "{{ lookup('file', '/home/{{ ansible_user }}/.ssh/id_rsa.pub') }}"
+        comment: "Instruqt lab key"
+      tags:
+        - ssh-key
+        - setup-env
+
+## Instruqt challenges setup/check/solve
+    # Solve / check mesh-instance-groups
+    - name: Solve mesh-instance-groups
+      awx.awx.instance_group:
+        state: present
+        name: "{{ item.lab_instance_group_name }}"
+        instances: "{{ item.lab_instance_group_hosts }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      loop: "{{ lab_instance_groups }}"
+      tags:
+        - mesh-instance-groups-solve
+
+    - name: Check mesh-instance-groups
+      ansible.builtin.shell: >
+        awx --conf.token {{ auth_token.token }} -k instance_group get '{{ lab_instance_group_name }}'
+      register: _instance_groups_check
+      changed_when: _instance_groups_check.rc != 0
+      tags:
+        - mesh-instance-groups-check
+        - mesh-instance-groups-instances-check
+
+    - name: Assert instance is in the correct instance group
+      ansible.builtin.assert:
+        that: lab_instance_group_instance_name in _instance_groups_check.stdout
+      tags:
+        - mesh-instance-groups-instances-check
+
+        # Solve / check multi-site
+    - name: Solve multi-site instance groups and inventories
+      awx.awx.inventory:
+        name: "{{ item.name }}"
+        description: "{{ item.description }}"
+        organization: "{{ lab_organization }}"
+        state: present
+        instance_groups: "{{ item.inv_instance_groups }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      loop: "{{ lab_inventories }}"
+      tags:
+        - multi-site-solve
+        - multi-site-solve-inv-ig
+
+    - name: Solve multi-site run job templates Raleigh inventory
+      awx.awx.job_launch:
+        name: "{{ item.jt_name }}"
+        organization: "{{ lab_organization }}"
+        inventory: "{{ lab_us_inventory_name }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+        wait: true
+      loop: "{{ lab_job_templates }}"
+      tags:
+        - multi-site-solve-jt
+        - multi-site-solve
+
+    - name: Solve multi-site run job templates JHB inventory
+      awx.awx.job_launch:
+        name: "{{ item.jt_name }}"
+        organization: "{{ lab_organization }}"
+        inventory: "{{ lab_jhb_inventory_name }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+        wait: true
+      loop: "{{ lab_job_templates }}"
+      tags:
+        - multi-site-solve-jt
+        - multi-site-solve
+
+    - name: Check multi-site inventory instance group assignment
+      awx.awx.inventory:
+        name: "{{ lab_inv_name }}"
+        organization: "{{ lab_organization }}"
+        state: present
+        instance_groups: "{{ lab_inv_igs }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      check_mode: true
+      register: _multi_site_check_inv
+      failed_when: ( _multi_site_check_inv["changed"] | bool ) or ( _multi_site_check_inv["failed"] | bool )
+      tags:
+        - multi-site-check-inv-ig
+        - multi-site-check
+
+    - name: List job template run list
+      awx.awx.job_list:
+        status: successful
+        query: {"name": "{{ lab_jt_name }}",
+                "inventory__name": "{{ lab_inv_name }}"}
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      register: _multi_site_check_inv
+      failed_when: _multi_site_check_inv.count == 0
+      tags:
+        - multi-site-check-inv-jt
+        - multi-site-check
+
+        # Setup / solve / check high-availability
+    - name: high-availability set {{ lab_exec_node_hostname }} instance id fact  # noqa yaml[line-length]
+      ansible.builtin.set_fact:
+        _exec1: "{{ _exec1 | default({}) | combine( {'name': item.hostname, 'id': item.id} ) }}"
+      loop: "{{ query('awx.awx.controller_api', 'instances', verify_ssl=False, oauth_token=auth_token, query_params={ 'hostname': lab_dbn_check_instance_name }) | list }}"
+      tags:
+        - high-availability-setup
+        - high-availability-setup-health-check
+        - high-availability-check
+        - high-availability-check-health-check
+        - high-availability-solve
+        - high-availability-solve-health-check
+        - playground-setup
+        - playground-setup-health-check
+
+    - name: high-availability solve mesh dublin hop templates
+      awx.awx.job_launch:
+        name: "{{ item.jt_name }}"
+        organization: "{{ lab_organization }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+        wait: true
+      when: '"Setup Dublin hop node" in item.jt_name'
+      loop: "{{ lab_dbn_check_job_templates }}"
+      tags:
+        - high-availability-solve
+        - high-availability-solve-jt
+
+    - name: high-availability solve receptor ping {{ lab_hop_node_hostname }}
+      ansible.builtin.command: >
+        /usr/bin/receptorctl --socket /var/run/awx-receptor/receptor.sock ping {{ lab_hop_node_hostname }}
+      register: _lab_hop_node_hostname_ping
+      until: _lab_hop_node_hostname_ping.rc == 0
+      changed_when: false
+      retries: 10
+      delay: 3
+      tags:
+        - high-availability-solve
+        - high-availability-solve-ping
+
+    - name: high-availability solve receptor ping {{ lab_exec_node_hostname }}
+      ansible.builtin.command: >
+        /usr/bin/receptorctl --socket /var/run/awx-receptor/receptor.sock ping {{ lab_exec_node_hostname }}
+      register: _lab_exec_node_hostname_ping
+      until: _lab_exec_node_hostname_ping.rc == 0
+      changed_when: false
+      retries: 10
+      delay: 3
+      tags:
+        - high-availability-solve
+        - high-availability-solve-ping
+
+    - name: high-availability refresh node health until working for solve
+      ansible.builtin.uri:
+        url: "https://localhost/api/v2/instances/{{ _exec1.id }}/health_check/"
+        method: POST
+        user: "{{ controller_admin_user }}"
+        password: "{{ controller_admin_password }}"
+        validate_certs: false
+        force_basic_auth: true
+      register: _health_check
+      until: _health_check.json.errors | length == 0
+      retries: 20
+      delay: 3
+      tags:
+        - high-availability-solve
+        - high-availability-solve-health-check
+
+    - name: high-availability solve mesh route info jt
+      awx.awx.job_launch:
+        name: "{{ item.jt_name }}"
+        organization: "{{ lab_organization }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+        wait: true
+      when: '"Mesh route info" in item.jt_name'
+      loop: "{{ lab_dbn_check_job_templates }}"
+      tags:
+        - high-availability-solve
+        - high-availability-solve-jt
+
+    - name: high-availability solve mesh Debug info
+      awx.awx.job_launch:
+        name: "{{ item.jt_name }}"
+        organization: "{{ lab_organization }}"
+        inventory: "{{ lab_jhb_inventory_name }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+        wait: true
+      when: '"Debug info" in item.jt_name'
+      loop: "{{ lab_dbn_check_job_templates }}"
+      tags:
+        - high-availability-solve
+        - high-availability-solve-jt
+
+    - name: Stop receptor service on {{ lab_hop_node_hostname }}
+      ansible.builtin.service:
+        name: receptor
+        state: stopped
+      delegate_to: "{{ lab_hop_node_hostname }}"
+      tags:
+        - high-availability-setup
+        - high-availability-setup-hop-receptor
+
+    - name: high-availability remove {{ lab_exec_node_hostname }} stanza from receptor.conf
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/receptor.conf.j2"
+        dest: "/etc/receptor/receptor.conf"
+        mode: 0644
+        validate: "/bin/receptorctl --socket /var/run/awx-receptor/receptor.sock --tls-client tls_client --config %s reload"
+        backup: true
+      register: _receptor_conf
+      tags:
+        - high-availability-setup
+        - high-availability-setup-conf-file
+        - playground-setup
+
+    - name: restart receptor service
+      ansible.builtin.service:
+        name: receptor
+        state: restarted
+      tags:
+        - high-availability-setup
+        - high-availability-setup-conf-file
+        - playground-setup
+
+    - name: high-availability setup receptor ping {{ lab_hop_node_hostname }} until failed
+      ansible.builtin.command: >
+        /usr/bin/receptorctl --socket /var/run/awx-receptor/receptor.sock ping {{ lab_hop_node_hostname }}
+      register: _lab_hop_node_hostname_ping
+      until: _lab_hop_node_hostname_ping.rc != 0
+      failed_when: _lab_hop_node_hostname_ping.rc == 0
+      changed_when: false
+      retries: 10
+      delay: 3
+      tags:
+        - high-availability-setup
+        - high-availability-setup-reload
+
+    - name: high-availability reload receptor service
+      ansible.builtin.command: >
+        /usr/bin/receptorctl --socket /var/run/awx-receptor/receptor.sock reload
+      register: _receptor_reload
+      changed_when: _receptor_reload.rc != 0
+      tags:
+        - high-availability-solve
+        - high-availability-setup
+        - high-availability-setup-reload
+        - playground-setup
+        - playground-setup-reload
+
+    - name: high-availability refresh exec node health until failed for setup
+      ansible.builtin.uri:
+        url: "https://localhost/api/v2/instances/{{ _exec1.id }}/health_check/"
+        method: POST
+        user: "{{ controller_admin_user }}"
+        password: "{{ controller_admin_password }}"
+        validate_certs: false
+        force_basic_auth: true
+      register: _health_check
+      until: _health_check.json.errors | length > 0
+      retries: 10
+      delay: 3
+      tags:
+        - high-availability-setup
+        - high-availability-setup-health-check
+        - playground-setup
+        - playground-setup-health-check
+
+    - name: high-availability get instance node health for check
+      ansible.builtin.uri:
+        url: "https://localhost/api/v2/instances/{{ _exec1.id }}/health_check/"
+        method: GET
+        user: "{{ controller_admin_user }}"
+        password: "{{ controller_admin_password }}"
+        validate_certs: false
+        force_basic_auth: true
+      register: _health_check
+      failed_when: _health_check.json.errors | length > 0
+      retries: 10
+      delay: 3
+      tags:
+        - high-availability-check
+        - high-availability-check-health-check
+
+    - name: high-availability clear job history
+      ansible.builtin.uri:
+        url: "https://localhost/api/v2/system_job_templates/1/launch/"
+        method: POST
+        body_format: json
+        body:
+          extra_vars:
+            days: 0
+        user: "{{ controller_admin_user }}"
+        password: "{{ controller_admin_password }}"
+        validate_certs: false
+        force_basic_auth: true
+      register: _job_history
+      failed_when: false
+      tags:
+        - high-availability-setup
+        - high-availability-setup-job-history
+
+    - name: high-availability create dublin inventory
+      awx.awx.inventory:
+        name: "{{ item.name }}"
+        description: "{{ item.description }}"
+        organization: "{{ lab_organization }}"
+        state: present
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      loop: "{{ lab_dbn_inventories }}"
+      tags:
+        - high-availability-setup
+        - high-availability-setup-inv
+        - playground-setup
+
+    - name: high-availability create dublin hosts
+      awx.awx.host:
+        name: "{{ item.lab_host_name }}"
+        inventory: "{{ item.lab_host_inventory }}"
+        state: present
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+        variables: "{{ item.lab_host_vars }}"
+      loop: "{{ lab_dbn_hosts }}"
+      tags:
+        - high-availability-setup
+        - high-availability-setup-hosts
+        - playground-setup
+
+    - name: high-availability setup create job templates
+      awx.awx.job_template:
+        name: "{{ item.jt_name }}"
+        state: present
+        become_enabled: "{{ item.jt_become }}"
+        project: "{{ lab_project_name }}"
+        credential: "{{ lab_credential_name }}"
+        inventory: "{{  item.jt_inventory }}"
+        playbook: "{{ item.jt_playbook }}"
+        survey_enabled: "{{ item.survey_enabled }}"
+        survey_spec: "{{ item.survey_spec | default(omit) }}"
+        ask_inventory_on_launch: "{{  item.jt_prompt_inventory }}"
+        extra_vars: "{{ item.jt_extra_vars | default(omit) }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      loop: "{{ lab_dbn_job_templates }}"
+      tags:
+        - high-availability-setup
+        - high-availability-setup-jt
+        - playground-setup
+
+
+    - name: high-availability list job template run list
+      awx.awx.job_list:
+        status: successful
+        query: {"name": "{{ lab_jt_name }}",
+                "inventory__name": "{{ lab_inv_name }}"}
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      register: _high_availability_check_jt
+      failed_when: _high_availability_check_jt.count == 0
+      tags:
+        - high-availability-check
+        - high-availability-check-jt
+
+    # - name: high-availability assert lab inventory in job list
+    #   ansible.builtin.assert:
+    #     that:
+    #       - lab_inv_name in _high_availability_check_jt.results | community.general.json_query('[].summary_fields.inventory.name')
+    #     fail_msg: "FAIL: {{ lab_inv_name }} not used to run {{ lab_jt_name }} job template."
+    #   tags:
+    #     - high-availability-check
+    #     - high-availability-check-jt
+
+    - name: high-availability assert instance is healthy
+      ansible.builtin.assert:
+        that:
+          - _health_check.json.errors.find('Receptor error') == -1
+        fail_msg: "FAIL: {{ lab_dbn_check_instance_name }} is in an unhealthy state."
+      tags:
+        - high-availability-check
+        - high-availability-check-health-check
+
+        # Setup / solve / check playground
+    - name: Setup playground remove instance groups
+      awx.awx.instance_group:
+        state: absent
+        name: "{{ item.lab_instance_group_name }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      loop: "{{ lab_instance_groups }}"
+      tags:
+        - playground-setup-igs
+        - playground-setup
