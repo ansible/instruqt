@@ -57,7 +57,7 @@ The `ansible_vars_file` packer variable enables you to specify a file with addit
 
 ### Example `extra_vars.yml` file
 
-```
+```yaml
 # Extra vars example file for Instruqt automation mesh images
 
 # Red Hat customer portal credentials
@@ -91,11 +91,11 @@ To execute packer run the following command->
 
 ```packer build --force automation-controller.pkr.hcl```
 
-## Automation mesh images
+## Building automation mesh images
 
 Automation mesh worker nodes are installed and configured during the automation controller installation. Due to this, additional steps are needed when creating automation mesh Instruqt images.
 
-![mesh images](../assets/instruqt_images.png)
+![mesh images](../assets/readme_mesh_images.png)
 
 The steps below create the following GCP images:
 
