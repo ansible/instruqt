@@ -70,6 +70,15 @@
       tags:
         - create-instances
 
+    - name: remove previous known_hosts keys from localhost
+      ansible.builtin.known_hosts:
+        name: "{{ item.networkInterfaces[0].accessConfigs[0].natIP }}"
+        state: absent
+      loop: "{{ _mesh_node_instance_info.resources }}"
+      tags:
+        - create-instances
+        - ssh-key
+
     - name: Wait for SSH to come up
       ansible.builtin.wait_for:
         host: "{{ item.networkInterfaces[0].accessConfigs[0].natIP }}"
@@ -114,6 +123,7 @@
     - name: Generate temp OpenSSH key pair for nodes
       community.crypto.openssh_keypair:
         path: "{{ _ssh_tempdir.path }}/instruqt_lab"
+        force: true
       tags:
         - create-instances
         - install-controller
@@ -127,9 +137,10 @@
   tasks:
     - name: Add instruqt_lab ssh key to authorized keys on nodes
       ansible.posix.authorized_key:
-        user: rhel
+        user: "{{ ansible_user }}"
         state: present
         key: "{{ lookup('file', '{{ hostvars.localhost._ssh_tempdir.path }}/instruqt_lab.pub') }}"
+        comment: "Instruqt lab key"
       tags:
         - ssh-key
         - install-controller
@@ -167,6 +178,7 @@
         force: true
       tags:
         - install-controller
+        - ssh-key
 
     - name: setup aap directory
       ansible.builtin.include_role:
@@ -544,7 +556,7 @@
         organization: "{{ lab_organization }}"
         scm_update_on_launch: false
         scm_update_cache_timeout: 60
-        scm_branch: "devel"
+        scm_branch: "{{ lab_repo_branch }}"
         wait: true
         controller_oauthtoken: "{{ auth_token }}"
         controller_host: "{{ controller_hostname }}"
@@ -619,6 +631,25 @@
         file: "{{ playbook_dir }}/common/10_image_cleanup.yml"
       tags:
         - cleanup-instances
+
+    - name: Remove known_hosts entries for root
+      ansible.builtin.known_hosts:
+        name: "{{ item.instance_name }}"
+        state: absent
+      loop: "{{ gcp_instances }}"
+      tags:
+        - cleanup-instances
+        - ssh-key
+
+    - name: Remove known_hosts entries for {{ ansible_user }}"
+      ansible.builtin.known_hosts:
+        name: "{{ item.instance_name }}"
+        state: absent
+      become: false
+      loop: "{{ gcp_instances }}"
+      tags:
+        - cleanup-instances
+        - ssh-key
 
 # create the instruqt images
 - name: create instruqt images
