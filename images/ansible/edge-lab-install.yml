@@ -316,9 +316,9 @@
         - install-code-server
         - install-controller
 
-# Configure mesh lab
+# Configure edge lab
 ##
-# https://play.instruqt.com/redhat/tracks/getting-started-mesh/
+# https://play.instruqt.com/redhat/tracks/getting-started-edge/
 #
 # Tags:
 # setup-env - Setup controller env for lab

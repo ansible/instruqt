@@ -1,0 +1,19 @@
+---
+- name: setup kiosk mode
+  hosts: all
+  become: true
+  vars:
+    systemd_units_dir: "/etc/systemd/system/"
+    service_name: "inductive-automation-ignition"
+    container_state: "installed"
+    container_image: "docker.io/inductiveautomation/ignition"
+    container_tag: "8.1"
+    container_port_mapping: "8088:8088"
+    container_extra_params: "--privileged -e GATEWAY_ADMIN_PASSWORD=redhat"
+  tasks:
+    - name: Configure kiosk mode on hmi devices
+      ansible.builtin.import_role:
+        name: kiosk_mode
+    - name: import container_lifecycle role
+      ansible.builtin.import_role:
+        name: container_lifecycle
