@@ -26,16 +26,6 @@
     ifname: 'eth0'
     method4: auto
     state: present
-  tags:
-    - network
-
-# - name: Install pip packages
-#   ansible.builtin.pip:
-#     name:
-#       - firewall
-#     state: present
-#   tags:
-#     - pip
 
 - name: Create gdm configuration for kiosk kiosk_mode
   ansible.builtin.template:
@@ -74,8 +64,6 @@
     service: https
     permanent: true
     state: enabled
-  tags:
-    - firewall
 
 - name: install yum install gnome-session-kiosk-session
   ansible.builtin.yum:
