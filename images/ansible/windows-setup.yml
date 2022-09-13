@@ -7,7 +7,7 @@
     - name: Hard-code an admin user
       win_user:
         name: admin
-        password: Password123
+        password: Password123!
         state: present
         groups:
           - Administrators
