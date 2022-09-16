@@ -1,0 +1,4 @@
+#!/bin/bash
+
+#Disable receptor service
+/bin/systemctl stop receptor

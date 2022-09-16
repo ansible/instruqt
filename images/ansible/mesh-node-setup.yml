@@ -31,6 +31,7 @@
         name: ansible.workshops.aap_download
         apply:
           delegate_to: localhost
+          become: false
 
     - name: Setup AAP install files
       ansible.builtin.include_role:

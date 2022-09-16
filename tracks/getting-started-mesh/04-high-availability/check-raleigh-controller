@@ -1,0 +1,29 @@
+#!/usr/bin/python3
+
+import subprocess
+import os
+import yaml
+import shlex
+os.environ["ANSIBLE_STDOUT_CALLBACK"] = "community.general.yaml"
+
+# Load extra_vars.yml
+extra_vars_file = open("/tmp/setup-scripts/getting-started-mesh/extra_vars.yml")
+parsed_extra_vars_file = yaml.load(extra_vars_file, yaml.loader.FullLoader)
+
+# Vars
+setup_scripts_path="/tmp/setup-scripts/getting-started-mesh/"
+
+# Check job templates executed with correct inventory
+for key,val in parsed_extra_vars_file.items():
+    if key == "lab_dbn_check_job_templates":
+        for job_template in parsed_extra_vars_file[key]:
+            lab_inv_jt_output = subprocess.run(["ansible-playbook", setup_scripts_path+"getting-started-mesh-setup.yml", "-i", setup_scripts_path+"inventory.ini", "-e", "lab_inv_name="+shlex.quote(job_template["jt_inventory"]), "-e", "lab_jt_name="+shlex.quote(job_template["jt_name"]), "-e", "@"+setup_scripts_path+"extra_vars.yml", "--tags", "auth-token,high-availability-check-jt"])
+            if lab_inv_jt_output.returncode > 0:
+                print ( "FAIL: Please make sure you've run the " + job_template["jt_name"] + " job template using the " + job_template["jt_inventory"] + " inventory." )
+                exit(1)
+    # Check if instance state is healthy
+    if key == "lab_dbn_check_instance_name":
+        lab_instance_health_output = subprocess.run(["ansible-playbook", setup_scripts_path+"getting-started-mesh-setup.yml", "-i", setup_scripts_path+"inventory.ini", "-e", "lab_dbn_check_instance_name="+shlex.quote(val), "-i", setup_scripts_path+"inventory.ini", "-e", "@"+setup_scripts_path+"extra_vars.yml", "--tags", "high-availability-check-health-check"])
+        if lab_instance_health_output.returncode > 0:
+            print ( "FAIL: " + val + " is in an unhealthy state. Please make sure you execute the 'Setup Dublin hop node' job template." )
+            exit(1)

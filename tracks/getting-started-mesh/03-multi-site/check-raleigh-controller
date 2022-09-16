@@ -1,0 +1,32 @@
+#!/usr/bin/python3
+
+import subprocess
+import os
+import yaml
+import shlex
+
+os.environ["ANSIBLE_STDOUT_CALLBACK"] = "community.general.yaml"
+
+# Load extra_vars.yml
+extra_vars_file = open("/tmp/setup-scripts/getting-started-mesh/extra_vars.yml")
+parsed_extra_vars_file = yaml.load(extra_vars_file, yaml.loader.FullLoader)
+
+setup_scripts_path="/tmp/setup-scripts/getting-started-mesh/"
+
+# Check instance groups are assigned to inventories
+for key,val in parsed_extra_vars_file.items(): 
+    if key == "lab_inventories":
+        for inventory in parsed_extra_vars_file[key]:
+            inv_instance_groups_str = ','.join(key for key in inventory["inv_instance_groups"])
+            lab_inv_igs_output = subprocess.run(["ansible-playbook", setup_scripts_path+"getting-started-mesh-setup.yml", "-i", setup_scripts_path+"inventory.ini", "-e", "lab_inv_name="+shlex.quote(inventory["name"]), "-e", "lab_inv_igs="+shlex.quote(inv_instance_groups_str), "-e", "@"+setup_scripts_path+"extra_vars.yml", "--tags", "auth-token,multi-site-check-inv-ig"])
+            if lab_inv_igs_output.returncode > 0:
+                print ( "FAIL: Please make sure the " + inv_instance_groups_str + " instance group(s) is associated with the " + inventory["name"] + " inventory and no incorrect instance groups are assigned." )
+                exit(1)
+    # Check lab job templates used correct inventories
+    if key == "lab_job_templates":
+        for job_template in parsed_extra_vars_file[key]:
+            for inventory in parsed_extra_vars_file["lab_inventories"]:
+                lab_inv_jt_output = subprocess.run(["ansible-playbook", setup_scripts_path+"getting-started-mesh-setup.yml", "-i", setup_scripts_path+"inventory.ini", "-e", "lab_inv_name="+shlex.quote(inventory["name"]), "-e", "lab_jt_name="+shlex.quote(job_template["jt_name"]), "-e", "@"+setup_scripts_path+"extra_vars.yml", "--tags", "multi-site-check-inv-jt"])
+                if lab_inv_jt_output.returncode > 0:
+                    print ( "FAIL: Please make sure you've run the " + job_template["jt_name"] + " job template using the " + inventory["name"] + " inventory." )
+                    exit(1)
