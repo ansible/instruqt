@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# Start up novnc - this is not working for some reason.
+echo "Attempting to start noVNC..."
+nohup /root/start_novnc.sh > foo.out 2> foo.err < /dev/null & disown

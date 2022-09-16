@@ -1,0 +1,24 @@
+version: "3"
+virtualmachines:
+- name: controller-edge
+  image: red-hat-mbu/controller-edge-image
+  shell: /bin/su - rhel -s /bin/bash
+  machine_type: n2-standard-2
+- name: dublin-kiosk
+  image: red-hat-mbu/edge-kiosk-node
+  shell: /bin/su - rhel -s /bin/bash
+  machine_type: n1-standard-2
+  allow_external_ingress:
+  - https
+- name: dublin-edge
+  image: red-hat-mbu/dublin-edge-image
+  shell: /bin/su - rhel -s /bin/bash
+  machine_type: n1-standard-2
+- name: jhb-edge
+  image: red-hat-mbu/jhb-edge-image
+  shell: /bin/su - rhel -s /bin/bash
+  machine_type: n1-standard-2
+- name: jhb-kiosk
+  image: red-hat-mbu/edge-kiosk-node
+  shell: /bin/su - rhel -s /bin/bash
+  machine_type: n1-standard-2

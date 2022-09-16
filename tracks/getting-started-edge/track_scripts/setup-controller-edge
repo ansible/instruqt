@@ -1,0 +1,20 @@
+#!/bin/bash
+
+while [ ! -f /opt/instruqt/bootstrap/host-bootstrap-completed ]
+do
+    echo "Waiting for Instruqt to finish booting the VM"
+    sleep 1
+done
+
+# Setup rhel user
+cp -a /root/.ssh/* /home/rhel/.ssh/.
+chown -R rhel:rhel /home/rhel/.ssh
+
+# Get instruqt lab content
+CONTENT_DIR="setup-scripts/getting-started-edge"
+SCM_BRANCH="getting-started-edge"
+
+/usr/bin/svn export https://github.com/craig-br/instruqt-tracks/branches/${SCM_BRANCH}/${CONTENT_DIR} /tmp/${CONTENT_DIR} --force
+
+# Use playbook to setup environment
+/bin/ansible-playbook /tmp/${CONTENT_DIR}/getting-started-edge-setup.yml -i /tmp/${CONTENT_DIR}/inventory.ini --tags auth-token,setup-env,controller-config -e @/tmp/${CONTENT_DIR}/track_vars.yml -v
