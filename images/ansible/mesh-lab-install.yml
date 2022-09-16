@@ -37,7 +37,7 @@
 
     - name: remove existing gcp instances
       ansible.builtin.command: >
-        gcloud compute instances delete "{{ item.instance_name }}" --project "{{ gcp_project }}" --quiet
+        gcloud compute instances delete "{{ item.instance_name }}" --project "{{ gcp_project }}" --zone "{{ gcp_zone }}" --quiet
       loop: "{{ gcp_instances }}"
       ignore_errors: true
       register: __delete_instances
@@ -680,7 +680,7 @@
 
     - name: delete gcloud instances
       ansible.builtin.command: >
-            gcloud compute instances delete "{{ item.instance_name }}" --project="{{ gcp_project }}" --quiet
+            gcloud compute instances delete "{{ item.instance_name }}" --project="{{ gcp_project }}"  --zone "{{ gcp_zone }}" --quiet
       loop: "{{ gcp_instances }}"
       tags:
         - create-images
