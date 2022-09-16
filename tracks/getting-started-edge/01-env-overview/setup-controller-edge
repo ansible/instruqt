@@ -1,0 +1,3 @@
+#!/bin/bash
+
+echo "169.254.34.87 jhb-kiosk" >> /etc/hosts
