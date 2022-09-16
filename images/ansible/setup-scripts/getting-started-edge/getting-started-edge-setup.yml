@@ -1,0 +1,394 @@
+---
+- name: Configure all hosts
+  hosts: all
+  become: true
+
+  tasks:
+    # For some reason, the authorized_key file disappears after instruqt setup sequence
+  - name: Add instruqt_lab ssh key to authorized keys on nodes # noqa no-jinja-nesting
+    ansible.posix.authorized_key:
+      user: "{{ ansible_user }}"
+      state: present
+      key: "{{ lookup('file', '/home/{{ ansible_user }}/.ssh/id_rsa.pub') }}"
+      comment: "Instruqt lab key"
+    tags:
+      - ssh-key
+      - setup-env
+
+##
+# https://play.instruqt.com/redhat/tracks/getting-started-edge/
+#
+# Tags:
+# setup-env - Setup controller env for lab
+# auth-token - create controller auth-token
+# <challenge-slug>-check - check challenge
+# <challenge-slug>-solve - solve challenge
+# <challenge-slug>-setup - setup challenge
+##
+- name: Instruqt config getting started with edge lab
+  hosts: automationcontroller
+  gather_facts: true
+  become: true
+  tags:
+    - getting-started-edge
+
+## Create auth token
+  tasks:
+    - name: Get auth token and restart automation-controller if it fails
+      block:
+        - name: Refresh facts
+          ansible.builtin.setup:
+            filter:
+              - ansible_local
+
+        - name: Create oauth token
+          awx.awx.token:
+            description: 'Instruqt lab'
+            scope: "write"
+            state: present
+            controller_host: "{{ controller_hostname }}"
+            controller_username: "{{ controller_admin_user }}"
+            controller_password: "{{ controller_admin_password }}"
+            validate_certs: false
+          register: _auth_token
+          until: _auth_token is not failed
+          delay: 3
+          retries: 5
+      rescue:
+        - name: In rescue block for auth token
+          ansible.builtin.debug:
+            msg: "failed to get auth token. Restarting automation controller service"
+
+        - name: Restart the controller service
+          ansible.builtin.service:
+            name: automation-controller
+            state: restarted
+
+        - name: Ensure tower/controller is online and working
+          ansible.builtin.uri:
+            url: https://localhost/api/v2/ping/
+            method: GET
+            user: "{{ controller_admin_user }}"
+            password: "{{ controller_admin_password }}"
+            validate_certs: false
+            force_basic_auth: true
+          register: controller_online
+          until: controller_online is success
+          delay: 3
+          retries: 5
+
+        - name: Retry getting auth token
+          awx.awx.token:
+            description: 'Instruqt lab'
+            scope: "write"
+            state: present
+            controller_host: "{{ controller_hostname }}"
+            controller_username: "{{ controller_admin_user }}"
+            controller_password: "{{ controller_admin_password }}"
+            validate_certs: false
+          register: _auth_token
+          until: _auth_token is not failed
+          delay: 3
+          retries: 5
+      always:
+        - name: Create fact.d dir
+          ansible.builtin.file:
+            path: "{{ custom_facts_dir }}"
+            state: directory
+            recurse: true
+            owner: "{{ ansible_user }}"
+            group: "{{ ansible_user }}"
+            mode: 0755
+          become: true
+
+        - name: Create _auth_token custom fact
+          ansible.builtin.copy:
+            content: "{{ _auth_token.ansible_facts }}"
+            dest: "{{ custom_facts_dir }}/{{ custom_facts_file }}"
+            owner: "{{ ansible_user }}"
+            group: "{{ ansible_user }}"
+            mode: 0644
+          become: true
+      check_mode: false
+      when: ansible_local.custom_facts.controller_token is undefined
+      tags:
+        - auth-token
+
+    - name: Refresh facts
+      ansible.builtin.setup:
+        filter:
+          - ansible_local
+      when: ansible_local.custom_facts.controller_token is undefined
+      tags:
+        - always
+
+    - name: Create auth token fact
+      ansible.builtin.set_fact:
+        auth_token: "{{ ansible_local.custom_facts.controller_token }}"
+        cacheable: true
+      when:
+        - ansible_local.custom_facts.controller_token is defined
+        - auth_token is undefined
+      tags:
+        - always
+
+    # - name: Add instruqt_lab ssh key to authorized keys on nodes # noqa no-jinja-nesting
+    #   ansible.posix.authorized_key:
+    #     user: "{{ ansible_user }}"
+    #     state: present
+    #     key: "{{ lookup('file', '/home/{{ ansible_user }}/.ssh/id_rsa.pub') }}"
+    #     comment: "Instruqt lab key"
+    #   tags:
+    #     - ssh-key
+    #     - setup-env
+
+## Controller objects
+## Controller objects
+    - name: Demo content - Create demo org to delete content
+      awx.awx.organization:
+        name: "Default"
+        state: present
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - setup-env
+        - demo-content
+
+    - name: Demo content - remove job template
+      awx.awx.job_template:
+        name: "Demo Job Template"
+        state: absent
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - setup-env
+        - demo-content
+
+    - name: Demo content - remove project
+      awx.awx.project:
+        name: "Demo Project"
+        state: absent
+        organization: "Default"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - setup-env
+        - demo-content
+
+    - name: Demo content - remove inventory
+      awx.awx.inventory:
+        name: "Demo Inventory"
+        state: absent
+        organization: "Default"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - setup-env
+        - demo-content
+
+    - name: Demo content - remove credential
+      awx.awx.credential:
+        name: "Demo Credential"
+        credential_type: "Machine"
+        state: absent
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - setup-env
+        - demo-content
+
+    - name: Demo content - remove organization
+      awx.awx.organization:
+        name: "Default"
+        state: absent
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - setup-env
+        - demo-content
+
+    - name: Add lab Organization
+      awx.awx.organization:
+        name: "{{ lab_organization }}"
+        description: "ACME Corp Organization"
+        state: present
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - setup-env
+        - lab-org
+
+    - name: Add lab inventories
+      awx.awx.inventory:
+        name: "{{ item.name }}"
+        description: "{{ item.description }}"
+        organization: "{{ lab_organization }}"
+        state: present
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      loop: "{{ lab_inventories }}"
+      tags:
+        - setup-env
+
+    - name: Create hosts
+      awx.awx.host:
+        name: "{{ item.lab_host_name }}"
+        inventory: "{{ item.lab_host_inventory }}"
+        state: present
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+        variables: "{{ item.lab_host_vars }}"
+      loop: "{{ lab_hosts }}"
+      tags:
+        - setup-env
+
+    - name: Fetch the lab ssh private key
+      ansible.builtin.slurp:
+        src: "/home/{{ ansible_user }}/.ssh/instruqt_lab"
+      register: __lab_pvt_key
+      tags:
+        - setup-env
+        - lab-cred
+
+    - name: Add the lab ssh credential
+      awx.awx.credential:
+        name: "{{ lab_credential_name }}"
+        organization: "{{ lab_organization }}"
+        credential_type: Machine
+        inputs:
+          ssh_key_data: "{{ __lab_pvt_key.content | b64decode }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - setup-env
+        - lab-cred
+
+    # Update credential with Instruqt pvt ssh key
+    - name: Fetch the lab ssh private key
+      ansible.builtin.slurp:
+        src: "/home/{{ ansible_user }}/.ssh/id_rsa"
+      register: __instruqt_pvt_key
+      tags:
+        - setup-env
+        - lab-cred
+
+    - name: Update lab ssh credential
+      awx.awx.credential:
+        name: "{{ lab_credential_name }}"
+        organization: "{{ lab_organization }}"
+        credential_type: Machine
+        inputs:
+          ssh_key_data: "{{ __instruqt_pvt_key.content | b64decode }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - setup-env
+        - lab-cred
+
+    - name: Add the lab project
+      awx.awx.project:
+        name: "{{ lab_project_name }}"
+        scm_type: git
+        scm_url: "https://github.com/craig-br/instruqt-track-content/"
+        organization: "{{ lab_organization }}"
+        scm_update_on_launch: false
+        scm_update_cache_timeout: 60
+        scm_branch: "{{ lab_repo_branch }}"
+        wait: true
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - setup-env
+        - lab-project
+
+    - name: Create instance groups
+      awx.awx.instance_group:
+        state: present
+        name: "{{ item.lab_instance_group_name }}"
+        instances: "{{ item.lab_instance_group_hosts }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      loop: "{{ lab_instance_groups }}"
+      tags:
+        - controller-config
+
+    - name: Add instance groups and inventories
+      awx.awx.inventory:
+        name: "{{ item.name }}"
+        description: "{{ item.description }}"
+        organization: "{{ lab_organization }}"
+        state: present
+        instance_groups: "{{ item.inv_instance_groups }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      loop: "{{ lab_inventories }}"
+      tags:
+        - controller-config
+
+    - name: Create job templates
+      awx.awx.job_template:
+        name: "{{ item.jt_name }}"
+        state: present
+        # execution_environment: "{{ item.execution_env | default ( controller_devops_ee ) }}"
+        become_enabled: "{{ item.jt_become }}"
+        project: "{{ lab_project_name }}"
+        credential: "{{ lab_credential_name }}"
+        inventory: "{{ item.jt_inventory }}"
+        playbook: "{{ item.jt_playbook }}"
+        survey_enabled: "{{ item.survey_enabled | default(omit) }}"
+        survey_spec: "{{ item.survey_spec | default(omit) }}"
+        ask_inventory_on_launch: "{{ item.jt_prompt_inventory }}"
+        ask_variables_on_launch: "{{ item.jt_prompt_inventory | default(omit)}}"
+        extra_vars: "{{ item.jt_extra_vars | default(omit) }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        validate_certs: false
+      loop: "{{ lab_job_templates }}"
+      tags:
+        - controller-config
+
+    - name: Create Workflows
+      awx.awx.tower_workflow_job_template:
+        name: "{{ item.workflow_name }}"
+        inventory: "{{ item.workflow_inventory | default(omit) }}"
+        extra_vars: "{{ item.workflow_vars | default(omit) }}"
+        ask_variables_on_launch: "{{ item.workflow_prompt_vars | default(false) }}"
+        organization: "{{ item.workflow_org | default(omit)}}"
+        schema: "{{ item.workflow_schema | default(omit)}}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      loop: "{{ lab_jt_worklows }}"
+      tags:
+        - controller-config
+        - controller-workflows
+
+    - name: Add nodes to lab workflow
+      awx.awx.workflow_job_template_node:
+        state: present
+        identifier: "{{ item.workflow_node_id }}"
+        workflow_job_template: "{{ item.workflow_node_jt }}"
+        organization: "{{ item.workflow_node_org }}"
+        approval_node: "{{ item.workflow_node_approval | default(omit) }}"
+        unified_job_template: "{{ item.workflow_node_unified_jt | default(omit) }}"
+        success_nodes: "{{ item.workflow_node_success_nodes | default(omit) }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      loop: "{{ lab_jt_worklow_nodes }}"
+      tags:
+        - controller-config
+        - controller-workflows
