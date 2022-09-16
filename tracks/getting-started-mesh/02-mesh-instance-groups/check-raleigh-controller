@@ -1,0 +1,29 @@
+#!/usr/bin/python3
+
+import subprocess
+import os
+os.environ["ANSIBLE_STDOUT_CALLBACK"] = "community.general.yaml"
+
+instance_groups = {
+   "'Johannesburg data center'": {
+      'hosts':
+         "'jhb-exec'"
+   },
+   "'Raleigh data center'": {
+      'hosts':
+         "'raleigh-controller'"
+   }
+}
+setup_scripts_path="/tmp/setup-scripts/getting-started-mesh/"
+
+# Check if instance group exists and correct instance is assigned
+for key, value in instance_groups.items():
+    instance_group_output = subprocess.run(["ansible-playbook", setup_scripts_path+"getting-started-mesh-setup.yml", "-e", "lab_instance_group_name="+key, "-e", "@"+setup_scripts_path+"extra_vars.yml", "-i", setup_scripts_path+"inventory.ini", "--tags", "auth-token,mesh-instance-groups-check"])
+    if instance_group_output.returncode > 0:
+        print ( "FAIL: The " + key + " instance group was not found. Please try again and remember it's case-sensitive!" )
+        exit(1)
+    for hosts in instance_groups[key].values():
+        instance_group_instances_output = subprocess.run(["ansible-playbook", setup_scripts_path+"getting-started-mesh-setup.yml", "-e", "lab_instance_group_name="+key, "-e", "lab_instance_group_instance_name="+hosts, "-e", "@"+setup_scripts_path+"extra_vars.yml", "-i", setup_scripts_path+"inventory.ini", "--tags", "mesh-instance-groups-instances-check"])
+        if instance_group_instances_output.returncode > 0:
+            print ( "FAIL: The " + hosts + " instance is missing from the " + key + " instance group. Please try again and remember it's case-sensitive!" )
+            exit(1)
