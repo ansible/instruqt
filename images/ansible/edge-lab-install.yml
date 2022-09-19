@@ -1,40 +1,6 @@
 - name: setup mesh instruqt lab
   hosts: localhost
-  connection: local
   gather_facts: false
-
-  vars:
-    instance_host_vars:
-      ansible_user: "rhel"
-      ansible_ssh_user: "rhel"
-      ansible_ssh_pass: "ansible123!"
-      ansible_sudo_pass: "ansible123!"
-      ansible_host_key_checking: false
-      ansible_python_interpreter: "/usr/bin/python3"
-    gcp_instances:
-      - instance_name: mesh-exec1
-        instance_image: mesh-node
-        instance_labels: "role=instruqt-lab,mesh-type=node"
-        instance_machine_type: e2-standard-2
-        instance_groups:
-          - execnodes
-      - instance_name: mesh-hop1
-        instance_image: mesh-node
-        instance_labels: "role=instruqt-lab,mesh-type=node"
-        instance_machine_type: e2-standard-2
-        instance_groups:
-          - execnodes
-      - instance_name: automation-controller21
-        instance_image: automation-controller
-        instance_labels: "role=instruqt-lab,mesh-type=controller"
-        instance_machine_type: e2-standard-2
-        instance_groups:
-          - automationcontroller
-    gcp_zone: us-central1-a
-    gcp_service_account_file: "{{ lookup('env', 'HOME') }}/.ssh/gcp-redhat.json"
-    aap_dir: "/home/{{ ansible_user }}/aap_install"
-    admin_password: 'ansible123!'
-    username: "{{ ansible_user }}"
 
   pre_tasks:
     - name: check variables are defined and not empty before building images
@@ -49,64 +15,73 @@
         - registry_password
 
   tasks:
+    - name: download collections
+      ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
+      loop:
+        - ansible.workshops
+        - google.cloud
+        - ansible.posix
+        - community.crypto
+        - awx.awx
+        - redhat_cop.controller_configuration
+      register: __collection_install
+      changed_when: '"Starting collection install process" in __collection_install.stdout'
+      tags:
+        - install-controller
+        - install-collections
+
     - name: Download AAP
       ansible.builtin.include_role:
         name: ansible.workshops.aap_download
       tags:
         - install-controller
 
-    - name: download collections
-      ansible.builtin.command: "ansible-galaxy collection install {{ item }}"
-      loop:
-        - ansible.workshops
-        - google.cloud
-        - ansible.posix
-        - community.crypto
-
     - name: remove existing gcp instances
       ansible.builtin.command: >
-        gcloud compute instances delete "{{ item.instance_name }}" --quiet
+        gcloud compute instances delete "{{ item.instance_name }}" --project "{{ gcp_project }}" --quiet
       loop: "{{ gcp_instances }}"
       ignore_errors: true
+      register: __delete_instances
       tags:
         - create-instances
         - delete-instances
 
     - name: create instances using gcloud
       ansible.builtin.command: >
-        gcloud compute instances create "{{ item.instance_name }}" --project=red-hat-mbu --zone="{{ gcp_zone }}" --machine-type="{{ item.instance_machine_type }}"
+        gcloud compute instances create "{{ item.instance_name }}" --project="{{ gcp_project }}" --zone="{{ gcp_zone }}" --machine-type="{{ item.instance_machine_type }}"
         --network-interface=network-tier=PREMIUM,subnet=default --maintenance-policy=MIGRATE 
-        --service-account=732542278593-compute@developer.gserviceaccount.com 
+        --service-account="{{ gcp_service_account }}"
         --scopes=https://www.googleapis.com/auth/devstorage.read_only,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/trace.append 
-        --create-disk=auto-delete=yes,boot=yes,device-name="{{ item.instance_name }}",image=projects/red-hat-mbu/global/images/"{{ item.instance_image }}",mode=rw,size=20,type=projects/red-hat-mbu/zones/us-central1-a/diskTypes/pd-balanced 
+        --create-disk=auto-delete=yes,boot=yes,device-name="{{ item.instance_name }}",image=projects/"{{ gcp_project }}"/global/images/"{{ item.instance_image }}",mode=rw,size=20,type=projects/"{{ gcp_project }}"/zones/us-central1-a/diskTypes/pd-balanced 
         --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any --quiet --labels="{{ item.instance_labels }}"
       loop: "{{ gcp_instances }}"
       ignore_errors: true
       tags:
         - create-instances
 
-    - name: add https-server tag to controller instance
-      ansible.builtin.command: >
-        gcloud compute instances add-tags {{ item.instance_name }} --tags="https-server"
-      when: ( item.instance_tag is defined ) and ( item.instance_tag == "https-server")
-      loop: "{{ gcp_instances }}"
-      tags:
-        - create-instances
-
     - name: get gcp node instance info
-      gcp_compute_instance_info:
+      google.cloud.gcp_compute_instance_info: # noqa syntax-check
         zone: "{{ gcp_zone }}"
         filters:
         - labels.role = "instruqt-lab"
-        project: red-hat-mbu
+        project: "{{ gcp_project }}"
         auth_kind: serviceaccount
         service_account_file: "{{ gcp_service_account_file }}"
       register: _mesh_node_instance_info
       tags:
         - create-instances
 
+    - name: remove previous known_hosts keys from localhost
+      ansible.builtin.known_hosts:
+        name: "{{ item.networkInterfaces[0].accessConfigs[0].natIP }}"
+        state: absent
+      loop: "{{ _mesh_node_instance_info.resources }}"
+      tags:
+        - create-instances
+        - ssh-key
+
     - name: Wait for SSH to come up
-      wait_for:
+      ansible.builtin.wait_for:
         host: "{{ item.networkInterfaces[0].accessConfigs[0].natIP }}"
         port: 22
         delay: 10
@@ -122,7 +97,7 @@
         ansible_host: "{{ item.networkInterfaces[0].accessConfigs[0].natIP }}"
       args: "{{ instance_host_vars }}"
       loop: "{{ _mesh_node_instance_info.resources }}"
-      when: '"node" in item.labels["mesh-type"]'
+      when: ('"hop" in item.labels["mesh-type"]') or ('"exec" in item.labels["mesh-type"]')
       tags:
         - create-instances
 
@@ -138,7 +113,7 @@
         - create-instances
 
     - name: create temp dir for ssh keys
-      tempfile:
+      ansible.builtin.tempfile:
         state: directory
         prefix: instruqt_ssh_
       register: _ssh_tempdir
@@ -149,6 +124,7 @@
     - name: Generate temp OpenSSH key pair for nodes
       community.crypto.openssh_keypair:
         path: "{{ _ssh_tempdir.path }}/instruqt_lab"
+        force: true
       tags:
         - create-instances
         - install-controller
@@ -158,17 +134,14 @@
   hosts: all
   become: true
   gather_facts: false
-  vars:
-    aap_dir: "/home/{{ ansible_user }}/aap_install"
-    admin_password: 'ansible123!'
-    username: "{{ ansible_user }}"
 
   tasks:
     - name: Add instruqt_lab ssh key to authorized keys on nodes
       ansible.posix.authorized_key:
-        user: rhel
+        user: "{{ ansible_user }}"
         state: present
         key: "{{ lookup('file', '{{ hostvars.localhost._ssh_tempdir.path }}/instruqt_lab.pub') }}"
+        comment: "Instruqt lab key"
       tags:
         - ssh-key
         - install-controller
@@ -182,20 +155,23 @@
 # configure the controller instance
 - name: setup the controller
   hosts: automationcontroller
-  gather_facts: false
+  gather_facts: true
   become: true
 
-  vars:
-    aap_dir: "/home/{{ ansible_user }}/aap_install"
-    username: "{{ ansible_user }}"
-    admin_password: 'ansible123!'
-    gcp_zone: us-central1-a
-    gcp_service_account_file: "{{ lookup('env', 'HOME') }}/.ssh/gcp-redhat.json"
-    controller_install_command: "ANSIBLE_BECOME_METHOD='sudo'  ANSIBLE_BECOME=True ANSIBLE_PRIVATE_KEY_FILE='/home/rhel/.ssh/instruqt_lab' ANSIBLE_HOST_KEY_CHECKING=False  ./setup.sh -e generate_dot_file=$HOME/mesh.dot -e required_ram=0 -e registry_username='{{ registry_username }}' -e registry_password='{{ registry_password }}'"
-
   tasks:
-    - name: Copy temp instruqt_lab ssh keys to controller
-      copy:
+    - name: download collections
+      ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
+      loop:
+        - awx.awx
+        - redhat_cop.controller_configuration
+      register: __collection_install
+      changed_when: '"Starting collection install process" in __collection_install.stdout'
+      tags:
+        - install-collections
+        - install-controller
+
+    - name: Copy instruqt_lab private key to controller
+      ansible.builtin.copy:
         src: "{{ hostvars.localhost._ssh_tempdir.path }}/"
         dest: "/home/{{ ansible_user }}/.ssh/"
         owner: "{{ ansible_user }}"
@@ -204,6 +180,7 @@
         force: true
       tags:
         - install-controller
+        - ssh-key
 
     - name: setup aap directory
       ansible.builtin.include_role:
@@ -227,33 +204,17 @@
     - name: Install controller dependencies
       ansible.builtin.dnf:
         name:
-          - "@php:7.4"
-          - "@nginx:1.18"
           - subscription-manager-rhsm-certificates
-          - "@python38"
-          - "@postgresql:12"
           - jq
           - automation-controller-cli
           - git
           - svn
+          - python3-jmespath
         state: present
       register: dnf_check
       until: dnf_check is not failed
       retries: 4
       delay: 5
-      tags:
-        - install-controller
-
-    - name: Update appstream to python38
-      command: >
-        /usr/sbin/alternatives --set python3 /usr/bin/python3.8
-      tags:
-        - install-controller
-
-    - name: Install controller python dependencies
-      ansible.builtin.pip:
-        name:
-          - jmespath
       tags:
         - install-controller
 
@@ -269,24 +230,24 @@
       gcp_compute_instance_info:
         zone: "{{ gcp_zone }}"
         filters:
-        - labels.role = "instruqt-lab"
-        project: red-hat-mbu
+          - labels.role = "instruqt-lab"
+        project: "{{ gcp_project }}"
         auth_kind: serviceaccount
         service_account_file: "{{ gcp_service_account_file }}"
       delegate_to: localhost
       register: _mesh_node_instance_info
       tags:
         - install-controller
-  
+
     - name: template inventory file for Instruqt mesh lab
-      template:
-        src: "mesh_config_install.j2"
+      ansible.builtin.template:
+        src: "edge_config_install.j2"
         dest: "{{ aap_dir }}/inventory"
       tags:
         - install-controller
 
     - name: Install generic ansible.cfg in home directory
-      template:
+      ansible.builtin.template:
         src: ansible.cfg.j2
         dest: "/etc/ansible/ansible.cfg"
       tags:
@@ -300,13 +261,14 @@
       poll: 15
       tags:
         - install-controller
+        - aap-install
 
     - name: wait for Automation Controller to be up
       uri:
         url: https://localhost/api/v2/ping/
         method: GET
         user: admin
-        password: "{{ admin_password | default ('ansible123!') }}"
+        password: "{{ controller_admin_password | default ('ansible123!') }}"
         validate_certs: false
       register: check2
       until: check2.json is defined and check2.json.instances[0].capacity > 0 and check2.json.instance_groups[0].capacity > 0
@@ -349,65 +311,15 @@
         apply:
           tags:
             - install-code-server
+            - install-controller
       tags:
         - install-code-server
+        - install-controller
 
-# Run cleanup tasks on images
-- name: Run config and setup on instances
-  hosts: all
-  become: true
-  gather_facts: false
-  vars:
-    aap_dir: "/home/{{ ansible_user }}/aap_install"
-    admin_password: 'ansible123!'
-    username: "{{ ansible_user }}"
-
-  tasks:
-    - name: Include common image cleanup tasks
-      ansible.builtin.include_tasks:
-        file: "{{ playbook_dir }}/common/10_image_cleanup.yml"
-      tags:
-        - cleanup-instances
-
-# create the instruqt images
-- name: create instruqt images
-  hosts: localhost
-  connection: local
-  vars:
-    gcp_images:
-      - mesh-exec1
-      - mesh-hop1
-      - automation-controller21
-    gcp_zone: us-central1-a
-    gcp_service_account_file: "{{ gcp_service_account_file }}"
-
-  tasks:
-    - name: shutdown gcloud instances
-      ansible.builtin.command: >
-            gcloud compute instances stop "{{ item }}" --project=red-hat-mbu --zone="{{ gcp_zone }}" --quiet
-      loop: "{{ gcp_images }}"
-      tags:
-        - create-images
-
-    - name: delete current instruqt images
-      ansible.builtin.command: >
-            gcloud compute images delete "{{ item }}-mesh" --quiet
-      ignore_errors: true
-      loop: "{{ gcp_images }}"
-      tags:
-        - create-images
-
-    - name: create instruqt images
-      ansible.builtin.command: >
-            gcloud compute images create "{{ item }}-mesh" --project=red-hat-mbu --source-disk="{{ item }}" --source-disk-zone="{{ gcp_zone }}" --storage-location=us --quiet
-      loop: "{{ gcp_images }}"
-      tags:
-        - create-images
-
-    - name: delete gcloud instances
-      ansible.builtin.command: >
-            gcloud compute instances delete "{{ item }}" --quiet
-      loop: "{{ gcp_images }}"
-      tags:
-        - create-images
-        - delete-images
+# Configure edge lab
+##
+# https://play.instruqt.com/redhat/tracks/getting-started-edge/
+#
+# Tags:
+# setup-env - Setup controller env for lab
+##

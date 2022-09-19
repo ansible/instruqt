@@ -1,0 +1,18 @@
+#!/bin/bash
+
+while [ ! -f /opt/instruqt/bootstrap/host-bootstrap-completed ]
+do
+    echo "Waiting for Instruqt to finish booting the VM"
+    sleep 1
+done
+
+CONTENT_DIR="setup-scripts/getting-started-mesh"
+
+cp -a /root/.ssh/* /home/rhel/.ssh/.
+chown -R rhel:rhel /home/rhel/.ssh
+
+# Get instruqt lab content
+/usr/bin/svn export https://github.com/craig-br/instruqt-tracks/branches/devel/${CONTENT_DIR} /tmp/${CONTENT_DIR}
+
+# Use playbook to setup environment
+/bin/ansible-playbook /tmp/${CONTENT_DIR}/getting-started-mesh-setup.yml -i /tmp/setup-scripts/getting-started-mesh/inventory.ini --tags auth-token,setup-env -e @/tmp/${CONTENT_DIR}/extra_vars.yml -v

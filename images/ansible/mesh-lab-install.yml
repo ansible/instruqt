@@ -1,0 +1,687 @@
+- name: setup mesh instruqt lab
+  hosts: localhost
+  gather_facts: false
+
+  pre_tasks:
+    - name: check variables are defined and not empty before building images
+      ansible.builtin.fail:
+        msg: "{{ item }} is undefined or empty. Please check your extra vars file"
+      when: not lookup('vars', item) or lookup('vars', item) is undefined
+      loop:
+        - offline_token
+        - redhat_username
+        - redhat_password
+        - registry_username
+        - registry_password
+
+  tasks:
+    - name: download collections
+      ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
+      loop:
+        - ansible.workshops
+        - google.cloud
+        - ansible.posix
+        - community.crypto
+        - awx.awx
+      register: __collection_install
+      changed_when: '"Starting collection install process" in __collection_install.stdout'
+      tags:
+        - install-controller
+        - install-collections
+
+    - name: Download AAP
+      ansible.builtin.include_role:
+        name: ansible.workshops.aap_download
+      tags:
+        - install-controller
+
+    - name: remove existing gcp instances
+      ansible.builtin.command: >
+        gcloud compute instances delete "{{ item.instance_name }}" --project "{{ gcp_project }}" --zone "{{ gcp_zone }}" --quiet
+      loop: "{{ gcp_instances }}"
+      ignore_errors: true
+      register: __delete_instances
+      tags:
+        - create-instances
+        - delete-instances
+
+    - name: create instances using gcloud
+      ansible.builtin.command: >
+        gcloud compute instances create "{{ item.instance_name }}" --project="{{ gcp_project }}" --zone="{{ gcp_zone }}" --machine-type="{{ item.instance_machine_type }}"
+        --network-interface=network-tier=PREMIUM,subnet=default --maintenance-policy=MIGRATE 
+        --service-account="{{ gcp_service_account }}"
+        --scopes=https://www.googleapis.com/auth/devstorage.read_only,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/trace.append 
+        --create-disk=auto-delete=yes,boot=yes,device-name="{{ item.instance_name }}",image=projects/"{{ gcp_project }}"/global/images/"{{ item.instance_image }}",mode=rw,size=20,type=projects/"{{ gcp_project }}"/zones/us-central1-a/diskTypes/pd-balanced 
+        --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any --quiet --labels="{{ item.instance_labels }}"
+      loop: "{{ gcp_instances }}"
+      ignore_errors: true
+      tags:
+        - create-instances
+
+    - name: get gcp node instance info
+      google.cloud.gcp_compute_instance_info: # noqa syntax-check
+        zone: "{{ gcp_zone }}"
+        filters:
+        - labels.role = "instruqt-lab"
+        project: "{{ gcp_project }}"
+        auth_kind: serviceaccount
+        service_account_file: "{{ gcp_service_account_file }}"
+      register: _mesh_node_instance_info
+      tags:
+        - create-instances
+
+    - name: remove previous known_hosts keys from localhost
+      ansible.builtin.known_hosts:
+        name: "{{ item.networkInterfaces[0].accessConfigs[0].natIP }}"
+        state: absent
+      loop: "{{ _mesh_node_instance_info.resources }}"
+      tags:
+        - create-instances
+        - ssh-key
+
+    - name: Wait for SSH to come up
+      ansible.builtin.wait_for:
+        host: "{{ item.networkInterfaces[0].accessConfigs[0].natIP }}"
+        port: 22
+        delay: 10
+        timeout: 60
+      loop: "{{ _mesh_node_instance_info.resources }}"
+      tags:
+        - create-instances
+
+    - name: add gcp node hosts to inventory
+      ansible.builtin.add_host:
+        name: "{{ item.name }}"
+        groups: "execnodes"
+        ansible_host: "{{ item.networkInterfaces[0].accessConfigs[0].natIP }}"
+      args: "{{ instance_host_vars }}"
+      loop: "{{ _mesh_node_instance_info.resources }}"
+      when: ('"hop" in item.labels["mesh-type"]') or ('"exec" in item.labels["mesh-type"]')
+      tags:
+        - create-instances
+
+    - name: add gcp controller hosts to inventory
+      ansible.builtin.add_host:
+        name: "{{ item.name }}"
+        groups: "automationcontroller"
+        ansible_host: "{{ item.networkInterfaces[0].accessConfigs[0].natIP }}"
+      args: "{{ instance_host_vars }}"
+      loop: "{{ _mesh_node_instance_info.resources }}"
+      when: '"controller" in item.labels["mesh-type"]'
+      tags:
+        - create-instances
+
+    - name: create temp dir for ssh keys
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: instruqt_ssh_
+      register: _ssh_tempdir
+      tags:
+        - create-instances
+        - install-controller
+
+    - name: Generate temp OpenSSH key pair for nodes
+      community.crypto.openssh_keypair:
+        path: "{{ _ssh_tempdir.path }}/instruqt_lab"
+        force: true
+      tags:
+        - create-instances
+        - install-controller
+
+# Run configuration on all mesh instances
+- name: Run config and setup on instances
+  hosts: all
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Add instruqt_lab ssh key to authorized keys on nodes
+      ansible.posix.authorized_key:
+        user: "{{ ansible_user }}"
+        state: present
+        key: "{{ lookup('file', '{{ hostvars.localhost._ssh_tempdir.path }}/instruqt_lab.pub') }}"
+        comment: "Instruqt lab key"
+      tags:
+        - ssh-key
+        - install-controller
+
+    - name: enable RHUI repos for aap install
+      ansible.builtin.command: >
+        dnf config-manager --set-enabled rhui*
+      tags:
+        - install-controller
+
+# configure the controller instance
+- name: setup the controller
+  hosts: automationcontroller
+  gather_facts: true
+  become: true
+
+  tasks:
+    - name: download collections
+      ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
+      loop:
+        - awx.awx
+      register: __collection_install
+      changed_when: '"Starting collection install process" in __collection_install.stdout'
+      tags:
+        - install-collections
+        - install-controller
+  
+    - name: Copy instruqt_lab private key to controller
+      ansible.builtin.copy:
+        src: "{{ hostvars.localhost._ssh_tempdir.path }}/"
+        dest: "/home/{{ ansible_user }}/.ssh/"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: "0600"
+        force: true
+      tags:
+        - install-controller
+        - ssh-key
+
+    - name: setup aap directory
+      ansible.builtin.include_role:
+        name: ansible.workshops.control_node
+        tasks_from: 10_aap_setup.yml
+        apply:
+          tags:
+            - install-controller
+      tags:
+        - install-controller
+
+    - name: Create controller repo
+      ansible.builtin.include_role:
+        name: ansible.workshops.aap_repo
+        apply:
+          tags:
+            - install-controller
+      tags:
+        - install-controller
+
+    - name: Install controller dependencies
+      ansible.builtin.dnf:
+        name:
+          - subscription-manager-rhsm-certificates
+          - jq
+          - automation-controller-cli
+          - git
+          - svn
+          - python3-jmespath
+        state: present
+      register: dnf_check
+      until: dnf_check is not failed
+      retries: 4
+      delay: 5
+      tags:
+        - install-controller
+
+    - name: Create controller.cfg file for controller node
+      ansible.builtin.template:
+        src: controller.cfg.j2
+        dest: "/tmp/setup-scripts/controller.cfg"
+      when: controllerinstall is defined and controllerinstall | bool
+      tags:
+        - install-controller
+
+    - name: get gcp node instance info
+      gcp_compute_instance_info:
+        zone: "{{ gcp_zone }}"
+        filters:
+        - labels.role = "instruqt-lab"
+        project: "{{ gcp_project }}"
+        auth_kind: serviceaccount
+        service_account_file: "{{ gcp_service_account_file }}"
+      delegate_to: localhost
+      register: _mesh_node_instance_info
+      tags:
+        - install-controller
+  
+    - name: template inventory file for Instruqt mesh lab
+      ansible.builtin.template:
+        src: "mesh_config_install.j2"
+        dest: "{{ aap_dir }}/inventory"
+      tags:
+        - install-controller
+
+    - name: Install generic ansible.cfg in home directory
+      ansible.builtin.template:
+        src: ansible.cfg.j2
+        dest: "/etc/ansible/ansible.cfg"
+      tags:
+        - install-controller
+
+    - name: run the controller mesh lab installer
+      shell: "{{ controller_install_command }}"
+      args:
+        chdir: "{{ aap_dir }}"
+      async: 2100
+      poll: 15
+      tags:
+        - install-controller
+        - aap-install
+
+    - name: wait for Automation Controller to be up
+      uri:
+        url: https://localhost/api/v2/ping/
+        method: GET
+        user: admin
+        password: "{{ admin_password | default ('ansible123!') }}"
+        validate_certs: false
+      register: check2
+      until: check2.json is defined and check2.json.instances[0].capacity > 0 and check2.json.instance_groups[0].capacity > 0
+      retries: 60
+      delay: 10
+      tags:
+        - install-controller
+
+    - name: Display /api/v2/ping results
+      debug:
+        msg: '{{ check2.json }}'
+      tags:
+        - install-controller
+
+    - name: load license block
+      block:
+        - name: check for base64 variable first
+          copy:
+            dest: '{{ playbook_dir }}/manifest.zip'
+            content: '{{ base64_manifest | b64decode }}'
+          delegate_to: localhost
+          become: false
+      rescue:
+        - name: unable to load base64_manifest
+          debug:
+            msg: 'No base64_manifest variable found, trying to open manifest.zip'
+      always:
+        - name: Load manifest into variable
+          local_action:
+            module: slurp
+            src: "{{ playbook_dir }}/manifest.zip"
+          register: manifest_file
+          become: false
+      tags:
+        - install-controller
+
+    - name: install code server
+      ansible.builtin.include_role:
+        name: ansible.workshops.code_server
+        apply:
+          tags:
+            - install-code-server
+      tags:
+        - install-code-server
+
+# Configure mesh lab
+##
+# https://play.instruqt.com/redhat/tracks/getting-started-mesh/
+#
+# Tags:
+# setup-env - Setup controller env for lab
+##
+    - name: get auth token and restart automation-controller if it fails
+      block:
+        - name: refresh facts
+          ansible.builtin.setup:
+            filter:
+              - ansible_local
+
+        - name: Create oauth token
+          awx.awx.token:
+            description: 'Instruqt lab'
+            scope: "write"
+            state: present
+            controller_host: "{{ controller_hostname }}"
+            controller_username: "{{ controller_admin_user }}"
+            controller_password: "{{ controller_admin_password }}"
+            validate_certs: false
+          register: _auth_token
+          until: _auth_token is not failed
+          delay: 3
+          retries: 5
+      rescue:
+        - name: In rescue block for auth token
+          debug:
+            msg: "failed to get auth token. Restarting automation controller service"
+
+        - name: restart the controller service
+          ansible.builtin.service:
+            name: automation-controller
+            state: restarted
+
+        - name: Ensure tower/controller is online and working
+          uri:
+            url: https://localhost/api/v2/ping/
+            method: GET
+            user: "{{ controller_admin_user }}"
+            password: "{{ controller_admin_password }}"
+            validate_certs: false
+            force_basic_auth: true
+          register: controller_online
+          until: controller_online is success
+          delay: 3
+          retries: 5
+
+        - name: Retry getting auth token
+          awx.awx.token:
+            description: 'Instruqt lab'
+            scope: "write"
+            state: present
+            controller_host: "{{ controller_hostname }}"
+            controller_username: "{{ controller_admin_user }}"
+            controller_password: "{{ controller_admin_password }}"
+            validate_certs: false
+          register: _auth_token
+          until: _auth_token is not failed
+          delay: 3
+          retries: 5
+      always:
+        - name: Create fact.d dir
+          ansible.builtin.file:
+            path: "{{ custom_facts_dir }}"
+            state: directory
+            recurse: yes
+            owner: "{{ ansible_user }}"
+            group: "{{ ansible_user }}"
+            mode: 0755
+          become: true
+
+        - name: Create _auth_token custom fact
+          ansible.builtin.copy:
+            content: "{{ _auth_token.ansible_facts }}"
+            dest: "{{ custom_facts_dir }}/{{ custom_facts_file }}"
+            owner: "{{ ansible_user }}"
+            group: "{{ ansible_user }}"
+            mode: 0644
+          become: true
+      check_mode: false
+      when: ansible_local.custom_facts.controller_token is undefined
+      tags:
+        - auth-token
+        - setup-env
+
+    - name: refresh facts
+      ansible.builtin.setup:
+        filter:
+          - ansible_local
+      when: ansible_local.custom_facts.controller_token is undefined
+      tags:
+        - always
+
+    - name: create auth token fact
+      ansible.builtin.set_fact:
+        auth_token: "{{ ansible_local.custom_facts.controller_token }}"
+        cacheable: true
+      when:
+        - ansible_local.custom_facts.controller_token is defined
+        - auth_token is undefined
+      tags:
+        - always
+
+## Controller objects
+    - name: Demo content - Create demo org to delete content
+      awx.awx.organization:
+        name: "Default"
+        state: present
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - setup-env
+        - demo-content
+
+    - name: Demo content - remove job template
+      awx.awx.job_template:
+        name: "Demo Job Template"
+        state: absent
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - setup-env
+        - demo-content
+
+    - name: Demo content - remove project
+      awx.awx.project:
+        name: "Demo Project"
+        state: absent
+        organization: "Default"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - setup-env
+        - demo-content
+   
+    - name: Demo content - remove inventory
+      awx.awx.inventory:
+        name: "Demo Inventory"
+        state: absent
+        organization: "Default"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - setup-env
+        - demo-content
+
+    - name: Demo content - remove credential
+      awx.awx.credential:
+        name: "Demo Credential"
+        credential_type: "Machine"
+        state: absent
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - setup-env
+        - demo-content
+
+    - name: Demo content - remove organization
+      awx.awx.organization:
+        name: "Default"
+        state: absent
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - setup-env
+        - demo-content
+
+    - name: Add lab Organization
+      awx.awx.organization:
+        name: "{{ lab_organization }}"
+        description: "ACME Corp Organization"
+        state: present
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - setup-env
+        - lab-org
+  
+    - name: Add lab inventories
+      awx.awx.inventory:
+        name: "{{ item.name }}"
+        description: "{{ item.description }}"
+        organization: "{{ lab_organization }}"
+        state: present
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      loop: "{{ lab_inventories }}"
+      tags:
+        - setup-env
+
+    - name: Create hosts
+      awx.awx.host:
+        name: "{{ item.lab_host_name }}"
+        inventory: "{{ item.lab_host_inventory }}"
+        state: present
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+        variables: "{{ item.lab_host_vars }}"
+      loop: "{{ lab_hosts }}"
+      tags:
+        - setup-env
+
+    - name: Fetch the lab ssh private key
+      ansible.builtin.slurp:
+        src: "/home/{{ ansible_user }}/.ssh/instruqt_lab"
+      register: __lab_pvt_key
+      tags:
+        - setup-env
+        - lab-cred
+
+    - name: Add the lab ssh credential
+      awx.awx.credential:
+        name: "{{ lab_credential_name }}"
+        organization: "{{ lab_organization }}"
+        credential_type: Machine
+        inputs:
+          ssh_key_data: "{{ __lab_pvt_key.content | b64decode }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - setup-env
+        - lab-cred
+
+    - name: Add the lab project
+      awx.awx.project:
+        name: "{{ lab_project_name }}"
+        scm_type: git
+        scm_url: "https://github.com/craig-br/instruqt-track-content/"
+        organization: "{{ lab_organization }}"
+        scm_update_on_launch: false
+        scm_update_cache_timeout: 60
+        scm_branch: "{{ lab_repo_branch }}"
+        wait: true
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - setup-env
+        - lab-project
+
+    - name: Create job templates
+      awx.awx.job_template:
+        name: "{{ item.jt_name }}"
+        organization: "{{ lab_organization }}"
+        state: present
+        become_enabled: "{{ item.jt_become }}"
+        project: "{{ lab_project_name }}"
+        credential: "{{ lab_credential_name }}"
+        inventory: "{{  item.jt_inventory }}"
+        playbook: "{{ item.jt_playbook }}"
+        survey_enabled: "{{ item.survey_enabled }}"
+        survey_spec: "{{ item.survey_spec | default(omit) }}"
+        ask_inventory_on_launch: "{{  item.jt_prompt_inventory }}"
+        extra_vars: "{{ item.jt_extra_vars | default(omit) }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      loop: "{{ lab_job_templates }}"
+      tags:
+        - setup-env
+        - lab-jt
+
+    - name: Add student user to {{ lab_organization }}
+      awx.awx.user:
+        username: "{{ student_user }}"
+        password: "{{ student_password }}"
+        organization: "{{ lab_organization }}"
+        is_superuser: true
+        state: present
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      tags:
+        - setup-env
+        - controller-users
+
+    - name: Give users access to controller objects
+      awx.awx.role:
+        user: "{{ item.user }}"
+        role: "{{ item.role }}"
+        organizations: "{{ item.organizations | default( omit ) }}"
+        job_templates: "{{ item.job_templates | default( omit ) }}"
+        workflows: "{{ item.workflows | default( omit ) }}"
+        projects: "{{ item.projects | default( omit ) }}"
+        state: "{{ item.state }}"
+        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      loop: "{{ controller_user_vars }}"
+      when: controller_user_vars is defined
+      tags:
+        - setup-env
+        - controller-users
+
+# Run cleanup tasks on images
+- name: Run config and setup on instances
+  hosts: all
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Include common image cleanup tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/10_image_cleanup.yml"
+      tags:
+        - cleanup-instances
+
+    - name: Remove known_hosts entries for root
+      ansible.builtin.known_hosts:
+        name: "{{ item.instance_name }}"
+        state: absent
+      loop: "{{ gcp_instances }}"
+      tags:
+        - cleanup-instances
+        - ssh-key
+
+    - name: Remove known_hosts entries for {{ ansible_user }}"
+      ansible.builtin.known_hosts:
+        name: "{{ item.instance_name }}"
+        state: absent
+      become: false
+      loop: "{{ gcp_instances }}"
+      tags:
+        - cleanup-instances
+        - ssh-key
+
+# create the instruqt images
+- name: create instruqt images
+  hosts: localhost
+
+  tasks:
+    - name: shutdown gcloud instances
+      ansible.builtin.command: >
+            gcloud compute instances stop "{{ item.instance_name }}" --project="{{ gcp_project }}" --zone="{{ gcp_zone }}" --quiet
+      loop: "{{ gcp_instances }}"
+      tags:
+        - create-images
+
+    - name: delete current instruqt images
+      ansible.builtin.command: >
+            gcloud compute images delete "{{ item.instance_name }}-image" --project="{{ gcp_project }}" --quiet
+      ignore_errors: true
+      loop: "{{ gcp_instances }}"
+      tags:
+        - create-images
+
+    - name: create instruqt images
+      ansible.builtin.command: >
+            gcloud compute images create "{{ item.instance_name }}-image" --project="{{ gcp_project }}" --source-disk="{{ item.instance_name }}" --source-disk-zone="{{ gcp_zone }}" --storage-location=us --quiet
+      loop: "{{ gcp_instances }}"
+      tags:
+        - create-images
+
+    - name: delete gcloud instances
+      ansible.builtin.command: >
+            gcloud compute instances delete "{{ item.instance_name }}" --project="{{ gcp_project }}"  --zone "{{ gcp_zone }}" --quiet
+      loop: "{{ gcp_instances }}"
+      tags:
+        - create-images
+        - delete-images

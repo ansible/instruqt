@@ -1,0 +1,41 @@
+slug: getting-started-mesh
+id: akkabmifu15z
+type: track
+title: Getting started with automation mesh
+teaser: In this track, you'll learn about automation mesh features, perform basic
+  configuration tasks and use it to run a job template with ACME Corp.
+description: |-
+  # Red Hat Ansible automation mesh
+  ***
+
+  <br>
+
+  ![mesh_map](./assets/img/mesh_map.png)
+
+  <br>
+
+  The [automation mesh](https://www.ansible.com/blog/whats-new-in-ansible-automation-platform-2.1-automation-mesh) component of Ansible Automation Platform is a multi-directional, multi-hopped overlay network of nodes delivering automation across constrained networks, such as DMZs and VPCs, to local and remote endpoints across the globe.
+
+  In this lab, we’ll join ACME Corp, our fictitious company, as they configure mesh, use it to run automation in remote locations, and overcome a network outage using native mesh features.
+
+  This lab covers:
+
+  * Automation mesh node types and features.
+  * How to use automation controller logically group automation mesh nodes.
+  * Using automation mesh in multi-site environments.
+  * Automation mesh resiliency and building redundancy into Ansible Automation platform design.
+icon: https://raw.githubusercontent.com/craig-br/instruqt-tracks/devel/assets/icons/automation_mesh.png
+level: beginner
+tags:
+- ansible
+- ansible automation platform
+- mesh
+- automation mesh
+owner: redhat
+developers:
+- cbrandt@redhat.com
+private: true
+published: true
+show_timer: true
+skipping_enabled: true
+checksum: "5009210370509543477"
