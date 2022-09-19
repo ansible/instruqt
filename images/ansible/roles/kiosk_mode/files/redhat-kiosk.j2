@@ -1,0 +1,14 @@
+#!/bin/sh
+
+kiosk_page="http://localhost:8088"
+
+while true; do
+	/usr/bin/curl -o /dev/null $kiosk_page 2> /dev/null
+	rc=$?
+
+	if [ "$rc" == "0" ]; then
+        /usr/bin/firefox --kiosk $kiosk_page --display=:0
+	else
+		sleep 1
+	fi
+done
