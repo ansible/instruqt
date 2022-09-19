@@ -1,0 +1,64 @@
+[automationcontroller]
+{% for node in _mesh_node_instance_info.resources %}
+{% if node.labels["mesh-type"] == "controller" %}
+{{ node.name }} ansible_connection=local
+{% endif %}
+{% endfor %}
+
+[automationcontroller:vars]
+peers=direct_connected
+
+[execution_nodes]
+{% for node in _mesh_node_instance_info.resources %}
+{% if ( node.labels["mesh-type"] == "exec" or node.labels["mesh-type"] == "hop" ) %}
+{{ node.name }}
+{% endif %}
+{% endfor %}
+
+[dublin]
+{% for node in _mesh_node_instance_info.resources %}
+{% if node.labels["location"] == "dublin" %}
+{{ node.name }}
+{% endif %}
+{% endfor %}
+
+[dublin:vars]
+{% for node in _mesh_node_instance_info.resources %}
+{% if node.labels["location"] == "dublin" %}
+node_type={{ node.labels["mesh-type"] }}
+{% endif %}
+{% endfor %}
+
+[johannesburg]
+{% for node in _mesh_node_instance_info.resources %}
+{% if node.labels["location"] == "jhb" %}
+{{ node.name }}
+{% endif %}
+{% endfor %}
+
+[johannesburg:vars]
+{% for node in _mesh_node_instance_info.resources %}
+{% if node.labels["location"] == "jhb" %}
+node_type={{ node.labels["mesh-type"] }}
+{% endif %}
+{% endfor %}
+
+[direct_connected:children]
+dublin
+johannesburg
+
+[all:vars]
+# PostgreSQL configuration
+pg_host=''
+pg_port=''
+pg_database='awx'
+pg_username='awx'
+pg_password='{{ controller_admin_password }}'
+pg_sslmode='prefer'  # set to 'verify-full' for client-side enforced SSL
+
+ignore_preflight_errors=true
+create_preload_data=false
+admin_password='{{ controller_admin_password }}'
+ansible_user='{{ username }}'
+ansible_ssh_private_key_file='/home/{{ username }}/.ssh/instruqt_lab'
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'

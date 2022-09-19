@@ -233,6 +233,7 @@
         auth_kind: serviceaccount
         service_account_file: "{{ gcp_service_account_file }}"
       delegate_to: localhost
+      become: false
       register: _mesh_node_instance_info
       tags:
         - install-controller
@@ -317,7 +318,7 @@
 # https://play.instruqt.com/redhat/tracks/getting-started-mesh/
 #
 # Tags:
-# setup-env - Setup controller env for lab
+# controller-config - Setup controller env for lab
 ##
     - name: get auth token and restart automation-controller if it fails
       block:
@@ -398,7 +399,7 @@
       when: ansible_local.custom_facts.controller_token is undefined
       tags:
         - auth-token
-        - setup-env
+        - controller-config
 
     - name: refresh facts
       ansible.builtin.setup:
@@ -427,7 +428,7 @@
         controller_host: "{{ controller_hostname }}"
         validate_certs: "{{ controller_validate_certs }}"
       tags:
-        - setup-env
+        - controller-config
         - demo-content
 
     - name: Demo content - remove job template
@@ -438,7 +439,7 @@
         controller_host: "{{ controller_hostname }}"
         validate_certs: "{{ controller_validate_certs }}"
       tags:
-        - setup-env
+        - controller-config
         - demo-content
 
     - name: Demo content - remove project
@@ -450,7 +451,7 @@
         controller_host: "{{ controller_hostname }}"
         validate_certs: "{{ controller_validate_certs }}"
       tags:
-        - setup-env
+        - controller-config
         - demo-content
    
     - name: Demo content - remove inventory
@@ -462,7 +463,7 @@
         controller_host: "{{ controller_hostname }}"
         validate_certs: "{{ controller_validate_certs }}"
       tags:
-        - setup-env
+        - controller-config
         - demo-content
 
     - name: Demo content - remove credential
@@ -474,7 +475,7 @@
         controller_host: "{{ controller_hostname }}"
         validate_certs: "{{ controller_validate_certs }}"
       tags:
-        - setup-env
+        - controller-config
         - demo-content
 
     - name: Demo content - remove organization
@@ -485,7 +486,7 @@
         controller_host: "{{ controller_hostname }}"
         validate_certs: "{{ controller_validate_certs }}"
       tags:
-        - setup-env
+        - controller-config
         - demo-content
 
     - name: Add lab Organization
@@ -497,7 +498,7 @@
         controller_host: "{{ controller_hostname }}"
         validate_certs: "{{ controller_validate_certs }}"
       tags:
-        - setup-env
+        - controller-config
         - lab-org
   
     - name: Add lab inventories
@@ -511,7 +512,7 @@
         validate_certs: "{{ controller_validate_certs }}"
       loop: "{{ lab_inventories }}"
       tags:
-        - setup-env
+        - controller-config
 
     - name: Create hosts
       awx.awx.host:
@@ -524,14 +525,14 @@
         variables: "{{ item.lab_host_vars }}"
       loop: "{{ lab_hosts }}"
       tags:
-        - setup-env
+        - controller-config
 
     - name: Fetch the lab ssh private key
       ansible.builtin.slurp:
         src: "/home/{{ ansible_user }}/.ssh/instruqt_lab"
       register: __lab_pvt_key
       tags:
-        - setup-env
+        - controller-config
         - lab-cred
 
     - name: Add the lab ssh credential
@@ -545,7 +546,7 @@
         controller_host: "{{ controller_hostname }}"
         validate_certs: "{{ controller_validate_certs }}"
       tags:
-        - setup-env
+        - controller-config
         - lab-cred
 
     - name: Add the lab project
@@ -562,7 +563,7 @@
         controller_host: "{{ controller_hostname }}"
         validate_certs: "{{ controller_validate_certs }}"
       tags:
-        - setup-env
+        - controller-config
         - lab-project
 
     - name: Create job templates
@@ -584,7 +585,7 @@
         validate_certs: "{{ controller_validate_certs }}"
       loop: "{{ lab_job_templates }}"
       tags:
-        - setup-env
+        - controller-config
         - lab-jt
 
     - name: Add student user to {{ lab_organization }}
@@ -598,7 +599,7 @@
         controller_host: "{{ controller_hostname }}"
         validate_certs: "{{ controller_validate_certs }}"
       tags:
-        - setup-env
+        - controller-config
         - controller-users
 
     - name: Give users access to controller objects
@@ -616,7 +617,7 @@
       loop: "{{ controller_user_vars }}"
       when: controller_user_vars is defined
       tags:
-        - setup-env
+        - controller-config
         - controller-users
 
 # Run cleanup tasks on images
