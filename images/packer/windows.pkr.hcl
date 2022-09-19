@@ -24,7 +24,7 @@ build {
     sources = ["sources.googlecompute.windows"]
     
     provisioner "shell-local" {
-      inline = ["pip install pywinrm requests requests-credssp, ansible-galaxy collection install community.windows"]
+      inline = ["pip install pywinrm requests requests-credssp", "ansible-galaxy collection install community.windows"]
     } 
 
     provisioner "ansible" {
