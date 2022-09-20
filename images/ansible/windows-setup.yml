@@ -5,7 +5,7 @@
   tasks:
 
     - name: Hard-code an admin user
-      community.windows.win_user:
+      win_user:
         name: admin
         password: Password123!
         state: present
@@ -13,7 +13,7 @@
           - Administrators
 
     - name: install the Win32-OpenSSH service
-      chocolatey.chocolatey.win_chocolatey:
+      win_chocolatey:
         name: openssh
         package_params: /SSHServerFeature
         state: present
