@@ -178,8 +178,6 @@ Want to open code-server with a specific working directory? In the tabs configur
 
 # Words of wisdom from Colin
 
-As a developer, I want to interact with GCP via gcloud.
-gcloud auth login
+As a developer, I want to interact with GCP via gcloud, so I `gcloud auth login`
 
-As a developer, I want my code to interact with GCP via SDK.
-gcloud auth application-default login
+As a developer, I want my code to interact with GCP via SDK, so I `gcloud auth application-default login`
