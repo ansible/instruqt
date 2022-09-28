@@ -32,9 +32,6 @@
     regexp: '^apply_updates'
     line: apply_updates = no
 
-- name: Update dnf cache
-  ansible.builtin.command: dnf -y makecache
-
 - name: Enable selected RHUI repos
   ansible.builtin.copy:
     src: ../files/rh-cloud.repo
@@ -42,6 +39,9 @@
     owner: root
     group: root
     mode: '644'
+
+- name: Update dnf cache
+  ansible.builtin.command: dnf -y makecache
 
 - name: remove AAP repo
   ansible.builtin.yum_repository:
