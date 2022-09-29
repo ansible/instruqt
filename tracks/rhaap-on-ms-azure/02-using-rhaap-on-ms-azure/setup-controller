@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# ansible-playbook /tmp/setup-scripts/azure-lab-1/azure_creds.yml
+
+exit 0
