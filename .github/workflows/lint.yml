@@ -26,6 +26,9 @@ jobs:
           repository: ${{github.event.pull_request.head.repo.full_name}}
       - id: set-matrix
         run: echo "::set-output name=matrix::$(ls images/ansible/*-setup.yml | jq -R -s -c 'split("\n")[:-1]')"
+        
+      - name: show output
+        run: echo ${{ steps.set-matrix.outputs.matrix }}
   
   # The `lint` job spins up for each file within the array created above
   ansible-lint:

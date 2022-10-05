@@ -12,6 +12,7 @@ on:
   workflow_dispatch:
 
 jobs:
+
   get-instruqt-prod-tracks:
     runs-on: ubuntu-latest
     environment: test
@@ -19,20 +20,16 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
 
     steps:
-#       - uses: actions/checkout@v2
-#       - run: pip install jmespath
       
       - name: get production tracks
         id: set-matrix
-#         run: echo "::set-output name=matrix::$(ansible-playbook .github/workflows/ansible/prod-track-test.yml)"
         run: |
           echo "::set-output name=matrix::$(\
-          curl -s https://play.instruqt.com/graphql \
+          curl https://play.instruqt.com/graphql \
           -H "Content-Type: application/json" \
           -H "Accept: application/json" \
-          -H "Connection: keep-alive" \
           -H "Authorization: Bearer $INSTRUQT_API_KEY" \
-          -d '{"query":"query tracks {\n  tracks(organizationSlug: \"redhat\") {\n    slug\n    maintenance\n  }\n}\n","variables":{}}' | jq -s '.[].data.tracks[] | select(.maintenance==false) | .slug' | jq -R -s -c 'split("\n")[:-1]'\
+          -d '{"query":"query tracks {\n  tracks(organizationSlug: \"redhat\") {\n    slug\n    maintenance\n  }\n}\n","variables":{}}' --compressed | jq -s '.[].data.tracks[] | select(.maintenance==false) | .slug' | jq -R -s -c 'split("\n")[:-1]' | sed 's/\\//g' | sed 's/\"\"/"/g'\
           )"
         env:
           INSTRUQT_API_KEY: ${{ secrets.INSTRUQT_API_KEY }}
@@ -41,14 +38,41 @@ jobs:
       - name: show output
         run: echo ${{ steps.set-matrix.outputs.matrix }}
   
-  run-track-test:
+  test-track:
+    needs: get-instruqt-prod-tracks
     runs-on: ubuntu-latest
     environment: test
     strategy:
       fail-fast: false
       matrix:
-        track-slug: ${{ needs.get-instruqt-prod-tracks.outputs.matrix }}
+        track-slug: ${{ fromJSON(needs.get-instruqt-prod-tracks.outputs.matrix) }}
         
     steps:
-    - name: dump slugs
-      run: echo ${{ matrix.track-slug }}
+    - name: Install instruqt cli
+      run: |
+        curl -L https://github.com/instruqt/cli/releases/download/2036-df08c03/instruqt-linux-2036-df08c03.zip -o /tmp/instruqt.zip
+        unzip /tmp/instruqt.zip -d /usr/local/bin/
+        instruqt update
+      env:
+        INSTRUQT_TOKEN: ${{ secrets.INSTRUQT_API_KEY }}
+      
+    - name: run track test
+      shell: bash {0}
+      run: |
+        testtrack="$(/usr/local/bin/instruqt track test $INSTRUQT_ORG/${{ matrix.track-slug }})"
+        if [ $? -eq 0 ]
+        then
+          echo "$testtrack"
+          exit 0
+        elif [ $? -eq 1 ]
+        then
+          echo "::group::Track test results"
+          echo "$testtrack"
+          echo "::endgroup::"
+          error="$(echo "$testtrack" | grep "ERROR" | sed -e 's/\x1b\[[0-9;]*m//g')"
+          echo "$error" >> $GITHUB_STEP_SUMMARY
+          exit 1
+        fi
+      env:
+        INSTRUQT_TOKEN: ${{ secrets.INSTRUQT_API_KEY }}
+        INSTRUQT_ORG: ${{ secrets.INSTRUQT_ORG }}
