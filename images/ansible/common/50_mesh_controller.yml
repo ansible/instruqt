@@ -1,0 +1,105 @@
+##
+# Create controller objects for mesh lab
+# Tags:
+# demo-content - Remove Demo Org, project, inventory and job template
+# controller-config - Setup controller env for lab
+##
+
+## Controller objects
+- name: Demo content - Create demo org to delete content
+  awx.awx.organization:
+    name: "Default"
+    state: present
+    controller_host: "{{ controller_hostname }}"
+    controller_username: "{{ controller_username }}"
+    controller_password: "{{ controller_password }}"
+    validate_certs: "{{ controller_validate_certs }}"
+  tags:
+    - demo-content
+
+- name: Demo content - remove job template
+  awx.awx.job_template:
+    name: "Demo Job Template"
+    state: absent
+    controller_host: "{{ controller_hostname }}"
+    controller_username: "{{ controller_username }}"
+    controller_password: "{{ controller_password }}"
+    validate_certs: "{{ controller_validate_certs }}"
+  tags:
+    - demo-content
+
+- name: Demo content - remove project
+  awx.awx.project:
+    name: "Demo Project"
+    state: absent
+    organization: "Default"
+    controller_host: "{{ controller_hostname }}"
+    controller_username: "{{ controller_username }}"
+    controller_password: "{{ controller_password }}"
+    validate_certs: "{{ controller_validate_certs }}"
+  tags:
+    - demo-content
+
+- name: Demo content - remove inventory
+  awx.awx.inventory:
+    name: "Demo Inventory"
+    state: absent
+    organization: "Default"
+    controller_host: "{{ controller_hostname }}"
+    controller_username: "{{ controller_username }}"
+    controller_password: "{{ controller_password }}"
+    validate_certs: "{{ controller_validate_certs }}"
+  tags:
+    - demo-content
+
+- name: Demo content - remove credential
+  awx.awx.credential:
+    name: "Demo Credential"
+    credential_type: "Machine"
+    state: absent
+    controller_host: "{{ controller_hostname }}"
+    controller_username: "{{ controller_username }}"
+    controller_password: "{{ controller_password }}"
+    validate_certs: "{{ controller_validate_certs }}"
+  tags:
+    - demo-content
+
+- name: Demo content - remove organization
+  awx.awx.organization:
+    name: "Default"
+    state: absent
+    controller_host: "{{ controller_hostname }}"
+    controller_username: "{{ controller_username }}"
+    controller_password: "{{ controller_password }}"
+    validate_certs: "{{ controller_validate_certs }}"
+  tags:
+    - demo-content
+
+- name: Get SSH setup key
+  ansible.builtin.slurp:
+    src: "/home/{{ ansible_user }}/.ssh/instruqt_lab"
+  register: __lab_pvt_key
+  tags:
+    - controller-config
+
+- name: Pull execution environment images
+  become_user: "awx"
+  become: true
+  containers.podman.podman_image:
+    name: "{{ item.image }}"
+  loop: "{{ controller_execution_environments }}"
+  register: __podman_pull_supported
+  when: (controller_execution_environments is defined) and (controller_execution_environments | length > 0)
+  until: __podman_pull_supported is not failed
+  retries: 5
+  delay: 15
+  tags:
+    - controller-config
+
+# Using extra_vars file for this.
+# Check https://github.com/redhat-cop/controller_configuration
+- name: Create lab controller objects
+  ansible.builtin.import_role:
+    name: redhat_cop.controller_configuration.dispatch
+  tags:
+    - controller-config
