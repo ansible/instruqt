@@ -7,8 +7,8 @@ on:
   # This ensures that even if there haven't been commits that we are still
   # testing. This is particularly important to validate the scenarios against
   # changes in ansible-core or ansible-test
-  schedule:
-    - cron: '0 6 * * *'
+  # schedule:
+  #   - cron: '0 6 * * *'
   workflow_dispatch:
 
 jobs:
