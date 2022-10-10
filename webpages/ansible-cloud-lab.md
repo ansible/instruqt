@@ -12,4 +12,4 @@ Ansible Hybrid Cloud Automation Workshops
 
 ## Lab Diagram
 
-![picture of hybrid cloud automation lab diagram](https://github.com/IPvSean/pictures_for_github/blob/master/aws-diagram.png?raw=true)
+<img src="https://github.com/IPvSean/pictures_for_github/blob/master/aws-diagram.png?raw=true" width="600px">
