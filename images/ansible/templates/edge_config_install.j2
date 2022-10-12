@@ -43,12 +43,12 @@ pg_host=''
 pg_port=''
 pg_database='awx'
 pg_username='awx'
-pg_password='{{ controller_admin_password }}'
+pg_password='{{ controller_password }}'
 pg_sslmode='prefer'  # set to 'verify-full' for client-side enforced SSL
 
 ignore_preflight_errors=true
 create_preload_data=false
-admin_password='{{ controller_admin_password }}'
+admin_password='{{ controller_password }}'
 ansible_user='{{ username }}'
 ansible_ssh_private_key_file='/home/{{ username }}/.ssh/instruqt_lab'
-ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+ansible_ssh_extra_args='-o ControlMaster=auto -o ControlPersist=60s -o -o StrictHostKeyChecking=no'
