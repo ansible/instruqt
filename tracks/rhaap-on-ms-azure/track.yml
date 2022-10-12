@@ -1,0 +1,28 @@
+slug: rhaap-on-ms-azure
+id: 2w5zwtabxujd
+title: Red Hat Ansible Automation Platform on Microsoft Azure
+teaser: Use Ansible Automation Platform to automate against Microsoft Azure resources.
+description: |-
+  In the lab you will learn the following:
+
+  **How to deploy Red Hat Ansible Automation Platform on Microsoft Azure.**
+
+  **Use Red Hat Ansible Automation Platform on Microsoft Azure to automate against Azure resources.**
+icon: ""
+level: beginner
+tags:
+- ""
+- Ansible
+- AnsibleAutomationPlatform
+- AAP
+- RHAAPoMA
+- AnsibleAutomationPlatformOnAzure
+- RedHatAnsibleAutomationPlatformOnMicrosoftAzure
+owner: redhat
+developers:
+- hmourad@redhat.com
+- seanc@redhat.com
+private: true
+published: true
+show_timer: true
+checksum: "4559198042220784187"

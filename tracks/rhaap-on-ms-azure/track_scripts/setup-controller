@@ -1,0 +1,127 @@
+#!/bin/bash
+# ansible-playbook /tmp/setup-scripts/azure-lab-1/azure_creds.yml
+#
+# Create a playbook for the user to execute which will create a SN incident
+tee /tmp/setup-scripts/azure-lab-1/azure.yml << EOF
+---
+- name: deploy azure credential
+  hosts: localhost
+  gather_facts: false
+  become: true
+
+  tasks:
+  
+    - name: add azure credential to automation controller
+      awx.awx.credential:
+        name: azure_credential
+        description: Azure Instruqt Credential
+        organization: "Default"
+        state: present
+        credential_type: Microsoft Azure Resource Manager
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        inputs:
+          subscription: "{{ lookup('env','INSTRUQT_AZURE_SUBSCRIPTION_AAPAZURELAB_SUBSCRIPTION_ID') }}"
+          tenant: "{{ lookup('env','INSTRUQT_AZURE_SUBSCRIPTION_AAPAZURELAB_TENANT_ID') }}"
+          username: "{{ lookup('env','INSTRUQT_AZURE_SUBSCRIPTION_AAPAZURELAB_USERNAME') }}"
+          password: "{{ lookup('env','INSTRUQT_AZURE_SUBSCRIPTION_AAPAZURELAB_PASSWORD') }}"
+      register: controller_try
+      retries: 5
+      until: controller_try is not failed          
+
+    - name: Add EE to the controller instance
+      awx.awx.execution_environment:
+        name: "Microsoft Azure Execution Environment"
+        image: quay.io/acme_corp/azure_ee
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+
+    - name: Add project
+      awx.awx.project:
+        name: "Azure Demos Project"
+        description: "This is from github.com/ansible-cloud"
+        organization: "Default"
+        state: present
+        scm_type: git
+        scm_url: https://github.com/ansible-cloud/azure-demos
+        default_environment: "Microsoft Azure Execution Environment"
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+
+    - name: delete native job template
+      awx.awx.job_template:
+        name: "Demo Job Template"
+        state: "absent"
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+
+    - name: create job template
+      awx.awx.job_template:
+        name: "{{ item.name }}"
+        job_type: "run"
+        organization: "Default"
+        inventory: "Demo Inventory"
+        project: "Azure Demos Project"
+        extra_vars:
+          resource_group_name: "azure-demo"
+          region: "eastus"
+          vnet_cidr: "10.0.0.0/16"
+          subnet_cidr: "10.0.1.0/24"
+          vnet_name: "demo_vnet"
+          subnet_name: "demo_subnet"
+          network_sec_group_name: "demo_sec_group"
+          win_vm_name: "WIN-ansible"
+          win_vm_size: "Standard_DS1_v2"
+          win_vm_sku: "2022-Datacenter"
+          win_public_ip_name: "win_demo_ip"
+          win_nic_name: "win_demo_nic"
+          win_admin_user: "azureuser"
+          win_admin_password: "ansible123!"
+        playbook: "project/{{ item.playbook }}"
+        credentials:
+          - "azure_credential"
+        state: "present"
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+      with_items:
+        - { playbook: 'create_resource_group.yml', name: 'Create Azure Resource Group' }
+        - { playbook: 'create_windows_vm_demo.yml', name: 'Create Windows Server 2022 VM' }
+        - { playbook: 'destroy_resource_group.yml', name: 'Destroy Azure Resource Group' }
+
+    - name: create job template
+      awx.awx.job_template:
+        name: "{{ item.name }}"
+        job_type: "run"
+        organization: "Default"
+        inventory: "Demo Inventory"
+        project: "Azure Demos Project"
+        extra_vars:
+          resource_group_name: "azure-demo"
+          region: "eastus"
+          vnet_cidr: "10.0.0.0/16"
+          subnet_cidr: "10.0.1.0/24"
+          vnet_name: "demo_vnet"
+          subnet_name: "demo_subnet"
+          network_sec_group_name: "demo_sec_group"
+          win_vm_name: "WIN-ansible"
+          win_vm_size: "Standard_DS1_v2"
+          win_vm_sku: "2022-Datacenter"
+          win_public_ip_name: "win_demo_ip"
+          win_nic_name: "win_demo_nic"
+          win_admin_user: "azureuser"
+          win_admin_password: "ansible123!"
+        playbook: "workflow/{{ item.playbook }}"
+        credentials:
+          - "azure_credential"
+        state: "present"
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+      with_items:
+        - { playbook: '01-create_resource_group.yml', name: 'wf01-Create Resource Group' }
+        - { playbook: '02-create_virtual_network.yml', name: 'wf02-Create Virtual Network' }
+        - { playbook: '03-add_subnet.yml', name: 'wf03-Add Subnet' }
+        - { playbook: '04-create_public_ip_address.yml', name: 'wf04-Create Public IP Address' }
+        - { playbook: '05-create_network_security_group.yml', name: 'wf05-Create Network Security Group' }
+        - { playbook: '06-create_virtual_network_interface_card.yml', name: 'wf06-Create Virtual Network Interface Card' }
+        - { playbook: '07-create_windows_2022_vm.yml', name: 'wf07-Create Windows 2022 Virtual Machine' }
+
+EOF
+
+# Execute above playbook
+ansible-playbook /tmp/setup-scripts/azure-lab-1/azure.yml
+
+exit 0
