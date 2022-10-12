@@ -16,6 +16,7 @@
     validate_certs: "{{ controller_validate_certs }}"
   tags:
     - demo-content
+    - controller-config
 
 - name: Demo content - remove job template
   awx.awx.job_template:
@@ -27,6 +28,7 @@
     validate_certs: "{{ controller_validate_certs }}"
   tags:
     - demo-content
+    - controller-config
 
 - name: Demo content - remove project
   awx.awx.project:
@@ -51,6 +53,7 @@
     validate_certs: "{{ controller_validate_certs }}"
   tags:
     - demo-content
+    - controller-config
 
 - name: Demo content - remove credential
   awx.awx.credential:
@@ -74,12 +77,6 @@
     validate_certs: "{{ controller_validate_certs }}"
   tags:
     - demo-content
-
-- name: Get SSH setup key
-  ansible.builtin.slurp:
-    src: "/home/{{ ansible_user }}/.ssh/instruqt_lab"
-  register: __lab_pvt_key
-  tags:
     - controller-config
 
 - name: Pull execution environment images

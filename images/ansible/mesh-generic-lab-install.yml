@@ -32,6 +32,7 @@
         - registry_password
         - gcp_service_account_file
         - gcp_service_account
+        - gcp_instances
 
   tasks:
     - name: Run ansible-galaxy install
@@ -213,12 +214,6 @@
           loop: "{{ gcp_instances }}"
           loop_control:
             loop_var: __remove_instances_rescue_item
-
-        - name: Print error message
-          ansible.builtin.fail:
-            msg: | 
-              "Rescue - SSH unavailable on gcloud instances."
-              "{{ __instances_ssh_async_result | from_json }}"
       when:
         - (__mesh_node_instance_info.resources is defined) and (__mesh_node_instance_info.resources | length > 0)
         - (gcp_instances is defined) and (gcp_instances | length > 0)
@@ -272,14 +267,24 @@
 - name: Run config and setup on all instances
   hosts: all
   become: true
-  gather_facts: false
+  gather_facts: true
 
   tasks:
-    - name: Add instruqt_lab ssh key to authorized keys on nodes
+    - name: Add instruqt_lab ssh key to authorized keys - {{ ansible_user }}
       ansible.posix.authorized_key:
         user: "{{ ansible_user }}"
         state: present
-        key: "{{ lookup('file', '{{ hostvars.localhost._ssh_tempdir.path }}/instruqt_lab.pub') }}"
+        key: "{{ lookup('file', hostvars.localhost._ssh_tempdir.path + '/instruqt_lab.pub') }}"
+        comment: "Instruqt lab key"
+      tags:
+        - ssh-key
+        - controller-install
+
+    - name: Add instruqt_lab ssh key to authorized keys - {{ ansible_user_id }}
+      ansible.posix.authorized_key:
+        user: "{{ ansible_user_id }}"
+        state: present
+        key: "{{ lookup('file', hostvars.localhost._ssh_tempdir.path + '/instruqt_lab.pub') }}"
         comment: "Instruqt lab key"
       tags:
         - ssh-key
@@ -324,16 +329,18 @@
 
     - name: Copy instruqt_lab temp private key to controller
       ansible.builtin.copy:
-        src: "{{ hostvars.localhost._ssh_tempdir.path }}/"
-        dest: "/home/{{ ansible_user }}/.ssh/"
+        src: "{{ hostvars.localhost._ssh_tempdir.path }}/instruqt_lab"
+        dest: "/home/{{ ansible_user }}/.ssh/instruqt_lab"
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
         mode: "0600"
         force: true
+      become: false
+      when: 
       tags:
         - controller-install
         - ssh-key
-
+      
     - name: Check if AAP bundle file exists
       ansible.builtin.stat:
         path: "/tmp/aap.tar.gz"
@@ -369,12 +376,8 @@
             checksum: "sha256: {{ provided_sha_value }}"
           register: download_aap_tarball
           until: download_aap_tarball is not failed
-          retries: 15
-          delay: 20
-      rescue:
-        - name: Print error message
-          ansible.builtin.fail:
-            msg: "Unable to get offline token and download AAP setup bundle."
+          retries: 30
+          delay: 5
       when: not __aap_bundle_file.stat.exists
       tags:
         - controller-install
@@ -461,13 +464,13 @@
       ansible.builtin.uri:
         url: https://localhost/api/v2/ping/
         method: GET
-        user: admin
-        password: "{{ admin_password | default('ansible123!') }}"
+        user: "{{ controller_username }}"
+        password: "{{ controller_password }}"
         validate_certs: false
       register: check2
       until: check2.json is defined and check2.json.instances[0].capacity > 0 and check2.json.instance_groups[0].capacity > 0
       retries: 60
-      delay: 10
+      delay: 5
       tags:
         - controller-install
 
@@ -504,14 +507,24 @@
         name: ansible.workshops.code_server
       tags:
         - code-server-install
+        - controller-install
 
-# Create lab controller objects
-- name: Instruqt controller objects mesh lab
-  hosts: automationcontroller
-  gather_facts: true
-  become: true
 
-  tasks:
+  # Create lab controller objects
+    - name: Wait for Automation Controller to be up
+      ansible.builtin.uri:
+        url: https://localhost/api/v2/ping/
+        method: GET
+        user: "{{ controller_username }}"
+        password: "{{ controller_password }}"
+        validate_certs: false
+      register: check2
+      until: check2.json is defined and check2.json.instances[0].capacity > 0 and check2.json.instance_groups[0].capacity > 0
+      retries: 60
+      delay: 1
+      tags:
+        - controller-config
+
     - name: Include common controller tasks
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/50_mesh_controller.yml"
@@ -564,9 +577,6 @@
             status: TERMINATED
             zone: "{{ gcp_zone }}"
             <<: *gcp_login  
-            # project: "{{ gcp_project }}"
-            # auth_kind: serviceaccount
-            # service_account_file: "{{ gcp_service_account_file }}"
           loop: "{{ gcp_instances }}"
           loop_control:
             loop_var: __instances_stop_async_item
@@ -617,22 +627,22 @@
           until: __images_remove_async_result.finished
           register: __images_remove_async_result
           when: __images_remove_async_result_item.ansible_job_id is defined
-      # rescue:
-      #   - name: Print error message
-      #     ansible.builtin.fail:
-      #       msg: "Rescue - Unable to remove gcloud images."
+      rescue:
+        - name: Print error message
+          ansible.builtin.fail:
+            msg: "Rescue - Unable to remove gcloud images."
 
-        # - name: Rescue - remove gcloud instances
-        #   google.cloud.gcp_compute_instance:
-        #     name: "{{ __remove_instances_rescue_item.instance_name }}"
-        #     zone: "{{ gcp_zone }}"
-        #     project: "{{ gcp_project }}"
-        #     auth_kind: serviceaccount
-        #     service_account_file: "{{ gcp_service_account_file }}"
-        #     state: absent
-        #   loop: "{{ gcp_instances }}"
-        #   loop_control:
-        #     loop_var: __remove_instances_rescue_item
+        - name: Rescue - remove gcloud instances
+          google.cloud.gcp_compute_instance:
+            name: "{{ __remove_instances_rescue_item.instance_name }}"
+            zone: "{{ gcp_zone }}"
+            project: "{{ gcp_project }}"
+            auth_kind: serviceaccount
+            service_account_file: "{{ gcp_service_account_file }}"
+            state: absent
+          loop: "{{ gcp_instances }}"
+          loop_control:
+            loop_var: __remove_instances_rescue_item
       when: (gcp_instances is defined) and (gcp_instances | length > 0)
       tags:
         - create-images
@@ -666,21 +676,21 @@
           until: __images_create_async_result.finished
           register: __images_create_async_result
           when: __images_create_async_result_item.ansible_job_id is defined
-      # rescue:
-      #   - name: Print error message
-      #     ansible.builtin.fail:
-      #       msg: "Rescue - Unable to create gcloud images."
-        # - name: Rescue - remove gcloud instances
-        #   google.cloud.gcp_compute_instance:
-        #     name: "{{  __remove_instances_rescue_item.instance_name }}"
-        #     zone: "{{ gcp_zone }}"
-        #     project: "{{ gcp_project }}"
-        #     auth_kind: serviceaccount
-        #     service_account_file: "{{ gcp_service_account_file }}"
-        #     state: absent
-        #   loop: "{{ gcp_instances }}"
-        #   loop_control:
-        #     loop_var: __remove_instances_rescue_item
+      rescue:
+        - name: Print error message
+          ansible.builtin.fail:
+            msg: "Rescue - Unable to create gcloud images."
+        - name: Rescue - remove gcloud instances
+          google.cloud.gcp_compute_instance:
+            name: "{{  __remove_instances_rescue_item.instance_name }}"
+            zone: "{{ gcp_zone }}"
+            project: "{{ gcp_project }}"
+            auth_kind: serviceaccount
+            service_account_file: "{{ gcp_service_account_file }}"
+            state: absent
+          loop: "{{ gcp_instances }}"
+          loop_control:
+            loop_var: __remove_instances_rescue_item
       tags:
         - create-images
 
