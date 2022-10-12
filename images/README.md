@@ -19,10 +19,10 @@ Image name | Description | connection | machine type | usage in challenge
 `red-hat-mbu/cisco-ios-csr-1731` | Cisco IOS-XE virtual router | user / pass <br> `ansible` / `ansible123!` | `n1-standard-1` | *Terminal not supported yet. SSH from a linux node* |
 `red-hat-mbu/windows` | Windows 2016 | SSH user/pass: `admin/Password123` | `n1-standard-2` | *Terminal not supported yet. SSH from a linux node*
 `red-hat-mbu/rhel8` [![rhel8 build](https://github.com/ansible/instruqt/actions/workflows/rhel8-build.yml/badge.svg?branch=main)](https://github.com/ansible/instruqt/actions/workflows/rhel8-build.yml)  | RHEL 8 latest | none | `n1-standard-2` | none
-`red-hat-mbu/mesh-node` | Mesh worker base image | SSH user/pass: `rhel/ansible123!` | n1-standard-2 | none
-`red-hat-mbu/dublin-hop-image` | Mesh hop node | SSH user/pass: `rhel/ansible123!` | n1-standard-2 | none
-`red-hat-mbu/jhb-exec-image` | Mesh execution node | SSH user/pass: `rhel/ansible123!` | n1-standard-2 | none
-`red-hat-mbu/automation-controller21-mesh` | Mesh execution node | SSH user/pass: `rhel/ansible123!` | n1-standard-4 | `type: service, port: 443`
+`red-hat-mbu/mesh-node` | Mesh worker base image | SSH user/pass: `rhel/ansible123!` | e2-standard-2 | none
+`red-hat-mbu/dublin-hop-image` | Mesh hop node | SSH user/pass: `rhel/ansible123!` | e2-standard-2 | none
+`red-hat-mbu/jhb-exec-image` | Mesh execution node | SSH user/pass: `rhel/ansible123!` | e2-standard-2 | none
+`red-hat-mbu/raleigh-controller` | Mesh conrtoller | SSH user/pass: `rhel/ansible123!` | n1-standard-4 | `type: service, port: 443`
 
 ## Containers
 
@@ -97,84 +97,92 @@ Automation mesh worker nodes are installed and configured during the automation 
 
 ![mesh images](../assets/readme_mesh_images.png)
 
-The steps below create the following GCP images:
-
-| Image name  | Purpose  | GCP Base image
-|--- |--- | -- |
-| jhb-exec-image  | Execution node  | mesh-node |
-| dublin-hop-image  | Hop node  | mesh-node |
-| raleigh-controller-image  | Automation controller with associated worker nodes  | automation-controller |
-| mesh-node | Worker node base image | None
-
 ### Extra variables file
 
 Please ensure the following Ansible variables are declared in your `extra_vars.yml` file.
 
+The below example builds the **Ansible Automation Platform and edge track**.
+
 ```yaml
-redhat_username: 'Red Hat Customer portal username'
-redhat_password: 'Red Hat Customer portal password'
-registry_username: "{{ redhat_username }}"
-registry_password: "{{ redhat_password }}"
-offline_token: 'UYJH87648i76liugiolLLLOH3h...'
+---
+# Google service account key file. Ref https://cloud.google.com/iam/docs/creating-managing-service-account-keys
+gcp_service_account_file: "{{ lookup('env','GCP_SERVICE_ACCOUNT_FILE') or 'YOUR_GCP_SERVICE_ACCOUNT_FILE' }}"
+# Example: 73252323203-compute@developer.gserviceaccount.com
+gcp_service_account: "{{ lookup('env','GCP_SERVICE_ACCOUNT') or 'YOUR_GCP_SERVICE_ACCOUNT' }}"
+gcp_zone: us-central1-a
+gcp_project: red-hat-mbu
 
-aap_dir: "/home/{{ ansible_user }}/aap_install"
-admin_password: 'ansible123!'
-username: "{{ ansible_user }}"
-controller_install_command: "ANSIBLE_BECOME_METHOD='sudo'  ANSIBLE_BECOME=True ./setup.sh -e generate_dot_file=$HOME/mesh.dot -e registry_username='{{ registry_username }}' -e registry_password='{{ registry_password }}'"
-
-# Google Cloud variables
-instance_host_vars:
+# GCP instance specs and Instruqt image names
+gcp_instances: # required
+  - instance_name: dublin-edge-lab # final image name appended with `-image`
+    instance_image: edge-lab-node # base build image
+    instance_labels:
+      role: instruqt-lab
+      mesh-type: execution # mesh worker node type; execution, hop or control
+      location: dublin
+    instance_machine_type: n2-standard-2
+  - instance_name: jhb-edge-lab
+    instance_image: edge-lab-node
+    instance_labels:
+      role: instruqt-lab
+      mesh-type: execution
+      location: jhb
+    instance_machine_type: n2-standard-2
+  - instance_name: controller-edge-lab
+    instance_image: automation-controller
+    instance_labels:
+      role: instruqt-lab
+      mesh-type: controller
+      location: raleigh
+    instance_machine_type: n2-standard-4
+gcp_inventory_host_vars: # optional
   ansible_user: "rhel"
   ansible_ssh_user: "rhel"
   ansible_ssh_pass: "ansible123!"
   ansible_sudo_pass: "ansible123!"
   ansible_host_key_checking: false
   ansible_python_interpreter: "/usr/bin/python3"
-gcp_instances:
-  - instance_name: jhb-exec
-    instance_image: mesh-node
-    instance_labels: "role=instruqt-lab,mesh-type=exec"
-    instance_machine_type: e2-standard-2
-    instance_groups:
-      - execnodes
-  - instance_name: dublin-hop
-    instance_image: mesh-node
-    instance_labels: "role=instruqt-lab,mesh-type=hop"
-    instance_machine_type: e2-standard-2
-    instance_groups:
-      - execnodes
-  - instance_name: raleigh-controller
-    instance_image: automation-controller
-    instance_labels: "role=instruqt-lab,mesh-type=controller"
-    instance_groups:
-      - automationcontroller
+
+## Mesh setup vars
+# Inventory template name located in "{{ playbook_dir }}/templates"
+mesh_inventory_template: "edge_lab_inventory.j2" # default mesh_config_install.j2
+aap_dir: "/home/{{ ansible_user }}/aap_install"
+admin_password: "{{ controller_password }}" # for workshop roles
+username: "{{ ansible_user }}" # for workshop roles
+controller_install_command: "ANSIBLE_BECOME_METHOD='sudo' ANSIBLE_BECOME=True ./setup.sh -e registry_username='{{ registry_username }}' -e registry_password='{{ registry_password }}'"
+redhat_username: "{{ lookup('env','REDHAT_USERNAME') or 'YOUR_USERNAME' }}"
+redhat_password: "{{ lookup('env','REDHAT_PASSWORD') or 'YOUR_PASSWORD' }}"
+registry_username: "{{ redhat_username }}"
+registry_password: "{{ redhat_password }}"
+offline_token: "{{ lookup('env','REDHAT_OFFLINE_TOKEN') or 'YOUR_TOKEN' }}"
+provided_sha_value: 878c2c2705e5f50e734f27fc7c50b39ddf4b2ace2d40290477d19477b82f9904 # optional - 2.2.1 AAP bundle
 ```
 
 ### `mesh-node` base image
 
-The mesh-node image is used to create the `dublin-hop-image` and `jhb-exec-image` images. To build the base mesh worker node image, run the following command:
+The `mesh-node` base image is used to create mesh worker nodes. Run the following command:
 
-```packer build --force mesh-node.pkr.hcl -var ansible_vars_file=@<extra_vars.yml file location>```
+```bash
+$ packer build --force mesh-generic-node.pkr.hcl -var ansible_vars_file=@<extra_vars.yml file location>
+```
 
-### Mesh worker node images
+### Mesh lab images
 
-The `mesh_lab_install.yml` re-runs the AAP installer and configures the mesh topology illustrated above. The playbook performs the following tasks:
+The `mesh-generic-lab-install.yml` re-runs the AAP installer and configures the mesh topology illustrated above. The playbook performs the following tasks:
 
-1. Creates 3 GCP instances from their respective base images.
-2. Installs automation controller and associated mesh worker nodes.
-3. Creates new images with a `-image` suffix. e.g. `dublin-hop-image`
+1. Creates GCP instances from their respective base images based on `gcp_instances` variable.
+2. Installs automation controller and associated mesh worker nodes using `mesh_inventory_template` inventory.
+3. Creates new images based on `instance_image` variable in ``gcp_instances` list. The playbook appends `-image` to the image name.
 4. Deletes unused instances
+5. Makes a cup of coffee if you ask nicely.
 
 Execute the following command in the `images\ansible` folder to build the mesh worker node images:
 
-```ansible-playbook mesh_lab_install.yml -e @<extra_vars.yml file location>```
+```bash
+$ ansible-playbook mesh-generic-lab-install.yml -e @<extra_vars.yml file location>
+```
+
 <br>
-
-## Notes
-
-When generating windows images from macos, there's an env var that needs to be set in your active shell: `export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES`
-
-Want to open code-server with a specific working directory? In the tabs configuration of your challenge, use something like `/editor/?folder=vscode-remote%3A%2F%2F%2fhome%2Frhel` which would open code-server at with a CWD of `/home/rhel/`
 
 # Words of wisdom from Colin
 
@@ -183,3 +191,7 @@ gcloud auth login
 
 As a developer, I want my code to interact with GCP via SDK.
 gcloud auth application-default login
+
+When generating windows images from macos, there's an env var that needs to be set in your active shell: `export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES`
+
+Want to open code-server with a specific working directory? In the tabs configuration of your challenge, use something like `/editor/?folder=vscode-remote%3A%2F%2F%2fhome%2Frhel` which would open code-server at with a CWD of `/home/rhel/`
