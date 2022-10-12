@@ -80,7 +80,7 @@ Automation mesh performs periodic health checks on worker nodes. These health ch
   <img alt="jhb_exec_topology_unhealthy" src="../assets/img/jhb_exec_topology_unhealthy.png" />
 </a>
 
-<a href="#" class="lightbox" id="jhb_exec_unhealthy">
+<a href="#" class="lightbox" id="jhb_exec_topology_unhealthy">
   <img alt="jhb_exec_topology_unhealthy" src="../assets/img/jhb_exec_topology_unhealthy.png" />
 </a>
 
@@ -125,7 +125,7 @@ The `Mesh route info` job template displays the path mesh uses to run automation
   <img alt="route_info_raleigh_fail" src="../assets/img/route_info_raleigh_fail.png" />
 </a>
 
-<a href="#" class="lightbox" id="route_info_launch">
+<a href="#" class="lightbox" id="route_info_raleigh_fail">
   <img alt="route_info_raleigh_fail" src="../assets/img/route_info_raleigh_fail.png" />
 </a>
 
@@ -270,7 +270,7 @@ Press the `Check` button below to go to the next challenge once you’ve complet
 🐛 Encountered an issue?
 ====
 
-If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new?labels=getting-started-mesh&title=Getting+started+with+automation+mesh+issue:+incident-creation&assignees=craig-br).
+If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new?labels=getting-started-mesh&title=Getting+started+with+automation+mesh+issue&assignees=craig-br).
 
 <style type="text/css" rel="stylesheet">
   .lightbox {
