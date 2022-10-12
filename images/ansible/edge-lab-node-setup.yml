@@ -1,0 +1,89 @@
+---
+- name: Configures edge lab mesh worker nodes
+  hosts: all
+  become: true
+  gather_facts: false
+
+  pre_tasks:
+    - name: check variables are defined and not empty before building image
+      ansible.builtin.fail:
+        msg: "{{ item }} is undefined or empty. Please check your extra vars file"
+      when: not lookup('vars', item) or lookup('vars', item) is undefined
+      loop:
+        - offline_token
+        - redhat_username
+        - redhat_password
+      delegate_to: localhost
+
+  tasks:
+    - name: Include common mesh worker node tasks
+      vars:
+        receptor_packages:
+          - receptor
+          - receptorctl
+          - podman
+          - crun
+          - ansible-runner
+          - libcgroup-tools
+          - subscription-manager-rhsm-certificates
+          - rsync
+          - git
+          - ansible
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/30_mesh_node.yml"
+
+    - name: Download and upgrade collections
+      ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
+      become_user: "{{ ansible_user }}"
+      loop:
+        - fedora.linux_system_roles
+        - containers.podman
+      register: __collection_install
+      changed_when: '"is already installed, skipping" not in __collection_install.stdout'
+
+    - name: Pull Ignition application image to edge nodes
+      containers.podman.podman_image:
+        name: "{{ item.image }}"
+        tag: "{{ item.tag }}"
+        state: "{{ item.state }}"
+      loop: "{{ lab_container_images }}"
+      register: __podman_pull_supported
+      when: (lab_container_images is defined) and (lab_container_images | length > 0)
+      until: __podman_pull_supported is not failed
+      retries: 5
+      delay: 15
+
+    - name: Configure worker node firewall
+      vars:
+        firewall:
+          - set_default_zone: internal
+            state: enabled
+            permanent: true
+          - service: cockpit
+            state: disabled
+            permanent: true
+            zone: internal
+          - port: 27199/tcp
+            state: enabled
+            permanent: true
+            zone: internal
+          - port: 8088/tcp
+            state: enabled
+            permanent: true
+            zone: internal
+      ansible.builtin.import_role:
+        name: fedora.linux_system_roles.firewall
+
+    - name: Include common user tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/5_configure_users.yml"
+
+    - name: Include common image cleanup tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/10_image_cleanup.yml"
+
+    - name: Build Cockpit install files cache
+      ansible.builtin.dnf:
+        name: cockpit
+        state: present
+        download_only: true

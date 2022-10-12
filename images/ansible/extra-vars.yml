@@ -2,3 +2,7 @@
 offline_token: "{{ lookup('env','REDHAT_OFFLINE_TOKEN') or 'YOUR_TOKEN' }}"
 redhat_username: "{{ lookup('env','REDHAT_USERNAME') or 'YOUR_USERNAME' }}"
 redhat_password: "{{ lookup('env','REDHAT_PASSWORD') or 'YOUR_PASSWORD' }}"
+# https://cloud.google.com/iam/docs/creating-managing-service-account-keys
+gcp_service_account_file: "{{ lookup('env','GCP_SERVICE_ACCOUNT_FILE') or 'YOUR_GCP_SERVICE_ACCOUNT_FILE' | default(omit) }}"
+# Example: 73252323203-compute@developer.gserviceaccount.com
+gcp_service_account: "{{ lookup('env','GCP_SERVICE_ACCOUNT') or 'YOUR_GCP_SERVICE_ACCOUNT' | default(omit) }}"
