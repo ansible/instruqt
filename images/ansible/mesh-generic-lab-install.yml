@@ -35,7 +35,7 @@
         - gcp_instances
 
   tasks:
-    - name: Run ansible-galaxy install
+    - name: Install and upgrade collections - localhost
       ansible.builtin.command: "ansible-galaxy collection install {{ __local_collection_install_item }} --upgrade"
       loop:
         - ansible.workshops
@@ -311,7 +311,7 @@
   become: true
 
   tasks:
-    - name: Run ansible-galaxy install
+    - name: Install and upgrade collections - automationcontroller
       ansible.builtin.command: "ansible-galaxy collection install {{ __collection_install_item }} --upgrade"
       loop:
         - ansible.posix
