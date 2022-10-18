@@ -9,9 +9,9 @@ This self-paced lab will demonstrate how Ansible Automation Platform can help yo
 
 ## Lab Agenda
 
-- [Infrastructure visibility](blah) - In this lab we will illustrate how we can retrieve Ansible facts (key, value pairs), also known as structured data, from public clouds and how we can use this data to provide us awareness of our cloud footprint easily
-- [Cloud Operations](blah) - This lab will illustrate how Ansible Automation Platform can help you automate common day-2 cloud operations tasks across your public cloud. Our focus here will be on AWS, but the use cases here are ones you can extend across the hybrid cloud.
-- [Infrastructure optimization](blah) - In this lab we will guide you in understanding some basic optimization exercises that can help you tame your public clouds.
+- [Infrastructure visibility](https://play.instruqt.com/embed/redhat/tracks/cloud-visibility?token=em_IYvE6P3BoPg-Fo50) - In this lab we will illustrate how we can retrieve Ansible facts (key, value pairs), also known as structured data, from public clouds and how we can use this data to provide us awareness of our cloud footprint easily
+- [Cloud Operations](https://play.instruqt.com/embed/redhat/tracks/cloud-operations?token=em_785MP3rpLI7oAW1Y) - This lab will illustrate how Ansible Automation Platform can help you automate common day-2 cloud operations tasks across your public cloud. Our focus here will be on AWS, but the use cases here are ones you can extend across the hybrid cloud.
+- [Infrastructure optimization](https://play.instruqt.com/embed/redhat/tracks/cloud-optimization?token=em_0h2ed0VTvBXyHNA6) - In this lab we will guide you in understanding some basic optimization exercises that can help you tame your public clouds.
 
 ## Lab Diagram
 
