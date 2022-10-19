@@ -1,8 +1,12 @@
+
 # Getting started with Ansible Automation Platform and edge
+
+## 🚀 [Launch the lab](https://play.instruqt.com/embed/redhat/tracks/getting-started-edge-lab?token=em_VX7rLMJ7-5Hf8WoX)
+
+## Overview
 
 This self-paced lab covers how Ansible Automation Platform provides a consistent automation solution to create, deploy and manage distributed environments, such as the edge.
 
-## Overview
 
 * Installing a containerized industrial edge application
 * Deploying a monitoring solution
