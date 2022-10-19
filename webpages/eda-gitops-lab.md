@@ -10,7 +10,7 @@ Event-driven ansible is a brand new technology that helps to associate upstream 
 
 ## Lab Agenda
 
-- [Getting started with event-drive ansible]() - Ansible rulebooks combine event sources, conditions and actions to automate the response to events. This lab reviews the basics of the ansible rulebook.
+- [Getting started with event-driven ansible]() - Ansible rulebooks combine event sources, conditions and actions to automate the response to events. This lab reviews the basics of the ansible rulebook.
 - [Event-driven Ansible and GitOps]() - Utilizing git events, this lab shows how event-driven ansible can be used to deploy an application from a project repository.
 
 
