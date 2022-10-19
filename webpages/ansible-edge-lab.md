@@ -1,7 +1,7 @@
 
 # Getting started with Ansible Automation Platform and edge
 
-## 🚀 [Launch the lab](https://play.instruqt.com/embed/redhat/tracks/getting-started-edge-lab?token=em_VX7rLMJ7-5Hf8WoX)
+##  <a href="https://play.instruqt.com/embed/redhat/tracks/getting-started-edge-lab?token=em_VX7rLMJ7-5Hf8WoX" target="_blank">🚀 Launch the lab</a> 
 
 ## Overview
 
@@ -20,8 +20,7 @@ There’s also a playground section you can use to experiment and explore!
 
 * <a href="https://docs.google.com/presentation/d/1WDw5QjAE74LfZUACrQUgYVRb61FP3zjaqnFwfOJet60/edit?usp=sharing" target="_blank">Google Slides</a> - For Red Hat employees
 
-<!-- - [Google Slides](https://docs.google.com/presentation/d/1WDw5QjAE74LfZUACrQUgYVRb61FP3zjaqnFwfOJet60/edit?usp=sharing) - For Red Hat employees -->
-- [PDF](decks/lab-edge.pdf) - For everyone
+* <a href="https://github.com/ansible/instruqt/blob/devel/webpages/decks/lab-edge.pdf" target="_blank">PDF</a> - For everyone
 
 ## Lab Diagram
 
