@@ -7,6 +7,7 @@
 
 This self-paced lab covers how Ansible Automation Platform provides a consistent automation solution to create, deploy and manage distributed environments, such as the edge.
 
+### Lab challenges
 
 * Installing a containerized industrial edge application
 * Deploying a monitoring solution
