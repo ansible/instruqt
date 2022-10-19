@@ -18,7 +18,9 @@ There’s also a playground section you can use to experiment and explore!
 
 ## Presentation Deck
 
-- [Google Slides](https://docs.google.com/presentation/d/1WDw5QjAE74LfZUACrQUgYVRb61FP3zjaqnFwfOJet60/edit?usp=sharing) - For Red Hat employees
+* <a href="(https://docs.google.com/presentation/d/1WDw5QjAE74LfZUACrQUgYVRb61FP3zjaqnFwfOJet60/edit?usp=sharing" target="_blank">Google Slides</a> - For Red Hat employees
+
+<!-- - [Google Slides](https://docs.google.com/presentation/d/1WDw5QjAE74LfZUACrQUgYVRb61FP3zjaqnFwfOJet60/edit?usp=sharing) - For Red Hat employees -->
 - [PDF](decks/lab-edge.pdf) - For everyone
 
 ## Lab Diagram
