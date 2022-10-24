@@ -2,6 +2,10 @@
 
 Event-driven ansible is a brand new technology that helps to associate upstream events with downstream actions. In this lab, you will first learn how to conditionally act on specific events by creating a rulebook which can be evaluated against an event source. Next, you will learn how to act on events in a familiar GitOps scenario.
 
+## Video
+
+[YouTube demo](https://youtu.be/Bb51DftLbPE)
+
 ## Presentation Deck
 
 - [PDF](decks/lab-eda-gitops.pdf) - For everyone
