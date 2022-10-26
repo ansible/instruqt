@@ -47,9 +47,9 @@ When creating a new track, you should be able to specify the path the new image 
 
 ## Extra vars file
 
-The `ansible_vars_file` packer variable enables you to specify a file with additional Ansible variables. This variable is available in the  `automation-controller.pkr.hcl`, `ansible.pkr.hcl` and `mesh-node.pkr.hcl` packer build files. For example:
+Use the `ansible_vars_file` Packer variable enables you to use Ansible variable files outside the repo. Using external variable files helps prevent committing sensitive information into the repo. This variable is available in the  `automation-controller.pkr.hcl`, `ansible.pkr.hcl` and `mesh-node.pkr.hcl` packer build files. For example:
 
-```packer build --force automation-controller.pkr.hcl -var ansible_vars_file="@<extra_vars.yml location>"```
+```packer build --force automation-controller.pkr.hcl -var ansible_vars_file="@<your_vars_file>"```
 
 >**Note**<p>
 > Your `extra_vars.yml` file contains sensitive information.<p>
@@ -112,11 +112,12 @@ Automation mesh worker nodes are installed and configured during the automation 
     └── mesh-node.pkr.hcl                       # Builds mesh node base image with "{{ track_slug }}"_node_setup.yml.
 ```
 
-#### The `track_slug` variable
+#### The track_slug variable
 
-File lookups and naming conventions use `track_slug` variable. Configure `track_slug` using the following methods:
+File lookups and naming conventions use `track_slug` variable. Configure `track_slug` using the following methods. We'll use the `getting-started-edge-lab` slug as an example.
 
-##### Set the `TRACK_SLUG` environment variable
+##### Set the `TRACK_SLUG` environment variable.
+
 
 ```bash
 export TRACK_SLUG='getting-started-edge-lab'
@@ -134,7 +135,7 @@ ansible-playbook mesh-lab-install -e track_slug='getting-started-edge-lab'
 packer build -force -var track_slug='getting-started-edge-lab' images/packer/mesh-node.pkr.hcl
 ```
 
-#### Mesh extra variables
+### Mesh extra variables
 
 Mesh node builds require additional variables to work and you can add them in multiple ways.
 
@@ -163,7 +164,7 @@ Mesh build playbooks check for certain mandatory variables before executing.
 | gcp_service_account_file | Location of GCP service account file on local machine. <br> https://cloud.google.com/iam/docs/creating-managing-service-account-keys            |
 | gcp_service_account      | GCP service account file - e.g. 234203-compute@developer.gserviceaccount.com <br> https://cloud.google.com/compute/docs/access/service-accounts |
 
-The example below is form [getting-started-edge-lab_vars.yml](./ansible/vars/getting-started-edge-lab_vars.yml).
+The example below from [getting-started-edge-lab_vars.yml](./ansible/vars/getting-started-edge-lab_vars.yml) provides a guide to set up your variable file.
 
 ```yaml
 # Ansible config vars - the need for speed
@@ -222,9 +223,11 @@ content_dir: setup-scripts/getting-started-edge-lab
 
 ### Mesh node building steps
 
-#### Step 1 - Create the mesh worker node base image using Packer
+**Step 1 - Create the mesh worker node base image using Packer**
 
-The mesh worker node base image is used to create mesh worker nodes during the controller install. Run the following command from root repository folder. Optionally, point to external variable files using `-var mesh_extra_vars=@<your_vars_file>` option and set the `track_slug` variable using `-var track_slug=<your_track_slug>`.
+The mesh worker node base image is used to create mesh worker nodes during the controller install. 
+
+Run the following command from root repository folder. Optionally, point to external variable files using `-var mesh_extra_vars=@<your_vars_file>` option and set the `track_slug` variable using `-var track_slug=<your_track_slug>`.
 
 ```bash
 packer build --force -var image_name=<worker_node_base_image> mesh-node.pkr.hcl
