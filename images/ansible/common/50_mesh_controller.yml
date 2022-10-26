@@ -1,0 +1,290 @@
+##
+# Create controller objects for mesh lab
+# Tags:
+# demo-content - Remove Demo Org, project, inventory and job template
+# controller-config - Setup controller env for lab
+##
+
+- name: Create controller_login fact and anchor
+  ansible.builtin.set_fact:
+    controller_login: &controller_login
+      controller_username: "{{ controller_username }}"
+      controller_password: "{{ controller_password }}"
+      controller_host: "{{ controller_hostname }}"
+      validate_certs: "{{ controller_validate_certs }}"
+
+- name: Download and upgrade collections - {{ inventory_hostname }}
+  ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
+  become_user: "{{ ansible_user }}"
+  loop: "{{ mesh_collections }}"
+  register: __collection_install
+  changed_when: '"is already installed, skipping" not in __collection_install.stdout'
+  when: (mesh_collections is defined) and (mesh_collections | length > 0)
+  tags:
+    - install-collections
+    - controller-config
+
+- name: Copy instruqt_lab temp private key to controller
+  ansible.builtin.copy:
+    src: "{{ hostvars.localhost._ssh_tempdir.path }}/instruqt_lab"
+    dest: "/home/{{ ansible_user }}/.ssh/instruqt_lab"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0600"
+    force: true
+  become: false
+  when: (hostvars.localhost._ssh_tempdir.path is defined) and (hostvars.localhost._ssh_tempdir.path | length > 0)
+  tags:
+    - controller-install
+    - ssh-key
+
+- name: Check if AAP bundle file exists
+  ansible.builtin.stat:
+    path: "/tmp/aap.tar.gz"
+  register: __aap_bundle_file
+  tags:
+    - controller-install
+    - controller-download
+
+- name: Download AAP setup bundle
+  when: not __aap_bundle_file.stat.exists
+  tags:
+    - controller-install
+    - controller-download
+  block:
+    - name: Generating an access token
+      ansible.builtin.uri:
+        url: https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token
+        method: POST
+        body_format: form-urlencoded
+        return_content: true
+        body:
+          grant_type: "refresh_token"
+          client_id: "rhsm-api"
+          refresh_token: "{{ offline_token }}"
+      register: temp_token
+      until: temp_token is not failed
+      retries: 15
+      delay: 5
+
+    - name: Download aap.tar.gz
+      ansible.builtin.get_url:
+        url: "https://api.access.redhat.com/management/v1/images/{{ provided_sha_value }}/download"
+        headers:
+          accept: "application/json"
+          Authorization: "Bearer {{ temp_token.json.access_token }}"
+        dest: "/tmp/aap.tar.gz"
+        checksum: "sha256: {{ provided_sha_value }}"
+        mode: 0644
+        owner: "{{ ansible_user }}"
+      register: download_aap_tarball
+      until: download_aap_tarball is not failed
+      retries: 30
+      delay: 5
+
+- name: Create directory for automation controller
+  ansible.builtin.file:
+    path: "{{ aap_dir }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    mode: 0755
+  tags:
+    - controller-install
+
+- name: Extract AAP tar.gz install
+  ansible.builtin.unarchive:
+    src: "/tmp/aap.tar.gz"
+    dest: "{{ aap_dir }}"
+    remote_src: true
+    extra_opts: ['--strip-components=1', '--show-stored-names']
+  tags:
+    - controller-install
+
+- name: Create controller repo
+  ansible.builtin.import_role:
+    name: ansible.workshops.aap_repo
+  tags:
+    - controller-install
+
+- name: Install OS packages
+  ansible.builtin.dnf:
+    name: "{{ mesh_os_packages }}"
+    state: present
+  when: (mesh_os_packages is defined) and (mesh_os_packages | length > 0)
+  tags:
+    - controller-install
+
+- name: Get gcp node instance info
+  google.cloud.gcp_compute_instance_info:
+    zone: "{{ gcp_zone }}"
+    filters:
+      - labels.role = "{{ track_slug }}"
+    project: "{{ gcp_project }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ gcp_service_account_file }}"
+  delegate_to: localhost
+  become: false
+  register: __mesh_node_instance_info
+  tags:
+    - controller-install
+    - controller-config
+
+- name: Template AAP setup inventory file for Instruqt mesh lab
+  ansible.builtin.template:
+    src: "{{ track_slug }}_inv.j2"
+    dest: "{{ aap_dir }}/inventory"
+    owner: "{{ ansible_user }}"
+    mode: 0644
+  tags:
+    - controller-install
+
+- name: Install generic ansible.cfg in home directory
+  ansible.builtin.template:
+    src: ansible.cfg.j2
+    dest: "/etc/ansible/ansible.cfg"
+  tags:
+    - controller-install
+
+- name: Run the controller mesh lab installer
+  ansible.builtin.shell: "{{ controller_install_command }}" # noqa command-instead-of-shell
+  args:
+    chdir: "{{ aap_dir }}"
+  async: 2100
+  poll: 15
+  tags:
+    - controller-install
+    - aap-install
+
+- name: Wait for Automation Controller to be up
+  ansible.builtin.uri:
+    url: https://localhost/api/v2/ping/
+    method: GET
+    user: "{{ controller_username }}"
+    password: "{{ controller_password }}"
+    validate_certs: false
+  register: check2
+  until: check2.json is defined and check2.json.instances[0].capacity > 0 and check2.json.instance_groups[0].capacity > 0
+  retries: 60
+  delay: 5
+  tags:
+    - controller-install
+
+- name: Display /api/v2/ping results
+  ansible.builtin.debug:
+    msg: '{{ check2.json }}'
+  tags:
+    - controller-install
+
+- name: Load license block
+  tags:
+    - controller-install
+  block:
+    - name: Check for base64 variable first
+      ansible.builtin.copy: # noqa template-instead-of-copy
+        dest: '{{ playbook_dir }}/manifest.zip'
+        content: '{{ base64_manifest | b64decode }}'
+      delegate_to: localhost
+      become: false
+  rescue:
+    - name: Unable to load base64_manifest
+      ansible.builtin.debug:
+        msg: 'No base64_manifest variable found, trying to open manifest.zip'
+  always:
+    - name: Load manifest into variable
+      ansible.builtin.slurp:
+        src: "{{ playbook_dir }}/manifest.zip"
+      register: manifest_file
+      delegate_to: localhost
+      become: false
+
+- name: Wait for controller to be up
+  ansible.builtin.uri:
+    url: https://localhost/api/v2/ping/
+    method: GET
+    user: "{{ controller_username }}"
+    password: "{{ controller_password }}"
+    validate_certs: false
+  register: check2
+  until: check2.json is defined and check2.json.instances[0].capacity > 0 and check2.json.instance_groups[0].capacity > 0
+  retries: 60
+  delay: 1
+  tags:
+    - controller-config
+
+## Controller objects
+- name: Demo content - Create demo org to delete content
+  awx.awx.organization:
+    name: "Default"
+    state: present
+    <<: *controller_login
+  tags:
+    - demo-content
+    - controller-config
+
+- name: Demo content - remove job template
+  awx.awx.job_template:
+    name: "Demo Job Template"
+    state: absent
+    <<: *controller_login
+  tags:
+    - demo-content
+    - controller-config
+
+- name: Demo content - remove project
+  awx.awx.project:
+    name: "Demo Project"
+    state: absent
+    organization: "Default"
+    <<: *controller_login
+  tags:
+    - demo-content
+
+- name: Demo content - remove inventory
+  awx.awx.inventory:
+    name: "Demo Inventory"
+    state: absent
+    organization: "Default"
+    <<: *controller_login
+  tags:
+    - demo-content
+    - controller-config
+
+- name: Demo content - remove credential
+  awx.awx.credential:
+    name: "Demo Credential"
+    credential_type: "Machine"
+    state: absent
+    <<: *controller_login
+  tags:
+    - demo-content
+
+- name: Demo content - remove organization
+  awx.awx.organization:
+    name: "Default"
+    state: absent
+    <<: *controller_login
+  tags:
+    - demo-content
+    - controller-config
+
+- name: Pull execution environment images
+  become_user: "awx"
+  become: true
+  containers.podman.podman_image:
+    name: "{{ item.image }}"
+  loop: "{{ controller_execution_environments }}"
+  register: __podman_pull_supported
+  when: (controller_execution_environments is defined) and (controller_execution_environments | length > 0)
+  until: __podman_pull_supported is not failed
+  retries: 5
+  delay: 15
+  tags:
+    - controller-config
+
+# Using extra_vars file for this.
+# Check https://github.com/redhat-cop/controller_configuration
+- name: Create lab controller objects
+  ansible.builtin.import_role:
+    name: redhat_cop.controller_configuration.dispatch
+  tags:
+    - controller-config

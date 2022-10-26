@@ -4,7 +4,7 @@
   changed_when: false
   register: _standard_users
 
-- name: Remove all normal users except rhel and awx
+- name: Remove all normal users except rhel,awx,pulp and student
   ansible.builtin.user:
     name: "{{ item }}"
     state: absent
@@ -14,6 +14,7 @@
     - item != "rhel"
     - item != "awx"
     - item != "pulp"
+    - item != "student"
 
 - name: disable dnf automatic services
   ansible.builtin.service:
@@ -32,9 +33,6 @@
     regexp: '^apply_updates'
     line: apply_updates = no
 
-- name: Update dnf cache
-  ansible.builtin.command: dnf -y makecache
-
 - name: Enable selected RHUI repos
   ansible.builtin.copy:
     src: ../files/rh-cloud.repo
@@ -42,6 +40,9 @@
     owner: root
     group: root
     mode: '644'
+
+- name: Update dnf cache
+  ansible.builtin.command: dnf -y makecache
 
 - name: remove AAP repo
   ansible.builtin.yum_repository:

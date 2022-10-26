@@ -22,7 +22,7 @@ local "extra_args" {
     expression = var.ansible_vars_file != null ? ["-e", "@${path.root}/../ansible/extra-vars.yml", "-e", "ansible_python_interpreter=/usr/bin/python3", "-e", var.ansible_vars_file] : ["-e", "@${path.root}/../ansible/extra-vars.yml", "-e", "ansible_python_interpreter=/usr/bin/python3"]
 }
 
-source "googlecompute" "edge-kiosk-node" {
+source "googlecompute" "edge-mainstage-kiosk-node" {
     project_id          = var.project_id
     # source_image_family = "rhel-8"
     source_image        = "rhel8"
@@ -34,10 +34,10 @@ source "googlecompute" "edge-kiosk-node" {
 }
 
 build {
-    sources = ["sources.googlecompute.edge-kiosk-node"]
+    sources = ["sources.googlecompute.edge-mainstage-kiosk-node"]
     provisioner "ansible" {
       command = "ansible-playbook"
-      playbook_file = "${path.root}/../ansible/edge-kiosk-node-setup.yml"
+      playbook_file = "${path.root}/../ansible/edge-mainstage-kiosk-node-setup.yml"
       user = "rhel"
       extra_arguments = local.extra_args
     }

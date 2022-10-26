@@ -1,0 +1,77 @@
+---
+- name: Configures mesh worker nodes - {{ track_slug }}
+  hosts: all
+  become: true
+  gather_facts: false
+
+  pre_tasks:
+    - name: Include variable tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/60_mesh_check_vars.yml"
+
+  tasks:
+    - name: Include common user tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/5_configure_users.yml"
+
+    - name: Include common mesh worker node tasks
+      vars:
+        mesh_os_packages:
+          - receptor
+          - receptorctl
+          - podman
+          - crun
+          - ansible-runner
+          - libcgroup-tools
+          - subscription-manager-rhsm-certificates
+          - rsync
+          - git
+          - ansible
+        mesh_collections:
+          - fedora.linux_system_roles
+          - containers.podman
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/30_mesh_node.yml"
+
+    - name: Pull Ignition application image to edge nodes
+      containers.podman.podman_image:
+        name: "{{ item.name }}"
+        tag: "{{ item.tag }}"
+        state: "{{ item.state }}"
+      loop: "{{ lab_container_images }}"
+      register: __podman_pull_supported
+      when: (lab_container_images is defined) and (lab_container_images | length > 0)
+      until: __podman_pull_supported is not failed
+      retries: 5
+      delay: 15
+
+    - name: Configure worker node firewall
+      vars:
+        firewall:
+          - set_default_zone: internal
+            state: enabled
+            permanent: true
+          - service: cockpit
+            state: disabled
+            permanent: true
+            zone: internal
+          - port: 27199/tcp
+            state: enabled
+            permanent: true
+            zone: internal
+          - port: 8088/tcp
+            state: enabled
+            permanent: true
+            zone: internal
+      ansible.builtin.import_role:
+        name: fedora.linux_system_roles.firewall
+
+    - name: Include common image cleanup tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/10_image_cleanup.yml"
+
+    - name: Build Cockpit install files cache
+      ansible.builtin.dnf:
+        name: cockpit
+        state: present
+        download_only: true

@@ -2,3 +2,6 @@
 offline_token: "{{ lookup('env','REDHAT_OFFLINE_TOKEN') or 'YOUR_TOKEN' }}"
 redhat_username: "{{ lookup('env','REDHAT_USERNAME') or 'YOUR_USERNAME' }}"
 redhat_password: "{{ lookup('env','REDHAT_PASSWORD') or 'YOUR_PASSWORD' }}"
+gcp_service_account_file: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT_FILE', default='') }}"
+gcp_service_account: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT', default='') }}"
+track_slug: "{{ lookup('ansible.builtin.env', 'TRACK_SLUG', default='') or lookup('ansible.builtin.vars', track_slug, default='') }}"

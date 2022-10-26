@@ -1,51 +1,30 @@
 ---
-- name: configures mesh node
+- name: Configures mesh worker node image
   hosts: all
   become: true
-  vars:
-    receptor_packages:
-      - receptor
-      - receptorctl
-      - podman
-      - crun
-      - ansible-runner
-      - libcgroup-tools
-      - subscription-manager-rhsm-certificates
-      - rsync
-      - git
+  gather_facts: false
 
   pre_tasks:
-    - name: check variables are defined and not empty before building image
-      ansible.builtin.fail:
-        msg: "{{ item }} is undefined or empty. Please check your extra vars file"
-      when: not lookup('vars', item) or lookup('vars', item) is undefined
-      loop:
-        - offline_token
-        - redhat_username
-        - redhat_password
-      delegate_to: localhost
+    - name: Include variable tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/60_mesh_check_vars.yml"
 
   tasks:
-    - name: download aap
-      ansible.builtin.include_role:
-        name: ansible.workshops.aap_download
-        apply:
-          delegate_to: localhost
-          become: false
-
-    - name: Setup AAP install files
-      ansible.builtin.include_role:
-        name: ansible.workshops.control_node
-        tasks_from: 10_aap_setup.yml
-
-    - name: Create controller repo
-      ansible.builtin.include_role:
-        name: ansible.workshops.aap_repo
-
-    - name: Install receptor packages
-      ansible.builtin.dnf:
-        name: "{{ receptor_packages }}"
-        state: present
+    - name: Include common mesh worker node tasks
+      vars:
+        receptor_packages:
+          - receptor
+          - receptorctl
+          - podman
+          - crun
+          - ansible-runner
+          - libcgroup-tools
+          - subscription-manager-rhsm-certificates
+          - rsync
+          - git
+          - ansible
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/30_mesh_node.yml"
 
     - name: Include common user tasks
       ansible.builtin.include_tasks:
