@@ -1,3 +1,4 @@
+## Common mesh node tasks
 - name: Check if AAP bundle file exists
   ansible.builtin.stat:
     path: "/tmp/aap.tar.gz"
@@ -7,6 +8,7 @@
     - controller-download
 
 - name: Download AAP setup bundle
+  when: not __aap_bundle_file.stat.exists
   block:
     - name: Generating an access token
       ansible.builtin.uri:
@@ -40,11 +42,12 @@
     - name: Print error message
       ansible.builtin.debug:
         msg: "Unable to get offline token and download AAP setup bundle."
-  when: not __aap_bundle_file.stat.exists
 
 - name: Create directory for automation controller
   ansible.builtin.file:
     path: "{{ aap_dir }}"
+    owner: "{{ ansible_user }}"
+    mode: 0755
     state: directory
   tags:
     - controller-install
@@ -60,14 +63,24 @@
   ansible.builtin.include_role:
     name: ansible.workshops.aap_repo
 
-- name: Install receptor packages
+- name: Install OS packages
   ansible.builtin.dnf:
-    name: "{{ receptor_packages | default(omit) }}"
+    name: "{{ mesh_os_packages }}"
     state: present
+  when: (mesh_os_packages is defined) and (mesh_os_packages | length > 0)
+
+- name: Download and upgrade collections - {{ inventory_hostname }}
+  ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
+  become_user: "{{ ansible_user }}"
+  loop: "{{ mesh_collections }}"
+  register: __collection_install
+  when: (mesh_collections is defined) and (mesh_collections | length > 0)
+  changed_when: '"is already installed, skipping" not in __collection_install.stdout'
 
 - name: Download custom execution environments
+  when: (controller_execution_environments is defined) and (controller_execution_environments | length > 0)
   block:
-    - name: Download and upgrade collections
+    - name: Download and upgrade collections - {{ inventory_hostname }}
       ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
       loop:
         - containers.podman
@@ -82,10 +95,9 @@
       register: __podman_pull_supported
       when: (controller_execution_environments is defined) and (controller_execution_environments | length > 0)
       until: __podman_pull_supported is not failed
-      retries: 5
-      delay: 15
+      retries: 40
+      delay: 2
   rescue:
     - name: Print error message
-      ansible.builtin.debug:
+      ansible.builtin.fail:
         msg: "Failed to configure custom execution environments"
-  when: (controller_execution_environments is defined) and (controller_execution_environments | length > 0)

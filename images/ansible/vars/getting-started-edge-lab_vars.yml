@@ -1,0 +1,239 @@
+---
+# Ansible config vars - the need for speed
+ansible_ssh_pipelining: true
+ansible_ssh_extra_args: '-o StrictHostKeyChecking=no -o ControlMaster=auto -o ControlPersist=60s'
+
+# GCP vars
+gcp_zone: us-central1-a
+gcp_project: red-hat-mbu
+# https://cloud.google.com/iam/docs/creating-managing-service-account-keys
+gcp_service_account_file: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT_FILE', default='') }}"
+# Example: 73252323203-compute@developer.gserviceaccount.com
+gcp_service_account: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT', default='') }}"
+gcp_instances:
+  - instance_name: dublin-edge-lab       # GCE instance name. The Instruqt sandbox VM name must match for DNS to work
+    instance_image: edge-lab-node        # Instruqt image name
+    instance_labels:
+      role: "{{ track_slug }}"
+      mesh-type: execution               # Mesh node type. Used in {{ track_slug }}_inv.j2
+      location: dublin                   # Mesh region. Used in {{ track_slug }}_inv.j2
+    instance_machine_type: n2-standard-2 # GCE instance type
+  - instance_name: jhb-edge-lab
+    instance_image: edge-lab-node
+    instance_labels:
+      role: "{{ track_slug }}"
+      mesh-type: execution
+      location: jhb
+    instance_machine_type: n2-standard-2
+  - instance_name: controller-edge-lab
+    instance_image: automation-controller
+    instance_labels:
+      role: "{{ track_slug }}"
+      mesh-type: controller
+      location: raleigh
+    instance_machine_type: n2-standard-4
+gcp_inventory_host_vars:
+  ansible_user: "rhel"
+  ansible_ssh_pass: "ansible123!"
+  ansible_host_key_checking: false
+  ansible_python_interpreter: "/usr/bin/python3"
+
+# Base mesh lab setup vars
+aap_dir: "/home/{{ ansible_user }}/aap_install"
+admin_password: "{{ controller_password }}" # legacy for roles
+username: "{{ ansible_user }}"
+controller_install_command: "ANSIBLE_BECOME_METHOD='sudo' ANSIBLE_BECOME=True ./setup.sh -e registry_username='{{ registry_username }}' -e registry_password='{{ registry_password }}'" # noqa yaml[line-length]
+offline_token: "{{ lookup('ansible.builtin.env', 'REDHAT_OFFLINE_TOKEN', default='') }}"
+redhat_username: "{{ lookup('ansible.builtin.env', 'REDHAT_USERNAME', default='') }}"
+redhat_password: "{{ lookup('ansible.builtin.env', 'REDHAT_PASSWORD', default='') }}"
+registry_username: "{{ redhat_username }}"
+registry_password: "{{ redhat_password }}"
+# AAP 2.2.1 SHA
+provided_sha_value: 878c2c2705e5f50e734f27fc7c50b39ddf4b2ace2d40290477d19477b82f9904
+content_dir: setup-scripts/getting-started-edge-lab
+
+## Vars specific to getting-started-edge-lab
+lab_project_repo: https://github.com/craig-br/instruqt-track-content/
+lab_project_repo_branch: devel
+lab_credential_name: "ACME Corp credential"
+lab_global_kiosk_inv_name: "Global kiosk devices"
+lab_global_mon_inv_name: "Global monitoring devices"
+lab_global_fw_inv_name: "Global edge firewalls"
+lab_us_inventory_name: "Raleigh DC"
+lab_jhb_inventory_name: "Johannesburg region"
+lab_irl_inventory_name: "Dublin region"
+lab_organization: "ACME Corp"
+lab_execution_environment: "ACME Corp EE"
+lab_project_name: "ACME Corp repo"
+controller_hostname: controller-edge-lab
+controller_validate_certs: false
+controller_username: admin
+controller_password: "ansible123!"
+student_user: student
+student_password: learn_ansible
+edge_app_admin_username: admin
+edge_app_admin_password: "{{ student_password }}"
+
+
+# Container images repopulated on mesh worker node
+lab_container_images:
+  - name: "docker.io/inductiveautomation/ignition"
+    state: present
+    tag: 8.1
+
+
+# CoP Collection vars https://github.com/redhat-cop/controller_configuration
+controller_configuration_credentials_secure_logging: true
+controller_configuration_inventory_source_update_async_retries: 50
+controller_configuration_projects_async_retries: 50
+controller_configuration_secure_logging: true
+controller_configuration_async_retries: 50
+controller_configuration_inventory_source_update_async_delay: 5
+
+
+controller_configuration_dispatcher_roles:
+  - {role: settings, var: controller_settings, tags: settings}
+  - {role: organizations, var: controller_organizations, tags: organizations}
+  - {role: labels, var: controller_labels, tags: labels}
+  - {role: users, var: controller_user_accounts, tags: users}
+  - {role: teams, var: controller_teams, tags: teams}
+  - {role: credential_types, var: controller_credential_types, tags: credential_types}
+  - {role: credentials, var: controller_credentials, tags: credentials}
+  - {role: credential_input_sources, var: controller_credential_input_sources, tags: credential_input_sources}
+  - {role: notification_templates, var: controller_notifications, tags: notification_templates}
+  - {role: projects, var: controller_projects, tags: projects}
+  - {role: execution_environments, var: controller_execution_environments, tags: execution_environments}
+  - {role: applications, var: controller_applications, tags: applications}
+  - {role: instance_groups, var: controller_instance_groups, tags: instance_groups}
+  - {role: inventories, var: controller_inventories, tags: inventories}
+  - {role: project_update, var: controller_projects, tags: projects}
+  - {role: inventory_sources, var: controller_inventory_sources, tags: inventory_sources}
+  - {role: inventory_source_update, var: controller_inventory_sources, tags: inventory_sources}
+  - {role: hosts, var: controller_hosts, tags: hosts}
+  - {role: groups, var: controller_groups, tags: inventories}
+  - {role: job_templates, var: controller_templates, tags: job_templates}
+  - {role: workflow_job_templates, var: controller_workflows, tags: workflow_job_templates}
+  - {role: schedules, var: controller_schedules, tags: schedules}
+  - {role: roles, var: controller_roles, tags: roles}
+
+controller_organizations:
+  - name: "{{ lab_organization }}"
+    description: "ACME Corp organization"
+    state: present
+
+controller_credentials:
+  - name: "{{ lab_credential_name }}"
+    description: "{{ lab_credential_name }}"
+    organization: "{{ lab_organization }}"
+    credential_type: Machine
+    inputs:
+      ssh_key_data: "{{ lookup('file', hostvars.localhost._ssh_tempdir.path + '/instruqt_lab') }}"
+
+controller_execution_environments:
+  - name: "{{ lab_execution_environment }}"
+    image: quay.io/acme_corp/acme_corp_ee
+    description: "ACME Corp execution environment"
+    state: present
+    pull: never
+
+controller_projects:
+  - name: "{{ lab_project_name }}"
+    organization: "{{ lab_organization }}"
+    state: present
+    scm_branch: "{{ lab_project_repo_branch }}"
+    scm_clean: false
+    scm_delete_on_update: false
+    scm_type: git
+    scm_update_on_launch: false
+    scm_url: https://github.com/craig-br/instruqt-track-content/
+    wait: true
+    update_project: true
+
+controller_inventories:
+  - name: "{{ lab_jhb_inventory_name }}"
+    organization: "{{ lab_organization }}"
+    description: "Johannesburg. South Africa"
+    instance_groups:
+      - "Johannesburg instance group"
+  - name: "{{ lab_irl_inventory_name }}"
+    organization: "{{ lab_organization }}"
+    description: "Dublin. Ireland"
+    instance_groups:
+      - "Dublin instance group"
+  - name: "{{ lab_us_inventory_name }}"
+    organization: "{{ lab_organization }}"
+    description: "Raleigh data center. United States"
+    instance_groups:
+      - "Raleigh data center"
+
+controller_inventory_sources:
+  - name: Dublin inventory source
+    organization: "{{ lab_organization }}"
+    source_project: "{{ lab_project_name }}"
+    source_path: "getting-started-edge-lab/inventories/dublin_inventory.ini"
+    source: scm
+    inventory: "{{ lab_irl_inventory_name }}"
+    description: Dublin region inventory source
+    overwrite: true
+    overwrite_vars: true
+    update_cache_timeout: 0
+    wait: true
+  - name: JHB inventory source
+    organization: "{{ lab_organization }}"
+    source_project: "{{ lab_project_name }}"
+    source_path: "getting-started-edge-lab/inventories/jhb_inventory.ini"
+    source: scm
+    inventory: "{{ lab_jhb_inventory_name }}"
+    description: Johannesburg region inventory source
+    overwrite: true
+    overwrite_vars: true
+    update_cache_timeout: 0
+    wait: true
+  - name: Raleigh inventory source
+    organization: "{{ lab_organization }}"
+    source_project: "{{ lab_project_name }}"
+    source_path: "getting-started-edge-lab/inventories/raleigh_inventory.ini"
+    source: scm
+    inventory: "{{ lab_us_inventory_name }}"
+    description: Johannesburg region inventory source
+    overwrite: true
+    overwrite_vars: true
+    update_cache_timeout: 0
+    wait: true
+
+controller_templates:
+  - name: "Deploy edge application"
+    state: present
+    description: Deploy Ignition application
+    job_type: run
+    playbook: "getting-started-edge-lab/playbooks/deploy_application.yml"
+    execution_environment: "{{ lab_execution_environment }}"
+    inventory: "{{ lab_irl_inventory_name }}"
+    verbosity: 0
+    credentials:
+      - "{{ lab_credential_name }}"
+    project: "{{ lab_project_name }}"
+    ask_inventory_on_launch: true
+    become_enabled: false
+    limit: kiosks
+    survey: {}
+
+controller_instance_groups:
+  - name: "Johannesburg instance group"
+    state: present
+    instances:
+      - jhb-edge-lab
+  - name: "Dublin instance group"
+    state: present
+    instances:
+      - dublin-edge-lab
+  - name: "Raleigh data center"
+    state: present
+    instances:
+      - controller-edge-lab
+
+controller_user_accounts:
+  - user: "{{ student_user }}"
+    password: "{{ student_password }}"
+    is_superuser: true
+    organization: "{{ lab_organization }}"

@@ -1,0 +1,35 @@
+---
+- name: Configures mesh worker node image
+  hosts: all
+  become: true
+  gather_facts: false
+
+  pre_tasks:
+    - name: Include variable tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/60_mesh_check_vars.yml"
+
+  tasks:
+    - name: Include common mesh worker node tasks
+      vars:
+        receptor_packages:
+          - receptor
+          - receptorctl
+          - podman
+          - crun
+          - ansible-runner
+          - libcgroup-tools
+          - subscription-manager-rhsm-certificates
+          - rsync
+          - git
+          - ansible
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/30_mesh_node.yml"
+
+    - name: Include common user tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/5_configure_users.yml"
+
+    - name: Include common image cleanup tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/10_image_cleanup.yml"
