@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+
+import subprocess
+import os
+import yaml
+from shlex import quote
+os.environ["ANSIBLE_STDOUT_CALLBACK"] = "community.general.yaml"
+
+# vars
+setup_scripts_path="/tmp/setup-scripts/getting-started-edge-lab"
+
+# Load extra_vars.yml
+extra_vars_file = open( setup_scripts_path + "/track_vars.yml")
+parsed_extra_vars_file = yaml.load(extra_vars_file, yaml.loader.FullLoader)
+for key,val in parsed_extra_vars_file.items(): 
+    if key == "template_checks":
+        for template in parsed_extra_vars_file[key]:
+            if template['name'] == parsed_extra_vars_file.get('lab_jt_workflow_name'):
+                # Check workflow lab job exists
+                workflow_exists = subprocess.run(["ansible-playbook", setup_scripts_path + "/getting-started-edge-lab-setup.yml",
+                                                "-i", setup_scripts_path + "/inventory.ini",
+                                                "-e", "lab_workflow_name=" + quote(template["name"]),
+                                                "-e", "check_mode=" + quote('true'),
+                                                "-e", "@" + setup_scripts_path + "/track_vars.yml",
+                                                "--tags", "edge-workflow-check-jt-exists"])
+                if workflow_exists.returncode > 0:
+                    print ( "FAIL: Please make sure you create the " + quote(template["name"]) + " workflow job template. \n If you need help, run the " + quote(parsed_extra_vars_file.get('lab_solve_workflow_jt_name')) + " job template." )
+                    exit(1)
+                # Check workflow lab job executed
+                workflow_output = subprocess.run(["ansible-playbook", setup_scripts_path + "/getting-started-edge-lab-setup.yml",
+                                                "-i", setup_scripts_path + "/inventory.ini",
+                                                "-e", "lab_workflow_name=" + quote(template["name"]),
+                                                "-e", "lab_workflow_status=" + quote('successful'), "-e",
+                                                "@" + setup_scripts_path + "/track_vars.yml",
+                                                "--tags", "edge-workflow-check-jt"])
+                if workflow_output.returncode > 0:
+                    print ( "FAIL: Please make sure you've run the " + quote(template["name"]) + " workflow job template." )
+                    exit(1)

@@ -1,0 +1,22 @@
+#!/bin/bash
+set -euxo pipefail
+
+while [ ! -f /opt/instruqt/bootstrap/host-bootstrap-completed ]
+do
+    echo "Waiting for Instruqt to finish booting the VM"
+    sleep 1
+done
+
+# Setup rhel user
+cp -a /root/.ssh/* /home/rhel/.ssh/.
+chown -R rhel:rhel /home/rhel/.ssh
+
+# Download lab content for testing
+# CONTENT_DIR="setup-scripts/getting-started-edge-lab"
+# SETUP_FILES=(inventory.ini getting-started-edge-lab-setup.yml track_vars.yml)
+# mkdir -p /tmp/${CONTENT_DIR}
+
+# for file in ${SETUP_FILES[@]}; do
+#   wget https://s3.us-east-1.amazonaws.com/tmm-instruqt-content.demoredhat.com.private/getting-started-edge-lab/"${file}" --output-document /tmp/"${CONTENT_DIR}"/"${file}"
+# done
+

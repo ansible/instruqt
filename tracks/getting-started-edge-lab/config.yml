@@ -1,0 +1,14 @@
+version: "3"
+virtualmachines:
+- name: dublin-edge-lab
+  image: red-hat-mbu/dublin-edge-lab-image
+  shell: /bin/su - rhel -s /bin/bash
+  machine_type: n2-standard-2
+- name: jhb-edge-lab
+  image: red-hat-mbu/jhb-edge-lab-image
+  shell: /bin/su - rhel -s /bin/bash
+  machine_type: n2-standard-2
+- name: controller-edge-lab
+  image: red-hat-mbu/controller-edge-lab-image
+  shell: /bin/su - rhel -s /bin/bash
+  machine_type: n2-standard-4

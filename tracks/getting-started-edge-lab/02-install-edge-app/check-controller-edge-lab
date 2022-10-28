@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+
+import subprocess
+import os
+import yaml
+from shlex import quote
+os.environ["ANSIBLE_STDOUT_CALLBACK"] = "community.general.yaml"
+
+# vars
+setup_scripts_path="/tmp/setup-scripts/getting-started-edge-lab"
+
+# Load extra_vars.yml
+extra_vars_file = open( setup_scripts_path + "/track_vars.yml")
+parsed_extra_vars_file = yaml.load(extra_vars_file, yaml.loader.FullLoader)
+for key,val in parsed_extra_vars_file.items(): 
+    # Check lab job templates used correct inventories
+    if key == "template_checks":
+        for template in parsed_extra_vars_file[key]:
+            if template['name'] == parsed_extra_vars_file.get('lab_edge_app_jt_name'):
+                for inventory in template["inventories"]:
+                    lab_jt_inv_output = subprocess.run(["ansible-playbook", setup_scripts_path + "/getting-started-edge-lab-setup.yml",
+                                                        "-i", setup_scripts_path + "/inventory.ini", "-e", "lab_inv_name=" + quote(inventory),
+                                                        "-e", "lab_jt_name=" + quote(template["name"]),
+                                                        "-e", "@" + setup_scripts_path + "/track_vars.yml",
+                                                        "--tags", "install-edge-app-check"])
+                if lab_jt_inv_output.returncode > 0:
+                    print ( "FAIL: Please make sure you've run the " + quote(template["name"]) + " job template using the " + quote(inventory) + " inventory." )
+                    exit(1)

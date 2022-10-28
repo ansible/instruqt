@@ -1,0 +1,12 @@
+#!/usr/bin/python3
+
+import subprocess
+import os
+os.environ["ANSIBLE_STDOUT_CALLBACK"] = "community.general.yaml"
+
+# Vars
+setup_scripts_path="/tmp/setup-scripts/getting-started-edge-lab/"
+
+# Setup high-availability
+mesh_ha_setup = subprocess.run(["ansible-playbook", setup_scripts_path+"getting-started-edge-lab-setup.yml",
+                "-i", setup_scripts_path+"inventory.ini", "--tags", "env-overview-setup"])
