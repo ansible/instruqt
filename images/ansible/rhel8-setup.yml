@@ -5,6 +5,7 @@
   become: true
   vars:
     admin_password: 'ansible123!'
+    student_user: 'student'
   tasks:
     - name: Include user setup tasks
       ansible.builtin.include_tasks:
