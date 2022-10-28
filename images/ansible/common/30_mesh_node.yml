@@ -87,17 +87,19 @@
       register: __collection_install
       changed_when: '"is already installed, skipping" not in __collection_install.stdout'
 
+    - name: Log into registry.redhat.io
+      become_user: "awx"
+      containers.podman.podman_login:
+        registry: "registry.redhat.io"
+        username: "{{ registry_username }}"
+        password: "{{ registry_password }}"
+
     - name: Pull execution environment images
       become_user: "awx"
       containers.podman.podman_image:
         name: "{{ item.image }}"
       loop: "{{ controller_execution_environments }}"
       register: __podman_pull_supported
-      when: (controller_execution_environments is defined) and (controller_execution_environments | length > 0)
       until: __podman_pull_supported is not failed
       retries: 40
       delay: 2
-  rescue:
-    - name: Print error message
-      ansible.builtin.fail:
-        msg: "Failed to configure custom execution environments"

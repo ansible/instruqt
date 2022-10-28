@@ -116,8 +116,9 @@ Automation mesh worker nodes are installed and configured during the automation 
 
 File lookups and naming conventions use `track_slug` variable. Configure `track_slug` using the following methods. We'll use the `getting-started-edge-lab` slug as an example.
 
-##### Set the `TRACK_SLUG` environment variable.
+##### Set the `TRACK_SLUG` environment variable
 
+Packer `mesh-node.pkr.hcl` and Ansible playbook `mesh-lab-install` uses the `TRACK_SLUG` environment variable.
 
 ```bash
 export TRACK_SLUG='getting-started-edge-lab'
@@ -152,6 +153,7 @@ You can set certain variables using optional environment variables. Useful to ke
 | redhat_password          | REDHAT_PASSWORD          |
 | gcp_service_account      | GCP_SERVICE_ACCOUNT      |
 | gcp_service_account_file | GCP_SERVICE_ACCOUNT_FILE |
+| gcp_project              | GCP_PROJECT              |
 
 Mesh build playbooks check for certain mandatory variables before executing.
 
@@ -160,9 +162,10 @@ Mesh build playbooks check for certain mandatory variables before executing.
 | track_slug               | Instruqt track slug - e.g. getting-started-mesh-lab.                                                                                       |
 | redhat_username          | Red Hat Customer Portal username.                                                                                                          |
 | redhat_password          | Red Hat Customer Portal password.                                                                                                          |
-| offline_token            | Red Hat Customer Portal offline token. <br> https://access.redhat.com/management/api                                                            |
-| gcp_service_account_file | Location of GCP service account file on local machine. <br> https://cloud.google.com/iam/docs/creating-managing-service-account-keys            |
-| gcp_service_account      | GCP service account file - e.g. 234203-compute@developer.gserviceaccount.com <br> https://cloud.google.com/compute/docs/access/service-accounts |
+| gcp_project              | GCP project to use. Defaults to `red-hat-mbu`.                                                                                             |
+| offline_token            | Red Hat Customer Portal offline token. <br> <https://access.redhat.com/management/api>                                                            |
+| gcp_service_account_file | Location of GCP service account file on local machine. <br> <https://cloud.google.com/iam/docs/creating-managing-service-account-keys>            |
+| gcp_service_account      | GCP service account file - e.g. 234203-compute@developer.gserviceaccount.com <br> <https://cloud.google.com/compute/docs/access/service-accounts> |
 
 The example below from [getting-started-edge-lab_vars.yml](./ansible/vars/getting-started-edge-lab_vars.yml) provides a guide to set up your variable file.
 
@@ -173,7 +176,7 @@ ansible_ssh_extra_args: '-o StrictHostKeyChecking=no -o ControlMaster=auto -o Co
 
 # GCP vars
 gcp_zone: us-central1-a
-gcp_project: red-hat-mbu
+gcp_project: "{{ lookup('ansible.builtin.env', 'GCP_PROJECT', default='red-hat-mbu') }}"
 # https://cloud.google.com/iam/docs/creating-managing-service-account-keys
 gcp_service_account_file: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT_FILE', default='') }}"
 # Example: 73252323203-compute@developer.gserviceaccount.com
@@ -218,14 +221,13 @@ registry_username: "{{ redhat_username }}"
 registry_password: "{{ redhat_password }}"
 # AAP 2.2.1 SHA
 provided_sha_value: 878c2c2705e5f50e734f27fc7c50b39ddf4b2ace2d40290477d19477b82f9904
-content_dir: setup-scripts/getting-started-edge-lab
 ```
 
 ### Mesh node building steps
 
-**Step 1 - Create the mesh worker node base image using Packer**
+#### Step 1 - Create the mesh worker node base image using Packer
 
-The mesh worker node base image is used to create mesh worker nodes during the controller install. 
+The mesh worker node base image is used to create mesh worker nodes during the controller install.
 
 Run the following command from root repository folder. Optionally, point to external variable files using `-var mesh_extra_vars=@<your_vars_file>` option and set the `track_slug` variable using `-var track_slug=<your_track_slug>`.
 
@@ -252,10 +254,6 @@ The `mesh-lab-install.yml` Ansible playbook runs the AAP installer and configure
 
 Execute the following command in the `images\ansible` folder to build the base mesh worker node images. Optionally, point to external variable files using `-e  @<your_vars_file>` option and set the `track_slug` variable using `-e track_slug=<your_track_slug>`.
 
-```bash
-ansible-playbook mesh-generic-lab-install.yml
-```
-
 Let's continue with the example in Step 1 used to create worker node base images for `getting-started-edge-lab`.
 
 ```bash
@@ -264,11 +262,13 @@ ansible-playbook mesh-generic-lab-install.yml -e track_slug='getting-started-edg
 
 <br>
 
-# Words of wisdom from Colin
+# Words of wisdom from Colin & Craig
 
 As a developer, I want to interact with GCP via gcloud, so I `gcloud auth login`
 
 As a developer, I want my code to interact with GCP via SDK, so I `gcloud auth application-default login`
+
+As a developer, I want to change my GCP project, so I `gcloud config set project <project_name>`
 
 When generating windows images from macos, there's an env var that needs to be set in your active shell: `export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES`
 

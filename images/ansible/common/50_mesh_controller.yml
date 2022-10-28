@@ -4,7 +4,6 @@
 # demo-content - Remove Demo Org, project, inventory and job template
 # controller-config - Setup controller env for lab
 ##
-
 - name: Create controller_login fact and anchor
   ansible.builtin.set_fact:
     controller_login: &controller_login
@@ -13,7 +12,7 @@
       controller_host: "{{ controller_hostname }}"
       validate_certs: "{{ controller_validate_certs }}"
 
-- name: Download and upgrade collections - {{ inventory_hostname }}
+- name: Download and upgrade collections - host {{ inventory_hostname }}
   ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
   become_user: "{{ ansible_user }}"
   loop: "{{ mesh_collections }}"
@@ -24,19 +23,21 @@
     - install-collections
     - controller-config
 
-- name: Copy instruqt_lab temp private key to controller
-  ansible.builtin.copy:
-    src: "{{ hostvars.localhost._ssh_tempdir.path }}/instruqt_lab"
-    dest: "/home/{{ ansible_user }}/.ssh/instruqt_lab"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0600"
-    force: true
-  become: false
-  when: (hostvars.localhost._ssh_tempdir.path is defined) and (hostvars.localhost._ssh_tempdir.path | length > 0)
+- name: Install generic ansible.cfg in home directory
+  ansible.builtin.template:
+    src: ansible.cfg.j2
+    dest: "/etc/ansible/ansible.cfg"
   tags:
     - controller-install
-    - ssh-key
+
+- name: Copy setup scripts - {{ track_slug }}
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/setup-scripts/{{ track_slug }}"
+    dest: /tmp/setup-scripts/
+    force: true
+    mode: 0644
+  tags:
+    - controller-install
 
 - name: Check if AAP bundle file exists
   ansible.builtin.stat:
@@ -138,14 +139,7 @@
   tags:
     - controller-install
 
-- name: Install generic ansible.cfg in home directory
-  ansible.builtin.template:
-    src: ansible.cfg.j2
-    dest: "/etc/ansible/ansible.cfg"
-  tags:
-    - controller-install
-
-- name: Run the controller mesh lab installer
+- name: Mesh lab controller install - {{ track_slug }}
   ansible.builtin.shell: "{{ controller_install_command }}" # noqa command-instead-of-shell
   args:
     chdir: "{{ aap_dir }}"
@@ -183,6 +177,7 @@
       ansible.builtin.copy: # noqa template-instead-of-copy
         dest: '{{ playbook_dir }}/manifest.zip'
         content: '{{ base64_manifest | b64decode }}'
+        mode: 0644
       delegate_to: localhost
       become: false
   rescue:
@@ -267,19 +262,34 @@
     - demo-content
     - controller-config
 
-- name: Pull execution environment images
-  become_user: "awx"
-  become: true
-  containers.podman.podman_image:
-    name: "{{ item.image }}"
-  loop: "{{ controller_execution_environments }}"
-  register: __podman_pull_supported
+- name: Download custom execution environments
   when: (controller_execution_environments is defined) and (controller_execution_environments | length > 0)
-  until: __podman_pull_supported is not failed
-  retries: 5
-  delay: 15
   tags:
     - controller-config
+  block:
+    - name: Download and upgrade collections - {{ inventory_hostname }}
+      ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
+      loop:
+        - containers.podman
+      register: __collection_install
+      changed_when: '"is already installed, skipping" not in __collection_install.stdout'
+
+    - name: Log into registry.redhat.io
+      become_user: "awx"
+      containers.podman.podman_login:
+        registry: "registry.redhat.io"
+        username: "{{ registry_username }}"
+        password: "{{ registry_password }}"
+
+    - name: Pull execution environment images
+      become_user: "awx"
+      containers.podman.podman_image:
+        name: "{{ item.image }}"
+      loop: "{{ controller_execution_environments }}"
+      register: __podman_pull_supported
+      until: __podman_pull_supported is not failed
+      retries: 40
+      delay: 2
 
 # Using extra_vars file for this.
 # Check https://github.com/redhat-cop/controller_configuration

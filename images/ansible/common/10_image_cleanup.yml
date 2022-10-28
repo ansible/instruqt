@@ -1,3 +1,4 @@
+# Perform common image cleanup tasks
 - name: Gather current standard users
   ansible.builtin.shell: >
     cut -d: -f1,3 /etc/passwd | egrep ':[0-9]{4}$' | cut -d: -f1

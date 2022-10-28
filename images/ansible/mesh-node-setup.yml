@@ -10,6 +10,10 @@
         file: "{{ playbook_dir }}/common/60_mesh_check_vars.yml"
 
   tasks:
+    - name: Include common user tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/5_configure_users.yml"
+
     - name: Include common mesh worker node tasks
       vars:
         receptor_packages:
@@ -25,10 +29,6 @@
           - ansible
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/30_mesh_node.yml"
-
-    - name: Include common user tasks
-      ansible.builtin.include_tasks:
-        file: "{{ playbook_dir }}/common/5_configure_users.yml"
 
     - name: Include common image cleanup tasks
       ansible.builtin.include_tasks:
