@@ -1,5 +1,5 @@
 ---
-- name: Configures mesh worker node image
+- name: Configures mesh worker nodes - {{ track_slug }}
   hosts: all
   become: true
   gather_facts: false
@@ -16,7 +16,7 @@
 
     - name: Include common mesh worker node tasks
       vars:
-        receptor_packages:
+        mesh_os_packages:
           - receptor
           - receptorctl
           - podman
@@ -30,6 +30,3 @@
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/30_mesh_node.yml"
 
-    - name: Include common image cleanup tasks
-      ansible.builtin.include_tasks:
-        file: "{{ playbook_dir }}/common/10_image_cleanup.yml"

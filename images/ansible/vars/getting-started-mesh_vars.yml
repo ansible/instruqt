@@ -6,26 +6,24 @@ ansible_ssh_extra_args: '-o StrictHostKeyChecking=no -o ControlMaster=auto -o Co
 # GCP vars
 gcp_zone: us-central1-a
 gcp_project: "{{ lookup('ansible.builtin.env', 'GCP_PROJECT', default='red-hat-mbu') }}"
-# https://cloud.google.com/iam/docs/creating-managing-service-account-keys
 gcp_service_account_file: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT_FILE', default='') }}"
-# Example: 73252323203-compute@developer.gserviceaccount.com
 gcp_service_account: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT', default='') }}"
 gcp_instances:
-  - instance_name: dublin-edge-lab       # GCE instance name. The Instruqt sandbox VM name must match for DNS to work
-    instance_image: "{{ track_slug }}-node"      # Instruqt image name
+  - instance_name: "dublin-hop"
+    instance_image: "{{ track_slug }}-node"
     instance_labels:
       role: "{{ track_slug }}"
-      mesh-type: execution               # Mesh node type. Used in {{ track_slug }}_inv.j2
-      location: dublin                   # Mesh region. Used in {{ track_slug }}_inv.j2
-    instance_machine_type: e2-standard-2 # GCE instance type
-  - instance_name: jhb-edge-lab
+      mesh-type: hop
+      location: dublin
+    instance_machine_type: e2-standard-2
+  - instance_name: "jhb-exec"
     instance_image: "{{ track_slug }}-node"
     instance_labels:
       role: "{{ track_slug }}"
       mesh-type: execution
       location: jhb
     instance_machine_type: e2-standard-2
-  - instance_name: controller-edge-lab
+  - instance_name: raleigh-controller
     instance_image: automation-controller
     instance_labels:
       role: "{{ track_slug }}"
@@ -50,43 +48,30 @@ registry_username: "{{ redhat_username }}"
 registry_password: "{{ redhat_password }}"
 # AAP 2.2.1 SHA
 provided_sha_value: 878c2c2705e5f50e734f27fc7c50b39ddf4b2ace2d40290477d19477b82f9904
-content_dir: setup-scripts/getting-started-edge-lab
 
 ## Vars specific to getting-started-edge-lab
+lab_project_name: ACME Corp repo
 lab_project_repo: https://github.com/craig-br/instruqt-track-content/
 lab_project_repo_branch: devel
-lab_credential_name: "ACME Corp credential"
-lab_global_kiosk_inv_name: "Global kiosk devices"
-lab_global_mon_inv_name: "Global monitoring devices"
-lab_global_fw_inv_name: "Global edge firewalls"
-lab_us_inventory_name: "Raleigh DC"
-lab_jhb_inventory_name: "Johannesburg region"
-lab_irl_inventory_name: "Dublin region"
+lab_credential_name: ACME Corp credential
+lab_us_inventory_name: Raleigh DC
+lab_jhb_inventory_name: Johannesburg DC
+lab_irl_inventory_name: Dublin region
 lab_organization: "ACME Corp"
-lab_execution_environment: "ACME Corp EE"
-lab_project_name: "ACME Corp repo"
-controller_hostname: controller-edge-lab
+lab_execution_environment: Default execution environment
+controller_hostname: raleigh-controller
 controller_validate_certs: false
 controller_username: admin
 controller_password: "ansible123!"
 student_user: student
 student_password: learn_ansible
-edge_app_admin_username: admin
-edge_app_admin_password: "{{ student_password }}"
-
-
-# Container images repopulated on mesh worker node
-lab_container_images:
-  - name: "docker.io/inductiveautomation/ignition"
-    state: present
-    tag: 8.1
-
+lab_inv_group_name: web
 
 # CoP Collection vars https://github.com/redhat-cop/controller_configuration
 controller_configuration_credentials_secure_logging: true
 controller_configuration_inventory_source_update_async_retries: 50
 controller_configuration_projects_async_retries: 50
-controller_configuration_secure_logging: true
+controller_configuration_secure_logging: false
 controller_configuration_async_retries: 50
 controller_configuration_inventory_source_update_async_delay: 5
 
@@ -129,10 +114,10 @@ controller_credentials:
     inputs:
       ssh_key_data: "{{ lookup('file', hostvars.localhost._ssh_tempdir.path + '/instruqt_lab') }}"
 
+# Downloads EE to controller and worker nodes
 controller_execution_environments:
   - name: "{{ lab_execution_environment }}"
-    image: quay.io/acme_corp/acme_corp_ee
-    description: "ACME Corp execution environment"
+    image: registry.redhat.io/ansible-automation-platform-22/ee-supported-rhel8:latest
     state: present
     pull: never
 
@@ -145,7 +130,7 @@ controller_projects:
     scm_delete_on_update: false
     scm_type: git
     scm_update_on_launch: false
-    scm_url: https://github.com/craig-br/instruqt-track-content/
+    scm_url: "{{ lab_project_repo }}"
     wait: true
     update_project: true
 
@@ -153,35 +138,19 @@ controller_inventories:
   - name: "{{ lab_jhb_inventory_name }}"
     organization: "{{ lab_organization }}"
     description: "Johannesburg. South Africa"
-    instance_groups:
-      - "Johannesburg instance group"
-  - name: "{{ lab_irl_inventory_name }}"
-    organization: "{{ lab_organization }}"
-    description: "Dublin. Ireland"
-    instance_groups:
-      - "Dublin instance group"
+    # instance_groups:
+    #   - Johannesburg data center
   - name: "{{ lab_us_inventory_name }}"
     organization: "{{ lab_organization }}"
     description: "Raleigh data center. United States"
-    instance_groups:
-      - "Raleigh data center"
+    # instance_groups:
+    #   - Raleigh data center
 
 controller_inventory_sources:
-  - name: Dublin inventory source
-    organization: "{{ lab_organization }}"
-    source_project: "{{ lab_project_name }}"
-    source_path: "getting-started-edge-lab/inventories/dublin_inventory.ini"
-    source: scm
-    inventory: "{{ lab_irl_inventory_name }}"
-    description: Dublin region inventory source
-    overwrite: true
-    overwrite_vars: true
-    update_cache_timeout: 0
-    wait: true
   - name: JHB inventory source
     organization: "{{ lab_organization }}"
     source_project: "{{ lab_project_name }}"
-    source_path: "getting-started-edge-lab/inventories/jhb_inventory.ini"
+    source_path: "{{ track_slug }}/inventories/jhb_inventory.ini"
     source: scm
     inventory: "{{ lab_jhb_inventory_name }}"
     description: Johannesburg region inventory source
@@ -192,45 +161,60 @@ controller_inventory_sources:
   - name: Raleigh inventory source
     organization: "{{ lab_organization }}"
     source_project: "{{ lab_project_name }}"
-    source_path: "getting-started-edge-lab/inventories/raleigh_inventory.ini"
+    source_path: "{{ track_slug }}/inventories/raleigh_inventory.ini"
     source: scm
     inventory: "{{ lab_us_inventory_name }}"
-    description: Johannesburg region inventory source
+    description: Raleigh data center inventory source
     overwrite: true
     overwrite_vars: true
     update_cache_timeout: 0
     wait: true
 
 controller_templates:
-  - name: "Deploy edge application"
+  - name: "Debug info"
     state: present
-    description: Deploy Ignition application
+    description: Gather system information
     job_type: run
-    playbook: "getting-started-edge-lab/playbooks/deploy_application.yml"
+    playbook: "{{ track_slug }}/playbooks/debug_info.yml"
     execution_environment: "{{ lab_execution_environment }}"
-    inventory: "{{ lab_irl_inventory_name }}"
+    inventory: "{{ lab_us_inventory_name }}"
     verbosity: 0
     credentials:
       - "{{ lab_credential_name }}"
     project: "{{ lab_project_name }}"
     ask_inventory_on_launch: true
     become_enabled: false
-    limit: kiosks
+    survey: {}
+  - name: "Mesh route info"
+    state: present
+    description: Test automation mesh overlay network
+    job_type: run
+    playbook: "{{ track_slug }}/playbooks/mesh_traceroute.yml"
+    execution_environment: "{{ lab_execution_environment }}"
+    inventory: "{{ lab_us_inventory_name }}"
+    extra_vars:
+      mesh_target: jhb-exec
+    verbosity: 0
+    credentials:
+      - "{{ lab_credential_name }}"
+    project: "{{ lab_project_name }}"
+    ask_inventory_on_launch: true
+    become_enabled: true
     survey: {}
 
-controller_instance_groups:
-  - name: "Johannesburg instance group"
-    state: present
-    instances:
-      - jhb-edge-lab
-  - name: "Dublin instance group"
-    state: present
-    instances:
-      - dublin-edge-lab
-  - name: "Raleigh data center"
-    state: present
-    instances:
-      - controller-edge-lab
+# controller_instance_groups:
+#   - name: "Johannesburg instance group"
+#     state: present
+#     instances:
+#       - jhb-edge-lab
+#   - name: "Dublin instance group"
+#     state: present
+#     instances:
+#       - dublin-edge-lab
+#   - name: "Raleigh data center"
+#     state: present
+#     instances:
+#       - controller-edge-lab
 
 controller_user_accounts:
   - user: "{{ student_user }}"

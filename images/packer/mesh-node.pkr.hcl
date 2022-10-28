@@ -10,7 +10,7 @@ variable "zone" {
 
 variable "image_name" {
     type    = string
-    default = "mesh-node"
+    default = null
 }
 
 variable "ansible_vars_file" {
@@ -27,8 +27,9 @@ variable "track_slug" {
     }
 }
 
-local "extra_args" {
-    expression = var.ansible_vars_file != null ? ["-e", "@images/ansible/extra-vars.yml", "-e", var.ansible_vars_file, "-e", "track_slug=${var.track_slug}"] : ["-e", "@images/ansible/extra-vars.yml",  "-e", "track_slug=${var.track_slug}"]
+locals { 
+    extra_args = var.ansible_vars_file != null ? ["-e", "@images/ansible/extra-vars.yml", "-e", var.ansible_vars_file, "-e", "track_slug=${var.track_slug}"] : ["-e", "@images/ansible/extra-vars.yml",  "-e", "track_slug=${var.track_slug}"]
+    slug_image_name = var.image_name != null ? var.image_name : "${var.track_slug}-node"
 }
 
 source "googlecompute" "mesh-node" {
@@ -37,8 +38,8 @@ source "googlecompute" "mesh-node" {
     ssh_username        = "rhel"
     wait_to_add_ssh_keys = "60s"
     zone                = var.zone
-    machine_type        = "n2-standard-2"
-    image_name          = var.image_name
+    machine_type        = "e2-standard-2"
+    image_name          = local.slug_image_name
 }
 
 build {

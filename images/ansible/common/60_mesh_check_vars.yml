@@ -29,8 +29,10 @@
       - name: gcp_service_account
         env: GCP_SERVICE_ACCOUNT
       - name: gcp_instances
+      - name: gcp_project
+        env: GCP_PROJECT
   ansible.builtin.set_fact:
-    "{{ __extra_vars_item.name }}": "{{ lookup('ansible.builtin.env', __extra_vars_item.env | default(omit), default='') or lookup('ansible.builtin.vars', __extra_vars_item.name, default='') }}" # noqa yaml[line-length]
+    "{{ __extra_vars_item.name }}": "{{ lookup('ansible.builtin.env', __extra_vars_item.env | default(omit), default='') or lookup('ansible.builtin.vars', __extra_vars_item.name, default='') }}" # yamllint disable-line rule:line-length
   register: __extra_vars_results
   loop_control:
     loop_var: __extra_vars_item
