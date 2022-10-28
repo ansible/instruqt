@@ -24,4 +24,10 @@
       tags:
         - image-cleanup
 
+    - name: Install some packages
+      ansible.builtin.dnf:
+        name:
+          - podman
+        state: present
+
 
