@@ -1,0 +1,97 @@
+---
+# Lab extra vars
+track_slug: getting-started-mesh
+lab_credential_name: "ACME Corp credential"
+lab_us_inventory_name: "Raleigh DC"
+lab_jhb_inventory_name: "Johannesburg DC"
+lab_organization: "ACME Corp"
+lab_inv_group_name: "web"
+lab_exec_node_hostname: jhb-exec
+lab_hop_node_hostname: dublin-hop
+lab_project_name: "ACME Corp repo"
+lab_repo_branch: devel
+
+controller_hostname: raleigh-controller
+controller_validate_certs: false
+controller_username: admin
+controller_password: "ansible123!"
+student_user: student
+student_password: learn_ansible
+
+lab_job_templates:
+  - jt_name: "Debug info"
+    jt_playbook: "getting-started-mesh/playbooks/debug_info.yml"
+    jt_prompt_inventory: true
+    jt_inventory: "Raleigh DC"
+    jt_become: false
+    survey_enabled: false
+  - jt_name: "Mesh route info"
+    jt_playbook: "getting-started-mesh/playbooks/mesh_traceroute.yml"
+    jt_prompt_inventory: true
+    jt_extra_vars:
+      mesh_target: "jhb-exec"
+    jt_inventory: "Raleigh DC"
+    jt_become: true
+    survey_enabled: false
+lab_inventories:
+  - name: "Raleigh DC"
+    description: "Raleigh data center. United States"
+    inv_instance_groups:
+      - "Raleigh data center"
+  - name: "Johannesburg DC"
+    description: "Johannesburg data center. South Africa"
+    inv_instance_groups:
+      - "Johannesburg data center"
+lab_instance_groups:
+  - lab_instance_group_name: Raleigh data center
+    lab_instance_group_hosts:
+      - raleigh-controller
+  - lab_instance_group_name: Johannesburg data center
+    lab_instance_group_hosts:
+      - jhb-exec
+
+# Dublin vars
+lab_dbn_inventories:
+  - name: "Dublin DC"
+    description: "Dublin data center. Ireland"
+lab_dbn_inventory_name: "Dublin DC"
+lab_dbn_host_name: "hop.dublin.example.com"
+lab_dbn_hosts:
+  - lab_host_name: "hop.dublin.example.com"
+    lab_host_inventory: "Dublin DC"
+    lab_host_vars:
+      ansible_host: "dublin-hop"
+      ansible_python_interpreter: /usr/bin/python3
+lab_dbn_job_templates:
+  - jt_name: "Setup Dublin hop node"
+    jt_playbook: "getting-started-mesh/playbooks/dublin_hop_node.yml"
+    jt_inventory: "Dublin DC"
+    jt_become: true
+    jt_prompt_inventory: true
+    jt_extra_vars:
+      mesh_target: "jhb-exec"
+    survey_enabled: false
+lab_dbn_check_instance_name: "jhb-exec"
+
+# high-availability job templates to run with correct inventory
+# Order of job templates is important
+lab_dbn_check_job_templates:
+  - jt_name: "Setup Dublin hop node"
+    jt_inventory: "Dublin DC"
+  - jt_name: "Mesh route info"
+    jt_inventory: "Raleigh DC"
+  - jt_name: "Debug info"
+    jt_inventory: "Johannesburg DC"
+
+# controller_user_vars:
+#   - user: student
+#     role: execute
+#     projects:
+#       - "{{ lab_project_name }}"
+#     # organizations:
+#     #   - "{{ lab_organization }}"
+#     # job_templates: 
+#     #   - "Mesh route info"
+#     #   - "Debug info"
+#     state: present
+

@@ -23,6 +23,11 @@
     - name: Include variable tasks
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/60_mesh_check_vars.yml"
+        apply:
+          tags:
+            - always
+      tags:
+        - always
 
   tasks:
     - name: Install and upgrade collections - {{ inventory_hostname }}
@@ -71,6 +76,7 @@
           loop: "{{ __remove_instances_job_async.results }}"
           loop_control:
             loop_var: __remove_instances_job_async_result_item
+            label: "{{ __remove_instances_job_async_result_item.__remove_instances_job_async_item.instance_name }}"
           until: __remove_instances_job_async_result.finished
           register: __remove_instances_job_async_result
           when: __remove_instances_job_async_result_item.ansible_job_id is defined
@@ -90,7 +96,7 @@
             <<: *gcp_login
             network_interfaces:
               - access_configs:
-                - name: External NAT # noqa yaml[indentation]
+                - name: External NAT # yamllint disable-line rule:indentation
                   type: ONE_TO_ONE_NAT
             disks:
               - auto_delete: true
@@ -117,6 +123,7 @@
           loop: "{{ __create_instances_job_async.results }}"
           loop_control:
             loop_var: __create_instances_job_async_result_item
+            label: "{{ __create_instances_job_async_result_item.__create_instances_job_async_item.instance_name }}"
           until: __create_instances_job_async_result.finished
           register: __create_instances_job_async_result
           when: __create_instances_job_async_result_item.ansible_job_id is defined
@@ -146,11 +153,13 @@
       tags:
         - create-instances
 
-    - name: Remove previous known_hosts keys from localhost
+    - name: Remove previous known_hosts keys - {{ inventory_hostname }}
       ansible.builtin.known_hosts:
         name: "{{ item.networkInterfaces[0].accessConfigs[0].natIP }}"
         state: absent
       loop: "{{ __mesh_node_instance_info.resources }}"
+      loop_control:
+        label: "{{ item.name }}"
       when: (__mesh_node_instance_info.resources is defined) and (__mesh_node_instance_info.resources | length > 0)
       tags:
         - create-instances
@@ -172,6 +181,7 @@
           loop: "{{ __mesh_node_instance_info.resources }}"
           loop_control:
             loop_var: __instances_ssh_async_item
+            label: "{{ __instances_ssh_async_item.name }}"
           async: 1000
           poll: 0
           register: __instances_ssh_async
@@ -185,6 +195,7 @@
           loop: "{{ __instances_ssh_async.results }}"
           loop_control:
             loop_var: __instances_ssh_async_result_item
+            label: "{{ __instances_ssh_async_result_item.__instances_ssh_async_item.name }}"
           until: __instances_ssh_async_result.finished
           register: __instances_ssh_async_result
           when: __instances_ssh_async_result_item.ansible_job_id is defined
@@ -211,6 +222,8 @@
         ansible_host: "{{ item.networkInterfaces[0].accessConfigs[0].natIP }}"
       args: "{{ gcp_inventory_host_vars | default(omit) }}"
       loop: "{{ __mesh_node_instance_info.resources }}"
+      loop_control:
+        label: "{{ item.name }}"
       when:
         - (item.labels["mesh-type"] == "hop") or (item.labels["mesh-type"] == "execution")
         - (__mesh_node_instance_info.resources is defined) and (__mesh_node_instance_info.resources | length > 0)
@@ -224,6 +237,8 @@
         ansible_host: "{{ item.networkInterfaces[0].accessConfigs[0].natIP }}"
       args: "{{ gcp_inventory_host_vars | default(omit) }}"
       loop: "{{ __mesh_node_instance_info.resources }}"
+      loop_control:
+        label: "{{ item.name }}"
       when:
         - item.labels["mesh-type"] == "controller"
         - (__mesh_node_instance_info.resources is defined) and (__mesh_node_instance_info.resources | length > 0)
@@ -259,22 +274,21 @@
         file: "{{ playbook_dir }}/common/60_mesh_check_vars.yml"
 
   tasks:
-    - name: Add instruqt_lab ssh key to authorized keys - {{ ansible_user }}
-      ansible.posix.authorized_key:
-        user: "{{ ansible_user }}"
-        state: present
-        key: "{{ lookup('file', hostvars.localhost._ssh_tempdir.path + '/instruqt_lab.pub') }}"
-        comment: "Instruqt lab key"
+    - name: Include common user tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/5_configure_users.yml"
       tags:
-        - ssh-key
         - controller-install
 
-    - name: Add instruqt_lab ssh key to authorized keys - {{ ansible_user_id }}
+    - name: Add instruqt_lab ssh key to authorized keys
       ansible.posix.authorized_key:
-        user: "{{ ansible_user_id }}"
+        user: "{{ item }}"
         state: present
         key: "{{ lookup('file', hostvars.localhost._ssh_tempdir.path + '/instruqt_lab.pub') }}"
         comment: "Instruqt lab key"
+      loop:
+        - "{{ ansible_user }}"
+        - "{{ ansible_user_id }}" # root because of become: true
       tags:
         - ssh-key
         - controller-install
@@ -299,6 +313,32 @@
         file: "{{ playbook_dir }}/common/60_mesh_check_vars.yml"
 
   tasks:
+    - name: Copy instruqt_lab ssh keys to controller - {{ ansible_user }}
+      ansible.builtin.copy:
+        src: "{{ hostvars.localhost._ssh_tempdir.path }}/"
+        dest: "/home/{{ ansible_user }}/.ssh/"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: "0600"
+        force: true
+      when: (hostvars.localhost._ssh_tempdir.path is defined) and (hostvars.localhost._ssh_tempdir.path | length > 0)
+      tags:
+        - controller-install
+        - ssh-key
+
+    - name: Copy instruqt_lab ssh keys to controller - {{ ansible_user_id }}
+      ansible.builtin.copy:
+        src: "{{ hostvars.localhost._ssh_tempdir.path }}/"
+        dest: "{{ ansible_env.HOME }}/.ssh/" # home for root because of become: true
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_id }}"
+        mode: "0600"
+        force: true
+      when: (hostvars.localhost._ssh_tempdir.path is defined) and (hostvars.localhost._ssh_tempdir.path | length > 0)
+      tags:
+        - controller-install
+        - ssh-key
+
     - name: Include common controller tasks
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/50_mesh_controller.yml"
@@ -309,7 +349,7 @@
       ansible.builtin.import_role:
         name: ansible.workshops.code_server
       tags:
-        - code-server-install
+        - code-server
         - controller-install
 
 # Run cleanup tasks on images
@@ -319,10 +359,14 @@
   gather_facts: false
 
   pre_tasks:
-    - name: Include vars file from extra_vars directory
-      ansible.builtin.include_vars:
-        file: "{{ mesh_extra_vars }}"
-      when: (mesh_extra_vars is defined) and (mesh_extra_vars | length > 0)
+    - name: Include variable tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/60_mesh_check_vars.yml"
+        apply:
+          tags:
+            - always
+      tags:
+        - always
 
   tasks:
     - name: Include common image cleanup tasks
@@ -356,10 +400,14 @@
   gather_facts: false
 
   pre_tasks:
-    - name: Include vars file from extra_vars directory
-      ansible.builtin.include_vars:
-        file: "{{ mesh_extra_vars }}"
-      when: (mesh_extra_vars is defined) and (mesh_extra_vars | length > 0)
+    - name: Include variable tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/60_mesh_check_vars.yml"
+        apply:
+          tags:
+            - always
+      tags:
+        - always
 
   tasks:
     - name: Stop gcloud instances
@@ -377,6 +425,7 @@
           loop: "{{ gcp_instances }}"
           loop_control:
             loop_var: __instances_stop_async_item
+            label: "{{ __instances_stop_async_item.instance_name }}"
           async: 1000
           poll: 0
           register: __instances_stop_async
@@ -390,11 +439,14 @@
           loop: "{{ __instances_stop_async.results }}"
           loop_control:
             loop_var: __instances_stop_async_result_item
+            label: "{{ __instances_stop_async_result_item.__instances_stop_async_item.instance_name }}"
           until: __instances_stop_async_result.finished
           register: __instances_stop_async_result
           when: __instances_stop_async_result_item.ansible_job_id is defined
 
     - name: Remove current gcloud images
+      notify:
+        - remove instances
       when: (gcp_instances is defined) and (gcp_instances | length > 0)
       tags:
         - create-images
@@ -408,6 +460,7 @@
           loop: "{{ gcp_instances }}"
           loop_control:
             loop_var: __images_remove_async_item
+            label: "{{ __images_remove_async_item.instance_name }}"
           async: 1000
           poll: 0
           register: __images_remove_async
@@ -421,6 +474,7 @@
           loop: "{{ __images_remove_async.results }}"
           loop_control:
             loop_var: __images_remove_async_result_item
+            label: "{{ __images_remove_async_result_item.__images_remove_async_item.instance_name }}"
           until: __images_remove_async_result.finished
           register: __images_remove_async_result
           when: __images_remove_async_result_item.ansible_job_id is defined
@@ -430,8 +484,8 @@
             msg: |
               "Rescue - Unable to remove gcloud images."
               "{{ __images_remove_async_result }}"
-            notify:
-              - Remove temp gcloud instances
+          notify:
+            - remove instances
 
     - name: Create new Instruqt mesh images
       tags:
@@ -442,11 +496,15 @@
             name: "{{ __images_create_async_item.instance_name }}-image"
             state: present
             source_disk:
-              selfLink: "https://www.googleapis.com/compute/v1/projects/{{ gcp_project }}/zones/{{ gcp_zone }}/disks/{{ __images_create_async_item.instance_name }}" # noqa yaml[line-length]
+              selfLink: "https://www.googleapis.com/compute/v1/projects/{{ gcp_project }}/zones/{{ gcp_zone }}/disks/{{ __images_create_async_item.instance_name }}" # yamllint disable-line rule:line-length
+            labels:
+              role: "{{ track_slug }}"
+            description: "{{ track_slug }} - {{ __images_create_async_item.instance_name }} image."  
             <<: *gcp_login
           loop: "{{ gcp_instances }}"
           loop_control:
             loop_var: __images_create_async_item
+            label: "{{ __images_create_async_item.instance_name }}"
           async: 1000
           poll: 0
           register: __images_create_async
@@ -460,6 +518,7 @@
           loop: "{{ __images_create_async.results }}"
           loop_control:
             loop_var: __images_create_async_result_item
+            label: "{{ __images_create_async_result_item.__images_create_async_item.instance_name }}"
           until: __images_create_async_result.finished
           register: __images_create_async_result
           when: __images_create_async_result_item.ansible_job_id is defined
@@ -469,39 +528,37 @@
             msg: |
               "Rescue - Unable to remove gcloud images."
               "{{ __images_create_async_result }}"
-            notify:
-              - Remove temp gcloud instances
+          notify:
+            - remove instances
 
   handlers:
-    - name: Remove temp gcloud instances
+    - name: Remove GCP instances
+      listen: remove instances
+      google.cloud.gcp_compute_instance:
+        name: "{{ __remove_instances_job_async_item.instance_name }}"
+        state: absent
+        zone: "{{ gcp_zone }}"
+        <<: *gcp_login
+      loop: "{{ gcp_instances }}"
+      loop_control:
+        loop_var: __remove_instances_job_async_item
+        label: "{{ __remove_instances_job_async_item.instance_name }}"
+      async: 1000
+      poll: 0
+      register: __remove_instances_job_async
+      changed_when: not __remove_instances_job_async.changed
       when: (gcp_instances is defined) and (gcp_instances | length > 0)
-      tags:
-        - delete-instances
-        - create-images
-      block:
-        - name: Remove temp gcloud instances
-          google.cloud.gcp_compute_instance:
-            name: "{{ __remove_instances_job_async_item.instance_name }}"
-            state: absent
-            zone: "{{ gcp_zone }}"
-            <<: *gcp_login
-          loop: "{{ gcp_instances }}"
-          loop_control:
-            loop_var: __remove_instances_job_async_item
-            label: "{{ __remove_instances_job_async_item.instance_name }}"
-          async: 1000
-          poll: 0
-          register: __remove_instances_job_async
-          changed_when: not __remove_instances_job_async.changed
 
-        - name: "Remove temp gcloud instances | Wait for finish the instance deletion"
-          ansible.builtin.async_status:
-            jid: "{{ __remove_instances_job_async_result_item.ansible_job_id }}"
-          retries: 35
-          delay: 5
-          loop: "{{ __remove_instances_job_async.results }}"
-          loop_control:
-            loop_var: __remove_instances_job_async_result_item
-          until: __remove_instances_job_async_result.finished
-          register: __remove_instances_job_async_result
-          when: __remove_instances_job_async_result_item.ansible_job_id is defined
+    - name: "Remove GCP instances | Wait for finish the instance deletion"
+      listen: remove instances
+      ansible.builtin.async_status:
+        jid: "{{ __remove_instances_job_async_result_item.ansible_job_id }}"
+      retries: 35
+      delay: 5
+      loop: "{{ __remove_instances_job_async.results }}"
+      loop_control:
+        loop_var: __remove_instances_job_async_result_item
+        label: "{{ __remove_instances_job_async_result_item.__remove_instances_job_async_item.instance_name }}"
+      until: __remove_instances_job_async_result.finished
+      register: __remove_instances_job_async_result
+      when: __remove_instances_job_async_result_item.ansible_job_id is defined
