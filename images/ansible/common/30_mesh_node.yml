@@ -1,0 +1,105 @@
+## Common mesh node tasks
+- name: Check if AAP bundle file exists
+  ansible.builtin.stat:
+    path: "/tmp/aap.tar.gz"
+  register: __aap_bundle_file
+  tags:
+    - controller-install
+    - controller-download
+
+- name: Download AAP setup bundle
+  when: not __aap_bundle_file.stat.exists
+  block:
+    - name: Generating an access token
+      ansible.builtin.uri:
+        url: https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token
+        method: POST
+        body_format: form-urlencoded
+        return_content: true
+        body:
+          grant_type: "refresh_token"
+          client_id: "rhsm-api"
+          refresh_token: "{{ offline_token }}"
+      register: temp_token
+      until: temp_token is not failed
+      retries: 15
+      delay: 5
+
+    - name: Download aap.tar.gz
+      ansible.builtin.get_url:
+        url: "https://api.access.redhat.com/management/v1/images/{{ provided_sha_value }}/download"
+        headers:
+          accept: "application/json"
+          Authorization: "Bearer {{ temp_token.json.access_token }}"
+        dest: "/tmp/aap.tar.gz"
+        checksum: "sha256: {{ provided_sha_value }}"
+        mode: 0644
+      register: download_aap_tarball
+      until: download_aap_tarball is not failed
+      retries: 15
+      delay: 20
+  rescue:
+    - name: Print error message
+      ansible.builtin.debug:
+        msg: "Unable to get offline token and download AAP setup bundle."
+
+- name: Create directory for automation controller
+  ansible.builtin.file:
+    path: "{{ aap_dir }}"
+    owner: "{{ ansible_user }}"
+    mode: 0755
+    state: directory
+  tags:
+    - controller-install
+
+- name: Extract AAP tar.gz install
+  ansible.builtin.unarchive:
+    src: "/tmp/aap.tar.gz"
+    dest: "{{ aap_dir }}"
+    remote_src: true
+    extra_opts: ['--strip-components=1', '--show-stored-names']
+
+- name: Create controller repo
+  ansible.builtin.include_role:
+    name: ansible.workshops.aap_repo
+
+- name: Install OS packages
+  ansible.builtin.dnf:
+    name: "{{ mesh_os_packages }}"
+    state: present
+  when: (mesh_os_packages is defined) and (mesh_os_packages | length > 0)
+
+- name: Download and upgrade collections - {{ inventory_hostname }}
+  ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
+  become_user: "{{ ansible_user }}"
+  loop: "{{ mesh_collections }}"
+  register: __collection_install
+  when: (mesh_collections is defined) and (mesh_collections | length > 0)
+  changed_when: '"is already installed, skipping" not in __collection_install.stdout'
+
+- name: Download custom execution environments
+  when: (controller_execution_environments is defined) and (controller_execution_environments | length > 0)
+  block:
+    - name: Download and upgrade collections - {{ inventory_hostname }}
+      ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
+      loop:
+        - containers.podman
+      register: __collection_install
+      changed_when: '"is already installed, skipping" not in __collection_install.stdout'
+
+    - name: Log into registry.redhat.io
+      become_user: "awx"
+      containers.podman.podman_login:
+        registry: "registry.redhat.io"
+        username: "{{ registry_username }}"
+        password: "{{ registry_password }}"
+
+    - name: Pull execution environment images
+      become_user: "awx"
+      containers.podman.podman_image:
+        name: "{{ item.image }}"
+      loop: "{{ controller_execution_environments }}"
+      register: __podman_pull_supported
+      until: __podman_pull_supported is not failed
+      retries: 40
+      delay: 2

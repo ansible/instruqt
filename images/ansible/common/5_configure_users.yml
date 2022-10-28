@@ -1,4 +1,4 @@
-# Configure rhel user
+# Common user tasks
 - name: Configure user 'rhel'
   ansible.builtin.user:
     name: rhel
@@ -8,9 +8,10 @@
     append: true
 
 - name: enable sshd password auth
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/ssh/sshd_config
     state: present
+    mode: 0400
     regexp: '^PasswordAuthentication'
     line: >-
       PasswordAuthentication yes
@@ -32,6 +33,14 @@
     append: true
     home: /var/lib/awx
     shell: /bin/bash
+
+- name: Create restricted user - {{ student_user }}
+  ansible.builtin.user:
+    name: "{{ student_user }}"
+    shell: /bin/bash
+    password: "{{ student_password | password_hash('sha512', '98263y4krwf7400') }}"
+  tags:
+    - controller-install
 
 - name: restart sshd
   ansible.builtin.systemd:

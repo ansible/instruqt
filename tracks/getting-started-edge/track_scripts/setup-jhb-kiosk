@@ -1,9 +1,0 @@
-#!/bin/bash
-until [ -f /opt/instruqt/bootstrap/host-bootstrap-completed ]; do
-    echo "Waiting for instruqt bootstrap to complete"
-    sleep 1
-done
-
-# Setup rhel user
-cp -a /root/.ssh/* /home/rhel/.ssh/.
-chown -R rhel:rhel /home/rhel/.ssh

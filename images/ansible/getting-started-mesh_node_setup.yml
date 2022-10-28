@@ -1,0 +1,32 @@
+---
+- name: Configures mesh worker nodes - {{ track_slug }}
+  hosts: all
+  become: true
+  gather_facts: false
+
+  pre_tasks:
+    - name: Include variable tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/60_mesh_check_vars.yml"
+
+  tasks:
+    - name: Include common user tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/5_configure_users.yml"
+
+    - name: Include common mesh worker node tasks
+      vars:
+        mesh_os_packages:
+          - receptor
+          - receptorctl
+          - podman
+          - crun
+          - ansible-runner
+          - libcgroup-tools
+          - subscription-manager-rhsm-certificates
+          - rsync
+          - git
+          - ansible
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/30_mesh_node.yml"
+

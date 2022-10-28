@@ -1,0 +1,208 @@
+---
+# https://play.instruqt.com/redhat/tracks/getting-started-edge-lab/
+#
+# Tags:
+# controller-config - Setup controller env for lab
+# auth-token - create controller auth-token
+# <challenge-slug>-check - check challenge
+# <challenge-slug>-solve - solve challenge
+# <challenge-slug>-setup - setup challenge
+##
+- name: Instruqt config getting-started-mesh
+  hosts: all
+  gather_facts: false
+  become: true
+  tasks:
+    # For some reason, the authorized_key file disappears after instruqt setup sequence on rhel user
+    - name: Add instruqt_lab ssh key to authorized keys on nodes
+      ansible.posix.authorized_key:
+        user: "{{ ansible_user }}"
+        state: present
+        key: "{{ lookup('file', '/home/' + ansible_user + '/.ssh/instruqt_lab.pub') }}"
+        comment: "Instruqt lab key"
+      tags:
+        - env-overview-setup
+
+- name: Instruqt config getting started with edge lab
+  hosts: automationcontroller
+  gather_facts: false
+  become: true
+  tags:
+    - getting-started-edge-lab
+
+  vars:
+    controller_login: &controller_login
+      controller_username: "{{ controller_username }}"
+      controller_password: "{{ controller_password }}"
+      controller_host: "{{ controller_hostname }}"
+      validate_certs: "{{ controller_validate_certs }}"
+
+  tasks:
+  ## Setup, check and solve challenges
+    # Need inventory to create job template
+    - name: Setup - create inventories - {{ lab_inv_name }}
+      awx.awx.inventory:
+        name: "{{ item.name }}"
+        organization: "{{ item.organization }}"
+        description: "{{ item.description | default(omit) }}"
+        instance_groups: "{{ item.instance_groups | default(omit) }}"
+        kind: "{{ item.kind | default(omit) }}"
+        host_filter: "{{ item.host_filter | default(omit) }}"
+        state: "{{ item.state | default('present') }}"
+        variables: "{{ item.variables | default(omit) }}"
+        <<: *controller_login
+      when: (controller_inventories is defined) and (item["name"] == lab_inv_name)
+      loop: "{{ controller_inventories }}"
+      tags:
+        - edge-workflow-setup-inv
+        - edge-workflow-setup
+
+    - name: Setup - create job templates - {{ lab_jt_name }}
+      awx.awx.job_template:
+        name: "{{ item.name }}"
+        state: "{{ item.state }}"
+        become_enabled: "{{ item.become_enabled }}"
+        project: "{{ item.project }}"
+        credentials: "{{ item.credentials }}"
+        inventory: "{{ item.inventory }}"
+        playbook: "{{ item.playbook }}"
+        survey_spec: "{{ item.survey_spec | default(omit) }}"
+        ask_inventory_on_launch: "{{ item.ask_inventory_on_launch | default(false) }}"
+        ask_limit_on_launch: "{{ item.ask_limit_on_launch | default(omit) }}"
+        extra_vars: "{{ item.extra_vars | default(omit) }}"
+        limit: "{{ lab_jt_limit | default(omit) }}"
+        execution_environment: "{{ item.execution_environment }}"
+        <<: *controller_login
+      loop: "{{ controller_templates }}"
+      register: __create_templates_job_async
+      when: (controller_templates is defined) and (item["name"] == lab_jt_name)
+      changed_when: not __create_templates_job_async.changed
+      async: 1000
+      poll: 0
+      tags:
+        - install-edge-app-setup
+        - install-monitor-app-setup
+        - config-firewall-setup
+        - edge-workflow-setup
+
+    - name: "Async | Setup - create job templates"
+      ansible.builtin.async_status:
+        jid: "{{ __create_templates_job_async_result_item.ansible_job_id }}"
+      retries: 60
+      delay: 1
+      loop: "{{ __create_templates_job_async.results }}"
+      loop_control:
+        loop_var: __create_templates_job_async_result_item
+      until: __create_templates_job_async_result.finished
+      register: __create_templates_job_async_result
+      when: __create_templates_job_async_result_item.ansible_job_id is defined
+      tags:
+        - install-edge-app-setup
+        - install-monitor-app-setup
+        - config-firewall-setup
+        - edge-workflow-setup
+
+    - name: Check - assert {{ lab_jt_name }} template ran successfully
+      awx.awx.job_list:
+        status: successful
+        query: {"name": "{{ lab_jt_name }}",
+                "inventory__name": "{{ lab_inv_name }}"}
+        <<: *controller_login
+      register: __jt_list
+      failed_when: (__jt_list.count == 0) or (__jt_list is undefined)
+      tags:
+        - install-edge-app-check
+        - install-monitor-app-check
+        - config-firewall-check
+
+    - name: Check - assert workflow template ran - {{ lab_workflow_name }}
+      block:
+        - name: Query controller api for workflow job
+          ansible.builtin.set_fact: # noqa jinja[spacing]
+            __workflow_job: "{{ query('awx.awx.controller_api', 'workflow_jobs',
+                              username=controller_username,
+                              password=controller_password,
+                              verify_ssl=controller_validate_certs,
+                              query_params={ 'name': lab_workflow_name, 'status': lab_workflow_status | default('successful') }) }}"
+          register: __workflow_job_result
+
+        - name: Assert __workflow_job length
+          ansible.builtin.assert:
+            that: __workflow_job | length > 0
+            fail_msg: "No successful jobs for {{ lab_workflow_name }}"
+      when: (lab_workflow_name is defined) and (lab_workflow_name == lab_jt_workflow_name)
+      tags:
+        - edge-workflow-check-jt
+
+    # Need retries to give mesh time to initialize for solve scripts
+    - name: Solve - run job template {{ lab_jt_name }}
+      awx.awx.job_launch:
+        name: "{{ lab_jt_name }}"
+        organization: "{{ lab_organization }}"
+        inventory: "{{ lab_inv_name }}"
+        wait: true
+        <<: *controller_login
+      register: __run_templates_job
+      until: __run_templates_job is success
+      retries: 60
+      delay: 0
+      loop: "{{ controller_templates }}"
+      when: (controller_templates is defined) and (item["name"] == lab_jt_name)
+      tags:
+        - install-edge-app-solve
+        - install-monitor-app-solve
+        - config-firewall-solve
+
+    - name: Solve and check - lab workflow job template - {{ lab_workflow_name }}
+      awx.awx.workflow_job_template:
+        name: "{{ item.name }}"
+        inventory: "{{ item.inventory | default(omit) }}"
+        extra_vars: "{{ item.extra_vars | default(omit) }}"
+        ask_variables_on_launch: "{{ item.ask_variables_on_launch | default(false) }}"
+        organization: "{{ item.organization | default(omit) }}"
+        state: "{{ lab_workflow_state | default('present') }}"
+        <<: *controller_login
+      check_mode: "{{ check_mode | default(false) }}"
+      register: __workflow_template
+      loop: "{{ controller_workflows }}"
+      when: (controller_workflows is defined) and (lab_workflow_name == item.name)
+      tags:
+        - edge-workflow-solve
+        - edge-workflow-check-jt-exists
+        - edge-playground-setup
+
+    - name: Solve - lab workflow template nodes - "{{ lab_workflow_name }}"
+      awx.awx.workflow_job_template_node:
+        identifier: "{{ item.identifier }}"
+        organization: "{{ item.organization }}"
+        inventory: "{{ item.inventory }}"
+        unified_job_template: "{{ item.unified_job_template }}"
+        success_nodes: "{{ item.success_nodes | default(omit) }}"
+        workflow_job_template: "{{ item.workflow_job_template }}"
+        controller_username: "{{ controller_username }}"
+        controller_password: "{{ controller_password }}"
+        controller_host: "{{ controller_hostname }}"
+        validate_certs: "{{ controller_validate_certs }}"
+      loop: "{{ controller_workflow_nodes }}"
+      when: (controller_workflow_nodes is defined) and (lab_workflow_name == item.workflow_job_template)
+      tags:
+        - edge-workflow-solve
+
+    - name: Assert if __workflow_template changed
+      ansible.builtin.assert:
+        that: not __workflow_template.changed | bool
+        fail_msg: "Workflow template not created - {{ lab_workflow_name }}"
+      tags:
+        - edge-workflow-check-jt-exists
+
+    - name: Solve - Launch workflow job template - {{ lab_workflow_name }}
+      awx.awx.workflow_launch:
+        workflow_template: "{{ item.name }}"
+        organization: "{{ lab_organization }}"
+        wait: true
+        <<: *controller_login
+      loop: "{{ controller_workflows }}"
+      when:
+        - (controller_workflows is defined) and (lab_workflow_name == item["name"])
+      tags:
+        - edge-workflow-solve

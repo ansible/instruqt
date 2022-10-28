@@ -1,0 +1,55 @@
+##
+# Check variables set for mesh lab
+##
+- name: Include vars file from extra_vars directory
+  block:
+    - name: Include file - {{ track_slug }}_vars.yml
+      ansible.builtin.include_vars:
+        file: "{{ track_slug }}_vars.yml"
+  rescue:
+    - name: Rescue - Include vars file
+      ansible.builtin.debug:
+        msg: |
+          "Rescue - Vars file '{{ track_slug }}_vars.yml' not found. Skipping
+  when: (track_slug is defined) and (track_slug | length > 0)
+
+- name: Map required variables to facts
+  vars:
+    env_vars:
+      - name: track_slug
+        env: TRACK_SLUG
+      - name: redhat_username
+        env: REDHAT_USERNAME
+      - name: redhat_password
+        env: REDHAT_PASSWORD
+      - name: offline_token
+        env: REDHAT_OFFLINE_TOKEN
+      - name: gcp_service_account_file
+        env: GCP_SERVICE_ACCOUNT_FILE
+      - name: gcp_service_account
+        env: GCP_SERVICE_ACCOUNT
+      - name: gcp_instances
+      - name: gcp_project
+        env: GCP_PROJECT
+  ansible.builtin.set_fact:
+    "{{ __extra_vars_item.name }}": "{{ lookup('ansible.builtin.env', __extra_vars_item.env | default(omit), default='') or lookup('ansible.builtin.vars', __extra_vars_item.name, default='') }}" # yamllint disable-line rule:line-length
+  register: __extra_vars_results
+  loop_control:
+    loop_var: __extra_vars_item
+    label: "{{ __extra_vars_item.name }}"
+  loop: "{{ env_vars }}"
+
+- name: Check required variables are set
+  ansible.builtin.assert:
+    that:
+      - lookup('ansible.builtin.vars', __extra_vars_results_item.__extra_vars_item.name) | length > 0
+    fail_msg: |
+      Please set either variable to continue:
+        - Environment variable - {{ __extra_vars_results_item.__extra_vars_item.env | default('Not applicable - ignore') }}.
+        - Ansible variable - {{ __extra_vars_results_item.__extra_vars_item.name }}.
+    quiet: true
+  when: (__extra_vars_results.results is defined) and (__extra_vars_results.results | length > 0)
+  loop: "{{ __extra_vars_results.results }}"
+  loop_control:
+    loop_var: __extra_vars_results_item
+    label: "{{ __extra_vars_results_item.__extra_vars_item.name }}"

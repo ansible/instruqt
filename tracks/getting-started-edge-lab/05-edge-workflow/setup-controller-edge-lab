@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+
+import subprocess
+import os
+import yaml
+from shlex import quote
+os.environ["ANSIBLE_STDOUT_CALLBACK"] = "community.general.yaml"
+
+# Vars
+setup_scripts_path="/tmp/setup-scripts/getting-started-edge-lab"
+
+# Load extra_vars.yml
+extra_vars_file = open( setup_scripts_path + "/track_vars.yml")
+parsed_extra_vars_file = yaml.load(extra_vars_file, yaml.loader.FullLoader)
+
+# Remove limit from deploy app job template
+deploy_app_jt = subprocess.run(["ansible-playbook", setup_scripts_path + "/getting-started-edge-lab-setup.yml",
+                            "-e", "@" + setup_scripts_path + "/track_vars.yml",
+                            "-i", setup_scripts_path + "/inventory.ini",
+                            "-e", "lab_inv_name="+quote(parsed_extra_vars_file.get('lab_irl_inventory_name')),
+                            "-e", "lab_jt_name="+quote(parsed_extra_vars_file.get('lab_edge_app_jt_name')),
+                            "-e", "lab_jt_limit="+quote(''),
+                            "--tags", "edge-workflow-setup" ])
+
+if deploy_app_jt.returncode > 0:
+    print ( "FAIL: Unable to create controller object - " + quote(parsed_extra_vars_file.get('lab_edge_app_jt_name')) )
+    exit(1)
+
+# Setup global kiosk inventory and update template
+inv_output = subprocess.run(["ansible-playbook", setup_scripts_path + "/getting-started-edge-lab-setup.yml",
+                            "-e", "@" + setup_scripts_path + "/track_vars.yml", 
+                            "-i", setup_scripts_path + "/inventory.ini",
+                            "-e", "lab_inv_name="+quote(parsed_extra_vars_file.get('lab_global_kiosk_inv_name')),
+                            "-e", "lab_jt_name="+quote(parsed_extra_vars_file.get('lab_edge_app_jt_name')),
+                            "-e", "lab_jt_limit="+quote(''),
+                            "--tags", "edge-workflow-setup"])
+
+if inv_output.returncode > 0:
+    print ( "FAIL: Unable to create controller object - " + quote(parsed_extra_vars_file.get('lab_global_kiosk_inv_name') ) )
+    exit(1)
+
+# Setup global monitoring inventory and update template limit
+inv_output = subprocess.run(["ansible-playbook", setup_scripts_path + "/getting-started-edge-lab-setup.yml",
+                            "-e", "@" + setup_scripts_path + "/track_vars.yml", 
+                            "-i", setup_scripts_path + "/inventory.ini",
+                            "-e", "lab_inv_name="+quote(parsed_extra_vars_file.get('lab_global_mon_inv_name')),
+                            "-e", "lab_jt_limit="+quote(''),
+                            "-e", "lab_jt_name="+quote(parsed_extra_vars_file.get('lab_monitor_app_jt_name')),
+                            "--tags", "edge-workflow-setup"])
+
+if inv_output.returncode > 0:
+    print ( "FAIL: Unable to create controller object - " + quote(parsed_extra_vars_file.get('lab_global_mon_inv_name') ) )
+    exit(1)
+
+# Setup global firewall inventory and update limit
+inv_output = subprocess.run(["ansible-playbook", setup_scripts_path + "/getting-started-edge-lab-setup.yml",
+                            "-e", "@" + setup_scripts_path + "/track_vars.yml", 
+                            "-i", setup_scripts_path + "/inventory.ini",
+                            "-e", "lab_inv_name="+quote(parsed_extra_vars_file.get('lab_global_fw_inv_name')),
+                            "-e", "lab_jt_name="+quote(parsed_extra_vars_file.get('lab_firewall_jt_name')),
+                            "-e", "lab_jt_limit="+quote(''),
+                            "--tags", "edge-workflow-setup"])
+
+if inv_output.returncode > 0:
+    print ( "FAIL: Unable to create controller object - " + quote(parsed_extra_vars_file.get('lab_global_fw_inv_name') ) )
+    exit(1)
+
+# Setup workflow help job template
+workflow_jt = subprocess.run(["ansible-playbook", setup_scripts_path + "/getting-started-edge-lab-setup.yml",
+                            "-e", "@" + setup_scripts_path + "/track_vars.yml",
+                            "-i", setup_scripts_path + "/inventory.ini",
+                            "-e", "lab_inv_name="+quote(parsed_extra_vars_file.get('lab_us_inventory_name')),
+                            "-e", "lab_jt_name="+quote(parsed_extra_vars_file.get('lab_solve_workflow_jt_name')),
+                            "--tags", "edge-workflow-setup" ])
+
+if workflow_jt.returncode > 0:
+    print ( "FAIL: Unable to create controller object - " + quote(parsed_extra_vars_file.get('lab_solve_workflow_jt_name')) )
+    exit(1)

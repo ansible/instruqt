@@ -1,0 +1,30 @@
+slug: getting-started-edge-lab
+id: vj92suyqtxbt
+title: Getting started with Ansible Automation Platform and edge
+teaser: Scaling Containerized Applications to the Edge
+description: |-
+  # Application Delivery with AAP and Podman at the Edge
+
+  Acme Corp is a chemical company that has industrial facilities across the globe.
+  A new, containerized industrial control application must be deployed in the **Dublin** and **Johannesburg** plants.
+
+  ## Architecture per site:
+  <center><img src="https://github.com/dafmendo/pictures_for_github/blob/c03c3aac7070c3a7be9a970ddbadcdb9df0db091/industrialapp-deploy.png?raw=true"></center>
+icon: https://storage.googleapis.com/instruqt-frontend/img/tracks/default.png
+level: beginner
+tags:
+- prod
+- ' edge'
+- ' security'
+- ' container'
+- ' podman'
+- ' rhel'
+owner: redhat
+developers:
+- cbrandt@redhat.com
+private: true
+published: true
+maintenance: true
+show_timer: true
+skipping_enabled: true
+checksum: "13361893758354962339"

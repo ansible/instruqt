@@ -1,0 +1,26 @@
+#!/usr/bin/env python3
+
+import subprocess
+import os
+import yaml
+from shlex import quote
+os.environ["ANSIBLE_STDOUT_CALLBACK"] = "community.general.yaml"
+
+# Vars
+setup_scripts_path="/tmp/setup-scripts/getting-started-edge-lab"
+
+# Load extra_vars.yml
+extra_vars_file = open( setup_scripts_path + "/track_vars.yml")
+parsed_extra_vars_file = yaml.load(extra_vars_file, yaml.loader.FullLoader)
+
+# Create and run workflow job template
+workflow = subprocess.run(["ansible-playbook", setup_scripts_path + "/getting-started-edge-lab-setup.yml", 
+                            "-e", "@" + setup_scripts_path + "/track_vars.yml", 
+                            "-i", setup_scripts_path + "/inventory.ini", 
+                            "-e", "lab_workflow_name="+quote(parsed_extra_vars_file.get('lab_jt_workflow_name')),
+                            "-e", "lab_workflow_state="+quote('absent'),
+                             "--tags", "edge-playground-setup" ])
+
+if workflow.returncode > 0:
+    print ( "FAIL: Solve - Unable to remove controller object - " + quote(parsed_extra_vars_file.get('lab_jt_workflow_name')) )
+    exit(1)

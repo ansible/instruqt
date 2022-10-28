@@ -1,0 +1,195 @@
+---
+## Edge lab config vars
+lab_organization: "ACME Corp"
+lab_project_name: "ACME Corp repo"
+lab_project_repo : https://github.com/craig-br/instruqt-track-content/
+lab_repo_branch: devel
+lab_execution_environment: "ACME Corp EE"
+student_user: student
+student_password: learn_ansible
+edge_app_admin_username: admin
+edge_app_admin_password: redhat
+controller_hostname: controller-edge-lab
+controller_validate_certs: false
+controller_username: admin
+controller_password: "ansible123!"
+
+# Vars for setup, check and solve
+lab_credential_name: "ACME Corp credential"
+lab_global_kiosk_inv_name: "Global kiosk devices"
+lab_global_mon_inv_name: "Global monitoring devices"
+lab_global_fw_inv_name: "Global edge firewalls"
+lab_us_inventory_name: "Raleigh DC"
+lab_jhb_inventory_name: "Johannesburg region"
+lab_irl_inventory_name: "Dublin region"
+lab_edge_app_jt_name: "Deploy edge application"
+lab_monitor_app_jt_name: "Deploy monitoring dashboards"
+lab_firewall_jt_name: "Configure edge firewalls"
+lab_jt_workflow_name: "Global edge configuration"
+lab_solve_workflow_jt_name: "🚀 Help! Create edge workflow"
+
+# RH CoP vars
+controller_configuration_credentials_secure_logging: true
+controller_configuration_inventory_source_update_async_retries: 60
+controller_configuration_projects_async_retries: 60
+
+## Track setup,check and solve vars
+# Check job templates executed on correct inventories
+template_checks:
+  - name: "Deploy edge application"
+    inventories:
+      - "Dublin region"
+  - name: "Deploy monitoring dashboards"
+    inventories:
+      - "Dublin region"
+  - name: "Configure edge firewalls"
+    inventories:
+      - "Dublin region"
+  # Workflow template check
+  - name: "Global edge configuration"
+
+# temp
+# controller_projects:
+#   - name: "{{ lab_project_name }}"
+#     organization: "{{ lab_organization }}"
+#     state: present
+#     scm_branch: "{{ lab_repo_branch }}"
+#     scm_clean: false
+#     scm_delete_on_update: false
+#     scm_type: git
+#     scm_update_on_launch: false
+#     scm_url: "{{ lab_project_repo }}"
+#     wait: true
+#     update_project: true
+
+controller_inventories:
+# These inventories added iteratively for each challenge
+  - name: "{{ lab_global_kiosk_inv_name }}"
+    organization: "{{ lab_organization }}"
+    description: "Global kiosk devices"
+    kind: smart
+    host_filter: "groups__name__icontains=kiosks"
+  - name: "{{ lab_global_mon_inv_name }}"
+    organization: "{{ lab_organization }}"
+    description: "Global monitoring devices"
+    kind: smart
+    host_filter:  "groups__name__icontains=monitors"
+  - name: "{{ lab_global_fw_inv_name }}"
+    organization: "{{ lab_organization }}"
+    description: "Global monitoring devices"
+    kind: smart
+    host_filter: "groups__name__icontains=firewalls"
+
+controller_instance_groups:
+  - name: "Johannesburg region"
+    state: present
+    instances:
+      - jhb-edge-lab
+  - name: "Dublin region"
+    state: present
+    instances:
+      - dublin-edge-lab
+  - name: "Raleigh data center"
+    state: present
+    instances:
+      - controller-edge-lab
+
+# Job templates - not using collection to create specific job templates
+controller_templates:
+  # Removes job template limit for workflow. Add prompt for inventory
+  - name: "Deploy edge application"
+    state: present
+    description: Deploy Ignition application 
+    job_type: run
+    playbook: "getting-started-edge-lab/playbooks/deploy_application.yml"
+    execution_environment: "{{ lab_execution_environment }}"
+    inventory: "{{ lab_irl_inventory_name }}"
+    limit: ''
+    verbosity: 0
+    credentials: 
+      - "{{ lab_credential_name }}"
+    project: "{{ lab_project_name }}"
+    ask_inventory_on_launch: true
+    become_enabled: false
+    survey: {}
+  - name: "Deploy monitoring dashboards"
+    state: present
+    description: Deploy monitoring software
+    job_type: run
+    playbook: "getting-started-edge-lab/playbooks/deploy_monitoring.yml"
+    execution_environment: "{{ lab_execution_environment }}"
+    inventory: "{{ lab_irl_inventory_name  }}"
+    # inventory: "{{ lab_global_mon_inv_name }}"
+    limit: monitors
+    verbosity: 0
+    credentials: 
+      - "{{ lab_credential_name }}"
+    project: "{{ lab_project_name }}"
+    ask_inventory_on_launch: true
+    become_enabled: false
+    survey: {}
+  - name: "Configure edge firewalls"
+    state: present
+    description: "Configure edge firewalls"
+    job_type: run
+    playbook: "getting-started-edge-lab/playbooks/configure_firewall.yml"
+    execution_environment: "{{ lab_execution_environment }}"
+    inventory: "{{ lab_irl_inventory_name }}"
+    # inventory: "{{ lab_global_fw_inv_name }}"
+    limit: firewalls
+    verbosity: 0
+    credentials: 
+      - "{{ lab_credential_name }}"
+    project: "{{ lab_project_name }}"
+    ask_inventory_on_launch: true
+    become_enabled: false
+    survey: {}
+  - name: "🚀 Help! Create edge workflow"
+    state: present
+    description: "Create the {{ lab_jt_workflow_name }} workflow job template."
+    job_type: run
+    playbook: "getting-started-edge-lab/playbooks/solve_workflow.yml"
+    execution_environment: "{{ lab_execution_environment }}"
+    inventory: "{{ lab_us_inventory_name }}"
+    verbosity: 0
+    credentials: 
+      - "{{ lab_credential_name }}"
+    project: "{{ lab_project_name }}"
+    become_enabled: false
+    extra_vars:
+      controller_workflows: "{{ controller_workflows }}"
+      controller_workflow_nodes: "{{ controller_workflow_nodes }}"
+      controller_username: "{{ controller_username }}"
+      controller_password: "{{ controller_password }}"
+      controller_hostname: "{{ controller_hostname }}"
+      controller_validate_certs: "{{ controller_validate_certs }}"
+      lab_workflow_name: "{{ lab_jt_workflow_name }}"
+    survey: {}
+
+# workflows
+controller_workflows:
+  - name: "{{ lab_jt_workflow_name }}"
+    description: 'Configure all edge environments'
+    organization: "{{ lab_organization }}"
+
+controller_workflow_nodes:
+  - all_parents_must_converge: false
+    organization: "{{ lab_organization }}"
+    workflow_job_template: "{{ lab_jt_workflow_name }}"
+    identifier: "Global - edge app"
+    unified_job_template: "{{ lab_edge_app_jt_name }}"
+    inventory: "{{ lab_global_kiosk_inv_name }}"
+  - all_parents_must_converge: false
+    organization: "{{ lab_organization }}"
+    workflow_job_template: "{{ lab_jt_workflow_name }}"
+    identifier: "Global - firewall"
+    unified_job_template: "{{ lab_firewall_jt_name }}"
+    inventory: "{{ lab_global_fw_inv_name }}"
+  - all_parents_must_converge: false
+    organization: "{{ lab_organization }}"
+    workflow_job_template: "{{ lab_jt_workflow_name }}"
+    identifier: "Global - monitoring"
+    unified_job_template: "{{ lab_monitor_app_jt_name }}"
+    inventory: "{{ lab_global_mon_inv_name }}"
+    success_nodes:
+      - "Global - firewall"
