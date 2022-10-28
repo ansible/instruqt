@@ -5,26 +5,26 @@ ansible_ssh_extra_args: '-o StrictHostKeyChecking=no -o ControlMaster=auto -o Co
 
 # GCP vars
 gcp_zone: us-central1-a
-gcp_project: red-hat-mbu
+gcp_project: "{{ lookup('ansible.builtin.env', 'GCP_PROJECT', default='red-hat-mbu') }}"
 # https://cloud.google.com/iam/docs/creating-managing-service-account-keys
 gcp_service_account_file: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT_FILE', default='') }}"
 # Example: 73252323203-compute@developer.gserviceaccount.com
 gcp_service_account: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT', default='') }}"
 gcp_instances:
   - instance_name: dublin-edge-lab       # GCE instance name. The Instruqt sandbox VM name must match for DNS to work
-    instance_image: edge-lab-node        # Instruqt image name
+    instance_image: "{{ track_slug }}-node"      # Instruqt image name
     instance_labels:
       role: "{{ track_slug }}"
       mesh-type: execution               # Mesh node type. Used in {{ track_slug }}_inv.j2
       location: dublin                   # Mesh region. Used in {{ track_slug }}_inv.j2
-    instance_machine_type: n2-standard-2 # GCE instance type
+    instance_machine_type: e2-standard-2 # GCE instance type
   - instance_name: jhb-edge-lab
-    instance_image: edge-lab-node
+    instance_image: "{{ track_slug }}-node"
     instance_labels:
       role: "{{ track_slug }}"
       mesh-type: execution
       location: jhb
-    instance_machine_type: n2-standard-2
+    instance_machine_type: e2-standard-2
   - instance_name: controller-edge-lab
     instance_image: automation-controller
     instance_labels:
