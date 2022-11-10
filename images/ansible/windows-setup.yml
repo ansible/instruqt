@@ -9,6 +9,7 @@
         name: admin
         password: Password123!
         state: present
+        password_never_expires: yes
         groups:
           - Administrators
 
