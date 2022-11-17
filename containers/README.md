@@ -4,60 +4,114 @@ Here we document how to reuse existing containers within the Instruqt environmen
 
 ## Gitea
 
-Refer to the [Gitea Configuration Cheat Sheet](https://docs.gitea.io/en-us/config-cheat-sheet/) for full environment variable options.
+The custom [`gitea_instruqt`](./gitea/) image auto-generates several Gitea configuration variables to match the custom Instruqt lab environment. The image also provides a configurable student and admin user.
 
-### Environment configuration
+More information on the Instruqt tab URL format can can be found [here](https://docs.instruqt.com/reference/instruqt-platform/networking#authenticated-web-traffic-from-learners).
+
+### Environment variables
+
+#### Instruqt environment
+
+The image creates the following Gitea environment variables when used in Instruqt. You can override the default values using environment variables in the host sandbox configuration.
+
+```bash
+GITEA__server__PROTOCOL="https"
+GITEA__server__HTTP_PORT="8443"
+GITEA__server__DOMAIN="${HOSTNAME}"-"${GITEA__server__HTTP_PORT}"-"${INSTRUQT_PARTICIPANT_ID}"."${INSTRUQT_PARTICIPANTS_DNS}"
+GITEA__server__ROOT_URL="${GITEA__server__PROTOCOL}"://"${GITEA__server__DOMAIN}"
+```
+
+Additional Gitea variables are configured in the image [`app.ini`](./gitea/src/data/gitea/conf/app.ini) template file. Refer to the [Gitea Configuration Cheat Sheet](https://docs.gitea.io/en-us/config-cheat-sheet/) for full environment variable options.
+
+If the `gitea_instruqt` image is used on other platforms, such as you laptop, the URL format uses to the default URL format.
+
+```bash
+GITEA__server__DOMAIN="localhost"
+GITEA__server__HTTP_PORT="8443"
+GITEA__server__PROTOCOL="https"
+GITEA__server__ROOT_URL="${GITEA__server__PROTOCOL}"://"${GITEA__server__DOMAIN}":"${GITEA__server__HTTP_PORT}"
+```
+
+>**Note**<p>
+> Gitea must use https to match the auto-generated Instruqt URL. The `GITEA__server__HTTP_PORT` value must contain `443`. For example, `8443`, `4443`.
+>
+> Refer to the [Instruqt documentation](https://docs.instruqt.com/reference/instruqt-platform/networking#authenticated-web-traffic-from-learners) for more details.
+
+### Users
+
+The image creates a student and admin user. Credential details can be changed by declaring the corresponding environment variable in the host sandbox configuration.
+
+#### Student user
+
+| **Field*     | **Default value** | **Environment variable** |
+|--------------|-------------------|------------------------- |
+| **Username** | student           | STUDENT_USERNAME         |
+| **Password** | learn_ansible     | STUDENT_PASSWORD         |
+| **E-Mail**   | student@acme.com  | STUDENT_EMAIL            |
+
+#### Admin user
+
+| **Field*     | **Default value** | **Environment variable** |
+|--------------|-------------------|------------------------- |
+| **Username** | ansible           | ADMIN_USERNAME           |
+| **Password** | ansible123!       | ADMIN_PASSWORD           |
+| **E-Mail**   | ansible@acme.com  | ADMIN_EMAIL              |
+
+>**Note**<p>
+>To add additional users, run the following `gitea` command in the setup-script:
+>
+>```bash
+># create a student user account
+>su - git -c '/usr/local/bin/gitea admin user create --admin --username jenkins --password learn_ansible --email jenkins@localhost'
+
+### Using the `instruqt_gitea` image
+
+## Sandbox host configuration
 
 ```yaml
 - name: gitea
-  image: gitea/gitea:1.16.8
+  image: quay.io/acme_corp/instruqt_gitea
   ports:
-  - 3000
+  - 8443
   environment:
-    GITEA__DEFAULT__RUN_MODE: dev
-    GITEA__database__DB_TYPE: sqlite3
-    GITEA__database__PATH: /data/gitea/gitea.db
-    GITEA__picture__DISABLE_GRAVATAR: "true"
-    GITEA__repository__DEFAULT_PRIVATE: "false"
-    GITEA__repository__DEFAULT_PUSH_CREATE_PRIVATE: "false"
-    GITEA__repository__ENABLE_PUSH_CREATE_ORG: "true"
-    GITEA__repository__ENABLE_PUSH_CREATE_USER: "true"
-    GITEA__repository__ONLY_ALLOW_PUSH_IF_GITEA_ENVIRONMENT_SET: "false"
-    GITEA__security__INSTALL_LOCK: "true"
-    GITEA__server__DOMAIN: http://gitea
-    GITEA__server__OFFLINE_MODE: "true"
-    GITEA__server__ROOT_URL: http://gitea:3000
-    GITEA__server__SSH_DOMAIN: http://gitea
-    GITEA__service__DISABLE_REGISTRATION: "true"
-    GITEA__service__REQUIRE_SIGNIN_VIEW: "false"
-    GITEA__webhook__ALLOWED_HOST_LIST: '*'
-    USER_GID: "1000"
-    USER_UID: "1000"
-  memory: 1024
+    GITEA__server__HTTP_PORT: <custom https port>
+    GITEA__log__LEVEL: debug
+    STUDENT_USERNAME: sean
+    STUDENT_PASSWORD: memeking
+  memory: 512
   ```
 
-### Tab configuration
+Refer to the [Gitea Configuration Cheat Sheet](https://docs.gitea.io/en-us/config-cheat-sheet/) for full environment variable options.
+
+## Tab configuration
 
 - Title: `gitea` or custom choice
 - Type: `Service`
 - Host: `gitea` or other name from the environment configuration
-- Path: `/`
-- Port: `3000`
+- Path: `/student/acme_corp`
+- Port: `8443`
 
 ### Usage during exercises
 
-The container is deployed without a default configuration. So during first access the following three steps need to be done:
+Repositories are automatically created with `git push`. For example:
 
-1. register a user
-1. configure the SSH key for the user
-1. create a first repository
+```bash
+mkdir test_repo
+cd test_repo/
+git init
+git checkout -b main
+touch README.md
+git config user.name student
+git config user.email student@acme.com
+git config http.sslVerify false
+git add .
+git commit -m"Initial commit"
+git remote add origin https://gitea:8443/student/acme_corp.git
+git push origin main
+```
 
 >**Note**<p>
->To create a student user automatically, use the following line in the gitea >lifecycle setup script:
->
->```bash
-># create a student user account
->su - git -c '/usr/local/bin/gitea admin user create --admin --username student --password learn_ansible --email root@localhost'
+>Make sure to set `git config http.sslVerify false` to use the self-signed certificate.
 
 ## Jenkins DevOps Instruqt Image
 
