@@ -4,7 +4,7 @@ Here we document how to reuse existing containers within the Instruqt environmen
 
 ## Gitea
 
-The custom [`instruqt_gitea`](./instruqt_gitea/) image auto-generates several Gitea configuration variables to match the custom Instruqt lab environment. The image also provides a configurable student and admin user.
+The custom [`instruqt_gitea`](https://quay.io/repository/acme_corp/instruqt_gitea) image auto-generates several Gitea configuration variables to match the custom Instruqt lab environment. The image also provides a configurable student and admin user.
 
 More information on the Instruqt tab URL format can can be found [here](https://docs.instruqt.com/reference/instruqt-platform/networking#authenticated-web-traffic-from-learners).
 
@@ -58,7 +58,7 @@ The image creates a student and admin user. Credential details can be changed by
 | **E-Mail**   | ansible@acme.com  | ADMIN_EMAIL              |
 
 >**Note**<p>
->To add additional users, run the following `gitea` command in the setup-script:
+>To add additional users, add the following `gitea` command in the gitea setup-script:
 >
 >```bash
 ># create a student user account
