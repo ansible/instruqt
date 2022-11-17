@@ -66,7 +66,7 @@ The image creates a student and admin user. Credential details can be changed by
 
 ### Using the `instruqt_gitea` image
 
-## Sandbox host configuration
+#### Sandbox host configuration
 
 ```yaml
 - name: gitea
@@ -83,7 +83,7 @@ The image creates a student and admin user. Credential details can be changed by
 
 Refer to the [Gitea Configuration Cheat Sheet](https://docs.gitea.io/en-us/config-cheat-sheet/) for full environment variable options.
 
-## Tab configuration
+#### Tab configuration
 
 - Title: `gitea` or custom choice
 - Type: `Service`
@@ -91,7 +91,7 @@ Refer to the [Gitea Configuration Cheat Sheet](https://docs.gitea.io/en-us/confi
 - Path: `/student/acme_corp`
 - Port: `8443`
 
-### Usage during exercises
+#### Usage during exercises
 
 Repositories are automatically created with `git push`. For example:
 
