@@ -257,7 +257,7 @@ Execute the following command in the `images\ansible` folder to build the base m
 Let's continue with the example in Step 1 used to create worker node base images for `getting-started-edge-lab`.
 
 ```bash
-ansible-playbook mesh-generic-lab-install.yml -e track_slug='getting-started-edge-lab'
+ansible-playbook mesh-lab-install.yml -e track_slug='getting-started-edge-lab'
 ```
 
 <br>
