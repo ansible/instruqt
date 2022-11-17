@@ -127,7 +127,7 @@ export TRACK_SLUG='getting-started-edge-lab'
 ##### Add it as an extra variable in `ansible-playbook` command
 
 ```bash
-ansible-playbook mesh-lab-install -e track_slug='getting-started-edge-lab'
+ansible-playbook mesh-lab-install.yml -e track_slug='getting-started-edge-lab'
 ```
 
 ##### Add it as an extra variable in `packer` command
