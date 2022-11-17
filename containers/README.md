@@ -4,7 +4,7 @@ Here we document how to reuse existing containers within the Instruqt environmen
 
 ## Gitea
 
-The custom [`gitea_instruqt`](./gitea/) image auto-generates several Gitea configuration variables to match the custom Instruqt lab environment. The image also provides a configurable student and admin user.
+The custom [`instruqt_gitea`](./instruqt_gitea/) image auto-generates several Gitea configuration variables to match the custom Instruqt lab environment. The image also provides a configurable student and admin user.
 
 More information on the Instruqt tab URL format can can be found [here](https://docs.instruqt.com/reference/instruqt-platform/networking#authenticated-web-traffic-from-learners).
 
@@ -21,9 +21,9 @@ GITEA__server__DOMAIN="${HOSTNAME}"-"${GITEA__server__HTTP_PORT}"-"${INSTRUQT_PA
 GITEA__server__ROOT_URL="${GITEA__server__PROTOCOL}"://"${GITEA__server__DOMAIN}"
 ```
 
-Additional Gitea variables are configured in the image [`app.ini`](./gitea/src/data/gitea/conf/app.ini) template file. Refer to the [Gitea Configuration Cheat Sheet](https://docs.gitea.io/en-us/config-cheat-sheet/) for full environment variable options.
+Additional Gitea variables are configured in the image [`app.ini`](./instruqt_gitea/src/data/gitea/conf/app.ini) template file. Refer to the [Gitea Configuration Cheat Sheet](https://docs.gitea.io/en-us/config-cheat-sheet/) for full environment variable options.
 
-If the `gitea_instruqt` image is used on other platforms, such as you laptop, the URL format uses to the default URL format.
+If the `instruqt_gitea` image is used on other platforms, such as you laptop, the URL format uses to the default URL format.
 
 ```bash
 GITEA__server__DOMAIN="localhost"
