@@ -90,7 +90,7 @@ Refer to the [Gitea Configuration Cheat Sheet](https://docs.gitea.io/en-us/confi
 - Title: `gitea` or custom choice
 - Type: `Service`
 - Host: `gitea` or other name from the environment configuration
-- Path: `/student/acme_corp` # This example path opens the `acme_corp` repo for the `student` user.
+- Path: `/student/acme_corp` <== This example path opens the `acme_corp` repo for the `student` user.
 - Port: `8443`
 
 #### Usage during exercises
