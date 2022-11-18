@@ -68,16 +68,18 @@ The image creates a student and admin user. Credential details can be changed by
 
 #### Sandbox host configuration
 
+The `instruqt_gitea` image default values work and it's unnecessary to declare additional environment variables. However, you can override the defaults by specifying environment variables in your Instruqt lab `config.yml` file. For examnple:
+
 ```yaml
 - name: gitea
   image: quay.io/acme_corp/instruqt_gitea
   ports:
   - 8443
   environment:
-    GITEA__server__HTTP_PORT: <custom https port>
-    GITEA__log__LEVEL: debug
-    STUDENT_USERNAME: sean
-    STUDENT_PASSWORD: memeking
+    GITEA__server__HTTP_PORT: <custom https port> # Optional
+    GITEA__log__LEVEL: debug # Optional
+    STUDENT_USERNAME: sean # Optional
+    STUDENT_PASSWORD: memeking # Optional
   memory: 512
   ```
 
