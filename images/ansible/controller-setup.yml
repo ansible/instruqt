@@ -6,6 +6,9 @@
   tasks:
     - name: get yourself some updated workshop roles
       command: ansible-galaxy collection install --verbose --force-with-deps ansible.workshops
+      
+    - debug:
+        var: REDHAT_OFFLINE_TOKEN
 
     - name: download aap
 #       vars:
