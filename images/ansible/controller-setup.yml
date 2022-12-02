@@ -8,7 +8,7 @@
       command: ansible-galaxy collection install --verbose --force-with-deps ansible.workshops
       
     - debug:
-        var: REDHAT_OFFLINE_TOKEN
+        var: offline_token
 
     - name: download aap
 #       vars:
