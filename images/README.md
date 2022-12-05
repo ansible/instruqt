@@ -127,7 +127,7 @@ export TRACK_SLUG='getting-started-edge-lab'
 ##### Add it as an extra variable in `ansible-playbook` command
 
 ```bash
-ansible-playbook mesh-lab-install -e track_slug='getting-started-edge-lab'
+ansible-playbook mesh-lab-install.yml -e track_slug='getting-started-edge-lab'
 ```
 
 ##### Add it as an extra variable in `packer` command
@@ -232,13 +232,13 @@ The mesh worker node base image is used to create mesh worker nodes during the c
 Run the following command from root repository folder. Optionally, point to external variable files using `-var mesh_extra_vars=@<your_vars_file>` option and set the `track_slug` variable using `-var track_slug=<your_track_slug>`.
 
 ```bash
-packer build --force -var image_name=<worker_node_base_image> mesh-node.pkr.hcl
+packer build --force -var image_name=<worker_node_base_image> images/ansible/mesh-node.pkr.hcl
 ```
 
 Here's an example used to create worker node base images for `getting-started-edge-lab`.
 
 ```bash
-packer build --force -var image_name='edge-lab-node' -var track_slug='getting-started-edge-lab' mesh-node.pkr.hcl
+packer build --force -var image_name='edge-lab-node' -var track_slug='getting-started-edge-lab' images/ansible/mesh-node.pkr.hcl
 ```
 
 #### Step 2 - Run the mesh lab installer using Ansible
@@ -257,7 +257,7 @@ Execute the following command in the `images\ansible` folder to build the base m
 Let's continue with the example in Step 1 used to create worker node base images for `getting-started-edge-lab`.
 
 ```bash
-ansible-playbook mesh-generic-lab-install.yml -e track_slug='getting-started-edge-lab'
+ansible-playbook mesh-lab-install.yml -e track_slug='getting-started-edge-lab'
 ```
 
 <br>
