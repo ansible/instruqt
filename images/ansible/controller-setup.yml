@@ -8,8 +8,8 @@
       command: ansible-galaxy collection install --verbose --force-with-deps ansible.workshops
 
     - name: download aap
-#       vars:
-#         offline_token: "{{ lookup('env', 'REDHAT_OFFLINE_TOKEN') }}"
+      vars:
+        provided_sha_value: 3483a27023f89fd3c4747dc505c6d3bc48cc89e6117b52efb3403dd8d30368be
       include_role:
         name: ansible.workshops.aap_download
 
