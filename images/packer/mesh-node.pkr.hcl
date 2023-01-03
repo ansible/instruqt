@@ -46,7 +46,7 @@ build {
     sources = ["sources.googlecompute.mesh-node"]
     provisioner "ansible" {
       command = "ansible-playbook"
-      playbook_file = "${path.root}/../ansible/${var.track_slug}_node_setup.yml"
+      playbook_file = "${path.root}/../ansible/${var.track_slug}_node-setup.yml"
       user = "rhel"
       use_proxy = false
       extra_arguments = local.extra_args
