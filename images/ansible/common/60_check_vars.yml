@@ -37,3 +37,4 @@
   loop_control:
     loop_var: __extra_vars_results_item
     label: "{{ __extra_vars_results_item.__extra_vars_item.name }}"
+
