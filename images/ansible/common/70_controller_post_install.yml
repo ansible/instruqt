@@ -1,0 +1,149 @@
+---
+##
+# Create custom controller objects for each lab 
+# Tags:
+# demo-content - Remove Demo Org, project, inventory and job template
+# controller-config - Setup controller env for lab
+##
+- name: Create controller_login fact and anchor
+  ansible.builtin.set_fact:
+    controller_login: &controller_login
+      controller_username: "{{ controller_username }}"
+      controller_password: "{{ controller_password }}"
+      controller_host: "{{ controller_hostname }}"
+      validate_certs: "{{ controller_validate_certs }}"
+
+- name: Download and upgrade controller collections - {{ inventory_hostname }}
+  ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
+  become_user: "{{ ansible_user }}"
+  loop: "{{ controller_collections }}"
+  register: __collection_install
+  changed_when: '"is already installed, skipping" not in __collection_install.stdout'
+  when: (controller_collections is defined) and (controller_collections | length > 0)
+  tags:
+    - install-collections
+    - controller-config
+
+- name: Install OS packages
+  ansible.builtin.dnf:
+    name: "{{ controller_os_packages }}"
+    state: present
+  when: (controller_os_packages is defined) and (controller_os_packages | length > 0)
+  tags:
+    - controller-config
+
+- name: Install Python packages - {{ ansible_user_id }}
+  ansible.builtin.pip:
+    name: "{{ controller_pip_packages }}"
+    state: present
+  become: true
+  when: (controller_pip_packages is defined) and (controller_pip_packages | length > 0)
+
+- name: Install generic ansible.cfg in home directory
+  ansible.builtin.template:
+    src: ansible.cfg.j2
+    dest: "/etc/ansible/ansible.cfg"
+  tags:
+    - controller-config
+
+- name: Copy setup scripts - {{ track_slug }}
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/setup-scripts/{{ track_slug }}"
+    dest: /tmp/setup-scripts/
+    force: true
+    mode: 0644
+  tags:
+    - controller-config
+
+## Controller objects
+- name: Demo content - Create demo org to delete content
+  awx.awx.organization:
+    name: "Default"
+    state: present
+    <<: *controller_login
+  tags:
+    - demo-content
+    - controller-config
+
+- name: Demo content - remove job template
+  awx.awx.job_template:
+    name: "Demo Job Template"
+    state: absent
+    <<: *controller_login
+  tags:
+    - demo-content
+    - controller-config
+
+- name: Demo content - remove project
+  awx.awx.project:
+    name: "Demo Project"
+    state: absent
+    organization: "Default"
+    <<: *controller_login
+  tags:
+    - demo-content
+
+- name: Demo content - remove inventory
+  awx.awx.inventory:
+    name: "Demo Inventory"
+    state: absent
+    organization: "Default"
+    <<: *controller_login
+  tags:
+    - demo-content
+    - controller-config
+
+- name: Demo content - remove credential
+  awx.awx.credential:
+    name: "Demo Credential"
+    credential_type: "Machine"
+    state: absent
+    <<: *controller_login
+  tags:
+    - demo-content
+
+- name: Demo content - remove organization
+  awx.awx.organization:
+    name: "Default"
+    state: absent
+    <<: *controller_login
+  tags:
+    - demo-content
+    - controller-config
+
+- name: Download custom execution environments
+  when: (controller_execution_environments is defined) and (controller_execution_environments | length > 0)
+  tags:
+    - controller-config
+  block:
+    - name: Download and upgrade collections - {{ inventory_hostname }}
+      ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
+      loop:
+        - containers.podman
+      register: __collection_install
+      changed_when: '"is already installed, skipping" not in __collection_install.stdout'
+
+    - name: Log into registry.redhat.io
+      become_user: "awx"
+      containers.podman.podman_login:
+        registry: "registry.redhat.io"
+        username: "{{ registry_username }}"
+        password: "{{ registry_password }}"
+
+    - name: Pull execution environment images
+      become_user: "awx"
+      containers.podman.podman_image:
+        name: "{{ item.image }}"
+      loop: "{{ controller_execution_environments }}"
+      register: __podman_pull_supported
+      until: __podman_pull_supported is not failed
+      retries: 40
+      delay: 2
+
+# Using extra_vars file for this.
+# Check https://github.com/redhat-cop/controller_configuration
+- name: Create lab controller objects
+  ansible.builtin.import_role:
+    name: redhat_cop.controller_configuration.dispatch
+  tags:
+    - controller-config

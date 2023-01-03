@@ -43,14 +43,12 @@
       ansible.builtin.debug:
         msg: "Unable to get offline token and download AAP setup bundle."
 
-- name: Create directory for automation controller
+- name: Create directory for automation controller installer files
   ansible.builtin.file:
     path: "{{ aap_dir }}"
     owner: "{{ ansible_user }}"
     mode: 0755
     state: directory
-  tags:
-    - controller-install
 
 - name: Extract AAP tar.gz install
   ansible.builtin.unarchive:
@@ -59,25 +57,26 @@
     remote_src: true
     extra_opts: ['--strip-components=1', '--show-stored-names']
 
-- name: Create controller repo
+- name: Create controller installer repo
   ansible.builtin.include_role:
     name: ansible.workshops.aap_repo
 
 - name: Install OS packages
   ansible.builtin.dnf:
-    name: "{{ mesh_os_packages }}"
+    name: "{{ mesh_node_os_packages }}"
     state: present
-  when: (mesh_os_packages is defined) and (mesh_os_packages | length > 0)
+  when: (mesh_node_os_packages is defined) and (mesh_node_os_packages | length > 0)
 
 - name: Download and upgrade collections - {{ inventory_hostname }}
   ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
   become_user: "{{ ansible_user }}"
-  loop: "{{ mesh_collections }}"
+  loop: "{{ mesh_node_collections }}"
   register: __collection_install
-  when: (mesh_collections is defined) and (mesh_collections | length > 0)
+  when: (mesh_node_collections is defined) and (mesh_node_collections | length > 0)
   changed_when: '"is already installed, skipping" not in __collection_install.stdout'
 
 - name: Download custom execution environments
+  # same var used in 50_install_controller.yml to pre-populate all mesh nodes
   when: (controller_execution_environments is defined) and (controller_execution_environments | length > 0)
   block:
     - name: Download and upgrade collections - {{ inventory_hostname }}

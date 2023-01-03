@@ -14,30 +14,14 @@
   when: (track_slug is defined) and (track_slug | length > 0)
 
 - name: Map required variables to facts
-  vars:
-    env_vars:
-      - name: track_slug
-        env: TRACK_SLUG
-      - name: redhat_username
-        env: REDHAT_USERNAME
-      - name: redhat_password
-        env: REDHAT_PASSWORD
-      - name: offline_token
-        env: REDHAT_OFFLINE_TOKEN
-      - name: gcp_service_account_file
-        env: GCP_SERVICE_ACCOUNT_FILE
-      - name: gcp_service_account
-        env: GCP_SERVICE_ACCOUNT
-      - name: gcp_instances
-      - name: gcp_project
-        env: GCP_PROJECT
   ansible.builtin.set_fact:
     "{{ __extra_vars_item.name }}": "{{ lookup('ansible.builtin.env', __extra_vars_item.env | default(omit), default='') or lookup('ansible.builtin.vars', __extra_vars_item.name, default='') }}" # yamllint disable-line rule:line-length
   register: __extra_vars_results
+  when: (extra_vars is defined) and (extra_vars | length > 0)
   loop_control:
     loop_var: __extra_vars_item
     label: "{{ __extra_vars_item.name }}"
-  loop: "{{ env_vars }}"
+  loop: "{{ extra_vars }}"
 
 - name: Check required variables are set
   ansible.builtin.assert:

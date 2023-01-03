@@ -11,13 +11,13 @@ gcp_service_account_file: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT
 # Example: 73252323203-compute@developer.gserviceaccount.com
 gcp_service_account: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT', default='') }}"
 gcp_instances:
-  - instance_name: dublin-edge-lab       # GCE instance name. The Instruqt sandbox VM name must match for DNS to work
-    instance_image: "{{ track_slug }}-node"      # Instruqt image name
+  - instance_name: dublin-edge-lab                # GCE instance name. The Instruqt sandbox VM name must match for DNS to work
+    instance_image: "{{ track_slug }}-node"       # Instruqt image name
     instance_labels:
       role: "{{ track_slug }}"
-      mesh-type: execution               # Mesh node type. Used in {{ track_slug }}_inv.j2
-      location: dublin                   # Mesh region. Used in {{ track_slug }}_inv.j2
-    instance_machine_type: e2-standard-2 # GCE instance type
+      mesh-type: execution                        # Mesh node type. Used in {{ track_slug }}_inv.j2
+      location: dublin                            # Mesh region. Used in {{ track_slug }}_inv.j2
+    instance_machine_type: e2-standard-2          # GCE instance type
   - instance_name: jhb-edge-lab
     instance_image: "{{ track_slug }}-node"
     instance_labels:
@@ -39,6 +39,7 @@ gcp_inventory_host_vars:
   ansible_python_interpreter: "/usr/bin/python3"
 
 # Base mesh lab setup vars
+ansible_user: "rhel"
 aap_dir: "/home/{{ ansible_user }}/aap_install"
 admin_password: "{{ controller_password }}" # legacy for roles
 username: "{{ ansible_user }}"
