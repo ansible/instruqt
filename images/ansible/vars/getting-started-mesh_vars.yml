@@ -37,6 +37,7 @@ gcp_inventory_host_vars:
   ansible_python_interpreter: "/usr/bin/python3"
 
 # Base mesh lab setup vars
+ansible_user: "rhel"
 aap_dir: "/home/{{ ansible_user }}/aap_install"
 admin_password: "{{ controller_password }}" # legacy for roles
 username: "{{ ansible_user }}"

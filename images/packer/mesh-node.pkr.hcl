@@ -48,6 +48,7 @@ build {
       command = "ansible-playbook"
       playbook_file = "${path.root}/../ansible/${var.track_slug}_node_setup.yml"
       user = "rhel"
+      use_proxy = false
       extra_arguments = local.extra_args
     }
 }

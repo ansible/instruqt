@@ -104,9 +104,9 @@ Automation mesh worker nodes are installed and configured during the automation 
 ├── images/
 │   ├── ansible/
 │   │   ├── templates/
-│   │   │   └── "{{ track_slug }}"_inv.yml
+│   │   │   └── "{{ track_slug }}"_inv.yml      # Automation controller installer inventory file to use during installation. Defaults to `
 │   │   └── vars/
-│   │       └── "{{ track_slug }}"_vars.yml     # Vars file included in mesh lab playbooks.
+│   │       └── "{{ track_slug }}"_vars.yml     # Vars file is automatically included in mesh lab playbooks.
 │   └── "{{ track_slug }}"_node_setup.yml       # Playbook used in mesh-node.pkr.hcl Packer file.
 └── packer/
     └── mesh-node.pkr.hcl                       # Builds mesh node base image with "{{ track_slug }}"_node_setup.yml.
