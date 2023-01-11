@@ -21,6 +21,7 @@
     admin_password: ansible123!
     aap_dir: "/home/{{ username }}/aap_install"
     username: "{{ ansible_user }}"
+    ee_registry_name: "registry.redhat.io"
 
   tasks:
     - name: install automation controller
