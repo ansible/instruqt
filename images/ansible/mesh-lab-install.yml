@@ -21,8 +21,25 @@
 
   pre_tasks:
     - name: Include variable tasks
+      vars:
+        extra_vars:
+          - name: track_slug
+            env: TRACK_SLUG
+          - name: redhat_username
+            env: REDHAT_USERNAME
+          - name: redhat_password
+            env: REDHAT_PASSWORD
+          - name: offline_token
+            env: REDHAT_OFFLINE_TOKEN
+          - name: gcp_service_account_file
+            env: GCP_SERVICE_ACCOUNT_FILE
+          - name: gcp_service_account
+            env: GCP_SERVICE_ACCOUNT
+          - name: gcp_instances
+          - name: gcp_project
+            env: GCP_PROJECT
       ansible.builtin.include_tasks:
-        file: "{{ playbook_dir }}/common/60_mesh_check_vars.yml"
+        file: "{{ playbook_dir }}/common/60_check_vars.yml"
         apply:
           tags:
             - always
@@ -30,23 +47,25 @@
         - always
 
   tasks:
-    - name: Install and upgrade collections - {{ inventory_hostname }}
-      ansible.builtin.command: "ansible-galaxy collection install {{ __local_collection_install_item }} --upgrade"
-      loop:
-        - ansible.workshops
-        - google.cloud
-        - ansible.posix
-        - community.crypto
-        - containers.podman
-        - redhat_cop.controller_configuration
-        - awx.awx
-      loop_control:
-        loop_var: __local_collection_install_item
-      register: __local_collection_install
-      changed_when: '"is already installed, skipping" not in __local_collection_install.stdout'
+    - name: Download and upgrade collections for install - host {{ inventory_hostname }}
+      vars:
+        controller_collections:
+          - ansible.workshops
+          - google.cloud
+          - ansible.posix
+          - community.crypto
+          - containers.podman
+          - redhat_cop.controller_configuration
+          - awx.awx
+      ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
+      become_user: "{{ ansible_user }}"
+      loop: "{{ controller_collections }}"
+      register: __collection_install
+      changed_when: '"is already installed, skipping" not in __collection_install.stdout'
+      when: (controller_collections is defined) and (controller_collections | length > 0)
       tags:
         - install-collections
-        - controller-install
+        - controller-config
 
     - name: Remove existing gcloud instances
       when: (gcp_instances is defined) and (gcp_instances | length > 0)
@@ -103,7 +122,8 @@
                 boot: true
                 device_name: "{{ __create_instances_job_async_item.instance_name }}"
                 initialize_params:
-                  source_image: "projects/{{ gcp_project }}/global/images/{{ __create_instances_job_async_item.instance_image }}"
+                  source_image: "projects/{{ __create_instances_job_async_item.image_family | default(gcp_project) }}/global/images/{{ __create_instances_job_async_item.instance_image }}"
+                  # source_image: "projects/{{ gcp_project }}/global/images/{{ __create_instances_job_async_item.instance_image }}"
                   disk_size_gb: 20
                   disk_type: pd-balanced
           loop: "{{ gcp_instances }}"
@@ -271,7 +291,7 @@
   pre_tasks:
     - name: Include variable tasks
       ansible.builtin.include_tasks:
-        file: "{{ playbook_dir }}/common/60_mesh_check_vars.yml"
+        file: "{{ playbook_dir }}/common/60_check_vars.yml"
 
   tasks:
     - name: Include common user tasks
@@ -309,8 +329,25 @@
 
   pre_tasks:
     - name: Include variable tasks
+      vars:
+        extra_vars:
+          - name: track_slug
+            env: TRACK_SLUG
+          - name: redhat_username
+            env: REDHAT_USERNAME
+          - name: redhat_password
+            env: REDHAT_PASSWORD
+          - name: offline_token
+            env: REDHAT_OFFLINE_TOKEN
+          - name: gcp_service_account_file
+            env: GCP_SERVICE_ACCOUNT_FILE
+          - name: gcp_service_account
+            env: GCP_SERVICE_ACCOUNT
+          - name: gcp_instances
+          - name: gcp_project
+            env: GCP_PROJECT
       ansible.builtin.include_tasks:
-        file: "{{ playbook_dir }}/common/60_mesh_check_vars.yml"
+        file: "{{ playbook_dir }}/common/60_check_vars.yml"
 
   tasks:
     - name: Copy instruqt_lab ssh keys to controller - {{ ansible_user }}
@@ -339,9 +376,29 @@
         - controller-install
         - ssh-key
 
-    - name: Include common controller tasks
+    - name: Get gcp node instance info
+      google.cloud.gcp_compute_instance_info:
+        zone: "{{ gcp_zone }}"
+        filters:
+          - labels.role = "{{ track_slug }}"
+        project: "{{ gcp_project }}"
+        auth_kind: serviceaccount
+        service_account_file: "{{ gcp_service_account_file }}"
+      delegate_to: localhost
+      become: false
+      register: __mesh_node_instance_info
+      tags:
+        - controller-install
+
+    - name: Include common controller install tasks
       ansible.builtin.include_tasks:
-        file: "{{ playbook_dir }}/common/50_mesh_controller.yml"
+        file: "{{ playbook_dir }}/common/50_install_controller.yml"
+      tags:
+        - controller-install
+
+    - name: Include common controller post install tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/70_controller_post_install.yml"
       tags:
         - controller-install
 
@@ -360,8 +417,25 @@
 
   pre_tasks:
     - name: Include variable tasks
+      vars:
+        extra_vars:
+          - name: track_slug
+            env: TRACK_SLUG
+          - name: redhat_username
+            env: REDHAT_USERNAME
+          - name: redhat_password
+            env: REDHAT_PASSWORD
+          - name: offline_token
+            env: REDHAT_OFFLINE_TOKEN
+          - name: gcp_service_account_file
+            env: GCP_SERVICE_ACCOUNT_FILE
+          - name: gcp_service_account
+            env: GCP_SERVICE_ACCOUNT
+          - name: gcp_instances
+          - name: gcp_project
+            env: GCP_PROJECT
       ansible.builtin.include_tasks:
-        file: "{{ playbook_dir }}/common/60_mesh_check_vars.yml"
+        file: "{{ playbook_dir }}/common/60_check_vars.yml"
         apply:
           tags:
             - always
@@ -401,8 +475,25 @@
 
   pre_tasks:
     - name: Include variable tasks
+      vars:
+        extra_vars:
+          - name: track_slug
+            env: TRACK_SLUG
+          - name: redhat_username
+            env: REDHAT_USERNAME
+          - name: redhat_password
+            env: REDHAT_PASSWORD
+          - name: offline_token
+            env: REDHAT_OFFLINE_TOKEN
+          - name: gcp_service_account_file
+            env: GCP_SERVICE_ACCOUNT_FILE
+          - name: gcp_service_account
+            env: GCP_SERVICE_ACCOUNT
+          - name: gcp_instances
+          - name: gcp_project
+            env: GCP_PROJECT
       ansible.builtin.include_tasks:
-        file: "{{ playbook_dir }}/common/60_mesh_check_vars.yml"
+        file: "{{ playbook_dir }}/common/60_check_vars.yml"
         apply:
           tags:
             - always
@@ -445,8 +536,6 @@
           when: __instances_stop_async_result_item.ansible_job_id is defined
 
     - name: Remove current gcloud images
-      notify:
-        - remove instances
       when: (gcp_instances is defined) and (gcp_instances | length > 0)
       tags:
         - create-images
@@ -488,6 +577,8 @@
             - remove instances
 
     - name: Create new Instruqt mesh images
+      notify:
+        - remove instances
       tags:
         - create-images
       block:

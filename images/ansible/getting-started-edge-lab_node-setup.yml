@@ -6,8 +6,25 @@
 
   pre_tasks:
     - name: Include variable tasks
+      vars:
+        extra_vars:
+          - name: track_slug
+            env: TRACK_SLUG
+          - name: redhat_username
+            env: REDHAT_USERNAME
+          - name: redhat_password
+            env: REDHAT_PASSWORD
+          - name: offline_token
+            env: REDHAT_OFFLINE_TOKEN
+          - name: gcp_service_account_file
+            env: GCP_SERVICE_ACCOUNT_FILE
+          - name: gcp_service_account
+            env: GCP_SERVICE_ACCOUNT
+          - name: gcp_instances
+          - name: gcp_project
+            env: GCP_PROJECT
       ansible.builtin.include_tasks:
-        file: "{{ playbook_dir }}/common/60_mesh_check_vars.yml"
+        file: "{{ playbook_dir }}/common/60_check_vars.yml"
 
   tasks:
     - name: Include common user tasks
@@ -16,7 +33,7 @@
 
     - name: Include common mesh worker node tasks
       vars:
-        mesh_os_packages:
+        mesh_node_os_packages:
           - receptor
           - receptorctl
           - podman
@@ -27,7 +44,7 @@
           - rsync
           - git
           - ansible
-        mesh_collections:
+        mesh_node_collections:
           - fedora.linux_system_roles
           - containers.podman
       ansible.builtin.include_tasks:

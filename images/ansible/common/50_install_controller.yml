@@ -1,0 +1,135 @@
+##
+# Create controller objects for mesh lab
+##
+- name: Download and upgrade collections for install - host {{ inventory_hostname }}
+  ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
+  become_user: "{{ ansible_user }}"
+  loop: "{{ controller_collections }}"
+  register: __collection_install
+  changed_when: '"is already installed, skipping" not in __collection_install.stdout'
+  when: (controller_collections is defined) and (controller_collections | length > 0)
+
+- name: Check if AAP bundle file exists
+  ansible.builtin.stat:
+    path: "/tmp/aap.tar.gz"
+  register: __aap_bundle_file
+
+- name: Download AAP setup bundle
+  when: not __aap_bundle_file.stat.exists
+  block:
+    - name: Generating an access token
+      ansible.builtin.uri:
+        url: https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token
+        method: POST
+        body_format: form-urlencoded
+        return_content: true
+        body:
+          grant_type: "refresh_token"
+          client_id: "rhsm-api"
+          refresh_token: "{{ offline_token }}"
+      register: temp_token
+      until: temp_token is not failed
+      retries: 15
+      delay: 5
+
+    - name: Download aap.tar.gz
+      ansible.builtin.get_url:
+        url: "https://api.access.redhat.com/management/v1/images/{{ provided_sha_value }}/download"
+        headers:
+          accept: "application/json"
+          Authorization: "Bearer {{ temp_token.json.access_token }}"
+        dest: "/tmp/aap.tar.gz"
+        checksum: "sha256: {{ provided_sha_value }}"
+        mode: 0644
+        owner: "{{ ansible_user }}"
+      register: download_aap_tarball
+      until: download_aap_tarball is not failed
+      retries: 30
+      delay: 5
+
+- name: Create directory for automation controller
+  ansible.builtin.file:
+    path: "{{ aap_dir }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    mode: 0755
+
+- name: Extract AAP tar.gz install
+  ansible.builtin.unarchive:
+    src: "/tmp/aap.tar.gz"
+    dest: "{{ aap_dir }}"
+    remote_src: true
+    extra_opts: ['--strip-components=1', '--show-stored-names']
+
+- name: Create controller repo
+  ansible.builtin.import_role:
+    name: ansible.workshops.aap_repo
+
+- name: Template AAP setup inventory file for Instruqt mesh lab
+  ansible.builtin.template:
+    src: "{{ track_slug }}_inv.j2"
+    dest: "{{ aap_dir }}/inventory"
+    owner: "{{ ansible_user }}"
+    mode: 0644
+
+- name: Mesh lab controller install - {{ track_slug }}
+  ansible.builtin.shell: "{{ controller_install_command }}" # noqa command-instead-of-shell
+  args:
+    chdir: "{{ aap_dir }}"
+  async: 2100
+  poll: 15
+
+- name: Wait for Automation Controller to be up
+  ansible.builtin.uri:
+    url: https://localhost/api/v2/ping/
+    method: GET
+    user: "{{ controller_username }}"
+    password: "{{ controller_password }}"
+    validate_certs: false
+  register: check2
+  until: check2.json is defined and check2.json.instances[0].capacity > 0 and check2.json.instance_groups[0].capacity > 0
+  retries: 60
+  delay: 5
+  tags:
+    - controller-install
+
+- name: Display /api/v2/ping results
+  ansible.builtin.debug:
+    msg: '{{ check2.json }}'
+
+- name: Load license block
+  tags:
+    - controller-install
+  block:
+    - name: Check for base64 variable first
+      ansible.builtin.copy: # noqa template-instead-of-copy
+        dest: '{{ playbook_dir }}/manifest.zip'
+        content: '{{ base64_manifest | b64decode }}'
+        mode: 0644
+      delegate_to: localhost
+      become: false
+  rescue:
+    - name: Unable to load base64_manifest
+      ansible.builtin.debug:
+        msg: 'No base64_manifest variable found, trying to open manifest.zip'
+  always:
+    - name: Load manifest into variable
+      ansible.builtin.slurp:
+        src: "{{ playbook_dir }}/manifest.zip"
+      register: manifest_file
+      delegate_to: localhost
+      become: false
+
+- name: Wait for controller to be up
+  ansible.builtin.uri:
+    url: https://localhost/api/v2/ping/
+    method: GET
+    user: "{{ controller_username }}"
+    password: "{{ controller_password }}"
+    validate_certs: false
+  register: check2
+  until: check2.json is defined and check2.json.instances[0].capacity > 0 and check2.json.instance_groups[0].capacity > 0
+  retries: 60
+  delay: 1
+
+

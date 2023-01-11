@@ -17,6 +17,7 @@ The image creates the following Gitea environment variables when used in Instruq
 ```bash
 GITEA__server__PROTOCOL="https"
 GITEA__server__HTTP_PORT="8443"
+GITEA__webhook__SKIP_TLS_VERIFY=true
 GITEA__server__DOMAIN="${HOSTNAME}"-"${GITEA__server__HTTP_PORT}"-"${INSTRUQT_PARTICIPANT_ID}"."${INSTRUQT_PARTICIPANTS_DNS}"
 GITEA__server__ROOT_URL="${GITEA__server__PROTOCOL}"://"${GITEA__server__DOMAIN}"
 ```
@@ -43,7 +44,7 @@ The image creates a student and admin user. Credential details can be changed by
 
 #### Student user
 
-| **Field*     | **Default value** | **Environment variable** |
+| **Field**     | **Default value** | **Environment variable** |
 |--------------|-------------------|------------------------- |
 | **Username** | student           | STUDENT_USERNAME         |
 | **Password** | learn_ansible     | STUDENT_PASSWORD         |
@@ -51,7 +52,7 @@ The image creates a student and admin user. Credential details can be changed by
 
 #### Admin user
 
-| **Field*     | **Default value** | **Environment variable** |
+| **Field**     | **Default value** | **Environment variable** |
 |--------------|-------------------|------------------------- |
 | **Username** | ansible           | ADMIN_USERNAME           |
 | **Password** | ansible123!       | ADMIN_PASSWORD           |
@@ -66,7 +67,9 @@ The image creates a student and admin user. Credential details can be changed by
 
 ### Using the `instruqt_gitea` image
 
-#### Sandbox host configuration
+The default configuration works for Instruqt use. It is, however, possible to change the configuration using environment variables if needed.
+
+#### Sandbox host custom configuration example
 
 The `instruqt_gitea` image default values work and it's unnecessary to declare additional environment variables. However, you can override the defaults by specifying environment variables in your Instruqt lab `config.yml` file. For examnple:
 
@@ -144,7 +147,52 @@ The `instruqt-jenkins-devops` image is pre-configured for the `devops-controller
 - Environment Variables:
   - `CONTROLLER_PASSWORD`: Controller password for Jenkins. Default `learn_ansible`
   - `JENKINS_ADMIN_PASSWORD`: Jenkins admin password. Default `learn_ansible`
-  - `REPO_TOKEN`: Access token to pull repo code into Jenkins
   - `CONTROLLER_URL`: Controller URL. Default `https://controller`
   - `GITEA_SERVER_URL`: Gitea server URL. Default `http://gitea:3000`
-  - `REPO_PASSWORD`: Gitea repo password. Default `learn_ansible`
+
+## Jenkins DevOps SSL Instruqt Image
+
+The `instruqt-jenkins-devops-ssl` image is similar to the above `instruqt-jenkins-devops` with the addition of an self-signed certificate and default https configuration. The following configuration files are used:
+
+- [Dockerfile](../containers/devops-controller-jenkins-ssl/Dockerfile)
+- Jenkins CASC [configuration file](../containers/devops-controller-jenkins-ssl/src/usr/share/jenkins/ref/jenkins_casc.yml)
+- Jenkins [Plugins list](../containers/devops-controller-jenkins-ssl/src/usr/share/jenkins/ref/plugins.txt)
+
+### Instruqt environment configuration
+
+The example below shows configurable Instruqt variables and the corresponding default values.
+
+```yaml
+- name: jenkins
+  image: quay.io/acme_corp/instruqt-jenkins-devops-ssl
+  ports:
+  - 6443
+  environment:
+    CONTROLLER_PASSWORD: learn_ansible
+    CONTROLLER_URL: https://controller
+    GITEA_SERVER_URL: https://gitea:8443
+    JENKINS_ADMIN_PASSWORD: learn_ansible
+    REPO_PASSWORD: learn_ansible
+    HTTPS_PORT: 6443
+  ```
+
+### Available build environment variables
+
+Use the following environment variables to customize the Jenkins image during the build process.
+
+| **Environment variable** | **Default value**  |          **Description**         |
+|--------------------------|--------------------|:--------------------------------:|
+| CONTROLLER_PASSWORD      | learn_ansible      | Controller jenkins user password |
+| JENKINS_ADMIN_PASSWORD   | learn_ansible      | Jenkins `admin` user password    |
+| CONTROLLER_URL           | https://controller | Controller URL                   |
+| GITEA_SERVER_URL         | https://gitea:8443 | Gitea URL                        |
+| STUDENT_PASSWORD         | learn_ansible      | Jenkins `student` user password  |
+| HTTPS_PORT               | 6443               | Jenkins https port               |
+| KEY_STORE_PASSWORD       | learn_ansible      | Self-signed certificate password |
+
+For example:
+
+```bash
+export KEY_STORE_PASSWORD='cloincoin'
+podman build . --tag quay.io/acme_corp/instruqt-jenkins-devops-ssl:latest
+```
