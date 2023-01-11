@@ -21,7 +21,14 @@
     admin_password: ansible123!
     aap_dir: "/home/{{ username }}/aap_install"
     username: "{{ ansible_user }}"
+    # Registry to pull EE images from during installation
     ee_registry_name: "registry.redhat.io"
+    # List of execution environments to download during controller installation:
+    ee_images:
+      - "{{ ee_registry_name }}/ansible-automation-platform-23/ee-29-rhel8:latest"
+      - "{{ ee_registry_name }}/ansible-automation-platform-23/ee-supported-rhel8:latest"
+      - "{{ ee_registry_name }}/ansible-automation-platform-23/ee-minimal-rhel8:latest"
+    ee_default_image: "{{ ee_registry_name }}/ansible-automation-platform-23/ee-supported-rhel8:latest"
 
   tasks:
     - name: install automation controller
