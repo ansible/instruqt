@@ -28,6 +28,7 @@
       - "{{ ee_registry_name }}/ansible-automation-platform-23/ee-29-rhel8:latest"
       - "{{ ee_registry_name }}/ansible-automation-platform-23/ee-supported-rhel8:latest"
       - "{{ ee_registry_name }}/ansible-automation-platform-23/ee-minimal-rhel8:latest"
+    ee_default_image: "{{ ee_registry_name }}/ansible-automation-platform-23/ee-supported-rhel8:latest"
 
   tasks:
     - name: install automation controller
