@@ -1,6 +1,6 @@
 ---
 - name: Configures mesh worker nodes - {{ track_slug }}
-  hosts: all
+  hosts: localhost
   become: true
   gather_facts: false
 
