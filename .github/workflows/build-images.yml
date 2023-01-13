@@ -63,6 +63,12 @@ jobs:
     - name: Use gcloud CLI
       run: gcloud info
 
+    - name: Check pip cache
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        cache: 'pip' # caching pip dependencies
+
     - name: Install requirements
       run: pip install -r requirements.txt 
 
@@ -79,6 +85,11 @@ jobs:
       
     - name: prepare manifest
       run: gpg --quiet --batch --yes --decrypt --passphrase="${{ secrets.GPG_PASSPHRASE }}" --output $HOME/work/instruqt/instruqt/images/ansible/manifest.zip $HOME/work/instruqt/instruqt/images/ansible/manifest.zip.gpg
+
+    - name: restore install cache
+      uses: actions/cache/restore@v3
+        path: images/ansible/aap.tar.gz
+        key: aaptargz
     
     - name: build image with packer
       id: packer-build
