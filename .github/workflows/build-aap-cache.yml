@@ -40,13 +40,13 @@ jobs:
       uses: actions/cache@v3
       id: aap-cache
       with:
-        path: $HOME/work/instruqt/instruqt/.github/ansible/aap.tar.gz
+        path: $HOME/work/instruqt/instruqt/.github/workflows/ansible/aap.tar.gz
         key: ${{ runner.os }}-aaptargz
     
     - name: Download installer
       id: download-aap
       if: steps.aap-cache.outputs.cache-hit != 'true'
-      run: ansible-playbook $HOME/work/instruqt/instruqt/.github/ansible/build-aap-cache.yml
+      run: ansible-playbook $HOME/work/instruqt/instruqt/.github/workflows/ansible/build-aap-cache.yml
       env:
         REDHAT_OFFLINE_TOKEN: ${{ secrets.REDHAT_OFFLINE_TOKEN }}
         REDHAT_USERNAME: ${{ secrets.REDHAT_USERNAME }}
