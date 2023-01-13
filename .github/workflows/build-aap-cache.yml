@@ -1,3 +1,4 @@
+
 # Workflow name
 name: Cache AAP installer 
 
@@ -34,18 +35,18 @@ jobs:
       run: pip install -r requirements.txt 
       
     - name: Install ansible collections
-      run: ansible-playbook $HOME/work/instruqt/instruqt/images/ansible/workshop-collection-install.yml
+      run: ansible-playbook images/ansible/workshop-collection-install.yml
 
-    - name: Check installer cache
+    - name: Installer cache
       uses: actions/cache@v3
       id: aap-cache
       with:
-        path: $HOME/work/instruqt/instruqt/.github/workflows/ansible/aap.tar.gz
+        path: images/ansible/aap.tar.gz
         key: aaptargz
     
     - name: Download installer
       id: download-aap
       if: steps.aap-cache.outputs.cache-hit != 'true'
-      run: ansible-playbook $HOME/work/instruqt/instruqt/.github/workflows/ansible/build-aap-cache.yml
+      run: ansible-playbook images/ansible/build-aap-cache.yml
       env:
         REDHAT_OFFLINE_TOKEN: ${{ secrets.REDHAT_OFFLINE_TOKEN }}
