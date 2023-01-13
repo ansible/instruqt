@@ -35,13 +35,19 @@ jobs:
 
     - name: Install requirements
       run: pip install -r requirements.txt 
+
+    - name: Check installer cache
+      uses: actions/cache@v3
+      id: aap-cache
+      with:
+        path: $HOME/work/instruqt/instruqt/.github/ansible/aap.tar.gz
+        key: ${{ runner.os }}-aaptargz
     
-    # - name: Cache aap.tar.gz
-    #   id: packer-build
-    #   run: packer build --force -debug ${{ inputs.PACKER_FILE }}
-    #   env:
-    #     REDHAT_OFFLINE_TOKEN: ${{ secrets.REDHAT_OFFLINE_TOKEN }}
-    #     REDHAT_USERNAME: ${{ secrets.REDHAT_USERNAME }}
-    #     REDHAT_PASSWORD: ${{ secrets.REDHAT_PASSWORD }}
-    #     TMM_CONTROLLER: ${{ secrets.TMM_CONTROLLER }}
-    #     TMM_CONTROLLER_TOKEN: ${{ secrets.TMM_CONTROLLER_TOKEN }}
+    - name: Download installer
+      id: download-aap
+      if: steps.aap-cache.outputs.cache-hit != 'true'
+      run: ansible-playbook build-aap-cache.yml
+      env:
+        REDHAT_OFFLINE_TOKEN: ${{ secrets.REDHAT_OFFLINE_TOKEN }}
+        REDHAT_USERNAME: ${{ secrets.REDHAT_USERNAME }}
+        REDHAT_PASSWORD: ${{ secrets.REDHAT_PASSWORD }}
