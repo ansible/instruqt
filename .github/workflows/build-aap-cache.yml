@@ -50,6 +50,4 @@ jobs:
       run: ansible-playbook images/ansible/build-aap-cache.yml
       env:
         REDHAT_OFFLINE_TOKEN: ${{ secrets.REDHAT_OFFLINE_TOKEN }}
-        
-    - name: Show contents
-      run: ls images/ansible/
+  
