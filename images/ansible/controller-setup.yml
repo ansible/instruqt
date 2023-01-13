@@ -61,7 +61,6 @@
         name:
           - python-jenkins
           - jmespath
-          - ansible-navigator
         state: present
       become: true
   
