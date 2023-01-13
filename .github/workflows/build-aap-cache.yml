@@ -46,7 +46,7 @@ jobs:
     - name: Download installer
       id: download-aap
       if: steps.aap-cache.outputs.cache-hit != 'true'
-      run: ansible-playbook ansible/build-aap-cache.yml
+      run: ansible-playbook $HOME/work/instruqt/instruqt/.github/ansible/build-aap-cache.yml
       env:
         REDHAT_OFFLINE_TOKEN: ${{ secrets.REDHAT_OFFLINE_TOKEN }}
         REDHAT_USERNAME: ${{ secrets.REDHAT_USERNAME }}
