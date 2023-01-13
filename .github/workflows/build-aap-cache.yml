@@ -24,26 +24,23 @@ jobs:
       with:
         ref: 'main' 
 
-    - name: Use gcloud CLI
-      run: gcloud info
-
     - name: Check pip cache
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
         cache: 'pip' # caching pip dependencies
 
-    - name: Install requirements
+    - name: Install python requirements
       run: pip install -r requirements.txt 
       
-    - name: Install collections
+    - name: Install ansible collections
       run: ansible-playbook $HOME/work/instruqt/instruqt/images/ansible/workshop-collection-install.yml
 
     - name: Check installer cache
       uses: actions/cache@v3
       id: aap-cache
       with:
-        path: $HOME/work/instruqt/instruqt/.github/workflows/ansible/**
+        path: $HOME/work/instruqt/instruqt/.github/workflows/ansible/aap.tar.gz
         key: aaptargz
     
     - name: Download installer
@@ -52,17 +49,3 @@ jobs:
       run: ansible-playbook $HOME/work/instruqt/instruqt/.github/workflows/ansible/build-aap-cache.yml
       env:
         REDHAT_OFFLINE_TOKEN: ${{ secrets.REDHAT_OFFLINE_TOKEN }}
-        REDHAT_USERNAME: ${{ secrets.REDHAT_USERNAME }}
-        REDHAT_PASSWORD: ${{ secrets.REDHAT_PASSWORD }}
-        
-    - name: Check path
-      run: ls $HOME/work/instruqt/instruqt/.github/workflows/ansible/
-        
-    - name: Cache installer
-      id: aap-cache-save
-      if: steps.aap-cache.outputs.cache-hit != 'true'
-      uses: actions/cache/save@v3
-      with:
-        path: |
-          $HOME/work/instruqt/instruqt/.github/workflows/ansible/**
-        key: aaptargz
