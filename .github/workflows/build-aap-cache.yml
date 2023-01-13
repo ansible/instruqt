@@ -62,4 +62,4 @@ jobs:
       with:
         path: |
           $HOME/work/instruqt/instruqt/.github/workflows/ansible/aap.tar.gz
-        key: ${{ steps.aap-cache.outputs.cache-primary-key }}
+        key: aaptargz
