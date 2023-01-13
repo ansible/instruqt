@@ -44,7 +44,7 @@ jobs:
       id: aap-cache
       with:
         path: $HOME/work/instruqt/instruqt/.github/workflows/ansible/aap.tar.gz
-        key: ${{ runner.os }}-aaptargz
+        key: aaptargz
     
     - name: Download installer
       id: download-aap
@@ -54,3 +54,12 @@ jobs:
         REDHAT_OFFLINE_TOKEN: ${{ secrets.REDHAT_OFFLINE_TOKEN }}
         REDHAT_USERNAME: ${{ secrets.REDHAT_USERNAME }}
         REDHAT_PASSWORD: ${{ secrets.REDHAT_PASSWORD }}
+        
+    - name: Cache installer
+      id: aap-cache-save
+      if: steps.aap-cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v3
+      with:
+        path: |
+          $HOME/work/instruqt/instruqt/.github/workflows/ansible/aap.tar.gz
+        key: ${{ steps.aap-cache.outputs.cache-primary-key }}
