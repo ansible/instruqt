@@ -94,7 +94,7 @@ jobs:
     
     - name: build image with packer
       id: packer-build
-      run: packer build --force -debug ${{ inputs.PACKER_FILE }}
+      run: packer build --force ${{ inputs.PACKER_FILE }}
       env:
         REDHAT_OFFLINE_TOKEN: ${{ secrets.REDHAT_OFFLINE_TOKEN }}
         REDHAT_USERNAME: ${{ secrets.REDHAT_USERNAME }}
