@@ -43,7 +43,7 @@ jobs:
       uses: actions/cache@v3
       id: aap-cache
       with:
-        path: $HOME/work/instruqt/instruqt/.github/workflows/ansible/aap.tar.gz
+        path: $HOME/work/instruqt/instruqt/.github/workflows/ansible/**
         key: aaptargz
     
     - name: Download installer
@@ -64,5 +64,5 @@ jobs:
       uses: actions/cache/save@v3
       with:
         path: |
-          $HOME/work/instruqt/instruqt/.github/workflows/ansible/aap.tar.gz
+          $HOME/work/instruqt/instruqt/.github/workflows/ansible/**
         key: aaptargz
