@@ -55,6 +55,9 @@ jobs:
         REDHAT_USERNAME: ${{ secrets.REDHAT_USERNAME }}
         REDHAT_PASSWORD: ${{ secrets.REDHAT_PASSWORD }}
         
+    - name: Check path
+      run: ls $HOME/work/instruqt/instruqt/.github/workflows/ansible/
+        
     - name: Cache installer
       id: aap-cache-save
       if: steps.aap-cache.outputs.cache-hit != 'true'
