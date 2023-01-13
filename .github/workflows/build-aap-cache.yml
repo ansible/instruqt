@@ -1,0 +1,47 @@
+# Workflow name
+name: Cache AAP installer 
+
+# Controls when the workflow will run
+on:
+  # Manually from actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+
+  # This workflow contains a single job called "build"
+  build:
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    runs-on: ubuntu-latest
+    environment: deploy
+    steps:
+
+    # In this job, all steps begin with a name
+    - name: Checkout repo
+      uses: actions/checkout@v2
+      with:
+        ref: 'main' 
+
+    - name: Use gcloud CLI
+      run: gcloud info
+
+    - name: Check pip cache
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        cache: 'pip' # caching pip dependencies
+
+    - name: Install requirements
+      run: pip install -r requirements.txt 
+    
+    # - name: Cache aap.tar.gz
+    #   id: packer-build
+    #   run: packer build --force -debug ${{ inputs.PACKER_FILE }}
+    #   env:
+    #     REDHAT_OFFLINE_TOKEN: ${{ secrets.REDHAT_OFFLINE_TOKEN }}
+    #     REDHAT_USERNAME: ${{ secrets.REDHAT_USERNAME }}
+    #     REDHAT_PASSWORD: ${{ secrets.REDHAT_PASSWORD }}
+    #     TMM_CONTROLLER: ${{ secrets.TMM_CONTROLLER }}
+    #     TMM_CONTROLLER_TOKEN: ${{ secrets.TMM_CONTROLLER_TOKEN }}
