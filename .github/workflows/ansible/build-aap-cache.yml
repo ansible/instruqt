@@ -9,6 +9,6 @@
 
     - name: Download AAP
       vars:
-        offline_token: '{{ lookup('ansible.builtin.env', 'REDHAT_OFFLINE_TOKEN') }}'
+        offline_token: "{{ lookup('ansible.builtin.env', 'REDHAT_OFFLINE_TOKEN') }}"
       include_role:
         name: ansible.workshops.aap_download
