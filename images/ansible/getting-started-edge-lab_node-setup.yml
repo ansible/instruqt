@@ -2,7 +2,6 @@
 - name: Configures mesh worker nodes - {{ track_slug }}
   hosts: localhost
   become: true
-  gather_facts: false
 
   pre_tasks:
     - name: Include variable tasks
@@ -39,11 +38,10 @@
           - podman
           - crun
           - ansible-runner
-          - libcgroup-tools
           - subscription-manager-rhsm-certificates
           - rsync
           - git
-          - ansible
+          - ansible-core
         mesh_node_collections:
           - fedora.linux_system_roles
           - containers.podman
