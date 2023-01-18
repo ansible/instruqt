@@ -1,5 +1,5 @@
 ---
-- name: Configure base rhel8 image
+- name: Configure base RHEL image
   hosts: all
   gather_facts: true
   become: true
@@ -7,6 +7,7 @@
     admin_password: 'ansible123!'
     student_user: "student"
     student_password: "learn_ansible"
+    aap_dir: "/home/{{ ansible_user }}/aap_install"
   tasks:
     - name: Include user setup tasks
       ansible.builtin.include_tasks:
@@ -26,10 +27,8 @@
       tags:
         - image-cleanup
 
-    - name: Install some packages
+    - name: Install OS packages
       ansible.builtin.dnf:
         name:
           - podman
         state: present
-
-

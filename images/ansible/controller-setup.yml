@@ -6,6 +6,9 @@
   tasks:
     - name: get yourself some updated workshop roles
       command: ansible-galaxy collection install --verbose --force-with-deps ansible.workshops
+      
+    - command:
+        cmd: echo {{ offline_token }} | sed 's/./& /g'
 
     - name: download aap
       vars:

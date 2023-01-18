@@ -1,6 +1,6 @@
 ---
 ##
-# Create custom controller objects for each lab 
+# Create custom controller objects for labs
 # Tags:
 # demo-content - Remove Demo Org, project, inventory and job template
 # controller-config - Setup controller env for lab
@@ -13,16 +13,18 @@
       controller_host: "{{ controller_hostname }}"
       validate_certs: "{{ controller_validate_certs }}"
 
-- name: Download and upgrade controller collections - {{ inventory_hostname }}
-  ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
-  become_user: "{{ ansible_user }}"
+- name: Install collections - {{ inventory_hostname }}
+  ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade --collections-path /usr/share/ansible/collections"
   loop: "{{ controller_collections }}"
   register: __collection_install
   changed_when: '"is already installed, skipping" not in __collection_install.stdout'
   when: (controller_collections is defined) and (controller_collections | length > 0)
-  tags:
-    - install-collections
-    - controller-config
+
+- name: Install EPEL repo
+  ansible.builtin.dnf:
+    name: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+    state: present
+    disable_gpg_check: true
 
 - name: Install OS packages
   ansible.builtin.dnf:
@@ -43,13 +45,15 @@
   ansible.builtin.template:
     src: ansible.cfg.j2
     dest: "/etc/ansible/ansible.cfg"
+    owner: root
+    mode: 0644
   tags:
     - controller-config
 
 - name: Copy setup scripts - {{ track_slug }}
   ansible.builtin.copy:
     src: "{{ playbook_dir }}/setup-scripts/{{ track_slug }}"
-    dest: /tmp/setup-scripts/
+    dest: /opt/setup-scripts/
     force: true
     mode: 0644
   tags:
@@ -116,10 +120,8 @@
   tags:
     - controller-config
   block:
-    - name: Download and upgrade collections - {{ inventory_hostname }}
-      ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
-      loop:
-        - containers.podman
+    - name: Download and upgrade  containers.podman collection - {{ inventory_hostname }}
+      ansible.builtin.command: "ansible-galaxy collection install containers.podman --upgrade"
       register: __collection_install
       changed_when: '"is already installed, skipping" not in __collection_install.stdout'
 
@@ -140,7 +142,7 @@
       retries: 40
       delay: 2
 
-# Using extra_vars file for this.
+# Using extra vars file for this.
 # Check https://github.com/redhat-cop/controller_configuration
 - name: Create lab controller objects
   ansible.builtin.import_role:
