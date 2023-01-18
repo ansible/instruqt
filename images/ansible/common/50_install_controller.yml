@@ -1,14 +1,4 @@
-##
-# Create controller objects for mesh lab
-##
-- name: Download and upgrade collections for install - host {{ inventory_hostname }}
-  ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
-  become_user: "{{ ansible_user }}"
-  loop: "{{ controller_collections }}"
-  register: __collection_install
-  changed_when: '"is already installed, skipping" not in __collection_install.stdout'
-  when: (controller_collections is defined) and (controller_collections | length > 0)
-
+# Install controller for mesh labs
 - name: Check if AAP bundle file exists
   ansible.builtin.stat:
     path: "/tmp/aap.tar.gz"
@@ -61,9 +51,13 @@
     remote_src: true
     extra_opts: ['--strip-components=1', '--show-stored-names']
 
-- name: Create controller repo
-  ansible.builtin.import_role:
-    name: ansible.workshops.aap_repo
+- name: Set AAP local repository
+  ansible.builtin.yum_repository:
+    name: aap_installer
+    description: aap_installer
+    baseurl: "file:///{{ aap_dir }}/bundle/packages/el{{ ansible_distribution_major_version }}/repos/"
+    gpgcheck: false
+  become: true
 
 - name: Template AAP setup inventory file for Instruqt mesh lab
   ansible.builtin.template:
@@ -72,7 +66,7 @@
     owner: "{{ ansible_user }}"
     mode: 0644
 
-- name: Mesh lab controller install - {{ track_slug }}
+- name: Run controller setup - {{ inventory_hostname }}
   ansible.builtin.shell: "{{ controller_install_command }}" # noqa command-instead-of-shell
   args:
     chdir: "{{ aap_dir }}"
@@ -90,16 +84,12 @@
   until: check2.json is defined and check2.json.instances[0].capacity > 0 and check2.json.instance_groups[0].capacity > 0
   retries: 60
   delay: 5
-  tags:
-    - controller-install
 
 - name: Display /api/v2/ping results
   ansible.builtin.debug:
     msg: '{{ check2.json }}'
 
 - name: Load license block
-  tags:
-    - controller-install
   block:
     - name: Check for base64 variable first
       ansible.builtin.copy: # noqa template-instead-of-copy
@@ -120,6 +110,20 @@
       delegate_to: localhost
       become: false
 
+- name: Post manifest file
+  ansible.builtin.uri:
+    url: https://localhost/api/v2/config/
+    method: POST
+    user: admin
+    password: "{{ controller_password }}"
+    body: '{ "eula_accepted": true, "manifest": "{{ manifest_file.content }}" }'
+    body_format: json
+    validate_certs: false
+    force_basic_auth: true
+  register: license_controller
+  until: license_controller is not failed
+  retries: 5
+
 - name: Wait for controller to be up
   ansible.builtin.uri:
     url: https://localhost/api/v2/ping/
@@ -131,5 +135,3 @@
   until: check2.json is defined and check2.json.instances[0].capacity > 0 and check2.json.instance_groups[0].capacity > 0
   retries: 60
   delay: 1
-
-

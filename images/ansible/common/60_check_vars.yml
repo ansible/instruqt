@@ -1,6 +1,20 @@
 ##
-# Check variables set for mesh lab
+# Uses {{ extra_vars }} dictionary to check if variables are set as yaml or environment variables using -name
+# Converts environment variables to YAML equivalent and creates facts.
 ##
+- name: Make sure track_vars variable is set
+  ansible.builtin.assert:
+    that: lookup('ansible.builtin.env', 'TRACK_SLUG') or track_slug is defined
+    quiet: true
+    fail_msg: "Please set the Ansible 'track_slug' variable or 'TRACK_SLUG' environment variable"
+
+- name: Set track_slug fact from TRACK_SLUG environment variable
+  ansible.builtin.set_fact:
+    track_slug: "{{ lookup('ansible.builtin.env', 'TRACK_SLUG') }}"
+  when:
+    - track_slug is undefined
+    - lookup('ansible.builtin.env', 'TRACK_SLUG')
+
 - name: Include vars file from extra_vars directory
   block:
     - name: Include file - {{ track_slug }}_vars.yml
@@ -15,7 +29,7 @@
 
 - name: Map required variables to facts
   ansible.builtin.set_fact:
-    "{{ __extra_vars_item.name }}": "{{ lookup('ansible.builtin.env', __extra_vars_item.env | default(omit), default='') or lookup('ansible.builtin.vars', __extra_vars_item.name, default='') }}" # yamllint disable-line rule:line-length
+    "{{ __extra_vars_item.name }}": "{{ lookup('ansible.builtin.env', __extra_vars_item.env | default(omit) ) or lookup('ansible.builtin.vars', __extra_vars_item.name | default(omit)) }}" # yamllint disable-line rule:line-length
   register: __extra_vars_results
   when: (extra_vars is defined) and (extra_vars | length > 0)
   loop_control:
@@ -37,4 +51,3 @@
   loop_control:
     loop_var: __extra_vars_results_item
     label: "{{ __extra_vars_results_item.__extra_vars_item.name }}"
-
