@@ -20,7 +20,8 @@ build {
     }
 
     provisioner "ansible" {
-        playbook_file = "${path.root}/../ansible/rhel8-setup.yml"
+        playbook_file = "${path.root}/../ansible/rhel-setup.yml"
         user = "rhel"
+        use_proxy = false
     }
 }
