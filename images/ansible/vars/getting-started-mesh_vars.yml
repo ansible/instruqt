@@ -4,51 +4,93 @@ ansible_ssh_pipelining: true
 ansible_ssh_extra_args: '-o StrictHostKeyChecking=no -o ControlMaster=auto -o ControlPersist=60s'
 
 # GCP vars
-gcp_zone: us-central1-a
+gcp_zone: "{{ lookup('ansible.builtin.env', 'GCP_ZONE', default='us-central1-a') }}"
 gcp_project: "{{ lookup('ansible.builtin.env', 'GCP_PROJECT', default='red-hat-mbu') }}"
-gcp_service_account_file: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT_FILE', default='') }}"
-gcp_service_account: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT', default='') }}"
+gcp_service_account_file: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT_FILE') }}"
+gcp_service_account: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT') }}"
 gcp_instances:
-  - instance_name: "dublin-hop"
-    instance_image: "{{ track_slug }}-node"
-    instance_labels:
+  - name: dublin-hop
+    # source_image: "projects/{{ gcp_project }}/global/images/{{ track_slug }}-node"
+    labels:
       role: "{{ track_slug }}"
       mesh-type: hop
       location: dublin
-    instance_machine_type: e2-standard-2
-  - instance_name: "jhb-exec"
-    instance_image: "{{ track_slug }}-node"
-    instance_labels:
+    machine_type: e2-standard-2
+    network_interfaces:
+      - access_configs:
+        - name: External NAT # yamllint disable-line rule:indentation
+          type: ONE_TO_ONE_NAT
+    disks:
+      - auto_delete: true
+        boot: true
+        device_name: dublin-hop
+        initialize_params:
+          source_image: "projects/{{ gcp_project }}/global/images/{{ track_slug }}-node"
+          disk_size_gb: 20
+          disk_type: pd-balanced
+  - name: jhb-exec
+    # source_image: "projects/{{ gcp_project }}/global/images/{{ track_slug }}-node"
+    labels:
       role: "{{ track_slug }}"
       mesh-type: execution
       location: jhb
-    instance_machine_type: e2-standard-2
-  - instance_name: raleigh-controller
-    instance_image: automation-controller
-    instance_labels:
+    machine_type: e2-standard-2
+    network_interfaces:
+      - access_configs:
+        - name: External NAT # yamllint disable-line rule:indentation
+          type: ONE_TO_ONE_NAT
+    disks:
+      - auto_delete: true
+        boot: true
+        device_name: jhb-exec
+        initialize_params:
+          source_image: "projects/{{ gcp_project }}/global/images/{{ track_slug }}-node"
+          disk_size_gb: 20
+          disk_type: pd-balanced
+  - name: raleigh-controller
+    # source_image: "projects/{{ gcp_project }}/global/images/rhel9"
+    labels:
       role: "{{ track_slug }}"
       mesh-type: controller
       location: raleigh
-    instance_machine_type: n2-standard-4
+    machine_type: n2-standard-4
+    network_interfaces:
+      - access_configs:
+        - name: External NAT
+          type: ONE_TO_ONE_NAT
+    disks:
+      - auto_delete: true
+        boot: true
+        device_name: dublin-hop
+        initialize_params:
+          source_image: "projects/{{ gcp_project }}/global/images/rhel9"
+          disk_size_gb: 20
+          disk_type: pd-balanced
+    tags:
+      items:
+        - https-server
 gcp_inventory_host_vars:
-  ansible_user: "rhel"
-  ansible_ssh_pass: "ansible123!"
+  ansible_user: rhel
+  ansible_ssh_pass: ansible123!
   ansible_host_key_checking: false
-  ansible_python_interpreter: "/usr/bin/python3"
+  ansible_python_interpreter: /usr/bin/python3
 
 # Base mesh lab setup vars
-ansible_user: "rhel"
+ansible_user: rhel
 aap_dir: "/home/{{ ansible_user }}/aap_install"
 admin_password: "{{ controller_password }}" # legacy for roles
-username: "{{ ansible_user }}"
+# Code server
+username: "{{ ansible_user }}" # legacy for code server
+codeserver_url: https://github.com/coder/code-server/releases/download/v4.9.1/code-server-4.9.1-amd64.rpm
+codeserver_rescue_url: https://github.com/coder/code-server/releases/download/v4.9.1/code-server-4.9.1-amd64.rpm
 controller_install_command: "ANSIBLE_BECOME_METHOD='sudo' ANSIBLE_BECOME=True ./setup.sh -e registry_username='{{ registry_username }}' -e registry_password='{{ registry_password }}'" # noqa yaml[line-length]
-offline_token: "{{ lookup('ansible.builtin.env', 'REDHAT_OFFLINE_TOKEN', default='') }}"
-redhat_username: "{{ lookup('ansible.builtin.env', 'REDHAT_USERNAME', default='') }}"
-redhat_password: "{{ lookup('ansible.builtin.env', 'REDHAT_PASSWORD', default='') }}"
+offline_token: "{{ lookup('ansible.builtin.env', 'REDHAT_OFFLINE_TOKEN') }}"
+redhat_username: "{{ lookup('ansible.builtin.env', 'REDHAT_USERNAME') }}"
+redhat_password: "{{ lookup('ansible.builtin.env', 'REDHAT_PASSWORD') }}"
 registry_username: "{{ redhat_username }}"
 registry_password: "{{ redhat_password }}"
-# AAP 2.2.1 SHA
-provided_sha_value: 878c2c2705e5f50e734f27fc7c50b39ddf4b2ace2d40290477d19477b82f9904
+# AAP RHEL 9 2.3 SHA
+provided_sha_value: 0046367b76d7c3aca0d311a05935acd667438dfe9640db16f5027952d46dc470
 
 ## Vars specific to getting-started-edge-lab
 lab_project_name: ACME Corp repo
@@ -102,6 +144,28 @@ controller_configuration_dispatcher_roles:
   - {role: schedules, var: controller_schedules, tags: schedules}
   - {role: roles, var: controller_roles, tags: roles}
 
+controller_collections:
+  - ansible.posix
+  - community.general
+  - awx.awx
+controller_os_packages:
+  - vim
+  - git
+  - wget
+  - nano
+  - tree
+  - sshpass
+  - tmux
+  - python3-pip
+  - python3-devel
+  - ansible-core
+  - ansible-navigator
+  - gcc
+  - bind-utils
+  - jq
+  - net-tools
+  - automation-controller-cli
+  - ansible-lint
 controller_organizations:
   - name: "{{ lab_organization }}"
     description: "ACME Corp organization"
@@ -115,10 +179,10 @@ controller_credentials:
     inputs:
       ssh_key_data: "{{ lookup('file', hostvars.localhost._ssh_tempdir.path + '/instruqt_lab') }}"
 
-# Downloads EE to controller and worker nodes
+# Downloads EE to controller and mesh worker nodes
 controller_execution_environments:
   - name: "{{ lab_execution_environment }}"
-    image: registry.redhat.io/ansible-automation-platform-22/ee-supported-rhel8:latest
+    image: registry.redhat.io/ansible-automation-platform-23/ee-supported-rhel8:latest
     state: present
     pull: never
 
@@ -139,13 +203,9 @@ controller_inventories:
   - name: "{{ lab_jhb_inventory_name }}"
     organization: "{{ lab_organization }}"
     description: "Johannesburg. South Africa"
-    # instance_groups:
-    #   - Johannesburg data center
   - name: "{{ lab_us_inventory_name }}"
     organization: "{{ lab_organization }}"
     description: "Raleigh data center. United States"
-    # instance_groups:
-    #   - Raleigh data center
 
 controller_inventory_sources:
   - name: JHB inventory source
@@ -202,20 +262,6 @@ controller_templates:
     ask_inventory_on_launch: true
     become_enabled: true
     survey: {}
-
-# controller_instance_groups:
-#   - name: "Johannesburg instance group"
-#     state: present
-#     instances:
-#       - jhb-edge-lab
-#   - name: "Dublin instance group"
-#     state: present
-#     instances:
-#       - dublin-edge-lab
-#   - name: "Raleigh data center"
-#     state: present
-#     instances:
-#       - controller-edge-lab
 
 controller_user_accounts:
   - user: "{{ student_user }}"

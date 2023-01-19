@@ -47,7 +47,7 @@ When creating a new track, you should be able to specify the path the new image 
 
 ## Extra vars file
 
-Use the `ansible_vars_file` Packer variable enables you to use Ansible variable files outside the repo. Using external variable files helps prevent committing sensitive information into the repo. This variable is available in the  `automation-controller.pkr.hcl`, `ansible.pkr.hcl` and `mesh-node.pkr.hcl` packer build files. For example:
+Use the `ansible_vars_file` Packer variable to use Ansible variable files. Using external variable files helps prevent committing sensitive information into the repo. This variable is available in the  `automation-controller.pkr.hcl`, `ansible.pkr.hcl` and `mesh-node.pkr.hcl` packer build files. For example:
 
 ```packer build --force automation-controller.pkr.hcl -var ansible_vars_file="@<your_vars_file>"```
 
@@ -114,26 +114,24 @@ Automation mesh worker nodes are installed and configured during the automation 
 
 #### The track_slug variable
 
-File lookups and naming conventions use `track_slug` variable. Configure `track_slug` using the following methods. We'll use the `getting-started-edge-lab` slug as an example.
+File lookups and naming conventions use the `track_slug` variable. Configure `track_slug` using the command line or the `TRACK_SLUG` environment variable.
 
 ##### Set the `TRACK_SLUG` environment variable
 
-Packer `mesh-node.pkr.hcl` and Ansible playbook `mesh-lab-install` uses the `TRACK_SLUG` environment variable.
-
 ```bash
-export TRACK_SLUG='getting-started-edge-lab'
+export TRACK_SLUG='getting-started-mesh'
 ```
 
 ##### Add it as an extra variable in `ansible-playbook` command
 
 ```bash
-ansible-playbook mesh-lab-install.yml -e track_slug='getting-started-edge-lab'
+ansible-playbook mesh-lab-install.yml -e track_slug='getting-started-mesh'
 ```
 
 ##### Add it as an extra variable in `packer` command
 
 ```bash
-packer build -force -var track_slug='getting-started-edge-lab' images/packer/mesh-node.pkr.hcl
+packer build -force -var track_slug='getting-started-mesh' images/packer/mesh-node.pkr.hcl
 ```
 
 ### Mesh extra variables
@@ -144,7 +142,7 @@ Mesh node builds require additional variables to work and you can add them in mu
 - Packer `ansible_vars_file=@<your_vars_file>` variable. Useful to point variable files outside the repo
 - Ansible playbook `-e @<your_vars_file>` argument. Useful to point variable files outside the repo.
 
-You can set certain variables using optional environment variables. Useful to keep sensitive information out of the repo.
+Certain variables can optionally be configured using environment variables. This is generally more secure.
 
 | **Ansible var**          | **Environment var**      |
 |--------------------------|--------------------------|
@@ -154,110 +152,83 @@ You can set certain variables using optional environment variables. Useful to ke
 | gcp_service_account      | GCP_SERVICE_ACCOUNT      |
 | gcp_service_account_file | GCP_SERVICE_ACCOUNT_FILE |
 | gcp_project              | GCP_PROJECT              |
+| gcp_zone                 | GCP_ZONE                 |
 
-Mesh build playbooks check for certain mandatory variables before executing.
-
-| **Variable**             | **Description**                                                                                                                            |
-|--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
-| track_slug               | Instruqt track slug - e.g. getting-started-mesh-lab.                                                                                       |
-| redhat_username          | Red Hat Customer Portal username.                                                                                                          |
-| redhat_password          | Red Hat Customer Portal password.                                                                                                          |
-| gcp_project              | GCP project to use. Defaults to `red-hat-mbu`.                                                                                             |
-| offline_token            | Red Hat Customer Portal offline token. <br> <https://access.redhat.com/management/api>                                                            |
-| gcp_service_account_file | Location of GCP service account file on local machine. <br> <https://cloud.google.com/iam/docs/creating-managing-service-account-keys>            |
-| gcp_service_account      | GCP service account file - e.g. 234203-compute@developer.gserviceaccount.com <br> <https://cloud.google.com/compute/docs/access/service-accounts> |
-
-The example below from [getting-started-edge-lab_vars.yml](./ansible/vars/getting-started-edge-lab_vars.yml) provides a guide to set up your variable file.
+The example below from [getting-started-mesh_vars.yml](./ansible/vars/getting-started-mesh_vars.yml) provides a guide to set up your variable file.
 
 ```yaml
+---
 # Ansible config vars - the need for speed
 ansible_ssh_pipelining: true
 ansible_ssh_extra_args: '-o StrictHostKeyChecking=no -o ControlMaster=auto -o ControlPersist=60s'
 
 # GCP vars
-gcp_zone: us-central1-a
+gcp_zone: "{{ lookup('ansible.builtin.env', 'GCP_ZONE', default='us-central1-a') }}"
 gcp_project: "{{ lookup('ansible.builtin.env', 'GCP_PROJECT', default='red-hat-mbu') }}"
-# https://cloud.google.com/iam/docs/creating-managing-service-account-keys
-gcp_service_account_file: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT_FILE', default='') }}"
-# Example: 73252323203-compute@developer.gserviceaccount.com
-gcp_service_account: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT', default='') }}"
+gcp_service_account_file: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT_FILE') }}"
+gcp_service_account: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT') }}"
 gcp_instances:
-  - instance_name: dublin-edge-lab       # Temp GCE instance name
-    instance_image: edge-lab-node        # Instruqt image name
-    instance_labels:
+  - name: dublin-hop
+    labels:
       role: "{{ track_slug }}"
-      mesh-type: execution               # Mesh node type. Used in {{ track_slug }}_inv.j2
-      location: dublin                   # Mesh region. Used in {{ track_slug }}_inv.j2
-    instance_machine_type: n2-standard-2 # GCE instance type
-  - instance_name: jhb-edge-lab
-    instance_image: edge-lab-node
-    instance_labels:
-      role: "{{ track_slug }}"
-      mesh-type: execution
-      location: jhb
-    instance_machine_type: n2-standard-2
-  - instance_name: controller-edge-lab
-    instance_image: automation-controller
-    instance_labels:
-      role: "{{ track_slug }}"
-      mesh-type: controller
-      location: raleigh
-    instance_machine_type: n2-standard-4
+      mesh-type: hop
+      location: dublin
+    machine_type: e2-standard-2
+    network_interfaces:
+      - access_configs:
+        - name: External NAT # yamllint disable-line rule:indentation
+          type: ONE_TO_ONE_NAT
+    disks:
+      - auto_delete: true
+        boot: true
+        device_name: dublin-hop
+        initialize_params:
+          source_image: "projects/{{ gcp_project }}/global/images/{{ track_slug }}-node"
+          disk_size_gb: 20
+          disk_type: pd-balanced
 gcp_inventory_host_vars:
-  ansible_user: "rhel"
-  ansible_ssh_pass: "ansible123!"
+  ansible_user: rhel
+  ansible_ssh_pass: ansible123!
   ansible_host_key_checking: false
-  ansible_python_interpreter: "/usr/bin/python3"
-
-# Base mesh lab setup vars
-aap_dir: "/home/{{ ansible_user }}/aap_install"
-admin_password: "{{ controller_password }}" # legacy for roles
-username: "{{ ansible_user }}"
-controller_install_command: "ANSIBLE_BECOME_METHOD='sudo' ANSIBLE_BECOME=True ./setup.sh -e registry_username='{{ registry_username }}' -e registry_password='{{ registry_password }}'" # noqa yaml[line-length]
-offline_token: "{{ lookup('ansible.builtin.env', 'REDHAT_OFFLINE_TOKEN', default='') }}"
-redhat_username: "{{ lookup('ansible.builtin.env', 'REDHAT_USERNAME', default='') }}"
-redhat_password: "{{ lookup('ansible.builtin.env', 'REDHAT_PASSWORD', default='') }}"
-registry_username: "{{ redhat_username }}"
-registry_password: "{{ redhat_password }}"
-# AAP 2.2.1 SHA
-provided_sha_value: 878c2c2705e5f50e734f27fc7c50b39ddf4b2ace2d40290477d19477b82f9904
+  ansible_python_interpreter: /usr/bin/python3
 ```
 
-### Mesh node building steps
+### Building mesh labs
 
 #### Step 1 - Create the mesh worker node base image using Packer
 
-The mesh worker node base image is used to create mesh worker nodes during the controller install.
+The base image is used to create mesh worker nodes during the controller install.
 
-Run the following command from root repository folder. Optionally, point to external variable files using `-var mesh_extra_vars=@<your_vars_file>` option and set the `track_slug` variable using `-var track_slug=<your_track_slug>`.
-
-```bash
-packer build --force -var image_name=<worker_node_base_image> images/ansible/mesh-node.pkr.hcl
-```
-
-Here's an example used to create worker node base images for `getting-started-edge-lab`.
+Run the following command from root repository folder. Optionally, point to external variable files using `-var mesh_extra_vars=@<your_vars_file>` and set the `track_slug` variable using `-var track_slug=<your_track_slug>`.
 
 ```bash
-packer build --force -var image_name='edge-lab-node' -var track_slug='getting-started-edge-lab' images/ansible/mesh-node.pkr.hcl
+packer build --force -var -var track_slug=<your_track_slug> images/ansible/mesh-node.pkr.hcl
 ```
 
-#### Step 2 - Run the mesh lab installer using Ansible
+Here's an example used to create worker node base images for the `getting-started-mesh` lab.
+
+```bash
+packer build --force -var track_slug='getting-started-mesh' images/ansible/mesh-node.pkr.hcl
+```
+
+#### Step 2 - Run the `mesh-lab-install.yml` Ansible Playbook
 
 The `mesh-lab-install.yml` Ansible playbook runs the AAP installer and configures mesh. The playbook performs the following tasks:
 
-1. Creates GCP instances from their respective base images based on `gcp_instances` variable.
-2. Installs automation controller and associated mesh worker nodes using `images/ansible/templates/{{ track_slug }}_inv.j2` inventory - e.g. `getting-started-edge-lab_inv.j2`
-3. Creates new images based on `instance_image` variable in `gcp_instances`. Using the example in Step. 1, this would be `edge-lab-node`.
-4. list and appends `-image` to the completed image name.
-5. Deletes unused instances
-6. Makes a cup of coffee if you ask nicely.
+1. Creates GCP instances from their respective base images defined in the `gcp_instances` variable.
+2. Installs automation controller with mesh worker nodes using `images/ansible/templates/{{ track_slug }}_inv.j2` inventory - e.g. `getting-started-mesh_inv.j2`
+3. Creates new images based on `gcp_instances.name` variable and appends it with `-image` e.g. `dublin-hop-image`
+4. Deletes unused instances
+5. Makes a cup of coffee if you ask nicely.
 
-Execute the following command in the `images\ansible` folder to build the base mesh worker node images. Optionally, point to external variable files using `-e  @<your_vars_file>` option and set the `track_slug` variable using `-e track_slug=<your_track_slug>`.
+Execute the following command in the `images\ansible` folder to build the base mesh worker node images. Optionally, point to external variable files using `-e  @<your_vars_file>`.
 
-Let's continue with the example in Step 1 used to create worker node base images for `getting-started-edge-lab`.
+Set the `track_slug` variable using `-e track_slug=<your_track_slug>`.
+
+Let's continue with the example in Step 1 used to create worker node base images for `getting-started-mesh`.
 
 ```bash
-ansible-playbook mesh-lab-install.yml -e track_slug='getting-started-edge-lab'
+ansible-playbook mesh-lab-install.yml -e track_slug='getting-started-mesh'
 ```
 
 <br>

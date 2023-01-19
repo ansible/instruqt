@@ -3,11 +3,11 @@
 # Tags:
 # create-instances - Create temporary GCP instances
 # delete-instances - Delete temporary GCP instances
-# controller-install - Controller installation
+# install-controller - Controller installation
 # controller-config - Setup controller objects for lab
 # create-images - Create new GCP images
 # delete-images - Deletes the current mesh GCP images
-# code-server-install - Install code server
+# install-code-server - Install code server
 ##
 - name: Setup localhost for mesh instruqt lab
   hosts: localhost
@@ -38,16 +38,18 @@
           - name: gcp_instances
           - name: gcp_project
             env: GCP_PROJECT
+          - name: aap_dir
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/60_check_vars.yml"
         apply:
           tags:
             - always
+      no_log: true
       tags:
         - always
 
   tasks:
-    - name: Download and upgrade collections for install - host {{ inventory_hostname }}
+    - name: Download and upgrade collections - {{ inventory_hostname }}
       vars:
         controller_collections:
           - ansible.workshops
@@ -58,7 +60,6 @@
           - redhat_cop.controller_configuration
           - awx.awx
       ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
-      become_user: "{{ ansible_user }}"
       loop: "{{ controller_collections }}"
       register: __collection_install
       changed_when: '"is already installed, skipping" not in __collection_install.stdout'
@@ -74,20 +75,20 @@
       block:
         - name: Remove gcloud instances
           google.cloud.gcp_compute_instance:
-            name: "{{ __remove_instances_job_async_item.instance_name }}"
+            name: "{{ __remove_instances_job_async_item.name }}"
             state: absent
             zone: "{{ gcp_zone }}"
             <<: *gcp_login
           loop: "{{ gcp_instances }}"
           loop_control:
             loop_var: __remove_instances_job_async_item
-            label: "{{ __remove_instances_job_async_item.instance_name }}"
+            label: "{{ __remove_instances_job_async_item.name }}"
           async: 1000
           poll: 0
           register: __remove_instances_job_async
           changed_when: not __remove_instances_job_async.changed
 
-        - name: "Remove existing gcloud instances | Wait for finish the instance deletion"
+        - name: "Remove existing gcloud instances | Async"
           ansible.builtin.async_status:
             jid: "{{ __remove_instances_job_async_result_item.ansible_job_id }}"
           retries: 60
@@ -95,7 +96,7 @@
           loop: "{{ __remove_instances_job_async.results }}"
           loop_control:
             loop_var: __remove_instances_job_async_result_item
-            label: "{{ __remove_instances_job_async_result_item.__remove_instances_job_async_item.instance_name }}"
+            label: "{{ __remove_instances_job_async_result_item.__remove_instances_job_async_item.name }}"
           until: __remove_instances_job_async_result.finished
           register: __remove_instances_job_async_result
           when: __remove_instances_job_async_result_item.ansible_job_id is defined
@@ -107,35 +108,25 @@
       block:
         - name: Create new gcloud instances
           google.cloud.gcp_compute_instance:
-            name: "{{ __create_instances_job_async_item.instance_name }}"
-            machine_type: "{{ __create_instances_job_async_item.instance_machine_type }}"
-            labels: "{{ __create_instances_job_async_item.instance_labels }}"
+            name: "{{ __create_instances_job_async_item.name }}"
+            machine_type: "{{ __create_instances_job_async_item.machine_type }}"
+            labels: "{{ __create_instances_job_async_item.labels | default(omit) }}"
+            tags: "{{ __create_instances_job_async_item.tags | default(omit) }}"
             state: present
             zone: "{{ gcp_zone }}"
             <<: *gcp_login
-            network_interfaces:
-              - access_configs:
-                - name: External NAT # yamllint disable-line rule:indentation
-                  type: ONE_TO_ONE_NAT
-            disks:
-              - auto_delete: true
-                boot: true
-                device_name: "{{ __create_instances_job_async_item.instance_name }}"
-                initialize_params:
-                  source_image: "projects/{{ __create_instances_job_async_item.image_family | default(gcp_project) }}/global/images/{{ __create_instances_job_async_item.instance_image }}"
-                  # source_image: "projects/{{ gcp_project }}/global/images/{{ __create_instances_job_async_item.instance_image }}"
-                  disk_size_gb: 20
-                  disk_type: pd-balanced
+            network_interfaces: "{{ __create_instances_job_async_item.network_interfaces }}"
+            disks: "{{ __create_instances_job_async_item.disks }}"
           loop: "{{ gcp_instances }}"
           loop_control:
             loop_var: __create_instances_job_async_item
-            label: "{{ __create_instances_job_async_item.instance_name }}"
+            label: "{{ __create_instances_job_async_item.name }}"
           async: 1000
           poll: 0
           register: __create_instances_job_async
           changed_when: not __create_instances_job_async.changed
 
-        - name: "Create new gcloud instances | Wait for finish the instance create"
+        - name: Create new gcloud instances | Async
           ansible.builtin.async_status:
             jid: "{{ __create_instances_job_async_result_item.ansible_job_id }}"
           retries: 60
@@ -143,25 +134,18 @@
           loop: "{{ __create_instances_job_async.results }}"
           loop_control:
             loop_var: __create_instances_job_async_result_item
-            label: "{{ __create_instances_job_async_result_item.__create_instances_job_async_item.instance_name }}"
+            label: "{{ __create_instances_job_async_result_item.__create_instances_job_async_item.name }}"
           until: __create_instances_job_async_result.finished
           register: __create_instances_job_async_result
           when: __create_instances_job_async_result_item.ansible_job_id is defined
       rescue:
-        - name: Rescue - remove gcloud instances
-          google.cloud.gcp_compute_instance:
-            name: "{{ __remove_instances_rescue_item.instance_name }}"
-            state: absent
-            zone: "{{ gcp_zone }}"
-            <<: *gcp_login
-          loop: "{{ gcp_instances }}"
-          loop_control:
-            loop_var: __remove_instances_rescue_item
         - name: Print error message
           ansible.builtin.fail:
             msg: |
               "Rescue - Unable to create gcloud instances.
               "{{ __create_instances_job_async_result }}"
+          notify:
+            - remove instances
 
     - name: Get gcp node instance info
       google.cloud.gcp_compute_instance_info: # noqa syntax-check
@@ -169,7 +153,7 @@
           - labels.role = "{{ track_slug }}"
         zone: "{{ gcp_zone }}"
         <<: *gcp_login
-      register: __mesh_node_instance_info
+      register: __gcp_node_instance_info
       tags:
         - create-instances
 
@@ -177,17 +161,17 @@
       ansible.builtin.known_hosts:
         name: "{{ item.networkInterfaces[0].accessConfigs[0].natIP }}"
         state: absent
-      loop: "{{ __mesh_node_instance_info.resources }}"
+      loop: "{{ __gcp_node_instance_info.resources }}"
       loop_control:
         label: "{{ item.name }}"
-      when: (__mesh_node_instance_info.resources is defined) and (__mesh_node_instance_info.resources | length > 0)
+      when: (__gcp_node_instance_info.resources is defined) and (__gcp_node_instance_info.resources | length > 0)
       tags:
         - create-instances
         - ssh-key
 
     - name: Wait for gcloud instances to start
       when:
-        - (__mesh_node_instance_info.resources is defined) and (__mesh_node_instance_info.resources | length > 0)
+        - (__gcp_node_instance_info.resources is defined) and (__gcp_node_instance_info.resources | length > 0)
         - (gcp_instances is defined) and (gcp_instances | length > 0)
       tags:
         - create-instances
@@ -198,7 +182,7 @@
             port: 22
             delay: 5
             timeout: 120
-          loop: "{{ __mesh_node_instance_info.resources }}"
+          loop: "{{ __gcp_node_instance_info.resources }}"
           loop_control:
             loop_var: __instances_ssh_async_item
             label: "{{ __instances_ssh_async_item.name }}"
@@ -220,20 +204,13 @@
           register: __instances_ssh_async_result
           when: __instances_ssh_async_result_item.ansible_job_id is defined
       rescue:
-        - name: Print error message
+        - name: Print error message and remove instances
           ansible.builtin.fail:
             msg: |
               "Rescue - Unable to connect to GCloud instances SSH.
               "{{ __instances_ssh_async_result }}"
-        - name: Rescue - remove gcloud instances
-          google.cloud.gcp_compute_instance:
-            name: "{{ __remove_instances_rescue_item.instance_name }}"
-            state: absent
-            zone: "{{ gcp_zone }}"
-            <<: *gcp_login
-          loop: "{{ gcp_instances }}"
-          loop_control:
-            loop_var: __remove_instances_rescue_item
+          notify:
+            - remove instances
 
     - name: Add gcp node hosts to inventory
       ansible.builtin.add_host:
@@ -241,12 +218,12 @@
         groups: "execnodes"
         ansible_host: "{{ item.networkInterfaces[0].accessConfigs[0].natIP }}"
       args: "{{ gcp_inventory_host_vars | default(omit) }}"
-      loop: "{{ __mesh_node_instance_info.resources }}"
+      loop: "{{ __gcp_node_instance_info.resources }}"
       loop_control:
         label: "{{ item.name }}"
       when:
         - (item.labels["mesh-type"] == "hop") or (item.labels["mesh-type"] == "execution")
-        - (__mesh_node_instance_info.resources is defined) and (__mesh_node_instance_info.resources | length > 0)
+        - (__gcp_node_instance_info.resources is defined) and (__gcp_node_instance_info.resources | length > 0)
       tags:
         - create-instances
 
@@ -256,20 +233,20 @@
         groups: "automationcontroller"
         ansible_host: "{{ item.networkInterfaces[0].accessConfigs[0].natIP }}"
       args: "{{ gcp_inventory_host_vars | default(omit) }}"
-      loop: "{{ __mesh_node_instance_info.resources }}"
+      loop: "{{ __gcp_node_instance_info.resources }}"
       loop_control:
         label: "{{ item.name }}"
       when:
         - item.labels["mesh-type"] == "controller"
-        - (__mesh_node_instance_info.resources is defined) and (__mesh_node_instance_info.resources | length > 0)
+        - (__gcp_node_instance_info.resources is defined) and (__gcp_node_instance_info.resources | length > 0)
       tags:
         - create-instances
 
     - name: Create install SSH key
-      when: (__mesh_node_instance_info.resources is defined) and (__mesh_node_instance_info.resources | length > 0)
+      when: (__gcp_node_instance_info.resources is defined) and (__gcp_node_instance_info.resources | length > 0)
       tags:
         - create-instances
-        - controller-install
+        - install-controller
       block:
         - name: Create temp dir for ssh keys
           ansible.builtin.tempfile:
@@ -282,7 +259,41 @@
             path: "{{ _ssh_tempdir.path }}/instruqt_lab"
             force: true
 
-# Run configuration on all mesh instances
+  handlers:
+    - name: Remove existing gcloud instances
+      when: (gcp_instances is defined) and (gcp_instances | length > 0)
+      tags:
+        - delete-instances
+      block:
+        - name: Remove gcloud instances
+          google.cloud.gcp_compute_instance:
+            name: "{{ __remove_instances_job_async_item.name }}"
+            state: absent
+            zone: "{{ gcp_zone }}"
+            <<: *gcp_login
+          loop: "{{ gcp_instances }}"
+          loop_control:
+            loop_var: __remove_instances_job_async_item
+            label: "{{ __remove_instances_job_async_item.name }}"
+          async: 1000
+          poll: 0
+          register: __remove_instances_job_async
+          changed_when: not __remove_instances_job_async.changed
+
+        - name: "Remove existing gcloud instances | Wait for finish the instance deletion"
+          ansible.builtin.async_status:
+            jid: "{{ __remove_instances_job_async_result_item.ansible_job_id }}"
+          retries: 60
+          delay: 1
+          loop: "{{ __remove_instances_job_async.results }}"
+          loop_control:
+            loop_var: __remove_instances_job_async_result_item
+            label: "{{ __remove_instances_job_async_result_item.__remove_instances_job_async_item.name }}"
+          until: __remove_instances_job_async_result.finished
+          register: __remove_instances_job_async_result
+          when: __remove_instances_job_async_result_item.ansible_job_id is defined
+
+# Run configuration on all instances
 - name: Run config and setup on all instances
   hosts: all
   become: true
@@ -292,13 +303,14 @@
     - name: Include variable tasks
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/60_check_vars.yml"
+      no_log: true
 
   tasks:
     - name: Include common user tasks
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/5_configure_users.yml"
       tags:
-        - controller-install
+        - install-controller
 
     - name: Add instruqt_lab ssh key to authorized keys
       ansible.posix.authorized_key:
@@ -311,7 +323,7 @@
         - "{{ ansible_user_id }}" # root because of become: true
       tags:
         - ssh-key
-        - controller-install
+        - install-controller
 
     - name: Enable RHUI repos for aap install
       ansible.builtin.command: >
@@ -319,7 +331,7 @@
       register: __rhui_results
       changed_when: __rhui_results.rc == 0
       tags:
-        - controller-install
+        - install-controller
 
 # configure the controller instance
 - name: Setup controller
@@ -339,15 +351,9 @@
             env: REDHAT_PASSWORD
           - name: offline_token
             env: REDHAT_OFFLINE_TOKEN
-          - name: gcp_service_account_file
-            env: GCP_SERVICE_ACCOUNT_FILE
-          - name: gcp_service_account
-            env: GCP_SERVICE_ACCOUNT
-          - name: gcp_instances
-          - name: gcp_project
-            env: GCP_PROJECT
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/60_check_vars.yml"
+      no_log: true
 
   tasks:
     - name: Copy instruqt_lab ssh keys to controller - {{ ansible_user }}
@@ -360,7 +366,7 @@
         force: true
       when: (hostvars.localhost._ssh_tempdir.path is defined) and (hostvars.localhost._ssh_tempdir.path | length > 0)
       tags:
-        - controller-install
+        - install-controller
         - ssh-key
 
     - name: Copy instruqt_lab ssh keys to controller - {{ ansible_user_id }}
@@ -373,7 +379,7 @@
         force: true
       when: (hostvars.localhost._ssh_tempdir.path is defined) and (hostvars.localhost._ssh_tempdir.path | length > 0)
       tags:
-        - controller-install
+        - install-controller
         - ssh-key
 
     - name: Get gcp node instance info
@@ -386,28 +392,28 @@
         service_account_file: "{{ gcp_service_account_file }}"
       delegate_to: localhost
       become: false
-      register: __mesh_node_instance_info
+      register: __gcp_node_instance_info
       tags:
-        - controller-install
+        - install-controller
 
     - name: Include common controller install tasks
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/50_install_controller.yml"
       tags:
-        - controller-install
+        - install-controller
 
     - name: Include common controller post install tasks
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/70_controller_post_install.yml"
       tags:
-        - controller-install
+        - install-controller
 
     - name: Install code server
       ansible.builtin.import_role:
         name: ansible.workshops.code_server
       tags:
-        - code-server
-        - controller-install
+        - install-code-server
+        - install-controller
 
 # Run cleanup tasks on images
 - name: Run config and setup on instances
@@ -419,21 +425,7 @@
     - name: Include variable tasks
       vars:
         extra_vars:
-          - name: track_slug
-            env: TRACK_SLUG
-          - name: redhat_username
-            env: REDHAT_USERNAME
-          - name: redhat_password
-            env: REDHAT_PASSWORD
-          - name: offline_token
-            env: REDHAT_OFFLINE_TOKEN
-          - name: gcp_service_account_file
-            env: GCP_SERVICE_ACCOUNT_FILE
-          - name: gcp_service_account
-            env: GCP_SERVICE_ACCOUNT
           - name: gcp_instances
-          - name: gcp_project
-            env: GCP_PROJECT
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/60_check_vars.yml"
         apply:
@@ -451,7 +443,7 @@
 
     - name: Remove known_hosts entries for root
       ansible.builtin.known_hosts:
-        name: "{{ item.instance_name }}"
+        name: "{{ item.name }}"
         state: absent
       loop: "{{ gcp_instances }}"
       tags:
@@ -460,7 +452,7 @@
 
     - name: Remove known_hosts entries for {{ ansible_user }}
       ansible.builtin.known_hosts:
-        name: "{{ item.instance_name }}"
+        name: "{{ item.name }}"
         state: absent
       become: false
       loop: "{{ gcp_instances }}"
@@ -477,14 +469,6 @@
     - name: Include variable tasks
       vars:
         extra_vars:
-          - name: track_slug
-            env: TRACK_SLUG
-          - name: redhat_username
-            env: REDHAT_USERNAME
-          - name: redhat_password
-            env: REDHAT_PASSWORD
-          - name: offline_token
-            env: REDHAT_OFFLINE_TOKEN
           - name: gcp_service_account_file
             env: GCP_SERVICE_ACCOUNT_FILE
           - name: gcp_service_account
@@ -509,14 +493,14 @@
       block:
         - name: Stop gcloud instances
           google.cloud.gcp_compute_instance:
-            name: "{{ __instances_stop_async_item.instance_name }}"
+            name: "{{ __instances_stop_async_item.name }}"
             status: TERMINATED
             zone: "{{ gcp_zone }}"
             <<: *gcp_login
           loop: "{{ gcp_instances }}"
           loop_control:
             loop_var: __instances_stop_async_item
-            label: "{{ __instances_stop_async_item.instance_name }}"
+            label: "{{ __instances_stop_async_item.name }}"
           async: 1000
           poll: 0
           register: __instances_stop_async
@@ -530,7 +514,7 @@
           loop: "{{ __instances_stop_async.results }}"
           loop_control:
             loop_var: __instances_stop_async_result_item
-            label: "{{ __instances_stop_async_result_item.__instances_stop_async_item.instance_name }}"
+            label: "{{ __instances_stop_async_result_item.__instances_stop_async_item.name }}"
           until: __instances_stop_async_result.finished
           register: __instances_stop_async_result
           when: __instances_stop_async_result_item.ansible_job_id is defined
@@ -543,13 +527,13 @@
       block:
         - name: Remove current gcloud images
           google.cloud.gcp_compute_image:
-            name: "{{ __images_remove_async_item.instance_name }}-image"
+            name: "{{ __images_remove_async_item.name }}-image"
             state: absent
             <<: *gcp_login
           loop: "{{ gcp_instances }}"
           loop_control:
             loop_var: __images_remove_async_item
-            label: "{{ __images_remove_async_item.instance_name }}"
+            label: "{{ __images_remove_async_item.name }}"
           async: 1000
           poll: 0
           register: __images_remove_async
@@ -563,7 +547,7 @@
           loop: "{{ __images_remove_async.results }}"
           loop_control:
             loop_var: __images_remove_async_result_item
-            label: "{{ __images_remove_async_result_item.__images_remove_async_item.instance_name }}"
+            label: "{{ __images_remove_async_result_item.__images_remove_async_item.name }}"
           until: __images_remove_async_result.finished
           register: __images_remove_async_result
           when: __images_remove_async_result_item.ansible_job_id is defined
@@ -584,18 +568,18 @@
       block:
         - name: Create gcloud images
           google.cloud.gcp_compute_image:
-            name: "{{ __images_create_async_item.instance_name }}-image"
+            name: "{{ __images_create_async_item.name }}-image"
             state: present
             source_disk:
-              selfLink: "https://www.googleapis.com/compute/v1/projects/{{ gcp_project }}/zones/{{ gcp_zone }}/disks/{{ __images_create_async_item.instance_name }}" # yamllint disable-line rule:line-length
+              selfLink: "https://www.googleapis.com/compute/v1/projects/{{ gcp_project }}/zones/{{ gcp_zone }}/disks/{{ __images_create_async_item.name }}" # yamllint disable-line rule:line-length
             labels:
               role: "{{ track_slug }}"
-            description: "{{ track_slug }} - {{ __images_create_async_item.instance_name }} image."  
+            description: "{{ track_slug }} - {{ __images_create_async_item.name }} image."
             <<: *gcp_login
           loop: "{{ gcp_instances }}"
           loop_control:
             loop_var: __images_create_async_item
-            label: "{{ __images_create_async_item.instance_name }}"
+            label: "{{ __images_create_async_item.name }}"
           async: 1000
           poll: 0
           register: __images_create_async
@@ -609,12 +593,12 @@
           loop: "{{ __images_create_async.results }}"
           loop_control:
             loop_var: __images_create_async_result_item
-            label: "{{ __images_create_async_result_item.__images_create_async_item.instance_name }}"
+            label: "{{ __images_create_async_result_item.__images_create_async_item.name }}"
           until: __images_create_async_result.finished
           register: __images_create_async_result
           when: __images_create_async_result_item.ansible_job_id is defined
       rescue:
-        - name: Print error message
+        - name: Print error message and remove instances
           ansible.builtin.fail:
             msg: |
               "Rescue - Unable to remove gcloud images."
@@ -626,14 +610,14 @@
     - name: Remove GCP instances
       listen: remove instances
       google.cloud.gcp_compute_instance:
-        name: "{{ __remove_instances_job_async_item.instance_name }}"
+        name: "{{ __remove_instances_job_async_item.name }}"
         state: absent
         zone: "{{ gcp_zone }}"
         <<: *gcp_login
       loop: "{{ gcp_instances }}"
       loop_control:
         loop_var: __remove_instances_job_async_item
-        label: "{{ __remove_instances_job_async_item.instance_name }}"
+        label: "{{ __remove_instances_job_async_item.name }}"
       async: 1000
       poll: 0
       register: __remove_instances_job_async
@@ -649,7 +633,7 @@
       loop: "{{ __remove_instances_job_async.results }}"
       loop_control:
         loop_var: __remove_instances_job_async_result_item
-        label: "{{ __remove_instances_job_async_result_item.__remove_instances_job_async_item.instance_name }}"
+        label: "{{ __remove_instances_job_async_result_item.__remove_instances_job_async_item.name }}"
       until: __remove_instances_job_async_result.finished
       register: __remove_instances_job_async_result
       when: __remove_instances_job_async_result_item.ansible_job_id is defined

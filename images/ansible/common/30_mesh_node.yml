@@ -57,9 +57,13 @@
     remote_src: true
     extra_opts: ['--strip-components=1', '--show-stored-names']
 
-- name: Create controller installer repo
-  ansible.builtin.include_role:
-    name: ansible.workshops.aap_repo
+- name: Set AAP local repository
+  ansible.builtin.yum_repository:
+    name: aap_installer
+    description: aap_installer
+    baseurl: "file:///{{ aap_dir }}/bundle/packages/el{{ ansible_distribution_major_version }}/repos/"
+    gpgcheck: false
+  become: true
 
 - name: Install OS packages
   ansible.builtin.dnf:
@@ -76,13 +80,11 @@
   changed_when: '"is already installed, skipping" not in __collection_install.stdout'
 
 - name: Download custom execution environments
-  # same var used in 50_install_controller.yml to pre-populate all mesh nodes
+  # same var used in 50_install_controller.yml to pre-populate all mesh nodes with execution environments
   when: (controller_execution_environments is defined) and (controller_execution_environments | length > 0)
   block:
-    - name: Download and upgrade collections - {{ inventory_hostname }}
-      ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
-      loop:
-        - containers.podman
+    - name: Download and upgrade podman collection - {{ inventory_hostname }}
+      ansible.builtin.command: "ansible-galaxy collection install containers.podman --upgrade"
       register: __collection_install
       changed_when: '"is already installed, skipping" not in __collection_install.stdout'
 
