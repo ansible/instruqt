@@ -42,31 +42,28 @@
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/60_check_vars.yml"
         apply:
+          no_log: true
           tags:
             - always
-      no_log: true
       tags:
         - always
 
   tasks:
     - name: Download and upgrade collections - {{ inventory_hostname }}
-      vars:
-        controller_collections:
-          - ansible.workshops
-          - google.cloud
-          - ansible.posix
-          - community.crypto
-          - containers.podman
-          - redhat_cop.controller_configuration
-          - awx.awx
       ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
-      loop: "{{ controller_collections }}"
+      loop:
+        - ansible.workshops
+        - google.cloud
+        - ansible.posix
+        - community.crypto
+        - containers.podman
+        - redhat_cop.controller_configuration
+        - awx.awx
       register: __collection_install
       changed_when: '"is already installed, skipping" not in __collection_install.stdout'
       when: (controller_collections is defined) and (controller_collections | length > 0)
       tags:
         - install-collections
-        - controller-config
 
     - name: Remove existing gcloud instances
       when: (gcp_instances is defined) and (gcp_instances | length > 0)
@@ -89,7 +86,7 @@
           changed_when: not __remove_instances_job_async.changed
 
         - name: "Remove existing gcloud instances | Async"
-          ansible.builtin.async_status:
+          ansible.builtin.async_status: # noqa args[module]
             jid: "{{ __remove_instances_job_async_result_item.ansible_job_id }}"
           retries: 60
           delay: 1
@@ -107,7 +104,7 @@
         - create-instances
       block:
         - name: Create new gcloud instances
-          google.cloud.gcp_compute_instance:
+          google.cloud.gcp_compute_instance: # noqa args[module]
             name: "{{ __create_instances_job_async_item.name }}"
             machine_type: "{{ __create_instances_job_async_item.machine_type }}"
             labels: "{{ __create_instances_job_async_item.labels | default(omit) }}"
@@ -127,7 +124,7 @@
           changed_when: not __create_instances_job_async.changed
 
         - name: Create new gcloud instances | Async
-          ansible.builtin.async_status:
+          ansible.builtin.async_status: # noqa args[module]
             jid: "{{ __create_instances_job_async_result_item.ansible_job_id }}"
           retries: 60
           delay: 1
@@ -145,7 +142,7 @@
               "Rescue - Unable to create gcloud instances.
               "{{ __create_instances_job_async_result }}"
           notify:
-            - remove instances
+            - Remove existing gcloud instances
 
     - name: Get gcp node instance info
       google.cloud.gcp_compute_instance_info: # noqa syntax-check
@@ -156,6 +153,7 @@
       register: __gcp_node_instance_info
       tags:
         - create-instances
+        - always
 
     - name: Remove previous known_hosts keys - {{ inventory_hostname }}
       ansible.builtin.known_hosts:
@@ -192,7 +190,7 @@
           changed_when: not __instances_ssh_async.changed
 
         - name: "Wait for gcloud instances - SSH | Wait for SSH"
-          ansible.builtin.async_status:
+          ansible.builtin.async_status: # noqa args[module]
             jid: "{{ __instances_ssh_async_result_item.ansible_job_id }}"
           retries: 35
           delay: 5
@@ -210,7 +208,7 @@
               "Rescue - Unable to connect to GCloud instances SSH.
               "{{ __instances_ssh_async_result }}"
           notify:
-            - remove instances
+            - Remove existing gcloud instances
 
     - name: Add gcp node hosts to inventory
       ansible.builtin.add_host:
@@ -241,6 +239,7 @@
         - (__gcp_node_instance_info.resources is defined) and (__gcp_node_instance_info.resources | length > 0)
       tags:
         - create-instances
+        - configure-controller
 
     - name: Create install SSH key
       when: (__gcp_node_instance_info.resources is defined) and (__gcp_node_instance_info.resources | length > 0)
@@ -281,7 +280,7 @@
           changed_when: not __remove_instances_job_async.changed
 
         - name: "Remove existing gcloud instances | Wait for finish the instance deletion"
-          ansible.builtin.async_status:
+          ansible.builtin.async_status: # noqa args[module]
             jid: "{{ __remove_instances_job_async_result_item.ansible_job_id }}"
           retries: 60
           delay: 1
@@ -303,14 +302,15 @@
     - name: Include variable tasks
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/60_check_vars.yml"
-      no_log: true
+        apply:
+          delegate_to: localhost
+          become: false
+          no_log: true
 
   tasks:
     - name: Include common user tasks
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/5_configure_users.yml"
-      tags:
-        - install-controller
 
     - name: Add instruqt_lab ssh key to authorized keys
       ansible.posix.authorized_key:
@@ -321,23 +321,20 @@
       loop:
         - "{{ ansible_user }}"
         - "{{ ansible_user_id }}" # root because of become: true
-      tags:
-        - ssh-key
-        - install-controller
 
     - name: Enable RHUI repos for aap install
       ansible.builtin.command: >
         dnf config-manager --set-enabled rhui*
       register: __rhui_results
       changed_when: __rhui_results.rc == 0
-      tags:
-        - install-controller
 
 # configure the controller instance
 - name: Setup controller
   hosts: automationcontroller
   gather_facts: false
   become: true
+  tags:
+    - install-controller
 
   pre_tasks:
     - name: Include variable tasks
@@ -353,7 +350,14 @@
             env: REDHAT_OFFLINE_TOKEN
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/60_check_vars.yml"
-      no_log: true
+        apply:
+          delegate_to: localhost
+          become: false
+          no_log: true
+          tags:
+            - always
+      tags:
+        - always
 
   tasks:
     - name: Copy instruqt_lab ssh keys to controller - {{ ansible_user }}
@@ -365,9 +369,6 @@
         mode: "0600"
         force: true
       when: (hostvars.localhost._ssh_tempdir.path is defined) and (hostvars.localhost._ssh_tempdir.path | length > 0)
-      tags:
-        - install-controller
-        - ssh-key
 
     - name: Copy instruqt_lab ssh keys to controller - {{ ansible_user_id }}
       ansible.builtin.copy:
@@ -378,9 +379,6 @@
         mode: "0600"
         force: true
       when: (hostvars.localhost._ssh_tempdir.path is defined) and (hostvars.localhost._ssh_tempdir.path | length > 0)
-      tags:
-        - install-controller
-        - ssh-key
 
     - name: Get gcp node instance info
       google.cloud.gcp_compute_instance_info:
@@ -393,27 +391,31 @@
       delegate_to: localhost
       become: false
       register: __gcp_node_instance_info
-      tags:
-        - install-controller
+
+    - name: Set controller_hostname fact - {{ inventory_hostname }}
+      ansible.builtin.set_fact:
+        controller_hostname: "{{ item.networkInterfaces[0].accessConfigs[0].natIP }}"
+      loop: "{{ hostvars.localhost.__gcp_node_instance_info.resources }}"
+      when: item.name == lab_controller_hostname
 
     - name: Include common controller install tasks
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/50_install_controller.yml"
-      tags:
-        - install-controller
 
     - name: Include common controller post install tasks
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/70_controller_post_install.yml"
+        apply:
+          tags:
+            - configure-controller
       tags:
-        - install-controller
+        - configure-controller
 
     - name: Install code server
       ansible.builtin.import_role:
         name: ansible.workshops.code_server
       tags:
         - install-code-server
-        - install-controller
 
 # Run cleanup tasks on images
 - name: Run config and setup on instances
@@ -429,6 +431,8 @@
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/60_check_vars.yml"
         apply:
+          delegate_to: localhost
+          become: false
           tags:
             - always
       tags:
@@ -479,6 +483,9 @@
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/60_check_vars.yml"
         apply:
+          delegate_to: localhost
+          become: false
+          no_log: true
           tags:
             - always
       tags:
@@ -507,7 +514,7 @@
           changed_when: not __instances_stop_async.changed
 
         - name: "Async | Stop gcloud instances"
-          ansible.builtin.async_status:
+          ansible.builtin.async_status: # noqa args[module]
             jid: "{{ __instances_stop_async_result_item.ansible_job_id }}"
           retries: 60
           delay: 1
@@ -540,7 +547,7 @@
           changed_when: not __images_remove_async.changed
 
         - name: "Async | Remove current gcloud images"
-          ansible.builtin.async_status:
+          ansible.builtin.async_status: # noqa args[module]
             jid: "{{ __images_remove_async_result_item.ansible_job_id }}"
           retries: 35
           delay: 5
@@ -586,7 +593,7 @@
           changed_when: not __images_create_async.changed
 
         - name: "Async | Create new Instruqt gcloud images"
-          ansible.builtin.async_status:
+          ansible.builtin.async_status: # noqa args[module]
             jid: "{{ __images_create_async_result_item.ansible_job_id }}"
           retries: 40
           delay: 5
@@ -626,7 +633,7 @@
 
     - name: "Remove GCP instances | Wait for finish the instance deletion"
       listen: remove instances
-      ansible.builtin.async_status:
+      ansible.builtin.async_status: # noqa args[module]
         jid: "{{ __remove_instances_job_async_result_item.ansible_job_id }}"
       retries: 35
       delay: 5

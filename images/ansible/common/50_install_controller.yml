@@ -59,7 +59,7 @@
     gpgcheck: false
   become: true
 
-- name: Template AAP setup inventory file for Instruqt mesh lab
+- name: Template AAP setup inventory
   ansible.builtin.template:
     src: "{{ track_slug }}_inv.j2"
     dest: "{{ aap_dir }}/inventory"

@@ -67,7 +67,7 @@ lab_dbn_job_templates:
     jt_playbook: "getting-started-mesh/playbooks/dublin_hop_node.yml"
     jt_inventory: "Dublin DC"
     jt_become: true
-    jt_prompt_inventory: true
+    jt_prompt_inventory: false
     jt_extra_vars:
       mesh_target: "jhb-exec"
     survey_enabled: false
@@ -82,16 +82,3 @@ lab_dbn_check_job_templates:
     jt_inventory: "Raleigh DC"
   - jt_name: "Debug info"
     jt_inventory: "Johannesburg DC"
-
-# controller_user_vars:
-#   - user: student
-#     role: execute
-#     projects:
-#       - "{{ lab_project_name }}"
-#     # organizations:
-#     #   - "{{ lab_organization }}"
-#     # job_templates: 
-#     #   - "Mesh route info"
-#     #   - "Debug info"
-#     state: present
-
