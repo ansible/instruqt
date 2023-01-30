@@ -5,6 +5,7 @@
 # demo-content - Remove Demo Org, project, inventory and job template
 # controller-config - Setup controller env for lab
 ##
+
 - name: Create controller_login fact and anchor
   ansible.builtin.set_fact:
     controller_login: &controller_login
@@ -31,8 +32,6 @@
     name: "{{ controller_os_packages }}"
     state: present
   when: (controller_os_packages is defined) and (controller_os_packages | length > 0)
-  tags:
-    - controller-config
 
 - name: Install Python packages - {{ ansible_user_id }}
   ansible.builtin.pip:
@@ -47,8 +46,6 @@
     dest: "/etc/ansible/ansible.cfg"
     owner: root
     mode: 0644
-  tags:
-    - controller-config
 
 - name: Copy setup scripts - {{ track_slug }}
   ansible.builtin.copy:
@@ -56,64 +53,53 @@
     dest: /opt/setup-scripts/
     force: true
     mode: 0644
-  tags:
-    - controller-config
 
 ## Controller objects
-- name: Demo content - Create demo org to delete content
-  awx.awx.organization:
-    name: "Default"
-    state: present
-    <<: *controller_login
+- name: Remove pre-created demo content
+  delegate_to: localhost
+  become: false
   tags:
     - demo-content
     - controller-config
+  block:
+    - name: Demo content - Create demo org to delete content
+      awx.awx.organization:
+        name: "Default"
+        state: present
+        <<: *controller_login
 
-- name: Demo content - remove job template
-  awx.awx.job_template:
-    name: "Demo Job Template"
-    state: absent
-    <<: *controller_login
-  tags:
-    - demo-content
-    - controller-config
+    - name: Demo content - remove job template
+      awx.awx.job_template:
+        name: "Demo Job Template"
+        state: absent
+        <<: *controller_login
 
-- name: Demo content - remove project
-  awx.awx.project:
-    name: "Demo Project"
-    state: absent
-    organization: "Default"
-    <<: *controller_login
-  tags:
-    - demo-content
+    - name: Demo content - remove project
+      awx.awx.project:
+        name: "Demo Project"
+        state: absent
+        organization: "Default"
+        <<: *controller_login
 
-- name: Demo content - remove inventory
-  awx.awx.inventory:
-    name: "Demo Inventory"
-    state: absent
-    organization: "Default"
-    <<: *controller_login
-  tags:
-    - demo-content
-    - controller-config
+    - name: Demo content - remove inventory
+      awx.awx.inventory:
+        name: "Demo Inventory"
+        state: absent
+        organization: "Default"
+        <<: *controller_login
 
-- name: Demo content - remove credential
-  awx.awx.credential:
-    name: "Demo Credential"
-    credential_type: "Machine"
-    state: absent
-    <<: *controller_login
-  tags:
-    - demo-content
+    - name: Demo content - remove credential
+      awx.awx.credential:
+        name: "Demo Credential"
+        credential_type: "Machine"
+        state: absent
+        <<: *controller_login
 
-- name: Demo content - remove organization
-  awx.awx.organization:
-    name: "Default"
-    state: absent
-    <<: *controller_login
-  tags:
-    - demo-content
-    - controller-config
+    - name: Demo content - remove organization
+      awx.awx.organization:
+        name: "Default"
+        state: absent
+        <<: *controller_login
 
 - name: Download custom execution environments
   when: (controller_execution_environments is defined) and (controller_execution_environments | length > 0)
@@ -147,5 +133,7 @@
 - name: Create lab controller objects
   ansible.builtin.import_role:
     name: redhat_cop.controller_configuration.dispatch
+  become: false
+  delegate_to: localhost
   tags:
     - controller-config
