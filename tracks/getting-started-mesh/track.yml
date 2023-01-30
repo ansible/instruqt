@@ -1,6 +1,5 @@
 slug: getting-started-mesh
 id: akkabmifu15z
-type: track
 title: Getting started with automation mesh
 teaser: In this track, you'll learn about automation mesh features, perform basic
   configuration tasks and use it to run a job template with ACME Corp.
@@ -31,11 +30,10 @@ tags:
 - ansible automation platform
 - mesh
 - automation mesh
+- prod
 owner: redhat
 developers:
 - cbrandt@redhat.com
-private: true
-published: true
 show_timer: true
 skipping_enabled: true
-checksum: "5009210370509543477"
+checksum: "6794871098599148146"

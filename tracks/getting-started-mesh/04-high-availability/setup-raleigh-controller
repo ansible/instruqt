@@ -1,11 +1,11 @@
 #!/usr/bin/python3
 
-import subprocess
-import os
-os.environ["ANSIBLE_STDOUT_CALLBACK"] = "community.general.yaml"
+import subprocess, os
 
 # Vars
-setup_scripts_path="/tmp/setup-scripts/getting-started-mesh/"
+setup_scripts_path="/opt/setup-scripts/getting-started-mesh/"
+os.environ["ANSIBLE_CONFIG"] = setup_scripts_path+"ansible.cfg"
 
 # Setup high-availability
-mesh_ha_setup = subprocess.run(["ansible-playbook", setup_scripts_path+"getting-started-mesh-setup.yml", "-i", setup_scripts_path+"inventory.ini", "-e", "@"+setup_scripts_path+"extra_vars.yml", "--tags", "auth-token,high-availability-setup"])
+mesh_ha_setup = subprocess.run(["ansible-playbook", setup_scripts_path+"getting-started-mesh-setup.yml", 
+                                "--tags", "high-availability-setup"])
