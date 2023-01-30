@@ -83,11 +83,11 @@ redhat_username: "{{ lookup('ansible.builtin.env', 'REDHAT_USERNAME', default=''
 redhat_password: "{{ lookup('ansible.builtin.env', 'REDHAT_PASSWORD', default='') }}"
 registry_username: "{{ redhat_username }}"
 registry_password: "{{ redhat_password }}"
-#Code 
+# VSCode
 servercodeserver_url: https://github.com/coder/code-server/releases/download/v4.9.1/code-server-4.9.1-amd64.rpm
 codeserver_rescue_url: https://github.com/coder/code-server/releases/download/v4.9.1/code-server-4.9.1-amd64.rpm
 # AAP RHEL 9 2.3 SHA
-provided_sha_value: 0046367b76d7c3aca0d311a05935acd667438dfe9640db16f5027952d46dc470
+provided_sha_value: e3cd033d6a6f5ddcdeb2f5b91b1382127d29b969fb224f260d0a4f1e495b20e6
 content_dir: setup-scripts/getting-started-edge-lab
 
 ## Vars specific to getting-started-edge-lab
