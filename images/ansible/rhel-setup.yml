@@ -31,4 +31,5 @@
       ansible.builtin.dnf:
         name:
           - podman
+          - wget
         state: present
