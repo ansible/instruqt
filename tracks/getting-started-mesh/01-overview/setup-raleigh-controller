@@ -1,0 +1,11 @@
+#!/usr/bin/python3
+
+import subprocess, os
+
+# Vars
+setup_scripts_path="/opt/setup-scripts/getting-started-mesh/"
+os.environ["ANSIBLE_CONFIG"] = setup_scripts_path+"ansible.cfg"
+
+# Setup high-availability
+mesh_ha_setup = subprocess.run(["ansible-playbook", setup_scripts_path+"getting-started-mesh-setup.yml",
+                                "--tags", "setup-overview"])

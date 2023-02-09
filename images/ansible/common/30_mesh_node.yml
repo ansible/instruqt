@@ -3,9 +3,6 @@
   ansible.builtin.stat:
     path: "/tmp/aap.tar.gz"
   register: __aap_bundle_file
-  tags:
-    - controller-install
-    - controller-download
 
 - name: Download AAP setup bundle
   when: not __aap_bundle_file.stat.exists
