@@ -1,0 +1,14 @@
+slug: dynatrace-perform-demos
+id: hwl0g9b4l2sc
+version: 0.0.1
+title: 'Demo: Dynatrace EDA'
+description: ""
+icon: ""
+tags:
+- eda
+- ' event-driven-ansible'
+owner: redhat
+developers:
+- colin@redhat.com
+checksum: "1061679738972573801"
+timelimit: 3600
