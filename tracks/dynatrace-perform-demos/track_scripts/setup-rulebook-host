@@ -1,0 +1,8 @@
+#!/bin/bash
+
+agent variable set SANDBOX $INSTRUQT_PARTICIPANT_ID
+
+dnf -y install python3-pip
+pip3 install ansible-core aiohttp
+ansible-galaxy collection install ansible.eda
+ansible-playbook -i localhost, -c local ansible.eda.install_rulebook_cli
