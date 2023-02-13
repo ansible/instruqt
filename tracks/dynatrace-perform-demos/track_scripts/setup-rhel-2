@@ -1,6 +1,7 @@
 #!/bin/bash
 # dnf -y install wget tmux
-dnf -y install python3-pip
+dnf -y install python3-pip httpd
+systemctl start httpd
 
 ##### Below collection would be nice but doesn't seem to work?
 # pip install ansible
@@ -17,8 +18,8 @@ dnf -y install python3-pip
 #     include_role:
 #       name: dynatrace.oneagent_deploy.oneagent
 #     vars:
-#       dynatrace_paas_token: dt0c01.X4KJ6WKGBB7KSD2SQKOWSEUO.ASAA2MOQU5MBP6S2JB6NFAWIQTTCS3TKPPP4VMOJ7XLJMGU4IRWBWTXL556UOCJ6
-#       dynatrace_environment_url: https://xmq61844.live.dynatrace.com
+#       dynatrace_paas_token: ${dynatrace_token}
+#       dynatrace_environment_url: ${dynatrace_host}
 
 # EOF
 
