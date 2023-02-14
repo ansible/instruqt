@@ -1,0 +1,17 @@
+---
+- name: Listen for events on a webhook
+  hosts: all
+  sources:
+    - ansible.eda.webhook:
+        host: 0.0.0.0
+        port: 5000
+      filters:
+        - ansible.eda.json_filter:
+        - ansible.eda.dashes_to_underscores:
+
+  rules:
+    - name: Rule - Print event information
+      condition: event.meta.headers.eventtype  == "http_server"
+      action:
+        run_playbook:
+          name: playbooks/dump.yml
