@@ -1,0 +1,8 @@
+---
+- name: Print event info
+  hosts: localhost
+  connection: local
+  tasks:
+
+  - debug:
+      var: event
