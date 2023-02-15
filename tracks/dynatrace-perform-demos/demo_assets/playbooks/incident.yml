@@ -1,0 +1,41 @@
+---
+- name: Create/Update ServiceNow incident
+  hosts: localhost
+  gather_facts: false
+  collections:
+    - servicenow.itsm
+  vars:
+    SN_HOST: "{{ lookup('env', 'SN_HOST') }}"
+    SN_USERNAME: "{{ lookup('env', 'SN_USERNAME') }}"
+    SN_PASSWORD: "{{ lookup('env', 'SN_PASSWORD') }}"
+    SANDBOX_ID: "{{ lookup('env', 'INSTRUQT_PARTICIPANT_ID') }}"
+
+  tasks:
+  - name: Lookup existing incident
+    servicenow.itsm.incident_info:
+      query:
+        - short_description: LIKE rhel-2.{{ SANDBOX_ID }}.svc.cluster.local
+    register: found_incident
+
+  - name: Create incident
+    when:
+      - event.payload.details.status == "OPEN"
+      - found_incident.records[0].sys_id is undefined
+    servicenow.itsm.incident:
+      state: new
+      caller: "{{ SN_USERNAME }}"
+      short_description: "{{ event.payload.source}}"
+      impact: low
+      urgency: low
+    register: incident
+
+  - name: Resolve incident
+    when:
+      - event.payload.details.status == "CLOSED"
+      - found_incident.records[0].sys_id is defined
+    servicenow.itsm.incident:
+      sys_id: "{{ found_incident.records[0].sys_id }}"
+      state: closed
+      close_code: "Solved (Permanently)"
+      close_notes: "Closed with ansible servicenow.itsm"
+    register: incident
