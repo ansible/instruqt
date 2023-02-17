@@ -1,0 +1,26 @@
+[
+    {
+      "schemaId": "builtin:problem.notifications",
+      "scope": "environment",
+      "value": {
+        "enabled": true,
+        "type": "WEBHOOK",
+        "displayName": "{{ webhook_name }}",
+        "webHookNotification": {
+          "url": "{{ webhook_url }}",
+          "acceptAnyCertificate": true,
+          "notifyEventMergesEnabled": false,
+          "notifyClosedProblems": true,
+          "headers": [
+            {
+              "name": "eventtype",
+              "secret": false,
+              "value": "http_server"
+            }
+          ],
+          "payload": "{\n\"summary\": \"{ProblemTitle}\",\n\"source\": \"{ImpactedEntity}\",\n\"state\": \"{State}\",\n\"tags\": \"{Tags}\",\n\"details\": {ProblemDetailsJSONv2}\n}"
+        },
+        "alertingProfile": "{{ webhook_alerting_profile }}"
+      }
+    }
+]
