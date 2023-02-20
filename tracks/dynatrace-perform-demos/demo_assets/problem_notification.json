@@ -5,9 +5,9 @@
       "value": {
         "enabled": true,
         "type": "WEBHOOK",
-        "displayName": "{{ webhook_name }}",
+        "displayName": "{{ PN_webhook_name }}",
         "webHookNotification": {
-          "url": "{{ webhook_url }}",
+          "url": "{{ PN_webhook_url }}",
           "acceptAnyCertificate": true,
           "notifyEventMergesEnabled": false,
           "notifyClosedProblems": true,
@@ -20,7 +20,7 @@
           ],
           "payload": "{\n\"summary\": \"{ProblemTitle}\",\n\"source\": \"{ImpactedEntity}\",\n\"state\": \"{State}\",\n\"tags\": \"{Tags}\",\n\"details\": {ProblemDetailsJSONv2}\n}"
         },
-        "alertingProfile": "{{ webhook_alerting_profile }}"
+        "alertingProfile": "{{ AP_objectId }}"
       }
     }
 ]
