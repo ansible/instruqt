@@ -1,0 +1,16 @@
+---
+- name: Forward payload to kafka topic
+  hosts: localhost
+  become: false
+  gather_facts: false
+  tasks:
+
+  - name: Debug
+    debug:
+      var: event.payload.repository.name
+
+  - name: Send to topic
+    shell:
+      cmd: |
+        echo '{{ event.payload | to_json }}' | ./kafka-console-producer.sh --topic {{ event.payload.repository.name }} --bootstrap-server broker:9092
+      chdir: /home/rhel/kafka_2.13-3.3.1/bin
