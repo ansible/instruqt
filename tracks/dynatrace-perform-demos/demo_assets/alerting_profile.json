@@ -3,7 +3,7 @@
       "schemaId": "builtin:alerting.profile",
       "scope": "environment",
       "value": {
-        "name": "{{ alerting_profile_name }}",
+        "name": "{{ AP_name }}",
         "severityRules": [
           {
             "severityLevel": "AVAILABILITY",
