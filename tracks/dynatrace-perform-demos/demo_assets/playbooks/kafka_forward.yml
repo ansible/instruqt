@@ -5,12 +5,8 @@
   gather_facts: false
   tasks:
 
-  - name: Debug
-    debug:
-      var: event.payload.repository.name
-
-  - name: Send to topic
+  - name: Send webhook payload to kafka topic
     shell:
       cmd: |
-        echo '{{ event.payload | to_json }}' | ./kafka-console-producer.sh --topic {{ event.payload.repository.name }} --bootstrap-server broker:9092
-      chdir: /home/rhel/kafka_2.13-3.3.1/bin
+        echo '{{ event.payload | to_json }}' | ./kafka-console-producer.sh --topic problems --bootstrap-server broker:9092
+      chdir: /root/kafka_2.12-3.4.0/bin
