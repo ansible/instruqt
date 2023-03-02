@@ -1,7 +1,7 @@
 slug: getting-started-edge-lab
 id: vj92suyqtxbt
-title: Getting started with Ansible Automation Platform and edge
-teaser: Scaling Containerized Applications to the Edge
+title: Get started with Red Hat Ansible Automation Platform and edge
+teaser: Learn how to scale containerized applications to the edge.
 description: |-
   # Application Delivery with AAP and Podman at the Edge
 
@@ -22,9 +22,6 @@ tags:
 owner: redhat
 developers:
 - cbrandt@redhat.com
-private: true
-published: true
-maintenance: true
 show_timer: true
 skipping_enabled: true
-checksum: "13361893758354962339"
+checksum: "17482704183557797508"
