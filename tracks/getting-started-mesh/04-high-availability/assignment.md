@@ -87,8 +87,8 @@ Automation mesh performs periodic health checks on worker nodes. These health ch
 Note that `jhb-exec` is showing an _Unavailable_ status.
 
 * Click on the `jhb-exec` node in the topology.
-* Under *Details*  on the top right-hand corner of the window, click on the `jhb-exec` link. This opens a new window.
 * Click on the *Reload* link to update the UI.
+* Under *Details*  on the top right-hand corner of the window, click on the `jhb-exec` link. This opens a new window.
 * Click on the **Run Health Check** button to confirm the _Unavailable_ status. This takes a few seconds to complete.
 
 
