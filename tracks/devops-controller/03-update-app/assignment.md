@@ -2,7 +2,7 @@
 slug: update-app
 id: jixtci9el84k
 type: challenge
-title: Update the Lets's Quiz! application code
+title: Update the Let's Quiz! application code
 teaser: We'll update the Let's Quiz! application home page to trigger the DevOps workflow
   build.
 notes:
@@ -29,10 +29,6 @@ notes:
     }
     </style>
 tabs:
-- title: Let's Quiz!
-  type: service
-  hostname: controller
-  port: 8000
 - title: VS Code
   type: service
   hostname: controller
@@ -48,6 +44,10 @@ tabs:
   hostname: gitea
   path: /student/acme_corp
   port: 3000
+- title: Let's Quiz!
+  type: service
+  hostname: controller
+  port: 8000
 difficulty: intermediate
 timelimit: 600
 ---
@@ -71,7 +71,7 @@ ACME Corp needs to update the _Let’s Quiz!_ application home page. In this cha
 ☑️ Task 1 - Current Let's Quiz! application status
 ===
 
-Currently, the *Let's Quiz!* application is not deployed into production. You’ll see the following message in the _Let’s Quiz!_ tab confirming this.
+Select the *Let's Quiz!* tab on the top of the browser. Currently, the *Let's Quiz!* application is not deployed into production. You’ll see the following message in the _Let’s Quiz!_ tab confirming this.
 
 * The _Let’s Quiz!_ tab should be open by default.
 
@@ -297,7 +297,6 @@ If you have encountered an issue or have noticed something not quite right, plea
     display: block;
     margin-left: auto;
     margin-right: auto;
-    width: 100%;
   }
   h1 {
     font-size: 18px;

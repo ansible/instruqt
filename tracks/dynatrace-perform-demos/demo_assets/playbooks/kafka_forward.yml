@@ -1,0 +1,12 @@
+---
+- name: Forward payload to kafka topic
+  hosts: localhost
+  become: false
+  gather_facts: false
+  tasks:
+
+  - name: Send webhook payload to kafka topic
+    shell:
+      cmd: |
+        echo '{{ event.payload | to_json }}' | ./kafka-console-producer.sh --topic problems --bootstrap-server broker:9092
+      chdir: /root/kafka_2.12-3.4.0/bin
