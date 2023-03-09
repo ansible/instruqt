@@ -12,7 +12,7 @@
 
     - name: download aap
       vars:
-        provided_sha_value: a93c4133158150c2d542009112a6876741f42d069e5776ba1946e6cbb028593c
+        provided_sha_value: ca2541e6e7f74306197c3fe8a009c7a9b228342d0469e6707c943c8435b01fa2
       include_role:
         name: ansible.workshops.aap_download
 
