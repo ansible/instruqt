@@ -44,7 +44,7 @@ In the *editor* tab, create the directory `templates` (right click and select 'N
 ☑️ Task 2 - Create the motd-facts.j2 jinja file
 ===
 
-Within `ansible-files/templates` direcotry, create the file `motd-facts.j2`:
+Within `ansible-files/templates` directory, create the file `motd-facts.j2`:
 
 ```
 Welcome to {{ ansible_hostname }}.

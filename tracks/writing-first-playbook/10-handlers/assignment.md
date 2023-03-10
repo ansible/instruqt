@@ -101,6 +101,9 @@ Within the *editor* tab, modify the `ansible-files/files/httpd.conf` and change 
 Listen 8081
 ```
 
+>### **❗️ Note**
+>You may need to refresh via the refresh explorer button for the file to show within the editor.
+
 ☑️ Task 5 - Run the httpd_conf.yml playbook
 ===
 
@@ -135,7 +138,7 @@ curl http://node1:8081
 ```
 ```
 <body>
-<h1>This is a development webserver, have fun!</h1>
+<h1>This is a production webserver, take care!</h1>
 </body>
 ```
 

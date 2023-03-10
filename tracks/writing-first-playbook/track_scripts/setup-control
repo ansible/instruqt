@@ -1,25 +1,53 @@
 #!/bin/bash
+
 USER=rhel
 # set ansible-navigator default settings
 su - $USER -c 'cat >/home/$USER/ansible-navigator.yml <<EOL
 ---
 ansible-navigator:
   ansible:
-    inventories:
-    - /home/rhel/ansible-files/hosts
-  enabled: false
-  mode: stdout
+    inventory:
+      entries:
+      - /home/rhel/ansible-files/hosts
   execution-environment:
     container-engine: podman
-    image: ee-supported-rhel8
-    enabled: false
-    pull-policy: never
-
-  playbook-artifact:
-    save-as: /home/rhel/{playbook_name}-artifact-{ts_utc}.json
-
+    enabled: true
+    image: quay.io/acme_corp/servicenow-ee:latest
+    pull:
+      policy: missing
   logging:
     level: debug
+  mode: stdout
+  playbook-artifact:
+    save-as: /home/rhel/{playbook_name}-artifact-{time_stamp}.json
 
 EOL
 cat /home/$USER/ansible-navigator.yml'
+
+sudo dnf config-manager --set-disabled rhui-rhel-8-for-x86_64-baseos-rhui-rpms
+sudo dnf config-manager --set-disabled rhui-rhel-8-for-x86_64-appstream-rhui-rpms
+sudo dnf config-manager --enable ansible-automation-platform
+
+sudo bash -c 'cat >/etc/yum.repos.d/centos8-baseos.repo <<EOL
+[centos8-baseos]
+name=CentOS 8 Stream BaseOS
+baseurl=http://mirror.centos.org/centos/8-stream/BaseOS/x86_64/os
+enabled=1
+gpgcheck=0
+
+EOL
+cat /etc/yum.repos.d/centos8-baseos.repo'
+
+sudo bash -c 'cat >/etc/yum.repos.d/centos8-appstream.repo <<EOL
+[centos8-appstream]
+name=CentOS 8 Stream AppStream
+baseurl=http://mirror.centos.org/centos/8-stream/AppStream/x86_64/os/
+enabled=1
+gpgcheck=0
+
+EOL
+cat /etc/yum.repos.d/centos8-appstream.repo'
+
+
+sudo dnf clean all
+sudo dnf install -y ansible-navigator
