@@ -1,9 +1,8 @@
 slug: writing-first-playbook
 id: z1eg1d9cwmzk
-type: track
-title: Writing your first playbook
-teaser: Learn about the basics of how to write an Ansible playbook to automate simple
-  infrastructure tasks
+title: Write your first playbook
+teaser: Learn the basics of writing a Red Hat Ansible Automation Platform playbook
+  to automate simple infrastructure tasks.
 description: |-
   Ansible is a simple yet powerful IT automation engine for application deployment, configuration management, and orchestration that you can learn quickly. This exercise covers using Ansible to build Apache web servers on Red Hat Enterprise Linux.
 
@@ -31,8 +30,6 @@ owner: redhat
 developers:
 - moshah@redhat.com
 - rlopez@redhat.com
-private: false
-published: false
-maintenance: true
+- lgallego@redhat.com
 show_timer: true
-checksum: "17009515173693607495"
+checksum: "9198835520705009622"

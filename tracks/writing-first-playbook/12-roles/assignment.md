@@ -168,7 +168,7 @@ Create an `web.html` file in the "src" directory of the role, `files`:
 ```
 echo 'simple vhost index' > ~/ansible-files/roles/apache_vhost/files/web.html
 ```
-☑️ Task 7 - Create a web.html file
+☑️ Task 7 - Create a vhost template file
 ===
 
 Create the `vhost.conf.j2` template file in the role's templates subdirectory (`~/ansible-files/roles/apache_vhost/templates`).
