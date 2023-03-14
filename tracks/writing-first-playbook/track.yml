@@ -32,4 +32,8 @@ developers:
 - rlopez@redhat.com
 - lgallego@redhat.com
 show_timer: true
-checksum: "9198835520705009622"
+lab_config:
+  overlay: false
+  width: 25
+  position: right
+checksum: "2554691309411402857"
