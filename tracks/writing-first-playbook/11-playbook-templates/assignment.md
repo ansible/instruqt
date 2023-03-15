@@ -65,7 +65,8 @@ Create an Ansible playbook that uses the newly created template file. Within the
   hosts: node1
   become: true
   tasks:
-    - ansible.builtin.template:
+    - name: Motd Template
+      ansible.builtin.template:
         src: motd-facts.j2
         dest: /etc/motd
         owner: root
