@@ -1,0 +1,1 @@
+echo "devops ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/devops
