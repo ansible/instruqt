@@ -1,0 +1,4 @@
+#!/bin/bash
+
+su -c "git config --global user.email 'you@example.com'" devops
+su -c "git config --global user.name 'Your Name'" devops
