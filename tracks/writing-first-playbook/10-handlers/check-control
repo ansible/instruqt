@@ -1,0 +1,74 @@
+#!/bin/bash
+
+# Define the target directories and files
+ansible_files_dir="/home/rhel/ansible-files"
+httpd_conf_yml="${ansible_files_dir}/httpd_conf.yml"
+httpd_conf_file="${ansible_files_dir}/files/httpd.conf"
+
+# Define the expected content
+read -r -d '' httpd_conf_yml_content << 'EOF'
+---
+- name: manage httpd.conf
+  hosts: web
+  become: true
+  tasks:
+  - name: Copy Apache configuration file
+    copy:
+      src: httpd.conf
+      dest: /etc/httpd/conf/
+    notify:
+      - restart_apache
+  handlers:
+    - name: restart_apache
+      service:
+        name: httpd
+        state: restarted
+EOF
+
+# Array to store errors
+errors=()
+
+# Compare YAML files using Python
+compare_yaml() {
+    local yaml_file="$1"
+    local content="$2"
+    export YAML_FILE="$yaml_file"
+    export EXPECTED_YAML="$content"
+    python3 -c "import sys, os, yaml; sys.exit(0 if yaml.safe_load(open(os.environ['YAML_FILE'])) == yaml.safe_load(os.environ['EXPECTED_YAML']) else 1)"
+    return $?
+}
+
+# Check file and YAML content
+check_file_and_yaml_content() {
+    local yaml_file="$1"
+    local content="$2"
+    if [ -f "$yaml_file" ]; then
+        if compare_yaml "$yaml_file" "$content"; then
+            echo "$yaml_file exists and has the correct content."
+        else
+            errors+=("$yaml_file has incorrect content.")
+        fi
+    else
+        errors+=("$yaml_file does not exist.")
+    fi
+}
+
+check_file_and_yaml_content "$httpd_conf_yml" "$httpd_conf_yml_content"
+
+# Check for the existence of the httpd.conf file and the "Listen 8081" line
+if [ -f "$httpd_conf_file" ]; then
+    echo "The 'httpd.conf' file exists in the ansible-files/files directory."
+    if grep -q "^Listen 8081$" "$httpd_conf_file"; then
+        echo "The 'httpd.conf' file contains the 'Listen 8081' line."
+    else
+        errors+=("The 'httpd.conf' file is not listening to 8081.")
+    fi
+else
+    errors+=("The 'httpd.conf' file does not exist in the ansible-files/files directory.")
+fi
+
+# If there are any errors, call the fail-message function with all the errors
+if [ ${#errors[@]} -gt 0 ]; then
+    fail-message "$(IFS=$'\n'; echo "${errors[*]}")"
+    fail-message "${errors[*]}"
+fi

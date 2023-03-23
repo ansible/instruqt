@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# Define the target directories and files
+ansible_files_dir="/home/rhel/ansible-files"
+loop_users_yml="${ansible_files_dir}/loop_users.yml"
+
+# Define the expected content
+read -r -d '' loop_users_yml_content << 'EOF'
+---
+- name: Ensure users
+  hosts: node1
+  become: true
+
+  tasks:
+    - name: Ensure three users are present
+      ansible.builtin.user:
+        name: "{{ item }}"
+        state: present
+      loop:
+         - dev_user
+         - qa_user
+         - prod_user
+EOF
+
+
+# Check file and content
+check_file_and_content() {
+    local file="$1"
+    shift
+    local content_options=("$@")
+    if [ -f "$file" ]; then
+        local file_content
+        file_content=$(cat "$file")
+        local content_match="false"
+        for content_option in "${content_options[@]}"; do
+            if [ "$file_content" == "$content_option" ]; then
+                content_match="true"
+                break
+            fi
+        done
+        if [ "$content_match" == "true" ]; then
+            echo "$file exists and has the correct content."
+        else
+            fail-message "$file has incorrect content."
+        fi
+    else
+        fail-message "$file does not exist."
+    fi
+}
+
+check_file_and_content "$loop_users_yml" "$loop_users_yml_content"

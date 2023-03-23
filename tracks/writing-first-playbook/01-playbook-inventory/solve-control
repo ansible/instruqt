@@ -1,10 +1,10 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-if true ; then
-    cat <<- EOF > /home/rhel/ansible-files/hosts
-    [web]
-    node1
-    node2
-    EOF
-    chown rhel:rhel /home/rhel/ansible-files/hosts
-fi
+# Set the working directory
+cd /home/rhel/ansible-files
+
+# Define the desired hosts file content
+desired_content=$'[web]\nnode1\nnode2'
+
+# Write the desired content to the 'hosts' file
+echo -e "$desired_content" > hosts

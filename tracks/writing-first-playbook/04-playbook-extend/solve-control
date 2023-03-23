@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# Define the target directory and file
+target_directory="/home/rhel/ansible-files"
+target_file="${target_directory}/apache.yml"
+
+# Define the remote host and user
+remote_user="rhel"
+remote_host="node1"
+
+# Define the expected content
+read -r -d '' expected_content << 'EOF'
+---
+- name: Apache server installed
+  hosts: node1
+  become: true
+  tasks:
+  - name: latest Apache version installed
+    ansible.builtin.package:
+      name: httpd
+      state: latest
+  - name: Apache enabled and running
+    ansible.builtin.service:
+      name: httpd
+      enabled: true
+      state: started
+EOF
+
+# Write the expected content to the 'apache.yml' file
+echo "$expected_content" > "$target_file"
+
+# Run the Ansible playbook to install and start the 'httpd' service on the remote host
+
+cd "$target_directory"
+ansible-navigator run apache.yml
+
