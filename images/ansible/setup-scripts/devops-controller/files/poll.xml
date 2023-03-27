@@ -7,7 +7,7 @@
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
-        <url>http://gitea:3000/student/acme_corp.git</url>
+        <url>https://gitea:8443/student/acme_corp.git</url>
       </hudson.plugins.git.UserRemoteConfig>
     </userRemoteConfigs>
     <branches>

@@ -109,7 +109,7 @@ unclassified:
     - credentialsId: "gitea_repo"
       displayName: "ACME Corp Repo Server"
       manageHooks: true
-      serverUrl: ${GITEA_SERVER_URL:-http://gitea:3000}
+      serverUrl: ${GITEA_SERVER_URL:-https://gitea:8443}
   globalDefaultFlowDurabilityLevel:
     durabilityHint: PERFORMANCE_OPTIMIZED
   junitTestResultStorage:

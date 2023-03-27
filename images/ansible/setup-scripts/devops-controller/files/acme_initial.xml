@@ -24,7 +24,7 @@ pipeline {
     stages {
         stage(&apos;SCM Get Code&apos;) {
             steps {
-                checkout([$class: &apos;GitSCM&apos;, branches: [[name: &apos;*/main&apos;]], extensions: [], userRemoteConfigs: [[url: &apos;http://gitea:3000/student/acme_corp.git&apos;]]])
+                checkout([$class: &apos;GitSCM&apos;, branches: [[name: &apos;*/main&apos;]], extensions: [], userRemoteConfigs: [[url: &apos;https://gitea:8443/student/acme_corp.git&apos;]]])
             }
         }
 
