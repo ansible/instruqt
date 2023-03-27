@@ -1,6 +1,6 @@
 ---
 ##
-# Create custom controller objects for each lab 
+# Create custom controller objects for each lab
 # Tags:
 # demo-content - Remove Demo Org, project, inventory and job template
 # controller-config - Setup controller env for lab
@@ -14,14 +14,15 @@
       validate_certs: "{{ controller_validate_certs }}"
 
 - name: Download and upgrade controller collections - {{ inventory_hostname }}
-  ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
-  become_user: "{{ ansible_user }}"
+  community.general.ansible_galaxy_install:
+    name: "{{ item }}"
+    dest: /usr/share/ansible/collections
+    type: collection
+  become: true
   loop: "{{ controller_collections }}"
   register: __collection_install
-  changed_when: '"is already installed, skipping" not in __collection_install.stdout'
   when: (controller_collections is defined) and (controller_collections | length > 0)
   tags:
-    - install-collections
     - controller-config
 
 - name: Install OS packages
@@ -38,20 +39,42 @@
     state: present
   become: true
   when: (controller_pip_packages is defined) and (controller_pip_packages | length > 0)
+  tags:
+    - controller-config
+
+- name: Download AWS CLI for S3 downloads
+  ansible.builtin.unarchive:
+    src: "{{ aws_cli_install_package }}"
+    dest: "/tmp/"
+    remote_src: true
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+  register: __aws_cli_download
+  tags:
+    - controller-config
+
+- name: Install AWS CLI for S3 downloads
+  ansible.builtin.command:
+    cmd: /tmp/aws/install --install-dir /usr/local/aws --bin-dir /usr/bin/ --update
+    creates: /usr/bin/aws
+  tags:
+    - controller-config
 
 - name: Install generic ansible.cfg in home directory
   ansible.builtin.template:
     src: ansible.cfg.j2
     dest: "/etc/ansible/ansible.cfg"
+    mode: 0644
   tags:
     - controller-config
 
-- name: Copy setup scripts - {{ track_slug }}
-  ansible.builtin.copy:
-    src: "{{ playbook_dir }}/setup-scripts/{{ track_slug }}"
-    dest: /tmp/setup-scripts/
-    force: true
-    mode: 0644
+# TODO: Change download source to track_slug
+- name: Download setup scripts to controller /opt directory - {{ lab.s3_bucket_name }}
+  ansible.builtin.command:
+    cmd: "/usr/bin/aws s3 sync --no-sign-request s3://{{ lab.s3_bucket_name }}/{{ track_slug }}-dev /opt/setup-scripts/{{ track_slug }}"
+  become: true
+  register: __s3_sync_output
+  changed_when: '"download:" in __s3_sync_output.stdout'
   tags:
     - controller-config
 
@@ -63,7 +86,6 @@
     <<: *controller_login
   tags:
     - demo-content
-    - controller-config
 
 - name: Demo content - remove job template
   awx.awx.job_template:
@@ -72,7 +94,6 @@
     <<: *controller_login
   tags:
     - demo-content
-    - controller-config
 
 - name: Demo content - remove project
   awx.awx.project:
@@ -91,7 +112,6 @@
     <<: *controller_login
   tags:
     - demo-content
-    - controller-config
 
 - name: Demo content - remove credential
   awx.awx.credential:
@@ -109,19 +129,18 @@
     <<: *controller_login
   tags:
     - demo-content
-    - controller-config
 
 - name: Download custom execution environments
   when: (controller_execution_environments is defined) and (controller_execution_environments | length > 0)
   tags:
     - controller-config
   block:
-    - name: Download and upgrade collections - {{ inventory_hostname }}
-      ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
-      loop:
-        - containers.podman
+    - name: Install containers.podman collection
+      community.general.ansible_galaxy_install:
+        name: containers.podman
+        dest: /usr/share/ansible/collections
+        type: collection
       register: __collection_install
-      changed_when: '"is already installed, skipping" not in __collection_install.stdout'
 
     - name: Log into registry.redhat.io
       become_user: "awx"
@@ -139,11 +158,3 @@
       until: __podman_pull_supported is not failed
       retries: 40
       delay: 2
-
-# Using extra_vars file for this.
-# Check https://github.com/redhat-cop/controller_configuration
-- name: Create lab controller objects
-  ansible.builtin.import_role:
-    name: redhat_cop.controller_configuration.dispatch
-  tags:
-    - controller-config

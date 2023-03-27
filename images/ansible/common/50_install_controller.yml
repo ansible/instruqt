@@ -2,7 +2,9 @@
 # Create controller objects for mesh lab
 ##
 - name: Download and upgrade collections for install - host {{ inventory_hostname }}
-  ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
+  community.general.ansible_galaxy_install:
+    name: "{{ item }}"
+    type: collection
   become_user: "{{ ansible_user }}"
   loop: "{{ controller_collections }}"
   register: __collection_install

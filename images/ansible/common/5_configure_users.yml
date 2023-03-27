@@ -7,7 +7,7 @@
     groups: wheel
     append: true
 
-- name: enable sshd password auth
+- name: Enable sshd password auth
   ansible.builtin.lineinfile:
     dest: /etc/ssh/sshd_config
     state: present
@@ -21,7 +21,7 @@
     content: "%rhel ALL=(ALL:ALL) NOPASSWD:ALL"
     dest: "/etc/sudoers.d/rhel_sudoers"
 
-- name: create receptor group
+- name: Create receptor group
   ansible.builtin.group:
     name: receptor
     state: present
@@ -42,7 +42,7 @@
   tags:
     - controller-install
 
-- name: restart sshd
+- name: Restart sshd
   ansible.builtin.systemd:
     name: sshd
     state: restarted
