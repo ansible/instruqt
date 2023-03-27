@@ -52,7 +52,7 @@
 
     - name: Create repo
       ansible.builtin.uri:
-        url: http://gitea:3000/api/v1/user/repos
+        url: https://gitea:8443/api/v1/user/repos
         method: POST
         body_format: json
         body:
@@ -66,7 +66,7 @@
 
     - name: Create repo webhook
       ansible.builtin.uri:
-        url: "http://gitea:3000/api/v1/repos/{{ student_user }}/acme_corp/hooks"
+        url: "https://gitea:8443/api/v1/repos/{{ student_user }}/acme_corp/hooks"
         method: POST
         body_format: json
         body:
@@ -151,7 +151,7 @@
       register: __output
       changed_when: __output.rc == 0
       loop:
-        - "git remote add origin http://gitea:3000/{{ student_user }}/acme_corp.git"
+        - "git remote add origin https://gitea:8443/{{ student_user }}/acme_corp.git"
         - "git checkout -b main"
         - "git add ."
         - "git commit -m'Initial commit'"
@@ -533,7 +533,7 @@
       awx.awx.project:
         name: "{{ lab_project_name }}"
         scm_type: git
-        scm_url: "http://gitea:3000/{{ student_user }}/acme_corp.git"
+        scm_url: "https://gitea:8443/{{ student_user }}/acme_corp.git"
         organization: "{{ lab_organization }}"
         scm_update_on_launch: false
         scm_update_cache_timeout: 60

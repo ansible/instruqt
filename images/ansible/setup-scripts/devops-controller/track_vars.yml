@@ -15,7 +15,7 @@ custom_facts_dir: "/etc/ansible/facts.d"
 custom_facts_file: custom_facts.fact
 admin_username: admin
 admin_password: ansible123!
-git_repo: http://gitea:3000/{{ student_user }}/acme_corp.git
+git_repo: https://gitea:8443/{{ student_user }}/acme_corp.git
 repo_user: rhel
 jenkins_jobs:
   - name: ACMECorp

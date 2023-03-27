@@ -7,16 +7,28 @@
 ansible_ssh_pipelining: true
 ansible_ssh_extra_args: '-o StrictHostKeyChecking=no -o ControlMaster=auto -o ControlPersist=60s'
 
+track_slug: devops-controller
+
 # GCP vars
 gcp_zone: us-central1-a
 gcp_project: "{{ lookup('ansible.builtin.env', 'GCP_PROJECT', default='red-hat-mbu') }}"
-gcp_service_account_file: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT_FILE', default='') }}"
-gcp_service_account: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT', default='') }}"
+gcp_service_account_file: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT_FILE') }}"
+gcp_service_account: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT') }}"
 gcp_instances:
-  - name: controller
-    # image_family: rhel-cloud
-    # instance_image: rhel-9-v20221206
+  - name: "{{ track_slug }}"
     source_image: automation-controller
+    network_interfaces:
+      - access_configs:
+        - name: External NAT # yamllint disable-line rule:indentation
+          type: ONE_TO_ONE_NAT
+    disks:
+      - auto_delete: true
+        boot: true
+        device_name: "{{ track_slug }}"
+        initialize_params:
+          source_image: "projects/{{ gcp_project }}/global/images/automation-controller"
+          disk_size_gb: 20
+          disk_type: pd-balanced
     labels:
       role: "{{ track_slug }}"
       mesh-type: controller
@@ -26,268 +38,82 @@ gcp_instances:
       items:
         - https-server
 gcp_inventory_host_vars:
-  ansible_user: rhel
+  ansible_user: "{{ ansible_user }}"
   ansible_ssh_pass: "ansible123!"
   ansible_host_key_checking: false
   ansible_python_interpreter: "/usr/bin/python3"
-
-# Vars to setup new controller version
-# controller_install_command: "ANSIBLE_BECOME_METHOD='sudo' ANSIBLE_BECOME=True ./setup.sh -e registry_username='{{ registry_username }}' -e registry_password='{{ registry_password }}'" # noqa yaml[line-length]
-
-### orig  config vars
-
-track_slug: devops-controller
-
-jenkins_user: jenkins
-jenkins_password: learn_ansible
-jenkins_url: https://jenkins:6443
-
-gitea_http_port: 8443
-gitea_protocol: https
-gitea_hostname: gitea
-# gitea_hostname: "{{ ansible.builtin.lookup('ENV', 'HOSTNAME') }}"
-gitea_app_url: "{{ gitea_protocol }}://{{ gitea_hostname }}:{{ gitea_http_port }}"
-gitea_repo_name: acme_corp
-gitea_admin_username: ansible
-gitea_admin_password: ansible123!
-# app_download_url: "https://github.com/craig-br/instruqt-track-content/branches/devel/{{ track_slug }}/"
-scripts_download_url: "https://github.com/craig-br/instruqt-tracks/branches/devops-controller-update/setup-scripts/{{ track_slug }}/"
-# scripts_download_url: "https://github.com/craig-br/instruqt/branches/devel/images/ansible/setup-scripts/{{ track_slug }}/"
-# scripts_download_url: "https://github.com/craig-br/instruqt/branches/devel/images/ansible/setup-scripts/{{ track_slug }}/"
-# https://github.com/craig-br/instruqt/blob/devel/images/ansible/setup-scripts/devops-controller
-# download_url: "https://github.com/ansible/instruqt/branches/devel/images/ansible/setup-scripts/{{ track_slug }}"
-
-lab_acme_inventory_name: ACME Corp DC
-# git_repo: http://gitea:3000/{{ student_user }}/acme_corp.git
-# repo_user: rhel
-jenkins_jobs:
-  - name: ACMECorp
-    template_file: "/tmp/setup-scripts/{{ track_slug }}/files/acme_initial.xml"
-  - name: PollRepo
-    template_file: "/tmp/setup-scripts/{{ track_slug }}/files/poll.xml"
-# controller_devops_ee: "ACME Corp EE"
-# default_tag_name: "0.0.1"
-# acme_venv: /home/rhel/.virtualenvs/acme_corp
-
-# # Controller objects
-# lab_credential_name: "ACME Corp Machine Credential"
-# lab_project_name: "ACME Corp Repo"
-# lab_inventories:
-#   - name: "ACME Corp DC"
-#     description: "ACME Corp DC"
-# lab_hosts:
-#   - lab_host_name: "controller.acme.example.com"
-#     lab_host_inventory: "ACME Corp DC"
-#     lab_host_vars:
-#       ansible_host: controller 
-#       ansible_python_interpreter: /usr/bin/python3
-#       ansible_host_key_checking: false
-#       # ansible_connection: local
-#   - lab_host_name: "web1.acme.example.com"
-#     lab_host_inventory: "ACME Corp DC"
-#     lab_host_vars:
-#       ansible_host: controller 
-#       ansible_python_interpreter: /usr/bin/python3
-#       ansible_host_key_checking: false
-#   - lab_host_name: "jenkins.acme.example.com"
-#     lab_host_inventory: "ACME Corp DC"
-#     lab_host_vars:
-#       ansible_host: jenkins 
-#       ansible_python_interpreter: /usr/bin/python3
-#       ansible_host_key_checking: false
-#   - lab_host_name: "repo.acme.example.com"
-#     lab_host_inventory: "ACME Corp DC"
-#     lab_host_vars:
-#       ansible_host: gitea 
-#       ansible_python_interpreter: /usr/bin/python3
-#       ansible_host_key_checking: false
-# lab_groups:
-#   - group_name: webservers
-#     group_desc: "ACME Corp Webservers"
-#     group_hosts:
-#       - web1.acme.example.com
-#     group_preserve_hosts: true
-#     group_inventory: "ACME Corp DC"
-# lab_job_templates:
-#   - jt_name: "Configure Jenkins Job"
-#     jt_execution_env: "{{ controller_devops_ee }}"
-#     jt_playbook: "playbooks/configure_jenkins_job.yml"
-#     jt_prompt_inventory: false
-#     jt_prompt_vars: false
-#     jt_inventory: "ACME Corp DC"
-#     jt_become: false
-#   - jt_name: "Create App Release"
-#     jt_execution_env: "{{ controller_devops_ee }}"
-#     jt_playbook: "playbooks/app_release.yml"
-#     jt_prompt_inventory: true
-#     jt_prompt_vars: true
-#     jt_inventory: "ACME Corp DC"
-#     jt_become: false
-#     survey_enabled: false
-#   - jt_name: "Configure Webservers"
-#     jt_execution_env: "{{ controller_devops_ee }}"
-#     jt_playbook: "playbooks/configure_webservers.yml"
-#     jt_prompt_inventory: true
-#     jt_prompt_vars: true
-#     jt_inventory: "ACME Corp DC"
-#     jt_become: false
-#     jt_extra_vars:
-#       acme_venv: "{{ acme_venv }}"
-#   - jt_name: "Restart DevOps Workflow"
-#     jt_execution_env: "{{ controller_devops_ee }}"
-#     jt_playbook: "playbooks/restart_workflow.yml"
-#     jt_inventory: "ACME Corp DC"
-#     jt_become: false
-#     jt_prompt_inventory: false
-#     jt_extra_vars:
-#       repo_user: "{{ repo_user }}"
-#       git_repo: "{{ git_repo }}"
-#   - jt_name: "Deploy ACMECorp App"
-#     jt_execution_env: "{{ controller_devops_ee }}"
-#     jt_playbook: "playbooks/deploy_acme_app.yml"
-#     jt_prompt_inventory: true
-#     jt_prompt_vars: true
-#     jt_inventory: "ACME Corp DC"
-#     jt_become: false
-#     jt_extra_vars:
-#       ansible_python_interpreter: "{{ acme_venv }}/bin/python3"
-#     survey_enabled: false
-# lab_devops_worklow:
-#   - workflow_name: "DevOps Workflow"
-#     workflow_inventory: "ACME Corp DC"
-#     workflow_vars: {"tag_name": "{{ tag_name | default( default_tag_name ) }}",
-#                      "acme_venv": "{{ acme_venv }}"}
-#     workflow_org: "{{ lab_organization }}"
-#     workflow_prompt_vars: true
-# lab_devops_worklow_nodes:
-#   - workflow_node_id: "Deploy to Prod?"
-#     workflow_node_jt: "DevOps Workflow"      
-#     workflow_node_org: "{{ lab_organization }}"
-#     workflow_node_approval:
-#       description: "Deploy to Prod?"
-#       name: "Deploy to Prod?"
-#   - workflow_node_id: "Create App Release"
-#     workflow_node_jt: "DevOps Workflow"      
-#     workflow_node_org: "{{ lab_organization }}"
-#     workflow_node_unified_jt: "Create App Release"
-#   - workflow_node_id: "Config Webservers"
-#     workflow_node_jt: "DevOps Workflow"      
-#     workflow_node_org: "{{ lab_organization }}"
-#     workflow_node_unified_jt: "Configure Webservers"
-#   - workflow_node_id: "Deploy ACME App"
-#     workflow_node_jt: "DevOps Workflow"      
-#     workflow_node_org: "{{ lab_organization }}"
-#     workflow_node_unified_jt: "Deploy ACMECorp App"
-#   - workflow_node_id: "Deploy to Prod?"
-#     workflow_node_jt: "DevOps Workflow"      
-#     workflow_node_org: "{{ lab_organization }}"
-#     workflow_node_success_nodes:
-#       - "Config Webservers"
-#       - "Create App Release"
-#   - workflow_node_id: "Create App Release"
-#     workflow_node_jt: "DevOps Workflow"      
-#     workflow_node_org: "{{ lab_organization }}"
-#     workflow_node_success_nodes:
-#       - "Deploy ACME App"
-#   - workflow_node_id: "Config Webservers"
-#     workflow_node_jt: "DevOps Workflow"      
-#     workflow_node_org: "{{ lab_organization }}"
-#     workflow_node_success_nodes:
-#       - "Deploy ACME App"
-# controller_user_vars:
-#   - user: jenkins
-#     role: execute
-#     job_templates: 
-#       - "Create App Release"
-#       - "Configure Webservers"
-#     state: present
-#   - user: jenkins
-#     role: execute
-#     workflows: "DevOps Workflow"
-#     state: present
-
-# GCP vars
-# gcp_zone: us-central1-a
-# gcp_project: "{{ lookup('ansible.builtin.env', 'GCP_PROJECT', default='red-hat-mbu') }}"
-# # https://cloud.google.com/iam/docs/creating-managing-service-account-keys
-# gcp_service_account_file: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT_FILE', default='') }}"
-# # Example: 73252323203-compute@developer.gserviceaccount.com
-# gcp_service_account: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT', default='') }}"
-# gcp_instances:
-#   - instance_name: dublin-edge-lab       # GCE instance name. The Instruqt sandbox VM name must match for DNS to work
-#     instance_image: "{{ track_slug }}-node"      # Instruqt image name
-#     instance_labels:
-#       role: "{{ track_slug }}"
-#       mesh-type: execution               # Mesh node type. Used in {{ track_slug }}_inv.j2
-#       location: dublin                   # Mesh region. Used in {{ track_slug }}_inv.j2
-#     instance_machine_type: e2-standard-2 # GCE instance type
-#   - instance_name: jhb-edge-lab
-#     instance_image: "{{ track_slug }}-node"
-#     instance_labels:
-#       role: "{{ track_slug }}"
-#       mesh-type: execution
-#       location: jhb
-#     instance_machine_type: e2-standard-2
-#   - instance_name: controller-edge-lab
-#     instance_image: automation-controller
-#     instance_labels:
-#       role: "{{ track_slug }}"
-#       mesh-type: controller
-#       location: raleigh
-#     instance_machine_type: n2-standard-4
-# gcp_inventory_host_vars:
-#   ansible_user: "rhel"
-#   ansible_ssh_pass: "ansible123!"
-#   ansible_host_key_checking: false
-#   ansible_python_interpreter: "/usr/bin/python3"
+  ansible_ssh_pipelining: true
 
 # Base controller custom setup vars
 ansible_user: rhel
-aap_dir: "/home/{{ ansible_user }}/aap_install"
-admin_password: "{{ controller_password }}" # legacy for roles
-username: "{{ ansible_user }}"
-# controller_install_command: "ANSIBLE_BECOME_METHOD='sudo' ANSIBLE_BECOME=True ./setup.sh -e registry_username='{{ registry_username }}' -e registry_password='{{ registry_password }}'" # noqa yaml[line-length]
-offline_token: "{{ lookup('ansible.builtin.env', 'REDHAT_OFFLINE_TOKEN', default='') }}"
+admin_password: "ansible123!"
 redhat_username: "{{ lookup('ansible.builtin.env', 'REDHAT_USERNAME', default='') }}"
 redhat_password: "{{ lookup('ansible.builtin.env', 'REDHAT_PASSWORD', default='') }}"
 registry_username: "{{ redhat_username }}"
 registry_password: "{{ redhat_password }}"
-# AAP 2.2.1 SHA
-# provided_sha_value: 878c2c2705e5f50e734f27fc7c50b39ddf4b2ace2d40290477d19477b82f9904
-# AAP 2.3
-provided_sha_value: 0046367b76d7c3aca0d311a05935acd667438dfe9640db16f5027952d46dc470
-content_dir: setup-scripts/getting-started-edge-lab
 
-## Vars specific to getting-started-edge-lab
-lab_project_repo: https://github.com/craig-br/instruqt-track-content/
-lab_project_repo_branch: devel
-lab_credential_name: "ACME Corp credential"
-lab_organization: "ACME Corp"
-lab_execution_environment: "ACME Corp EE"
-lab_project_name: "ACME Corp repo"
-controller_hostname: controller
+controller_hostname: "{{ track_slug }}"
 controller_validate_certs: false
 controller_username: admin
 controller_password: "ansible123!"
 student_user: student
 student_password: learn_ansible
 
+aws_cli_install_package: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+jenkins_user: jenkins
+jenkins_password: learn_ansible
+jenkins_url: https://jenkins:6443
+jenkins_jobs:
+  - name: ACMECorp
+    template_file: "/opt/setup-scripts/{{ track_slug }}/files/acme_initial.xml"
+  - name: PollRepo
+    template_file: "/opt/setup-scripts/{{ track_slug }}/files/poll.xml"
 
-# Container images pre-populated on mesh worker node
-# lab_container_images:
-#   - name: quay.io/acme_corp/instruqt_gitea
-#     state: present
-#     tag: latest
+gitea_http_port: 8443
+gitea_protocol: https
+gitea_hostname: gitea
+gitea_app_url: "{{ gitea_protocol }}://{{ gitea_hostname }}:{{ gitea_http_port }}"
+gitea_repo_name: acme_corp
+gitea_admin_username: ansible
+gitea_admin_password: "ansible123!"
 
-#   - name: quay.io/acme_corp/instruqt_gitea
-#     state: present
-#     tag: latest
+# code_server role vars
+codeserver_username: "{{ student_user }}"
+codeserver_password: "{{ student_password }}"
+codeserver_prebuild: false
+codeserver_authentication: false
+codeserver_extensions:
+  - name: redhat.ansible
 
-# Running containers needed in lab
+# Lab vars
+lab:
+  credential:
+    name: ACME Corp Machine Credential
+  organization: ACME Corp
+  project:
+    name: ACME Corp Repo
+    repo: "{{ gitea_app_url }}/{{ student_user }}/acme_corp.git"
+    branch: main
+  inventory:
+    name: ACME Corp DC
+    description: ACME Corp Data center
+  execution_environment:
+    name: ACME Corp EE
+    image: quay.io/acme_corp/instruqt-devops-ee
+  s3_bucket_name: tmm-instruqt-content.demoredhat.com.private
+  acme_venv: "/home/{{ student_user }}/.virtualenvs/acme_corp"
+  workflow_name: DevOps Workflow
+  default_tag_name: "0.0.1"
+
+# Lab containers
+# Add container customisation env vars to /opt/setup-scripts/files/container-<container_name>.env
 lab_containers:
   - name: gitea
+    label:
+      io.containers.autoupdate: registry
     listen_port: 8443
-    image: quay.io/acme_corp/instruqt_gitea:latest
+    image: quay.io/acme_corp/instruqt_gitea:dev
+    # image: quay.io/acme_corp/instruqt_gitea:latest
     state: started
     memory: 512m
     privileged: true
@@ -298,62 +124,68 @@ lab_containers:
     etc_hosts:
       gitea: 10.88.0.10
       jenkins: 10.88.0.20
-      controller: 10.88.0.1
+      devops-controller.acme.example.com: 10.88.0.1
     ip: "10.88.0.10"
     network: bridge
+    env_file: /opt/setup-scripts/{{ track_slug }}/files/container-gitea.env
     env:
-      GITEA__server__SSH_LISTEN_PORT: 2222
       GITEA__server__DOMAIN: gitea
-    args: # used to add inventory host vars
-      ansible_connection: containers.podman.podman
-      ansible_python_interpreter: /usr/bin/python3
-      remote_addr: gitea
-      ansible_podman_extra_args: --remote --connection remote_containers
+    # cmd_args: ['--env', 'GITEA_*']
     generate_systemd:
       path: /etc/systemd/system/
       restart_policy: always
       time: 60
       names: true
+      new: true
     groups:
       - containers
   - name: jenkins
+    label:
+      io.containers.autoupdate: registry
     listen_port: 6443
-    image: quay.io/acme_corp/instruqt-jenkins-devops-ssl:latest
+    image: quay.io/acme_corp/instruqt-jenkins-devops-ssl:dev
+    # image: quay.io/acme_corp/instruqt-jenkins-devops-ssl:latest
     state: started
-    memory: 2G
+    memory: 1G
     privileged: true
     volume: jenkins:/var/jenkins_home
     publish:
       - "6443:6443"
+    env_file: /opt/setup-scripts/{{ track_slug }}/files/container-jenkins.env
+    # cmd_args: ['--env', 'JENKINS_*']
     etc_hosts:
       gitea: 10.88.0.10
       jenkins: 10.88.0.20
-      controller: 10.88.0.1
+      devops-controller.acme.example.com: 10.88.0.1
     ip: "10.88.0.20"
     network: bridge
-    env:
-      GITEA_SERVER_URL: "{{ gitea_app_url }}"
-    args: # used to add inventory host vars
-      ansible_connection: containers.podman.podman
-      ansible_python_interpreter: /usr/bin/python3
-      remote_addr: jenkins
-      ansible_podman_extra_args: --remote --connection remote_containers
     generate_systemd:
       path: /etc/systemd/system/
       restart_policy: always
       time: 60
       names: true
+      new: true
     groups:
       - containers
 
+controller_os_packages:
+  - unzip
+  - python3-boto3
+  - python3-botocore
+  - python3-ansible-lint
+
+controller_collections:
+  - ansible.workshops
+  - redhat_cop.controller_configuration
+  - awx.awx
+
 # CoP Collection vars https://github.com/redhat-cop/controller_configuration
-controller_configuration_credentials_secure_logging: true
+controller_configuration_credentials_secure_logging: false
 controller_configuration_inventory_source_update_async_retries: 50
 controller_configuration_projects_async_retries: 50
-controller_configuration_secure_logging: true
+controller_configuration_secure_logging: false
 controller_configuration_async_retries: 50
 controller_configuration_inventory_source_update_async_delay: 5
-
 
 controller_configuration_dispatcher_roles:
   - {role: settings, var: controller_settings, tags: settings}
@@ -380,90 +212,221 @@ controller_configuration_dispatcher_roles:
   - {role: schedules, var: controller_schedules, tags: schedules}
   - {role: roles, var: controller_roles, tags: roles}
 
+controller_settings:
+  settings:
+    AWX_TASK_ENV:
+      GIT_SSL_NO_VERIFY: "True"
+
 controller_organizations:
-  - name: "{{ lab_organization }}"
-    description: "ACME Corp organization"
+  - name: "{{ lab.organization }}"
+    description: "{{ lab.organization }}"
     state: present
 
 controller_credentials:
-  - name: "{{ lab_credential_name }}"
-    description: "{{ lab_credential_name }}"
-    organization: "{{ lab_organization }}"
+  - name: "{{ lab.credential.name }}"
+    description: "{{ lab.credential.name }}"
+    organization: "{{ lab.organization }}"
     credential_type: Machine
     inputs:
       ssh_key_data: "{{ lookup('file', hostvars.localhost._ssh_tempdir.path + '/instruqt_lab') }}"
 
 controller_execution_environments:
-  - name: "{{ lab_execution_environment }}"
-    image: quay.io/acme_corp/acme_corp_ee
+  - name: "{{ lab.execution_environment.name }}"
+    image: "{{ lab.execution_environment.image }}"
     description: "ACME Corp execution environment"
     state: present
     pull: never
 
 controller_projects:
-  - name: "{{ lab_project_name }}"
-    organization: "{{ lab_organization }}"
+  - name: "{{ lab.project.name }}"
+    organization: "{{ lab.organization }}"
     state: present
-    scm_branch: "{{ lab_project_repo_branch }}"
+    scm_branch: "{{ lab.project.branch }}"
     scm_clean: false
     scm_delete_on_update: false
     scm_type: git
     scm_update_on_launch: false
-    scm_url: https://github.com/craig-br/instruqt-track-content/
+    scm_url: "{{ lab.project.repo }}"
     wait: true
     update_project: true
 
 controller_inventories:
-  - name: "{{ lab_acme_inventory_name }}"
-    organization: "{{ lab_organization }}"
-    description: "ACME Corp DC"
+  - name: "{{ lab.inventory.name }}"
+    organization: "{{ lab.organization }}"
+    description: "{{ lab.inventory.name }}"
 
-controller_inventory_sources:
-  - name: ACME Corp DC inventory source
-    organization: "{{ lab_organization }}"
-    source_project: "{{ lab_project_name }}"
-    source_path: "inventories/inventory.ini"
-    source: scm
-    inventory: "{{ lab_acme_inventory_name }}"
-    description: ACME Corp DC inventory source
-    overwrite: true
-    overwrite_vars: true
-    update_cache_timeout: 0
-    wait: true
+controller_hosts:
+  - name: controller.acme.example.com
+    inventory: "{{ lab.inventory.name }}"
+    variables:
+      ansible_host: devops-controller
+      ansible_python_interpreter: /usr/bin/python3
+      ansible_host_key_checking: false
+  - name: web1.acme.example.com
+    inventory: "{{ lab.inventory.name }}"
+    variables:
+      ansible_host: devops-controller
+      ansible_python_interpreter: /usr/bin/python3
+      ansible_host_key_checking: false
+  - name: jenkins.acme.example.com
+    inventory: "{{ lab.inventory.name }}"
+    variables:
+      ansible_host: devops-controller
+      ansible_python_interpreter: /usr/bin/python3
+      ansible_host_key_checking: false
+  - name: repo.acme.example.com
+    inventory: "{{ lab.inventory.name }}"
+    variables:
+      ansible_host: devops-controller
+      ansible_python_interpreter: /usr/bin/python3
+      ansible_host_key_checking: false
+
+controller_groups:
+  - name: webservers
+    description: ACME Corp Webservers
+    inventory: "{{ lab.inventory.name }}"
+    hosts:
+      - web1.acme.example.com
 
 controller_templates:
-  - name: "Deploy edge application"
+  - name: Configure Jenkins Job
     state: present
-    description: Deploy Ignition application
     job_type: run
-    playbook: "getting-started-edge-lab/playbooks/deploy_application.yml"
-    execution_environment: "{{ lab_execution_environment }}"
-    inventory: "{{ lab_irl_inventory_name }}"
+    playbook: "playbooks/configure_jenkins_job.yml"
+    execution_environment: "{{ lab.execution_environment.name }}"
+    inventory: "{{ lab.inventory.name }}"
     verbosity: 0
     credentials:
-      - "{{ lab_credential_name }}"
-    project: "{{ lab_project_name }}"
+      - "{{ lab.credential.name }}"
+    project: "{{ lab.project.name }}"
+  - name: Create App Release
+    state: present
+    job_type: run
+    playbook: "playbooks/app_release.yml"
+    execution_environment: "{{ lab.execution_environment.name }}"
+    inventory: "{{ lab.inventory.name }}"
+    credentials:
+      - "{{ lab.credential.name }}"
+    project: "{{ lab.project.name }}"
     ask_inventory_on_launch: true
-    become_enabled: false
-    limit: kiosks
-    survey: {}
+    ask_variables_on_launch: true
+  - name: Configure Webservers
+    state: present
+    job_type: run
+    playbook: "playbooks/configure_webservers.yml"
+    execution_environment: "{{ lab.execution_environment.name }}"
+    inventory: "{{ lab.inventory.name }}"
+    credentials:
+      - "{{ lab.credential.name }}"
+    project: "{{ lab.project.name }}"
+    ask_inventory_on_launch: true
+    ask_variables_on_launch: true
+    extra_vars:
+      acme_venv: "{{ lab.acme_venv }}"
+  - name: Restart DevOps Workflow
+    state: present
+    job_type: run
+    playbook: "playbooks/restart_workflow.yml"
+    execution_environment: "{{ lab.execution_environment.name }}"
+    inventory: "{{ lab.inventory.name }}"
+    credentials:
+      - "{{ lab.credential.name }}"
+    project: "{{ lab.project.name }}"
+    ask_variables_on_launch: true
+    extra_vars:
+      repo_user: "{{ student_user }}"
+      git_repo: "{{ gitea_app_url }}/{{ student_user }}/acme_corp.git"
+  - name: Deploy ACMECorp App
+    state: present
+    job_type: run
+    playbook: "playbooks/deploy_acme_app.yml"
+    execution_environment: "{{ lab.execution_environment.name }}"
+    inventory: "{{ lab.inventory.name }}"
+    credentials:
+      - "{{ lab.credential.name }}"
+    project: "{{ lab.project.name }}"
+    ask_inventory_on_launch: true
+    ask_variables_on_launch: true
+    extra_vars:
+      ansible_python_interpreter: "{{ lab.acme_venv }}/bin/python3"
 
-# controller_instance_groups:
-#   - name: "Johannesburg instance group"
-#     state: present
-#     instances:
-#       - jhb-edge-lab
-#   - name: "Dublin instance group"
-#     state: present
-#     instances:
-#       - dublin-edge-lab
-#   - name: "Raleigh data center"
-#     state: present
-#     instances:
-#       - controller-edge-lab
+controller_workflows:
+  - name: "{{ lab.workflow_name }}"
+    description: "{{ lab.workflow_name }}"
+    extra_vars:
+      tag_name: "{{ tag_name | default(lab.default_tag_name) }}"
+      acme_venv: "{{ lab.acme_venv }}"
+    ask_variables_on_launch: true
+    inventory: "{{ lab.inventory.name }}"
+    organization: "{{ lab.organization }}"
+    simplified_workflow_nodes:
+      - identifier: "Deploy to Prod?"
+        approval_node:
+          name: "Deploy to Prod?"
+          description: "Deploy to Prod?"
+          # timeout: 900 # 15 minutes
+        success_nodes:
+          - Config Webservers
+          - Create App Release
+      - all_parents_must_converge: false
+        identifier: Create App Release
+        unified_job_template: Create App Release
+        credentials: []
+        success_nodes:
+          - Deploy ACME App
+      - all_parents_must_converge: false
+        identifier: Config Webservers
+        unified_job_template: Configure Webservers
+        credentials: []
+        success_nodes:
+          - Deploy ACME App
+      - all_parents_must_converge: false
+        identifier: Deploy ACME App
+        unified_job_template: Deploy ACMECorp App
 
 controller_user_accounts:
+  - user: "{{ jenkins_user }}"
+    state: present
+    is_superuser: false
+    password: "{{ jenkins_password }}"
+    email: "{{ jenkins_user }}@acme.example.com"
+    organization: "{{ lab.organization }}"
   - user: "{{ student_user }}"
+    state: present
+    is_superuser: false
     password: "{{ student_password }}"
-    is_superuser: true
-    organization: "{{ lab_organization }}"
+    email: "{{ student_user }}@acme.example.com"
+    organization: "{{ lab.organization }}"
+
+controller_roles:
+  - user: "{{ jenkins_user }}"
+    job_templates:
+      - Create App Release
+      - Configure Webservers
+    workflows:
+      - "{{ lab.workflow_name }}"
+    role: execute
+  - user: "{{ student_user }}"
+    job_templates:
+      - Create App Release
+      - Configure Webservers
+      - Configure Jenkins Job
+      - Restart DevOps Workflow
+      - Deploy ACMECorp App
+    workflows:
+      - "{{ lab.workflow_name }}"
+    role: execute
+  - user: "{{ student_user }}"
+    job_templates:
+      - Create App Release
+      - Configure Webservers
+      - Configure Jenkins Job
+      - Restart DevOps Workflow
+      - Deploy ACMECorp App
+    workflows:
+      - "{{ lab.workflow_name }}"
+    role: read
+  - user: "{{ student_user }}"
+    workflows:
+      - "{{ lab.workflow_name }}"
+    role: approval
