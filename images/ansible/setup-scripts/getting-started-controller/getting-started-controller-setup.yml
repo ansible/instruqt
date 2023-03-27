@@ -11,7 +11,7 @@
     username: admin
     admin_password: ansible123!
     lab_credential_name: "Lab Machine Credential"
-    lab_project_name: "Lab playbooks"
+    lab_project_name: "Lab Project"
     lab_jt_name: "Debug-Info"
     lab_inventory_name: "Lab-Inventory"
     lab_organization: "Default"
@@ -19,6 +19,8 @@
       - host01
       - host02
     lab_inv_group_name: "web"
+    custom_facts_dir: "/etc/ansible/facts.d"
+    custom_facts_file: custom_facts.fact
   
   tags:
     - getting-started-controller
@@ -38,6 +40,78 @@
       retries: 5
       tags:
         - setup-env
+   # Create awx login token and custom fact
+    - name: get awx token and restart automation-controller if it fails
+      block:
+        - name: Gather facts
+          setup:
+          tags:
+            - awx-token
+        - name: login awx token
+          shell: >
+            awx --conf.username admin --conf.password "ansible123!" -k login | jq -r '.token'
+          register: awx_token
+          until: awx_token is success
+          retries: 6
+          delay: 3
+          failed_when: awx_token.rc > 0
+        
+      rescue:
+        - name: In rescue block for awx token
+          debug:
+            msg: "failed to get awx token. Restarting automation controller service"
+
+        - name: restart the controller service
+          ansible.builtin.service:
+            name: automation-controller
+            state: restarted
+
+        - name: Ensure tower/controller is online and working
+          uri:
+            url: https://localhost/api/v2/ping/
+            method: GET
+            user: "{{ username }}"
+            password: "{{ admin_password }}"
+            validate_certs: false
+            force_basic_auth: true
+          register: controller_online
+          until: controller_online is success
+          delay: 3
+          retries: 5
+
+        - name: Retry getting awx token
+          shell: >
+            awx --conf.username admin --conf.password "ansible123!" -k login | jq -r '.token'
+          register: awx_token
+          until: awx_token is not failed
+          retries: 6
+          delay: 3
+
+      always:
+        - name: Create fact.d dir
+          file:
+            path: "{{ custom_facts_dir }}"
+            state: directory
+            recurse: yes
+        
+        - name: Create awx-token custom fact
+          copy:
+            content: |
+              [localfacts]
+              _awx_token = "{{ awx_token.stdout }}"
+            dest: "{{ custom_facts_dir }}/{{ custom_facts_file }}"
+
+        - name: Refresh facts
+          setup:
+      when: ansible_local.custom_facts.localfacts._awx_token is undefined or  ansible_local.custom_facts.localfacts._awx_token | count == 0
+      tags:
+        - setup-env
+  
+    - name: debug custom fact
+      debug:
+        var: ansible_local.custom_facts.localfacts._awx_token 
+      tags:
+        - awx-token
 
     - name: Add the {{ lab_inventory_name }} Inventory
       awx.awx.inventory:
@@ -72,8 +146,7 @@
       awx.awx.group:
         name: "{{ lab_inv_group_name }}"
         inventory: "{{ lab_inventory_name }}"
-        hosts:
-          "{{ lab_hosts }}"
+        hosts: "{{ lab_hosts }}"
         controller_config_file: "{{ playbook_dir }}/../controller.cfg"
         validate_certs: false
       tags:
@@ -97,22 +170,23 @@
         - setup-jt
         - setup-dyn-inv
         - setup-getting-started-controller-workflows
-
+        
+    # added to controller image build
+    
     - name: Add the lab project
       awx.awx.project:
         name: "{{lab_project_name }}"
         scm_type: git
-        scm_url: "https://github.com/ansible/product-demos"
+        scm_url: "https://github.com/craig-br/instruqt-track-content.git"
+        scm_branch: devel
         organization: "Default"
         scm_update_on_launch: false
         scm_update_cache_timeout: 60
+        default_environment: "Default execution environment"
         controller_config_file: "{{ playbook_dir }}/../controller.cfg"
         validate_certs: false
       tags:
-        - solve-jt
         - setup-jt
-        - setup-dyn-inv
-        - setup-getting-started-controller-workflows
 
     - name: Create the lab job template
       awx.awx.job_template:
@@ -122,7 +196,7 @@
         project: "{{ lab_project_name }}"
         credential: "{{ lab_credential_name }}"
         inventory: "{{ lab_inventory_name }}"
-        playbook: "playbooks/infrastructure/debug_info.yml"
+        playbook: "getting-started-controller/playbooks/debug_info.yml"
         controller_config_file: "{{ playbook_dir }}/../controller.cfg"
         validate_certs: false
       tags:
@@ -140,3 +214,91 @@
         - solve-jt
         - setup-dyn-inv
         - setup-getting-started-controller-workflows
+
+  ## Checks for challenges
+
+    ## Inventory challenge checks
+    # Check if inventory exists  
+    - name: check inventory
+      shell: >
+        awx --conf.token {{ ansible_local.custom_facts.localfacts._awx_token }} -k inventory get "{{ lab_inventory_name }}" -f json
+      register: inventory
+      tags:
+        - check-inventory
+        - check-hosts-inv
+        - check-group-inv
+
+    #Check if hosts exist
+    - name: Check Hosts exists
+      shell: >
+        awx --conf.token {{ ansible_local.custom_facts.localfacts._awx_token }} -k host get "{{ lab_host }}" -f json
+      register: lab_host_details
+      tags:
+        - check-hosts
+        - check-hosts-inv
+
+    - name: set hosts facts
+      set_fact:
+        _lab_host: "{{ lab_host_details.stdout }}"
+      tags:
+        - check-hosts-inv
+
+    - name: set inventory fact
+      set_fact:
+        _inventory: "{{ inventory.stdout }}"
+      tags:
+        - check-hosts-inv
+        - check-group-inv
+
+    - name: check inv id is on _lab_host output
+      assert:
+        that:
+        - _lab_host.inventory | int == _inventory.id | int
+        msg: "FAIL: {{ lab_host }} not found in {{ lab_inventory_name }}"
+      tags:
+        - check-hosts-inv
+    
+    #Check group exists
+    - name: check {{ lab_inv_group_name }}
+      shell: >
+        awx --conf.token {{ ansible_local.custom_facts.localfacts._awx_token }} -k group get "{{ lab_inv_group_name }}" -f json
+      register: lab_group
+      tags:
+        - check-group
+        - check-group-inv
+
+    - name: set group fact
+      set_fact:
+        _lab_group: "{{ lab_group.stdout }}"
+      tags:
+        - check-group-inv
+
+    - name: check inv name is on _lab_group output
+      assert:
+        that:
+          - _lab_group.summary_fields.inventory.name | string == _inventory.name | string
+        msg: "FAIL: {{ lab_inv_group_name }} not found in {{ lab_inventory_name }}"
+      tags:
+        - check-group-inv
+    
+    # Check job template executed
+    - name: check {{ lab_jt_name }} executed
+      shell: >
+        awx --conf.token {{ ansible_local.custom_facts.localfacts._awx_token }} -k jobs list --name "{{ lab_jt_name }}" -f yaml
+      register: lab_jt_job
+      tags:
+        - check-jt
+
+    - name: set jt fact
+      set_fact:
+        _lab_jt_job: "{{ lab_jt_job.stdout }}"
+      tags:
+        - check-jt
+
+    - name: Check if job template executed
+      assert:
+        that:
+          - lab_jt_job.stdout.find('{{ lab_jt_name }}') != -1
+        fail_msg: "FAIL: {{ lab_jt_name }} has not not been executed yet."
+      tags:
+        - check-jt
