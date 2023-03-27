@@ -10,5 +10,12 @@
     "git.confirmSync": false,
     "workbench.colorTheme": "Visual Studio Dark",
     "ansible.ansibleLint.enabled": false,
-    "ansible.ansible.useFullyQualifiedCollectionNames": true
+    "ansible.ansible.useFullyQualifiedCollectionNames": true,
+    "files.associations": {
+        "*.yml": "ansible"
+    },
+    "redhat.telemetry.enabled": false,
+    "security.workspace.trust.banner": "never",
+    "ansible.validation.lint.enabled": false,
+    "security.workspace.trust.enabled": false
 }

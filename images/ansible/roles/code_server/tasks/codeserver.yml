@@ -1,17 +1,15 @@
 ---
-- name: Download code-server 3 rpm
-  ansible.builtin.get_url:
-    url: https://github.com/cdr/code-server/releases/download/v3.10.2/code-server-3.10.2-amd64.rpm
-    dest: /tmp/code-server.rpm
-    mode: '0440'
-
-- name: install code-server 3 rpm from local rpm and certbot
+- name: Install code-server and certbot
   ansible.builtin.dnf:
     name:
-      - /tmp/code-server.rpm
-#      - certbot
-    state: present
+      - "{{ codeserver_url }}"
+      - certbot
+    state: latest
     disable_gpg_check: true
+  register: __dnf_result
+  until: __dnf_result is not failed
+  retries: 30
+  delay: 1
 
 # solves error
 # pkg_resources.DistributionNotFound: The 'requests>=2.14.2' distribution was not found and is required by acme
@@ -21,87 +19,78 @@
 
 - name: Apply our systemd service file (instead of RPM file)
   ansible.builtin.template:
-    src: ../templates/code-server.service.j2
+    src: code-server.service.j2
     dest: /etc/systemd/system/code-server.service
-    owner: "{{ username }}"
+    owner: "{{ codeserver_username }}"
     group: wheel
     mode: '0744'
 
 # source: https://vscode.readthedocs.io/en/latest/getstarted/settings/
-- name: ensure custom facts directory exists
+- name: Ensure custom facts directory exists
   ansible.builtin.file:
-    path: "/home/{{ username }}/.local/share/code-server/User/"
+    path: "/home/{{ codeserver_username }}/.local/share/code-server/User/"
     recurse: true
     state: directory
-    owner: "{{ username }}"
+    owner: "{{ codeserver_username }}"
+    group: "{{ codeserver_username }}"
+    mode: "0755"
 
-- name: apply code server defaults
+- name: Apply code server defaults
   ansible.builtin.template:
-    src: ../templates/settings.json
-    dest: "/home/{{ username }}/.local/share/code-server/User/settings.json"
-    owner: "{{ username }}"
+    src: settings.json
+    dest: "/home/{{ codeserver_username }}/.local/share/code-server/User/settings.json"
+    owner: "{{ codeserver_username }}"
+    group: "{{ codeserver_username }}"
+    mode: "0644"
 
 - name: Create a directory if it does not exist
   ansible.builtin.file:
-    path: /home/{{ username }}/.local/share/code-server/extensions/
+    path: /home/{{ codeserver_username }}/.local/share/code-server/extensions/
     state: directory
-    owner: "{{ username }}"
-    group: "{{ username }}"
+    mode: "0755"
+    owner: "{{ codeserver_username }}"
+    group: "{{ codeserver_username }}"
 
-- name: Download files for vscode
+- name: Download VSCode extension files
   ansible.builtin.get_url:
-    url: "{{ item }}"
-    dest: /home/{{ username }}/.local/share/code-server/extensions/
-    owner: "{{ username }}"
-    group: "{{ username }}"
-  loop:
-    - https://github.com/ansible/workshops/raw/devel/files/bierner.markdown-preview-github-styles-0.1.6.vsix
-    - https://github.com/ansible/workshops/raw/devel/files/hnw.vscode-auto-open-markdown-preview-0.0.4.vsix
-    - https://github.com/ansible/workshops/raw/devel/files/redhat.ansible-0.4.5.vsix
+    url: "{{ item.download_url }}"
+    dest: /home/{{ codeserver_username }}/.local/share/code-server/extensions/
+    owner: "{{ codeserver_username }}"
+    group: "{{ codeserver_username }}"
+    mode: "0644"
+  loop: "{{ codeserver_extensions }}"
+  when: item.download_url is defined
+  register: download_extension
+  until: download_extension is not failed
+  retries: 5
 
-- name: install ansible and markdown extensions
-  become_user: "{{ username }}"
-  ansible.builtin.command: "/bin/code-server --install-extension /home/{{ username }}/.local/share/code-server/extensions/{{ item }}"
-  loop:
-    - bierner.markdown-preview-github-styles-0.1.6.vsix
-    - hnw.vscode-auto-open-markdown-preview-0.0.4.vsix
-    - redhat.ansible-0.4.5.vsix
-  ignore_errors: true
+- name: Install extensions from local file
+  become_user: "{{ codeserver_username }}"
+  ansible.builtin.command: "/bin/code-server --install-extension /home/{{ codeserver_username }}/.local/share/code-server/extensions/{{ item.filename }}"
+  loop: "{{ codeserver_extensions }}"
+  when: item.filename is defined
   register: install_extension
   until: install_extension is not failed
   retries: 5
 
-- name: daemon-reload, enable and start code-server
+- name: Install extensions from VSCode Marketplace
+  become_user: "{{ codeserver_username }}"
+  ansible.builtin.command: "/bin/code-server --install-extension {{ item.name }}"
+  loop: "{{ codeserver_extensions }}"
+  when: (item.filename is undefined) or (item.download_url is undefined)
+  register: install_extension
+  until: install_extension is not failed
+  retries: 5
+
+- name: Daemon-reload, enable and start code-server
   ansible.builtin.systemd:
     name: code-server
     enabled: true
     state: started
     daemon_reload: true
 
-- name: "install nginx"
-  ansible.builtin.dnf:
-    name: ['nginx']
-    state: latest
-
-- name: delete all commented lines nginx.conf
-  ansible.builtin.lineinfile:
-    path: /etc/nginx/nginx.conf
-    state: absent
-    regexp: '#.*'
-
-- name: instruqt - update nginx configuration to support code server
+- name: Editor block - update nginx configuration to support code server
   ansible.builtin.blockinfile:
-    block: "{{ lookup('template', '../templates/nginx.conf') }}"
-    dest: /etc/nginx/nginx.conf
-    insertafter: "location /"
-
-- name: Set httpd_can_network_connect flag on and keep it persistent across reboots
-  ansible.posix.seboolean:
-    name: httpd_can_network_connect
-    state: true
-    persistent: true
-
-- name: "enable nginx"
-  ansible.builtin.service:
-    name: nginx
-    enabled: true
+    block: "{{ lookup('template', 'nginx_instruqt.conf') }}"
+    dest: /etc/nginx/conf.d/automation-controller.nginx.conf
+    insertbefore: "location / "
