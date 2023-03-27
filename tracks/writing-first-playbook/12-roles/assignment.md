@@ -96,6 +96,7 @@ Edit the `roles/apache_vhost/tasks/main.yml` file:
 
 ```
 ---
+# tasks file for roles/apache_vhost
 - name: install httpd
   ansible.builtin.package:
     name: httpd
@@ -221,7 +222,7 @@ Witin the *control* tab, run the following commands:
 ansible-navigator run test_apache_role.yml
 ```
 
-☑️ Task 9 - Verify the results
+☑️ Task 10 - Verify the results
 ===
 
 The Ansible playbook runs the role against the `node2` host. Verify that the role worked via a `curl` command to check if the webpage with contents `simple vhost index` displays correctly.
