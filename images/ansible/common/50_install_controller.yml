@@ -1,4 +1,16 @@
-# Install controller for mesh labs
+##
+# Create controller objects for mesh lab
+##
+- name: Download and upgrade collections for install - host {{ inventory_hostname }}
+  community.general.ansible_galaxy_install:
+    name: "{{ item }}"
+    type: collection
+  become_user: "{{ ansible_user }}"
+  loop: "{{ controller_collections }}"
+  register: __collection_install
+  changed_when: '"is already installed, skipping" not in __collection_install.stdout'
+  when: (controller_collections is defined) and (controller_collections | length > 0)
+
 - name: Check if AAP bundle file exists
   ansible.builtin.stat:
     path: "/tmp/aap.tar.gz"
