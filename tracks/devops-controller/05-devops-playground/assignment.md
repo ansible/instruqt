@@ -1,6 +1,6 @@
 ---
 slug: devops-playground
-id: 0lw2coaydkzw
+id: u7mqil4vqcpn
 type: challenge
 title: Playground
 teaser: Use the remaining time to try it out yourself! This challenge has no checks
@@ -30,29 +30,29 @@ notes:
 tabs:
 - title: Controller
   type: service
-  hostname: controller
+  hostname: devops-controller
   port: 443
 - title: VS Code
   type: service
-  hostname: controller
-  path: /editor/?folder=/home/rhel/acme_corp
+  hostname: devops-controller
+  path: /editor/?folder=/home/student/acme_corp
   port: 443
 - title: Gitea
   type: service
-  hostname: gitea
+  hostname: devops-controller
   path: /student/acme_corp
-  port: 3000
+  port: 8443
 - title: Jenkins
   type: service
-  hostname: jenkins
+  hostname: devops-controller
   path: /job/ACMECorp/
-  port: 8080
+  port: 6443
 - title: Let's Quiz!
   type: service
-  hostname: controller
+  hostname: devops-controller
   port: 8000
 difficulty: intermediate
-timelimit: 1500
+timelimit: 1440
 ---
 🔐 Login credentials
 ===
@@ -105,7 +105,6 @@ If you have encountered an issue or have noticed something not quite right, plea
     display: flex;
   }
   .lightbox img {
-    /* max-height: 100% */
     max-width: 60%;
     max-height: 60%;
   }

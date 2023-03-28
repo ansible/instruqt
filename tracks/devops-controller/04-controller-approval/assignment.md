@@ -1,6 +1,6 @@
 ---
 slug: controller-approval
-id: xwdgcvhu6tgk
+id: bzw9txnxhegk
 type: challenge
 title: Approve the application deployment in controller
 teaser: Finally, we'll approve the controller workflow to build a new release, configure
@@ -30,21 +30,21 @@ notes:
 tabs:
 - title: Controller
   type: service
-  hostname: controller
+  hostname: devops-controller
   port: 443
 - title: Gitea
   type: service
-  hostname: gitea
+  hostname: devops-controller
   path: /student/acme_corp
-  port: 3000
+  port: 8443
 - title: Jenkins
   type: service
-  hostname: jenkins
+  hostname: devops-controller
   path: /job/ACMECorp/
-  port: 8080
+  port: 6443
 - title: Let's Quiz!
   type: service
-  hostname: controller
+  hostname: devops-controller
   port: 8000
 difficulty: intermediate
 timelimit: 600
@@ -63,15 +63,15 @@ All the logins use the same credentials.
 
 Our last challenge initiated the Jenkins pipeline by editing the **home.html** page. In this challenge, we’ll use automation controller to approve and deploy the _Let’s Quiz!_ application.
 
+ACME Corp operations created a [controller workflow](https://docs.ansible.com/automation-controller/4.2.0/html/userguide/workflows.html) called `DevOps Workflow`. This workflow combines configuring a web server, creating an application release in the ACMECorp repository, and deploying the application to production into a single process.
+
 >### **❗️ Note**
 > The checks in this challenge might take a few seconds longer due to the  possible variation in the Jenkins pipeline completion time.
 
 ☑️ Task 1 - Exploring the DevOps Workflow in controller
 ===
 
-ACME Corp operations created a [controller workflow](https://docs.ansible.com/automation-controller/4.2.0/html/userguide/workflows.html) called `DevOps Workflow`. This workflow combines configuring a web server, creating an application release in the ACMECorp repository, and deploying the application to production into a single process.
-
-**Let’s explore the DevOps Workflow layout using the _visualizer_.**
+**Explore the DevOps Workflow layout using the _visualizer_.**
 
 * The _Controller_ tab should be open by default.
 * Please log in using the provided credentials if required.
@@ -85,7 +85,6 @@ ACME Corp operations created a [controller workflow](https://docs.ansible.com/au
 <a href="#" class="lightbox" id="controller_jt_list">
   <img alt="Controller" src="../assets/img/controller_jt_list.png" />
 </a>
-
 
 * Click on the `visualizer` button on the right hand side of the `DevOps Workflow` job template.
 
@@ -109,7 +108,7 @@ The `DevOps Workflow` job template unifies multiple tasks into a logical, consis
   <img alt="Controller" src="../assets/img/controller_devops_visualizer_workflow.png" />
 </a>
 
-**Exploring the `DevOps Workflow` job template nodes.**
+**Explore the `DevOps Workflow` job template nodes.**
 
 * **Deploy to Prod?** - This controller [approval node](https://docs.ansible.com/automation-controller/latest/html/userguide/workflow_templates.html#approval-nodes) enables decision-makers to authorize deploying the application into production.
 * **Create App Release** - This step, typically performed by developers, creates a new _Let’s Quiz!_ release in _Gitea_ using the `tag_name` variable generated in the _ACMECorp_ pipeline.
@@ -124,7 +123,7 @@ ACME Corp operations added a controller [approval node](https://docs.ansible.com
 
 Currently, the new _Let’s Quiz!_ application is not deployed.
 
-**Approving the _Let’s Quiz!_ application production deployment.**
+**Approve the _Let’s Quiz!_ application production deployment.**
 
 * If the *Controller* tab is not open, click on the *Controller* tab on the top of the browser window.
 * Please log in using the provided credentials if required.
@@ -141,8 +140,7 @@ Currently, the new _Let’s Quiz!_ application is not deployed.
 
 The _Workflow Approval_ interface is where authorized users can approve or deny an automation task.
 
-* Click on the _checkbox_ on the left-hand side next to `Deploy to Prod?`.
-* Click on the **Approve** button located at the top of thew *Workflow Approvals* UI.
+* Click on the **Thumbs-Up** icon located at the right of the *Deploy to Prod?* row.
 
 <!-- ![Approval workflow](../assets/img/controller_approve_workflow.png) -->
 <a href="#controller_approve_workflow">
@@ -231,7 +229,7 @@ The `Output` interface displays the execution output for the `Create App Release
 
 The `Create App Release` job template created a new release in the `acme_corp` _Gitea_ repository.
 
-**Let’s have a look at the latest release.**
+**View the latest app release.**
 
 * Click on the _Gitea_ tab located at the top of the browser window.
 * Log into _Gitea_ using the provided credentials if required.
@@ -254,7 +252,7 @@ ACME Corp operations used the associated `TAR.GZ` file to deploy the _Let’s Qu
 ☑️ Task 5 - Review the ACMECorp pipeline
 ===
 
-**Let's review the ACMECorp pipeline status.**
+**Review the ACMECorp pipeline status.**
 * Click on the _Jenkins_ tab located at the top of the browser window.
 * Log into _Jenkins_ using the provided credentials if required.
 
@@ -275,7 +273,7 @@ The *ACMECorp pipeline* shows a _green_ status indicating it was completed succe
 
 Last but not least, the _Let’s Quiz!_ application production deployment should be successful!
 
-**Let’s review the home page and look for our changes.**
+**Review the home page and look for our changes.**
 * Click on the Let’s Quiz! tab located at the top of the browser window.
 * Note that the home page has the updated text we added in the previous challenge.
 

@@ -1,0 +1,21 @@
+#!/bin/bash
+set -euxo pipefail
+
+until [ -f /opt/instruqt/bootstrap/host-bootstrap-completed ]; do
+    echo "Waiting for instruqt bootstrap to complete"
+    sleep 1
+done
+
+# Setup Instruqt user SSH keys
+for user in rhel student
+do 
+    cp -a /root/.ssh/* /home/"${user}"/.ssh/
+    chown -R "${user}":"${user}" /home/"${user}"/.ssh
+done
+
+# Update containers
+/bin/podman auto-update
+
+# Testing Get instruqt lab content
+# /usr/bin/aws s3 sync --no-sign-request s3://tmm-instruqt-content.demoredhat.com.private/devops-controller-dev /opt/setup-scripts/devops-controller
+# ansible-playbook /opt/setup-scripts/devops-controller/setup-devops-controller.yml -i /opt/setup-scripts/devops-controller/inventory.ini --tags configure-repo

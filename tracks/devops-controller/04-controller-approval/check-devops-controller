@@ -1,0 +1,41 @@
+#!/usr/bin/env python3
+
+import subprocess
+import yaml
+from shlex import quote
+import os
+
+os.environ["ANSIBLE_CONFIG"] = "/opt/setup-scripts/devops-controller/ansible.cfg"
+
+# Load extra_vars.yml
+extra_vars_file = open("/opt/setup-scripts/devops-controller/track_vars.yml")
+parsed_extra_vars_file = yaml.load(extra_vars_file, yaml.loader.FullLoader)
+
+# Check for any approvals in pending state
+workflow_approvals = subprocess.run(["ansible-playbook", 
+                                     "/opt/setup-scripts/devops-controller/setup-devops-controller.yml",
+                                     "-e", "lab_jt_name="+quote( "DevOps Workflow" ),
+                                     "--tags", "controller-approval-check-approval"])
+
+if workflow_approvals.returncode > 0:
+    print ( "FAIL: The DevOps Workflow job template has not been approved yet. Please approve the 'Deploy to Prod?' approval. If you need to restart the pipeline, please run the Restart DevOps Workflow job template in controller.")
+    exit(1)
+
+# Check if the DevOps Workflow has successful status
+workflow_successful = subprocess.run(["ansible-playbook", 
+                                      "/opt/setup-scripts/devops-controller/setup-devops-controller.yml",
+                                      "-e", "lab_jt_name="+quote( "DevOps Workflow" ),
+                                      "--tags", "controller-approval-check-workflow-jt"])
+
+if workflow_successful.returncode > 0:
+    print ( "FAIL: The DevOps Workflow job template did not execute successfully. Please ensure you've approved the workflow.")
+    exit(1)
+
+# Check Let's Quiz home page is running and contain correct string
+home_page_status = subprocess.run(["ansible-playbook", 
+                                   "/opt/setup-scripts/devops-controller/setup-devops-controller.yml",
+                                   "--tags", "controller-approval-check-home-page"])
+
+if home_page_status.returncode > 0:
+    print ( "FAIL: The Let's Quiz! home page is not available or doesn't have the correct content. Please ensure you've approved the DevOps Workflow and check again.")
+    exit(1)
