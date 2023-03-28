@@ -751,8 +751,8 @@
         validate_certs: false
       register: __jt_devops_jobs_running
       until: __jt_devops_jobs_running is search('running')
-      delay: 3
-      retries: 8
+      delay: 1
+      retries: 35
       tags:
         - update-app-check-workflow-jt
 

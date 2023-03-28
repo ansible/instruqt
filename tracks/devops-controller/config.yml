@@ -12,7 +12,7 @@ containers:
     REPO_PASSWORD: learn_ansible
   memory: 2048
 - name: gitea
-  image: gitea/gitea:1.16.8
+  image: docker.io/gitea/gitea:1.16.8
   ports:
   - 3000
   environment:
@@ -35,7 +35,7 @@ containers:
     GITEA__webhook__ALLOWED_HOST_LIST: '*'
     USER_GID: "1000"
     USER_UID: "1000"
-  memory: 2048
+  memory: 1024
 virtualmachines:
 - name: controller
   image: red-hat-mbu/automation-controller

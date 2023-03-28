@@ -28,13 +28,15 @@ variable "track_slug" {
 }
 
 locals { 
-    extra_args = var.ansible_vars_file != null ? ["-e", "@images/ansible/extra-vars.yml", "-e", var.ansible_vars_file, "-e", "track_slug=${var.track_slug}"] : ["-e", "@images/ansible/extra-vars.yml",  "-e", "track_slug=${var.track_slug}"]
+    extra_args = var.ansible_vars_file != null ? ["-e", "@images/ansible/extra-vars.yml", "-e", var.ansible_vars_file,
+                                                "-e", "track_slug=${var.track_slug}"] : ["-e", "@images/ansible/extra-vars.yml",
+                                                "-e", "track_slug=${var.track_slug}"]
     slug_image_name = var.image_name != null ? var.image_name : "${var.track_slug}-node"
 }
 
 source "googlecompute" "mesh-node" {
     project_id          = var.project_id
-    source_image_family = "rhel-8"
+    source_image_family = "rhel-9"
     ssh_username        = "rhel"
     wait_to_add_ssh_keys = "60s"
     zone                = var.zone
@@ -48,7 +50,7 @@ build {
       command = "ansible-playbook"
       playbook_file = "${path.root}/../ansible/${var.track_slug}_node-setup.yml"
       user = "rhel"
-      use_proxy = false
       extra_arguments = local.extra_args
+      use_proxy = false
     }
 }

@@ -1,0 +1,14 @@
+#!/bin/bash
+
+agent variable set SANDBOX $INSTRUQT_PARTICIPANT_ID
+
+dnf -y install python3-pip git
+pip3 install ansible-core aiohttp
+ansible-galaxy collection install ansible.eda
+ansible-playbook -i localhost, -c local ansible.eda.install_rulebook_cli
+
+git clone --no-checkout https://github.com/ansible/instruqt
+cd instruqt
+git sparse-checkout init --cone
+git sparse-chechout set tracks/dynatrace-perform-demos
+git checkout

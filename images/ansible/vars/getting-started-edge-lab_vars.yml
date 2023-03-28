@@ -10,28 +10,62 @@ gcp_project: "{{ lookup('ansible.builtin.env', 'GCP_PROJECT', default='red-hat-m
 gcp_service_account_file: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT_FILE', default='') }}"
 # Example: 73252323203-compute@developer.gserviceaccount.com
 gcp_service_account: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT', default='') }}"
+
 gcp_instances:
-  - instance_name: dublin-edge-lab                # GCE instance name. The Instruqt sandbox VM name must match for DNS to work
-    instance_image: "{{ track_slug }}-node"       # Instruqt image name
-    instance_labels:
+  - name: dublin-edge-lab                # GCE instance name. The Instruqt sandbox VM name must match for DNS to work      # Instruqt image name
+    labels:
       role: "{{ track_slug }}"
       mesh-type: execution                        # Mesh node type. Used in {{ track_slug }}_inv.j2
       location: dublin                            # Mesh region. Used in {{ track_slug }}_inv.j2
-    instance_machine_type: e2-standard-2          # GCE instance type
-  - instance_name: jhb-edge-lab
-    instance_image: "{{ track_slug }}-node"
-    instance_labels:
+    machine_type: e2-standard-2
+    network_interfaces:
+      - access_configs:
+        - name: External NAT # yamllint disable-line rule:indentation
+          type: ONE_TO_ONE_NAT
+    disks:
+      - auto_delete: true
+        boot: true
+        device_name: jhb-exec
+        initialize_params:
+          source_image: "projects/{{ gcp_project }}/global/images/{{ track_slug }}-node"
+          disk_size_gb: 20
+          disk_type: pd-balanced
+  - name: jhb-edge-lab
+    labels:
       role: "{{ track_slug }}"
       mesh-type: execution
       location: jhb
-    instance_machine_type: e2-standard-2
-  - instance_name: controller-edge-lab
-    instance_image: automation-controller
-    instance_labels:
+    machine_type: e2-standard-2
+    network_interfaces:
+      - access_configs:
+        - name: External NAT # yamllint disable-line rule:indentation
+          type: ONE_TO_ONE_NAT
+    disks:
+      - auto_delete: true
+        boot: true
+        device_name: jhb-exec
+        initialize_params:
+          source_image: "projects/{{ gcp_project }}/global/images/{{ track_slug }}-node"
+          disk_size_gb: 20
+          disk_type: pd-balanced
+  - name: controller-edge-lab
+    labels:
       role: "{{ track_slug }}"
       mesh-type: controller
       location: raleigh
-    instance_machine_type: n2-standard-4
+    machine_type: e2-standard-4
+    network_interfaces:
+      - access_configs:
+        - name: External NAT # yamllint disable-line rule:indentation
+          type: ONE_TO_ONE_NAT
+    disks:
+      - auto_delete: true
+        boot: true
+        device_name: jhb-exec
+        initialize_params:
+          source_image: "projects/{{ gcp_project }}/global/images/rhel9"
+          disk_size_gb: 20
+          disk_type: pd-balanced
 gcp_inventory_host_vars:
   ansible_user: "rhel"
   ansible_ssh_pass: "ansible123!"
@@ -49,8 +83,11 @@ redhat_username: "{{ lookup('ansible.builtin.env', 'REDHAT_USERNAME', default=''
 redhat_password: "{{ lookup('ansible.builtin.env', 'REDHAT_PASSWORD', default='') }}"
 registry_username: "{{ redhat_username }}"
 registry_password: "{{ redhat_password }}"
-# AAP 2.2.1 SHA
-provided_sha_value: 878c2c2705e5f50e734f27fc7c50b39ddf4b2ace2d40290477d19477b82f9904
+# VSCode
+servercodeserver_url: https://github.com/coder/code-server/releases/download/v4.9.1/code-server-4.9.1-amd64.rpm
+codeserver_rescue_url: https://github.com/coder/code-server/releases/download/v4.9.1/code-server-4.9.1-amd64.rpm
+# AAP RHEL 9 2.3 SHA
+provided_sha_value: e3cd033d6a6f5ddcdeb2f5b91b1382127d29b969fb224f260d0a4f1e495b20e6
 content_dir: setup-scripts/getting-started-edge-lab
 
 ## Vars specific to getting-started-edge-lab

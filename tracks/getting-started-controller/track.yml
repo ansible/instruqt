@@ -1,9 +1,7 @@
 slug: getting-started-controller
 id: euelqtmm2wvu
-type: track
-title: Getting started with Automation controller
-teaser: In this track, we'll explore the automation controller interface and do some
-  basic tasks.
+title: Get started with automation controller
+teaser: Explore the automation controller interface and complete some basic tasks.
 description: |-
   <img src="https://raw.githubusercontent.com/craig-br/instruqt-tracks/devel/assets/logos/Logo-Red_Hat-Ansible_Automation_Platform-A-Standard-RGB.png" alt="drawing" style=";width:400px"/>
   <br>
@@ -34,7 +32,9 @@ tags:
 owner: redhat
 developers:
 - cbrandt@redhat.com
-private: true
-published: true
 show_timer: true
-checksum: "11562233712588779350"
+lab_config:
+  overlay: false
+  width: 25
+  position: right
+checksum: "8172677526340725163"

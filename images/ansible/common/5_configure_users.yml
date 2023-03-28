@@ -11,7 +11,7 @@
   ansible.builtin.lineinfile:
     dest: /etc/ssh/sshd_config
     state: present
-    mode: 0400
+    mode: 0644
     regexp: '^PasswordAuthentication'
     line: >-
       PasswordAuthentication yes
@@ -20,6 +20,9 @@
   ansible.builtin.copy:
     content: "%rhel ALL=(ALL:ALL) NOPASSWD:ALL"
     dest: "/etc/sudoers.d/rhel_sudoers"
+    mode: 0644
+    owner: root
+    group: root
 
 - name: Create receptor group
   ansible.builtin.group:
@@ -39,8 +42,6 @@
     name: "{{ student_user }}"
     shell: /bin/bash
     password: "{{ student_password | password_hash('sha512', '98263y4krwf7400') }}"
-  tags:
-    - controller-install
 
 - name: Restart sshd
   ansible.builtin.systemd:

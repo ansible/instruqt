@@ -1,0 +1,3 @@
+/bin/su - devops -c "mkdir ~/ansible_collections"
+
+/bin/su - devops -c "ansible-galaxy collection init example_ns.example_collection --init-path ~/ansible_collections"

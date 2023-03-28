@@ -1,14 +1,14 @@
 version: "3"
 virtualmachines:
 - name: jhb-exec
-  image: instruqt-dev-356115/jhb-exec-image
+  image: red-hat-mbu/jhb-exec-image
   shell: /bin/su - rhel -s /bin/bash
-  machine_type: n1-standard-2
-- name: raleigh-controller
-  image: instruqt-dev-356115/raleigh-controller-image
-  shell: /bin/su - rhel -s /bin/bash
-  machine_type: n1-standard-4
+  machine_type: n2-standard-2
 - name: dublin-hop
-  image: instruqt-dev-356115/dublin-hop-image
+  image: red-hat-mbu/dublin-hop-image
   shell: /bin/su - rhel -s /bin/bash
-  machine_type: n1-standard-2
+  machine_type: n2-standard-2
+- name: raleigh-controller
+  image: red-hat-mbu/raleigh-controller-image
+  shell: /bin/su - rhel -s /bin/bash
+  machine_type: n2-standard-2

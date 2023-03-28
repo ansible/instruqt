@@ -1,6 +1,6 @@
 ---
 slug: overview
-id: prkjjelykzcb
+id: rwfmeugwe3ys
 type: challenge
 title: Automation mesh overview
 teaser: Explore automation mesh concepts
@@ -17,7 +17,7 @@ tabs:
   hostname: raleigh-controller
   port: 443
 difficulty: basic
-timelimit: 300
+timelimit: 600
 ---
 
 🔐 Login credentials
@@ -60,7 +60,7 @@ ACME Corp uses Ansible Automation Platform extensively to manage their IT ecosys
 >ℹ️ Automation mesh provides different worker node types you can use for [control plane](https://access.redhat.com/documentation/en-us/red_hat_ansible_automation_platform/2.1/html-single/red_hat_ansible_automation_platform_automation_mesh_guide/index#control_plane) and [execution plane](https://access.redhat.com/documentation/en-us/red_hat_ansible_automation_platform/2.1/html-single/red_hat_ansible_automation_platform_automation_mesh_guide/index#execution_plane) tasks.
 >* **Hybrid nodes** run control plane tasks, such as management jobs, and can execute automation.
 >* **Execution nodes** only execute automation ( i.e.. running playbooks ) and don’t run automation controller runtime functions, such as project updates.
->* Like jump hosts, **hop nodes** don’t run any execution or control plane tasks. They only route traffic to other execution nodes.
+>* **Hop nodes**, like jump hosts, don’t run any execution or control plane tasks. They only route traffic to other execution nodes.
 
 ##### ACME Corp’s mesh configuration and automation mesh worker node types.
 
@@ -199,22 +199,27 @@ If you have encountered an issue or have noticed something not quite right, plea
     max-width: 60%;
     max-height: 60%;
   }
+  html {
+    font-size: 14px;
+  }
   img {
     display: block;
     margin-left: auto;
     margin-right: auto;
-    width: 100%;
   }
   h1 {
     font-size: 18px;
   }
-    h2 {
+  h2 {
     font-size: 16px;
     font-weight: 600
   }
-    h3 {
+  h3 {
     font-size: 14px;
     font-weight: 600
+  }
+  p {
+    font-size: 14px;
   }
   p span {
     font-size: 14px;

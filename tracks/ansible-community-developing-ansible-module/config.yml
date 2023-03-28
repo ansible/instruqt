@@ -1,0 +1,6 @@
+version: "3"
+virtualmachines:
+- name: shell
+  image: red-hat-mbu/ansible-community
+  shell: /bin/su - devops -s /bin/bash
+  machine_type: n1-standard-1

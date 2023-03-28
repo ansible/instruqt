@@ -1,6 +1,6 @@
 ---
 slug: mesh-instance-groups
-id: 1rqwfn5u2dx1
+id: 0wktgbkikgft
 type: challenge
 title: Automation mesh and instance groups
 teaser: Create new instance groups and allocate mesh worker nodes for local and remote
@@ -113,7 +113,7 @@ ACME Corp must associate the correct instances to the Raleigh and Johannesburg l
   <img alt="ACME mesh" src="../assets/img/mesh_jhb_ig_create.png" />
 </a>
 
-##### ✏️ Next, we'll Associate the `jhb-exec` instance with the `Johannesburg data center` instance group.
+### ✏️ Next, we'll Associate the `jhb-exec` instance with the `Johannesburg data center` instance group.
 
 * Click on **Instances** on the top menu.
 * Click on **Associate**.
@@ -146,13 +146,13 @@ Automation mesh performs health checks on mesh nodes to determine the optimal ro
   <img alt="jhb_exec_topology_click" src="../assets/img/jhb_exec_topology_click.png" />
 </a>
 
-* Click on **Health Check**.
+* Click on **Run health check** and then *Reload* in the dialog box.
 
 <a href="#jhb_exec_health_check">
   <img alt="jhb_exec_health_check" src="../assets/img/jhb_exec_health_check.png" />
 </a>
 
-<a href="#" class="lightbox" id="jhb_exec_topology_click">
+<a href="#" class="lightbox" id="jhb_exec_health_check">
   <img alt="jhb_exec_health_check" src="../assets/img/jhb_exec_health_check.png" />
 </a>
 
@@ -191,22 +191,28 @@ If you have encountered an issue or have noticed something not quite right, plea
     max-width: 60%;
     max-height: 60%;
   }
+  html {
+    font-size: 14px;
+  }
   img {
     display: block;
     margin-left: auto;
     margin-right: auto;
-    width: 100%;
+
   }
   h1 {
     font-size: 18px;
   }
-    h2 {
+  h2 {
     font-size: 16px;
     font-weight: 600
   }
-    h3 {
+  h3 {
     font-size: 14px;
     font-weight: 600
+  }
+  p {
+    font-size: 14px;
   }
   p span {
     font-size: 14px;

@@ -1,0 +1,25 @@
+slug: ansible-community-creating-your-own-collection
+id: vhmkq5wul4ps
+title: '1. Ansible Community: Creating your own collection'
+description: |
+  ## Overview
+
+  This exercise will help you understand how to create your own content collection. This exercise will cover
+
+  * Installing `ansible-core`
+  * Creating Collection skeleton using `ansible-galaxy` command
+  * Creating an example Collection
+  * Using Collection in a Playbook
+
+  If you get stuck, or something doesn't work, you can reach out to us by posting your comments on the GitHub discussion [here](https://github.com/ansible/instruqt/discussions/54).
+icon: https://www.ansible.com/hubfs/2016_Images/Assets/Ansible-Mark-Large-RGB-Pool.png?hsLang=en-us
+level: beginner
+tags:
+- ansible-community
+- ansible
+- community
+owner: redhat
+developers:
+- ompragash.viswanathan@gmail.com
+- lgallego@redhat.com
+checksum: "17840416537769127884"

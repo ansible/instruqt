@@ -1,0 +1,4 @@
+#!/bin/bash
+
+rm -rf ~/collections/
+unset ANSIBLE_COLLECTIONS_PATH

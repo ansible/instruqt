@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 
-import subprocess
-import os
-os.environ["ANSIBLE_STDOUT_CALLBACK"] = "community.general.yaml"
+import subprocess, os
 
-setup_scripts_path="/tmp/setup-scripts/getting-started-mesh/"
+setup_scripts_path="/opt/setup-scripts/getting-started-mesh/"
+os.environ["ANSIBLE_CONFIG"] = setup_scripts_path+"ansible.cfg"
 
 # Solve multi-site
-mesh_multi_site_solve = subprocess.run(["ansible-playbook", setup_scripts_path+"getting-started-mesh-setup.yml", "-i", setup_scripts_path+"inventory.ini",  "-e", "@"+setup_scripts_path+"extra_vars.yml", "--tags", "auth-token,multi-site-solve"])
+mesh_multi_site_solve = subprocess.run(["ansible-playbook", setup_scripts_path+"getting-started-mesh-setup.yml",
+                                        "--tags", "multi-site-solve"])

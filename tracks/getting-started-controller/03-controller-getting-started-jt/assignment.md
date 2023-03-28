@@ -9,7 +9,7 @@ notes:
   contents: "# Running automation with job templates\n<br>\n<p align=\"center\">\n
     \ <img width=\"700px\" src=\"https://raw.githubusercontent.com/craig-br/instruqt-tracks/devel/assets/controller/controller_jt.png\">\n</p>\n<br>\n\n[**Job
     templates**](https://docs.ansible.com/automation-controller/latest/html/userguide/job_templates.html)
-    are a definition and set of parameters for running an Ansible Playbook.\n\n In
+    are a definition and set of parameters for running an Ansible Playbook.\n\nIn
     controller, job templates are a visual representation of the `ansible-playbook`
     command and all flags you can utilize when executing from the command line.\n\n<style
     type=\"text/css\" rel=\"stylesheet\">\nh1 {\n\ttext-align: center\n}\n</style>"
@@ -82,8 +82,5 @@ All tasks are done in the controller dashboard
 <style type="text/css" rel="stylesheet">
 h1 {
 	text-align: center
-	}
-	img {
-		width: 100%
 	}
 </style>

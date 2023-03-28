@@ -1,0 +1,24 @@
+slug: community-fixing-a-bug
+id: fhcj3oosxgjf
+title: '5. Ansible Community: Fixing a bug'
+teaser: This exercise is about getting started with Ansible Collection development.
+description: |-
+  ## Overview
+
+  This exercise is about getting started with Testing Ansible Collection. This exercise will cover
+
+  * How to check out the collection
+  * Running tests locally
+  * Understanding test failures
+  * Fixing bugs
+  * Creating a changelog
+
+  If you get stuck, or something doesn't work, you can reach out to us by posting your comments on the GitHub discussion [here](https://github.com/ansible/instruqt/discussions/54).
+icon: https://www.ansible.com/hubfs/2016_Images/Assets/Ansible-Mark-Large-RGB-Pool.png?hsLang=en-us
+tags:
+- ""
+owner: redhat
+developers:
+- jobarker@redhat.com
+- ompragash.viswanathan@gmail.com
+checksum: "7761069551679545156"

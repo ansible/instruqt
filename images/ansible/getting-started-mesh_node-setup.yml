@@ -2,7 +2,7 @@
 - name: Configures mesh worker nodes - {{ track_slug }}
   hosts: all
   become: true
-  gather_facts: false
+  gather_facts: true
 
   pre_tasks:
     - name: Include variable tasks
@@ -25,6 +25,7 @@
             env: GCP_PROJECT
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/60_check_vars.yml"
+      no_log: true
 
   tasks:
     - name: Include common user tasks
@@ -39,11 +40,13 @@
           - podman
           - crun
           - ansible-runner
-          - libcgroup-tools
           - subscription-manager-rhsm-certificates
           - rsync
           - git
-          - ansible
+          - ansible-core
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/30_mesh_node.yml"
 
+    - name: Include common image cleanup tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/10_image_cleanup.yml"

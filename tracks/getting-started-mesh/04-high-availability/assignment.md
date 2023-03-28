@@ -1,6 +1,6 @@
 ---
 slug: high-availability
-id: 25lcerewvn3e
+id: mrys4whkrab3
 type: challenge
 title: Resilient automation with mesh
 teaser: Automation mesh offers flexible design options and native resilience across
@@ -84,11 +84,13 @@ Automation mesh performs periodic health checks on worker nodes. These health ch
   <img alt="jhb_exec_topology_unhealthy" src="../assets/img/jhb_exec_topology_unhealthy.png" />
 </a>
 
-Note that `jhb-exec` is showing an _Error_ status.
+Note that `jhb-exec` is showing an _Unavailable_ status.
 
 * Click on the `jhb-exec` node in the topology.
-* Under *Details*  on the top right-hand corner of the window, click on the `jhb-exec` link. This opens a new window
-* Click on the **Health Check** button to confirm the _Error_ status. This takes a few seconds to complete.
+* Click on the *Reload* link to update the UI.
+* Under *Details*  on the top right-hand corner of the window, click on the `jhb-exec` link. This opens a new window.
+* Click on the **Run Health Check** button to confirm the _Unavailable_ status. This takes a few seconds to complete.
+
 
 <a href="#jhb_exec_unhealthy">
   <img alt="jhb_exec_unhealthy" src="../assets/img/jhb_exec_unhealthy.png" />
@@ -105,7 +107,7 @@ Note the message in *Errors* box. The `jhb-exec` node is unreachable from automa
 
 The `Mesh route info` job template displays the path mesh uses to run automation jobs in Johannesburg.
 
-##### ✏️ Let's confirm the `jhb-exec` instance is unreachable using the `Mesh route info` job template.
+##### ✏️ Confirm the `jhb-exec` instance is unreachable using the `Mesh route info` job template.
 
 * On the side navigation under the **Resources** section, click on **Templates**.
 * Click on the <img src="https://github.com/IPvSean/pictures_for_github/blob/master/launch_job.png?raw=true" style="width:4%; display:inline-block; vertical-align: middle;" /> icon next to the `Mesh route info` job template to launch it.
@@ -149,16 +151,7 @@ ACME Corp must enable the `dublin-hop` hop node to route automation traffic betw
 * On the side navigation under the **Resources** section, click on **Templates**.
 * Click on the <img src="https://github.com/IPvSean/pictures_for_github/blob/master/launch_job.png?raw=true" style="width:4%; display:inline-block; vertical-align: middle;" /> icon next to the `Setup Dublin hop node` job template to launch it.
 
-<a href="#setup_dublin_inv">
-  <img alt="setup_dublin_inv" src="../assets/img/setup_dublin_inv.png" />
-</a>
-
-<a href="#" class="lightbox" id="setup_dublin_inv">
-  <img alt="setup_dublin_inv" src="../assets/img/setup_dublin_inv.png" />
-</a>
-
-* A new window will prompt you to choose an inventory. Keep the default selection of `Dublin DC`.
-* Click **Next** and then click **Launch**.
+The job template displays the current status of `dublin-hop`. Note that automation mesh dynamically added `dublin-hop` to the mesh routing table.
 
 <a href="#setup_dublin_output">
   <img alt="setup_dublin_output" src="../assets/img/setup_dublin_output.png" />
@@ -168,12 +161,10 @@ ACME Corp must enable the `dublin-hop` hop node to route automation traffic betw
   <img alt="setup_dublin_output" src="../assets/img/setup_dublin_output.png" />
 </a>
 
-The job template displays the current status of `dublin-hop`. Note that automation mesh dynamically added `dublin-hop` to the routing table.
+>ℹ️ Automation mesh dynamically peered the Dublin hop, Johannesburg execution and the Raleigh hybrid nodes and updated the mesh routing table.
 
 ☑️ Task - Confirm Johannesburg is reachable
 ===
-
->ℹ️ Automation mesh dynamically peered the Dublin hop, Johannesburg execution and the Raleigh hybrid nodes and updated the mesh routing table.
 
 ##### ✏️ Let's confirm the new route to the Johannesburg data center.
 
@@ -206,7 +197,8 @@ Note that `dublin-hop` is used to reach `jhb-exec`.
 * On the side navigation under the **Administration** section, click on **Topology View**.
 * Click on the `jhb-exec` node in the topology.
 * Under the *Details* section at the top right-hand corner, click on the `jhb-exec` link.
-* Click on the **Health Check** button. This takes a few seconds to complete.
+* Click on the **Run health check** button.
+* Click on the *Reload* link to update the UI. This takes a few seconds to complete.
 
 <a href="#jhb_exec_healthy_check">
   <img alt="jhb_exec_healthy_check" src="../assets/img/jhb_exec_healthy_check.png" />
@@ -221,7 +213,7 @@ Note that `jhb-exec` is now showing a healthy status.
 ☑️ Task - Run automation in the Johannesburg remote office
 ===
 
-##### ✏️ Let's confirm we can run automation in Johannesburg using the `Debug info` job template.
+##### ✏️ Confirm we can run automation in Johannesburg using the `Debug info` job template.
 
 * On the side navigation under the **Resources** section, click on **Templates**.
 * Click on the <img src="https://github.com/IPvSean/pictures_for_github/blob/master/launch_job.png?raw=true" style="width:4%; display:inline-block; vertical-align: middle;" /> icon under the Actions column to launch the job template.
@@ -294,26 +286,30 @@ If you have encountered an issue or have noticed something not quite right, plea
     display: flex;
   }
   .lightbox img {
-    /* max-height: 100% */
     max-width: 60%;
     max-height: 60%;
+  }
+  html {
+    font-size: 14px;
   }
   img {
     display: block;
     margin-left: auto;
     margin-right: auto;
-    width: 100%;
   }
   h1 {
     font-size: 18px;
   }
-    h2 {
+  h2 {
     font-size: 16px;
     font-weight: 600
   }
-    h3 {
+  h3 {
     font-size: 14px;
     font-weight: 600
+  }
+  p {
+    font-size: 14px;
   }
   p span {
     font-size: 14px;

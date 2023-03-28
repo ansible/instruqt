@@ -1,0 +1,6 @@
+#!/bin/bash
+
+if [ ! -d /home/devops/collections/ansible_collections/community/clock ]; then
+    echo "Collection community.clock isn't created. To continue, create it using ansible-galaxy command."
+    exit 1
+fi

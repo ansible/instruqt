@@ -96,6 +96,7 @@ Edit the `roles/apache_vhost/tasks/main.yml` file:
 
 ```
 ---
+# tasks file for roles/apache_vhost
 - name: install httpd
   ansible.builtin.package:
     name: httpd
@@ -168,7 +169,7 @@ Create an `web.html` file in the "src" directory of the role, `files`:
 ```
 echo 'simple vhost index' > ~/ansible-files/roles/apache_vhost/files/web.html
 ```
-☑️ Task 7 - Create a web.html file
+☑️ Task 7 - Create a vhost template file
 ===
 
 Create the `vhost.conf.j2` template file in the role's templates subdirectory (`~/ansible-files/roles/apache_vhost/templates`).
@@ -221,7 +222,7 @@ Witin the *control* tab, run the following commands:
 ansible-navigator run test_apache_role.yml
 ```
 
-☑️ Task 9 - Verify the results
+☑️ Task 10 - Verify the results
 ===
 
 The Ansible playbook runs the role against the `node2` host. Verify that the role worked via a `curl` command to check if the webpage with contents `simple vhost index` displays correctly.
@@ -276,7 +277,6 @@ If you have encountered an issue or have noticed something not quite right, plea
     display: block;
     margin-left: auto;
     margin-right: auto;
-    width: 100%;
   }
   h1 {
     font-size: 18px;

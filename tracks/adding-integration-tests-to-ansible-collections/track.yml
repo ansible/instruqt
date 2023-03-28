@@ -1,0 +1,20 @@
+slug: adding-integration-tests-to-ansible-collections
+id: b8al21byeix5
+title: '4. Ansible Community: Adding integration tests to Ansible Collections'
+description: |-
+  After completing this scenario, users will be able to write integration tests for the modules inside a collection and test them localling using `ansible-test` tool.
+
+  ## What you'll do
+
+  - Write integration tests for modules in Ansible Collection
+  - Run integration tests using ansible-test
+
+  If you get stuck, or something doesn't work, you can reach out to us by posting your comments on the GitHub discussion [here](https://github.com/ansible/instruqt/discussions/54).
+icon: https://www.ansible.com/hubfs/2016_Images/Assets/Ansible-Mark-Large-RGB-Pool.png?hsLang=en-us
+level: beginner
+tags:
+- ""
+owner: redhat
+developers:
+- ompragash.viswanathan@gmail.com
+checksum: "6675342997074368003"

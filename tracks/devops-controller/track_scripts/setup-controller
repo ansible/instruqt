@@ -14,6 +14,7 @@ chown -R rhel:rhel /home/rhel/.ssh
 
 # Get instruqt lab content
 /usr/bin/svn export https://github.com/ansible/instruqt/branches/devel/images/ansible/setup-scripts/devops-controller /tmp/setup-scripts/devops-controller --force
+# /usr/bin/svn export https://github.com/ansible/instruqt/branches/devel/images/ansible/setup-scripts/devops-controller /tmp/setup-scripts/devops-controller --force
 
 # Download setup playbook
 echo "Starting controller config"

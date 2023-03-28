@@ -1,0 +1,15 @@
+version: "3"
+virtualmachines:
+- name: rhel-1
+  image: red-hat-mbu/rhel9
+  shell: /bin/bash
+  machine_type: n1-standard-1
+- name: rulebook-host
+  image: red-hat-mbu/rhel9
+  machine_type: n1-standard-1
+- name: rhel-2
+  image: red-hat-mbu/rhel9
+  machine_type: n1-standard-1
+secrets:
+- name: dynatrace_host
+- name: dynatrace_token

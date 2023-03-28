@@ -1,4 +1,18 @@
 #!/bin/bash
-if [ -f /home/rhel/ansible-files/hosts ]; then
-    echo "Success: Inventory file created"
+cd /home/rhel/ansible-files
+
+# Define the hosts file content
+expected_content=$'[web]\nnode1\nnode2'
+
+# Check if the 'hosts' file exists
+if [ -f hosts ]; then
+    # Read the content of the 'hosts' file
+    file_content=$(cat hosts)
+
+    # Compare the content of the 'hosts' file with the expected content
+    if [ "$file_content" != "$expected_content" ]; then
+        fail-message "The 'hosts' file does not have the proper content. Please try again."
+    fi
+else
+    fail-message "The 'hosts' file does not exist."
 fi

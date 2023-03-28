@@ -52,7 +52,7 @@ tabs:
   hostname: controller
   port: 8000
 difficulty: intermediate
-timelimit: 600
+timelimit: 1500
 ---
 🔐 Login credentials
 ===

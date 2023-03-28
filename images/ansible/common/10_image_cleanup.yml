@@ -3,14 +3,14 @@
   ansible.builtin.shell: >
     set -o pipefail && cut -d: -f1,3 /etc/passwd | egrep ':[0-9]{4}$' | cut -d: -f1
   changed_when: false
-  register: _standard_users
+  register: __standard_users
 
 - name: Remove all normal users except rhel,awx,pulp and student
   ansible.builtin.user:
     name: "{{ item }}"
     state: absent
     remove: true
-  loop: "{{ _standard_users.stdout_lines }}"
+  loop: "{{ __standard_users.stdout_lines }}"
   when:
     - item != ansible_user
     - item != "awx"
@@ -35,15 +35,17 @@
     line: apply_updates = no
 
 - name: Enable selected RHUI repos
-  ansible.builtin.copy:
-    src: ../files/rh-cloud.repo
+  ansible.builtin.template:
+    src: rh-cloud.repo.j2
     dest: /etc/yum.repos.d/rh-cloud.repo
     owner: root
     group: root
-    mode: '644'
+    mode: 0644
 
 - name: Update dnf cache
   ansible.builtin.command: dnf -y makecache
+  register: __makecache_result
+  changed_when: "'Metadata cache created' in __makecache_result.stdout"
 
 - name: Remove AAP repo
   ansible.builtin.yum_repository:
@@ -54,7 +56,23 @@
   ansible.builtin.file:
     path: "{{ aap_dir }}"
     state: absent
-  ignore_errors: true
+  when: aap_dir is defined
+
+# https://github.com/containers/podman/issues/9137
+- name: Find Ansible tmp files
+  ansible.builtin.find:
+    paths: /tmp/
+    # recurse: no
+    file_type: directory
+    patterns: 'ansible*'
+  register: __ansible_temp_dirs
+
+- name: Remove Ansible tmp files
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  when: (__ansible_temp_dirs.files is defined)
+  loop: "{{__ansible_temp_dirs.files }}"
 
 # https://github.com/containers/podman/issues/9137
 - name: Find Ansible tmp files
@@ -76,6 +94,3 @@
   ansible.builtin.file:
     path: "/home/{{ ansible_user }}/.bash_history"
     state: absent
-
-- name: Clear bash history
-  ansible.builtin.shell: history -c; history -w

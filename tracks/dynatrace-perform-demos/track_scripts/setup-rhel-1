@@ -1,0 +1,26 @@
+#!/bin/bash
+# dnf -y install wget tmux
+dnf -y install python3-pip
+
+##### Below collection would be nice but doesn't seem to work?
+# pip install ansible
+# ansible-galaxy collection install dynatrace.oneagent_deploy
+
+# tee /tmp/oneagent-deploy.yml << EOF
+# ---
+# - name: install oneagent
+#   hosts: localhost
+#   connection: local
+#   tasks:
+
+#   - name: run oneagent role
+#     include_role:
+#       name: dynatrace.oneagent_deploy.oneagent
+#     vars:
+#       dynatrace_paas_token: ${dynatrace_token}
+#       dynatrace_environment_url: ${dynatrace_host}
+
+# EOF
+
+wget  -O Dynatrace-OneAgent-Linux-1.257.250.sh "${dynatrace_host}/api/v1/deployment/installer/agent/unix/default/latest?arch=x86&flavor=default" --header="Authorization: Api-Token ${dynatrace_token}"
+/bin/sh Dynatrace-OneAgent-Linux-1.257.250.sh --set-infra-only=false --set-app-log-content-access=true --set-host-tag=$INSTRUQT_PARTICIPANT_ID

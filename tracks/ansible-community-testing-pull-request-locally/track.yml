@@ -1,0 +1,20 @@
+slug: ansible-community-testing-pull-request-locally
+id: tlaqejdacsnf
+title: '2. Ansible Community: Testing A Pull Request Locally'
+description: |-
+  In this course, we’ll see how to check out a pull request locally to test new features and bug fixes that are submitted to the `Ansible Collection's` GitHub repositories.
+
+  - Install Ansible package
+  - Check out the source
+  - Find a pull request and check it out on a branch
+  - Test the changes from pull request locally
+
+  If you get stuck, or something doesn't work, you can reach out to us by posting your comments on the GitHub discussion [here](https://github.com/ansible/instruqt/discussions/54).
+icon: https://www.ansible.com/hubfs/2016_Images/Assets/Ansible-Mark-Large-RGB-Pool.png?hsLang=en-us
+level: beginner
+tags:
+- ""
+owner: redhat
+developers:
+- ompragash.viswanathan@gmail.com
+checksum: "16137569214884117684"

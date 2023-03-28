@@ -44,7 +44,7 @@ In the *editor* tab, create the directory `templates` (right click and select 'N
 ☑️ Task 2 - Create the motd-facts.j2 jinja file
 ===
 
-Within `ansible-files/templates` direcotry, create the file `motd-facts.j2`:
+Within `ansible-files/templates` directory, create the file `motd-facts.j2`:
 
 ```
 Welcome to {{ ansible_hostname }}.
@@ -65,7 +65,8 @@ Create an Ansible playbook that uses the newly created template file. Within the
   hosts: node1
   become: true
   tasks:
-    - ansible.builtin.template:
+    - name: Motd Template
+      ansible.builtin.template:
         src: motd-facts.j2
         dest: /etc/motd
         owner: root
@@ -138,7 +139,6 @@ If you have encountered an issue or have noticed something not quite right, plea
     display: block;
     margin-left: auto;
     margin-right: auto;
-    width: 100%;
   }
   h1 {
     font-size: 18px;

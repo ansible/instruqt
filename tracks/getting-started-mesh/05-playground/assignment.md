@@ -1,6 +1,6 @@
 ---
 slug: playground
-id: mgywzlmyzv0e
+id: uts1kv5yx6hy
 type: challenge
 title: Automation mesh playground
 teaser: Test your mesh skills in this challenge!
@@ -18,7 +18,7 @@ tabs:
   hostname: raleigh-controller
   port: 443
 difficulty: basic
-timelimit: 300
+timelimit: 600
 ---
 🔐 Login credentials
 ===
@@ -104,6 +104,10 @@ ACME Corp has the following pre-created in automation controller.
 
 If the `Debug info` job template executes successfully, you’ve completed your mission!
 
+>**❗️ Note**
+>
+>* The `Debug info` job template might take a few seconds to start while the `jhb-exec` node becomes available.
+
 **Congratulations on completing the lab!**
 
 👏 Close the lab
@@ -141,22 +145,27 @@ If you have encountered an issue or have noticed something not quite right, plea
     max-width: 60%;
     max-height: 60%;
   }
+  html {
+    font-size: 14px;
+  }
   img {
     display: block;
     margin-left: auto;
     margin-right: auto;
-    width: 100%;
   }
   h1 {
     font-size: 18px;
   }
-    h2 {
+  h2 {
     font-size: 16px;
     font-weight: 600
   }
-    h3 {
+  h3 {
     font-size: 14px;
     font-weight: 600
+  }
+  p {
+    font-size: 14px;
   }
   p span {
     font-size: 14px;

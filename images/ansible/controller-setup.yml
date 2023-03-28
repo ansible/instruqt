@@ -12,7 +12,7 @@
 
     - name: download aap
       vars:
-        provided_sha_value: 3483a27023f89fd3c4747dc505c6d3bc48cc89e6117b52efb3403dd8d30368be
+        provided_sha_value: ca2541e6e7f74306197c3fe8a009c7a9b228342d0469e6707c943c8435b01fa2
       include_role:
         name: ansible.workshops.aap_download
 
@@ -24,6 +24,16 @@
     admin_password: ansible123!
     aap_dir: "/home/{{ username }}/aap_install"
     username: "{{ ansible_user }}"
+    student_user: student
+    student_password: learn_ansible
+    # Registry to pull EE images from during installation
+    ee_registry_name: "registry.redhat.io"
+    # List of execution environments to download during controller installation:
+    ee_images:
+      - "{{ ee_registry_name }}/ansible-automation-platform-23/ee-29-rhel8:latest"
+      - "{{ ee_registry_name }}/ansible-automation-platform-23/ee-supported-rhel8:latest"
+      - "{{ ee_registry_name }}/ansible-automation-platform-23/ee-minimal-rhel8:latest"
+    ee_default_image: "{{ ee_registry_name }}/ansible-automation-platform-23/ee-supported-rhel8:latest"
 
   tasks:
     - name: install automation controller

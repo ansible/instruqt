@@ -1,10 +1,11 @@
 ---
 ##
-# Create custom controller objects for each lab
+# Create custom controller objects for labs
 # Tags:
 # demo-content - Remove Demo Org, project, inventory and job template
 # controller-config - Setup controller env for lab
 ##
+
 - name: Create controller_login fact and anchor
   ansible.builtin.set_fact:
     controller_login: &controller_login
@@ -14,24 +15,23 @@
       validate_certs: "{{ controller_validate_certs }}"
 
 - name: Download and upgrade controller collections - {{ inventory_hostname }}
-  community.general.ansible_galaxy_install:
-    name: "{{ item }}"
-    dest: /usr/share/ansible/collections
-    type: collection
-  become: true
+  ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
+  become_user: "{{ ansible_user }}"
   loop: "{{ controller_collections }}"
   register: __collection_install
   when: (controller_collections is defined) and (controller_collections | length > 0)
-  tags:
-    - controller-config
+
+- name: Install EPEL repo
+  ansible.builtin.dnf:
+    name: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+    state: present
+    disable_gpg_check: true
 
 - name: Install OS packages
   ansible.builtin.dnf:
     name: "{{ controller_os_packages }}"
     state: present
   when: (controller_os_packages is defined) and (controller_os_packages | length > 0)
-  tags:
-    - controller-config
 
 - name: Install Python packages - {{ ansible_user_id }}
   ansible.builtin.pip:
@@ -64,18 +64,22 @@
   ansible.builtin.template:
     src: ansible.cfg.j2
     dest: "/etc/ansible/ansible.cfg"
+    owner: root
     mode: 0644
-  tags:
-    - controller-config
 
-# TODO: Change download source to track_slug
-- name: Download setup scripts to controller /opt directory - {{ lab.s3_bucket_name }}
-  ansible.builtin.command:
-    cmd: "/usr/bin/aws s3 sync --no-sign-request s3://{{ lab.s3_bucket_name }}/{{ track_slug }} /opt/setup-scripts/{{ track_slug }}"
-  become: true
-  register: __s3_sync_output
-  changed_when: '"download:" in __s3_sync_output.stdout'
+- name: Copy setup scripts - {{ track_slug }}
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/setup-scripts/{{ track_slug }}"
+    dest: /opt/setup-scripts/
+    force: true
+    mode: 0644
+
+## Controller objects
+- name: Remove pre-created demo content
+  delegate_to: localhost
+  become: false
   tags:
+    - demo-content
     - controller-config
 
 ## Controller objects
@@ -86,60 +90,48 @@
     <<: *controller_login
   tags:
     - demo-content
+    - controller-config
 
-- name: Demo content - remove job template
-  awx.awx.job_template:
-    name: "Demo Job Template"
-    state: absent
-    <<: *controller_login
-  tags:
-    - demo-content
+    - name: Demo content - remove job template
+      awx.awx.job_template:
+        name: "Demo Job Template"
+        state: absent
+        <<: *controller_login
 
-- name: Demo content - remove project
-  awx.awx.project:
-    name: "Demo Project"
-    state: absent
-    organization: "Default"
-    <<: *controller_login
-  tags:
-    - demo-content
+    - name: Demo content - remove project
+      awx.awx.project:
+        name: "Demo Project"
+        state: absent
+        organization: "Default"
+        <<: *controller_login
 
-- name: Demo content - remove inventory
-  awx.awx.inventory:
-    name: "Demo Inventory"
-    state: absent
-    organization: "Default"
-    <<: *controller_login
-  tags:
-    - demo-content
+    - name: Demo content - remove inventory
+      awx.awx.inventory:
+        name: "Demo Inventory"
+        state: absent
+        organization: "Default"
+        <<: *controller_login
 
-- name: Demo content - remove credential
-  awx.awx.credential:
-    name: "Demo Credential"
-    credential_type: "Machine"
-    state: absent
-    <<: *controller_login
-  tags:
-    - demo-content
+    - name: Demo content - remove credential
+      awx.awx.credential:
+        name: "Demo Credential"
+        credential_type: "Machine"
+        state: absent
+        <<: *controller_login
 
-- name: Demo content - remove organization
-  awx.awx.organization:
-    name: "Default"
-    state: absent
-    <<: *controller_login
-  tags:
-    - demo-content
+    - name: Demo content - remove organization
+      awx.awx.organization:
+        name: "Default"
+        state: absent
+        <<: *controller_login
 
 - name: Download custom execution environments
   when: (controller_execution_environments is defined) and (controller_execution_environments | length > 0)
   tags:
     - controller-config
   block:
-    - name: Install containers.podman collection
-      community.general.ansible_galaxy_install:
-        name: containers.podman
-        dest: /usr/share/ansible/collections
-        type: collection
+    - name: Download and upgrade  containers.podman collection - {{ inventory_hostname }}
+      ansible.builtin.command: "ansible-galaxy collection install containers.podman --upgrade"
       register: __collection_install
 
     - name: Log into registry.redhat.io
@@ -158,3 +150,11 @@
       until: __podman_pull_supported is not failed
       retries: 40
       delay: 2
+
+# Using extra_vars file for this.
+# Check https://github.com/redhat-cop/controller_configuration
+- name: Create lab controller objects
+  ansible.builtin.import_role:
+    name: redhat_cop.controller_configuration.dispatch
+  tags:
+    - controller-config
