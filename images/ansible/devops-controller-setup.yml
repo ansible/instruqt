@@ -535,7 +535,7 @@
 
         - name: Store repo credentials in git-creds file
           ansible.builtin.copy:
-            dest: /tmp/git-creds
+            dest: "~{{ student_user }}/.git-creds"
             content: "{{ gitea_protocol }}://{{ student_user | urlencode }}:{{ student_password | urlencode }}@{{ gitea_hostname }}:{{ gitea_http_port }}"
             owner: "{{ student_user }}"
             group: "{{ student_user }}"
