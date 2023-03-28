@@ -45,18 +45,18 @@ The image creates a student and admin user. Credential details can be changed by
 #### Student user
 
 | **Field**     | **Default value** | **Environment variable** |
-|--------------|-------------------|------------------------- |
-| **Username** | student           | STUDENT_USERNAME         |
-| **Password** | learn_ansible     | STUDENT_PASSWORD         |
-| **E-Mail**   | student@acme.com  | STUDENT_EMAIL            |
+|--------------|-------------------|-------------------------  |
+| **Username** | student           | GITEA_STUDENT_USERNAME    |
+| **Password** | learn_ansible     | GITEA_STUDENT_PASSWORD    |
+| **E-Mail**   | student@acme.com  | GITEA_STUDENT_EMAIL       |
 
 #### Admin user
 
 | **Field**     | **Default value** | **Environment variable** |
-|--------------|-------------------|------------------------- |
-| **Username** | ansible           | ADMIN_USERNAME           |
-| **Password** | ansible123!       | ADMIN_PASSWORD           |
-| **E-Mail**   | ansible@acme.com  | ADMIN_EMAIL              |
+|--------------|-------------------|-------------------------  |
+| **Username** | ansible           | GITEA_ADMIN_USERNAME      |
+| **Password** | ansible123!       | GITEA_ADMIN_PASSWORD      |
+| **E-Mail**   | ansible@acme.com  | GITEA_ADMIN_EMAIL         |
 
 >**Note**<p>
 >To add additional users, add the following `gitea` command in the gitea setup-script:
@@ -81,8 +81,8 @@ The `instruqt_gitea` image default values work and it's unnecessary to declare a
   environment:
     GITEA__server__HTTP_PORT: <custom https port> # Optional
     GITEA__log__LEVEL: debug # Optional
-    STUDENT_USERNAME: sean # Optional
-    STUDENT_PASSWORD: memeking # Optional
+    GITEA_STUDENT_USERNAME: sean # Optional
+    GITEA_STUDENT_PASSWORD: memeking # Optional
   memory: 512
   ```
 
@@ -132,23 +132,35 @@ The `instruqt-jenkins-devops` image is pre-configured for the `devops-controller
 - name: jenkins
   image: quay.io/acme_corp/instruqt-jenkins-devops
   ports:
-  - 8080
+  - 6443
   environment:
-    CONTROLLER_PASSWORD: learn_ansible
-    CONTROLLER_URL: https://controller
-    GITEA_SERVER_URL: http://gitea:3000
+    JENKINS_CONTROLLER_PASSWORD: learn_ansible
+    JENKINS_CONTROLLER_URL: https://controller
+    JENKINS_GITEA_SERVER_URL: https://gitea:8443
     JENKINS_ADMIN_PASSWORD: learn_ansible
-    REPO_PASSWORD: learn_ansible
+    JENKINS_REPO_PASSWORD: learn_ansible
   memory: 2048
   ```
 
 ### Available environment variables
 
-- Environment Variables:
-  - `CONTROLLER_PASSWORD`: Controller password for Jenkins. Default `learn_ansible`
-  - `JENKINS_ADMIN_PASSWORD`: Jenkins admin password. Default `learn_ansible`
-  - `CONTROLLER_URL`: Controller URL. Default `https://controller`
-  - `GITEA_SERVER_URL`: Gitea server URL. Default `http://gitea:3000`
+| **Environment variable**            | **Default value**     | **Field**                                    |
+|-------------------------------------|-----------------------|----------------------------------------------|
+| JENKINS_CONTROLLER_STUDENT_USERNAME | student               | Student controller username for API calls    |
+| JENKINS_CONTROLLER_STUDENT_PASSWORD | learn_ansible         | Student controller password for API calls    |
+| JENKINS_CONTROLLER_USERNAME         | jenkins               | Jenkins controller username for API calls    |
+| JENKINS_CONTROLLER_PASSWORD         | learn_ansible         | Jenkins controller password for API calls    |
+| JENKINS_REPO_USERNAME               | jenkins               | Jenkins repo username for repo writes        |
+| JENKINS_REPO_PASSWORD               | learn_ansible         | Jenkins repo password for repo writes        |
+| JENKINS_ADMIN_USERNAME              | admin                 | Jenkins admin username                       |
+| JENKINS_ADMIN_PASSWORD              | ansible123!           | Jenkins admin password                       |
+| JENKINS_STUDENT_USERNAME            | student               | Jenkins student username                     |
+| JENKINS_STUDENT_PASSWORD            | learn_ansible         | Jenkins student password                     |
+| JENKINS_CONTROLLER_URL              | https://controller    | Controller URL                               |
+| JENKINS_GITEA_SERVER_URL            | https://gitea:8443    | Gitea URL                                    |
+| JENKINS_SERVER_URL                  | https://jenkins:6443  | Jenkins root URL                             |
+| JENKINS_HTTPS_PORT                  | 6443                  | Jenkins HTTPS port                           |
+| JENKINS_KEY_STORE_PASSWORD          | learn_ansible         | Jenkins certificate store password           |
 
 ## Jenkins DevOps SSL Instruqt Image
 
@@ -168,31 +180,11 @@ The example below shows configurable Instruqt variables and the corresponding de
   ports:
   - 6443
   environment:
-    CONTROLLER_PASSWORD: learn_ansible
-    CONTROLLER_URL: https://controller
-    GITEA_SERVER_URL: https://gitea:8443
+    JENKINS_CONTROLLER_PASSWORD: learn_ansible
+    JENKINS_CONTROLLER_URL: https://controller
+    JENKINS_GITEA_SERVER_URL: https://gitea:8443
     JENKINS_ADMIN_PASSWORD: learn_ansible
-    REPO_PASSWORD: learn_ansible
-    HTTPS_PORT: 6443
+    JENKINS_REPO_PASSWORD: learn_ansible
+    JENKINS_HTTPS_PORT: 6443
   ```
 
-### Available build environment variables
-
-Use the following environment variables to customize the Jenkins image during the build process.
-
-| **Environment variable** | **Default value**  |          **Description**         |
-|--------------------------|--------------------|:--------------------------------:|
-| CONTROLLER_PASSWORD      | learn_ansible      | Controller jenkins user password |
-| JENKINS_ADMIN_PASSWORD   | learn_ansible      | Jenkins `admin` user password    |
-| CONTROLLER_URL           | https://controller | Controller URL                   |
-| GITEA_SERVER_URL         | https://gitea:8443 | Gitea URL                        |
-| STUDENT_PASSWORD         | learn_ansible      | Jenkins `student` user password  |
-| HTTPS_PORT               | 6443               | Jenkins https port               |
-| KEY_STORE_PASSWORD       | learn_ansible      | Self-signed certificate password |
-
-For example:
-
-```bash
-export KEY_STORE_PASSWORD='cloincoin'
-podman build . --tag quay.io/acme_corp/instruqt-jenkins-devops-ssl:latest
-```

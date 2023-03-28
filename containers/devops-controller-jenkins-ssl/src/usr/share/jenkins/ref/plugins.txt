@@ -18,3 +18,4 @@ pipeline-utility-steps:latest
 groovy:latest
 gitea:latest
 warnings-ng:latest
+skip-certificate-check:latest

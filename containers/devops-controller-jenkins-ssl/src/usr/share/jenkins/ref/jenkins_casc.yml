@@ -5,21 +5,21 @@ credentials:
       - usernamePassword:
           description: "Student controller user"
           id: "student_controller"
-          password: "${CONTROLLER_PASSWORD:-learn_ansible}"
+          password: "${JENKINS_CONTROLLER_STUDENT_PASSWORD:-learn_ansible}"
           scope: GLOBAL
-          username: "student"
+          username: "${JENKINS_CONTROLLER_STUDENT_USERNAME:-student}"
       - usernamePassword:
           description: "Jenkins controller user"
           id: "jenkins_controller"
-          password: "${JENKINS_ADMIN_PASSWORD:-learn_ansible}"
+          password: "${JENKINS_CONTROLLER_PASSWORD:-learn_ansible}"
           scope: GLOBAL
-          username: "jenkins"
+          username: "${JENKINS_CONTROLLER_USERNAME:-jenkins}"
       - usernamePassword:
           description: "ACME Corp Repo"
           id: "gitea_repo"
-          password: "${REPO_PASSWORD:-learn_ansible}"
+          password: "${JENKINS_REPO_PASSWORD:-learn_ansible}"
           scope: GLOBAL
-          username: "jenkins"
+          username: "${JENKINS_REPO_USERNAME:-jenkins}"
 jenkins:
   agentProtocols:
   - "JNLP4-connect"
@@ -47,10 +47,10 @@ jenkins:
       allowsSignup: false
       enableCaptcha: false
       users:
-      - id: "admin"
-        password: ${JENKINS_ADMIN_PASSWORD:-learn_ansible}
-      - id: "student"
-        password: ${STUDENT_PASSWORD:-learn_ansible}        
+      - id: ${JENKINS_ADMIN_USERNAME:-admin}
+        password: ${JENKINS_ADMIN_PASSWORD:-ansible123!}
+      - id: ${JENKINS_STUDENT_USERNAME:-student}
+        password: ${JENKINS_STUDENT_PASSWORD:-learn_ansible}
   slaveAgentPort: 0
   updateCenter:
     sites:
@@ -74,7 +74,7 @@ unclassified:
       towerCredentialsId: "jenkins_controller"
       towerDisplayName: "ACME Corp controller"
       towerTrustCert: true
-      towerURL: ${CONTROLLER_URL:-https://controller}
+      towerURL: ${JENKINS_CONTROLLER_URL:-https://devops-controller.acme.example.com}
   bitbucketEndpointConfiguration:
     endpoints:
     - bitbucketCloudEndpoint:
@@ -96,7 +96,7 @@ unclassified:
     apiRateLimitChecker: ThrottleForNormalize
   gitHubPluginConfig:
     hookUrl: "https://127.0.0.1:6443/github-webhook/"
-  gitSCM:
+  scmGit:
     addGitTagAction: false
     allowSecondFetch: false
     createAccountBasedOnEmail: false
@@ -109,14 +109,14 @@ unclassified:
     - credentialsId: "gitea_repo"
       displayName: "ACME Corp Repo Server"
       manageHooks: true
-      serverUrl: ${GITEA_SERVER_URL:-https://gitea:8443}
+      serverUrl: ${JENKINS_GITEA_SERVER_URL:-https://gitea:8443}
   globalDefaultFlowDurabilityLevel:
     durabilityHint: PERFORMANCE_OPTIMIZED
   junitTestResultStorage:
     storage: "file"
   location:
     adminAddress: "address not configured yet <nobody@nowhere>"
-    url: "https://jenkins:6443/"
+    url: ${JENKINS_SERVER_URL:-https://jenkins:6443}
   mailer:
     charset: "UTF-8"
     useSsl: false
@@ -124,7 +124,7 @@ unclassified:
   pollSCM:
     pollingThreadCount: 10
 tool:
-  ansibleInstallation:
+  ansible:
     installations:
     - home: "/usr/bin/"
       name: "Ansible"
