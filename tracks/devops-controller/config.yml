@@ -1,43 +1,9 @@
 version: "3"
-containers:
-- name: jenkins
-  image: quay.io/acme_corp/instruqt-jenkins-devops
-  ports:
-  - 8080
-  environment:
-    CONTROLLER_PASSWORD: learn_ansible
-    CONTROLLER_URL: https://controller
-    GITEA_SERVER_URL: http://gitea:3000
-    JENKINS_ADMIN_PASSWORD: learn_ansible
-    REPO_PASSWORD: learn_ansible
-  memory: 2048
-- name: gitea
-  image: docker.io/gitea/gitea:1.16.8
-  ports:
-  - 3000
-  environment:
-    GITEA__DEFAULT__RUN_MODE: dev
-    GITEA__database__DB_TYPE: sqlite3
-    GITEA__database__PATH: /data/gitea/gitea.db
-    GITEA__picture__DISABLE_GRAVATAR: "true"
-    GITEA__repository__DEFAULT_PRIVATE: "false"
-    GITEA__repository__DEFAULT_PUSH_CREATE_PRIVATE: "false"
-    GITEA__repository__ENABLE_PUSH_CREATE_ORG: "true"
-    GITEA__repository__ENABLE_PUSH_CREATE_USER: "true"
-    GITEA__repository__ONLY_ALLOW_PUSH_IF_GITEA_ENVIRONMENT_SET: "false"
-    GITEA__security__INSTALL_LOCK: "true"
-    GITEA__server__DOMAIN: http://gitea
-    GITEA__server__OFFLINE_MODE: "true"
-    GITEA__server__ROOT_URL: http://gitea:3000
-    GITEA__server__SSH_DOMAIN: http://gitea
-    GITEA__service__DISABLE_REGISTRATION: "true"
-    GITEA__service__REQUIRE_SIGNIN_VIEW: "false"
-    GITEA__webhook__ALLOWED_HOST_LIST: '*'
-    USER_GID: "1000"
-    USER_UID: "1000"
-  memory: 1024
 virtualmachines:
-- name: controller
-  image: red-hat-mbu/automation-controller
+- name: devops-controller
+  image: instruqt-dev-356115/devops-controller-image
   shell: /bin/su - rhel -s /bin/bash
-  machine_type: n1-standard-4
+  environment:
+    GITEA_STUDENT_PASSWORD: student
+    JENKINS_STUDENT_PASSWORD: student
+  machine_type: n1-standard-2

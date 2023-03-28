@@ -1,6 +1,6 @@
 ---
 slug: env-overview
-id: 4zm4rievgnix
+id: 8pspyae6np2r
 type: challenge
 title: Environment overview
 teaser: In this challenge, we'll explore the different DevOps tools ACME Corp uses
@@ -31,24 +31,25 @@ notes:
 tabs:
 - title: VS Code
   type: service
-  hostname: controller
-  path: /editor/?folder=/home/rhel/acme_corp
+  hostname: devops-controller
+  path: /editor/?folder=/home/student/acme_corp
   port: 443
 - title: Gitea
   type: service
-  hostname: gitea
+  hostname: devops-controller
   path: /student/acme_corp
-  port: 3000
+  port: 8443
 - title: Jenkins
   type: service
-  hostname: jenkins
+  hostname: devops-controller
   path: /job/ACMECorp/
-  port: 8080
+  port: 6443
 - title: Controller
   type: service
-  hostname: controller
+  hostname: devops-controller
+  path: /
   port: 443
-difficulty: basic
+difficulty: intermediate
 timelimit: 300
 ---
 🔐 Login credentials
@@ -66,18 +67,11 @@ ACME Corp use a variety of tools in their DevOps pipeline. Let's have a look at 
 ☑️ Task 1 - VS Code editor
 ===
 
-
-ACME Corp developers use the `VS Code` IDE. Let's explore.
-* The *VS Code* tab is open by default.
+The *VS Code* tab is open by default.
 
 You'll see two folders under the *acme_corp* folder in the left pane:
-  *  The `app` folder contains the *Let's Quiz!* application code.
-  *  The `playbooks` folder contains the playbooks we'll use in our lab.
-
-
-The `playbooks` folder contains the playbooks they use to automate the *Let's Quiz!* application deployment.
-
-*  Click on the `playbooks` folder.
+*  Click on the `apps` folder.The `app` folder contains the *Let's Quiz!* application code.
+*  Click on the `playbooks` folder. The `playbooks` folder contains the playbooks we'll use in our lab.
 
 <!-- ![VSCode folders](../assets/img/vscode_folders.png) -->
 <a href="#vscode_folders">
@@ -91,7 +85,7 @@ The `playbooks` folder contains the playbooks they use to automate the *Let's Qu
 >### **❗️ Note**
 >The *ACME Corp* repository and *git* configuration is already setup for you.
 
-☑️ Task 2 - Gitea
+☑️ Task 2 - Gitea and acme_corp repo
 ===
 
 ACME Corp uses *Gitea* for source code management and contains the *Let’s Quiz!* application code repository.
@@ -121,12 +115,9 @@ ACME Corp uses *Gitea* for source code management and contains the *Let’s Quiz
   <img alt="Gitea webhook" src="../assets/img/gitea_webhook.png" />
 </a>
 
-
 *Gitea* has a webhook configured to start a Jenkins job when new code is committed to the repository. We'll use this webhook in the following challenges.
 
-
-
-☑️ Task 3 - Jenkins
+☑️ Task 3 - Jenkins and ACME Corp pipeline
 ===
 
 ACME Corp uses Jenkins to run a few development tasks on the *Let's Quiz!* application.
@@ -154,7 +145,7 @@ The `ACMECorp` Jenkins job loads by default. The pipeline performs basic develop
   <img alt="ACMECorp status" src="../assets/img/jenkins_acme_landing.png" />
 </a>
 
-☑️ Task 4 - Controller
+☑️ Task 4 - Explore Controller
 ===
 
 ACME Corp operations use automation controller extensively in the environments.
@@ -170,7 +161,6 @@ ACME Corp operations use automation controller extensively in the environments.
 <a href="#" class="lightbox" id="controller_login">
   <img alt="Controller login" src="../assets/img/controller_login.png" />
 </a>
-
 
 * Under `Resources`, click on `Templates`. This menu displays the current *Job Templates* configured in controller.
 
@@ -251,11 +241,11 @@ If you have encountered an issue or have noticed something not quite right, plea
   h1 {
     font-size: 18px;
   }
-    h2 {
+  h2 {
     font-size: 16px;
     font-weight: 600
   }
-    h3 {
+  h3 {
     font-size: 14px;
     font-weight: 600
   }
