@@ -1,22 +1,22 @@
-FROM docker.io/gitea/gitea:1.17.4
+FROM docker.io/gitea/gitea:1.19
 
-ARG admin_username="ansible"
-ARG admin_password="ansible123!"
-ARG admin_email="ansible@acme.com"
-ARG student_username="student"
-ARG student_password="learn_ansible"
-ARG student_email="student@acme.com"
+ARG gitea_admin_username="ansible"
+ARG gitea_admin_password="ansible123!"
+ARG gitea_admin_email="ansible@acme.com"
+ARG gitea_student_username="student"
+ARG gitea_student_password="learn_ansible"
+ARG gitea_student_email="student@acme.com"
 ARG gitea__server__http_port="8443"
 ARG gitea__server__protocol="https"
 ARG gitea__server__domain="localhost"
 ARG gitea__webhook__skip_tls_verify=true
 
-ENV STUDENT_USERNAME="${student_username}" \
-STUDENT_PASSWORD="${student_password}" \
-STUDENT_EMAIL="${student_email}" \
-ADMIN_USERNAME="${admin_username}" \
-ADMIN_PASSWORD="${admin_password}" \
-ADMIN_EMAIL="${admin_email}" \
+ENV GITEA_STUDENT_USERNAME="${gitea_student_username}" \
+GITEA_STUDENT_PASSWORD="${gitea_student_password}" \
+GITEA_STUDENT_EMAIL="${gitea_student_email}" \
+GITEA_ADMIN_USERNAME="${gitea_admin_username}" \
+GITEA_ADMIN_PASSWORD="${gitea_admin_password}" \
+GITEA_ADMIN_EMAIL="${gitea_admin_email}" \
 GITEA__server__PROTOCOL="${gitea__server__protocol}" \
 GITEA__server__HTTP_PORT="${gitea__server__http_port}" \
 GITEA__server__DOMAIN="${gitea__server__domain}" \
@@ -33,4 +33,3 @@ RUN apk --no-cache add \
     tar
 
 CMD ["/usr/bin/startup.sh"]
-
