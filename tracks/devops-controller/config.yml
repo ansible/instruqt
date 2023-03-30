@@ -1,9 +1,6 @@
 version: "3"
 virtualmachines:
 - name: devops-controller
-  image: instruqt-dev-356115/devops-controller-image
+  image: red-hat-mbu/devops-controller-image
   shell: /bin/su - rhel -s /bin/bash
-  environment:
-    GITEA_STUDENT_PASSWORD: student
-    JENKINS_STUDENT_PASSWORD: student
-  machine_type: n1-standard-2
+  machine_type: n2-standard-2
