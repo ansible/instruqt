@@ -62,23 +62,6 @@
 - name: Find Ansible tmp files
   ansible.builtin.find:
     paths: /tmp/
-    # recurse: no
-    file_type: directory
-    patterns: 'ansible*'
-  register: __ansible_temp_dirs
-
-- name: Remove Ansible tmp files
-  ansible.builtin.file:
-    path: "{{ item.path }}"
-    state: absent
-  when: (__ansible_temp_dirs.files is defined)
-  loop: "{{__ansible_temp_dirs.files }}"
-
-# https://github.com/containers/podman/issues/9137
-- name: Find Ansible tmp files
-  ansible.builtin.find:
-    paths: /tmp/
-    # recurse: no
     file_type: directory
     patterns: 'ansible*'
   register: __ansible_temp_dirs
