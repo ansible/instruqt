@@ -1,0 +1,18 @@
+---
+- name: Install packages on webservers
+  hosts: webservers
+  gather_facts: false
+
+  tasks:
+    - name: Install base packages
+      ansible.builtin.package:
+        name:
+          - python3-setuptools
+          - virtualenv
+        state: present
+      become: true
+
+    - name: Install Python packages
+      ansible.builtin.pip:
+        requirements: "/home/rhel/acme_corp/playbooks/files/requirements_prod.txt"
+        virtualenv: /home/rhel/.virtualenvs/acme_corp
