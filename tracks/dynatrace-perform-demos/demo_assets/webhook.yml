@@ -13,5 +13,6 @@
     - name: Rule - Print event information
       condition: event.meta.headers.eventtype  == "http_server"
       action:
-        run_playbook:
-          name: playbooks/dump.yml
+        run_job_template:
+          name: ServiceNow | Incident create
+          organization: Default
