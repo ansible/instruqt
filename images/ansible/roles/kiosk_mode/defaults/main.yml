@@ -1,2 +1,24 @@
 ---
-# defaults file for kiosk_mode
+kiosk_username: student
+kiosk_script_file: gnome-kiosk-script
+gnome_gsettings:
+  - org.gnome.desktop.background show-desktop-icons true
+  - org.gnome.desktop.wm.preferences theme 'Adwaita-dark'
+  - org.gnome.desktop.lockdown disable-log-out true
+  - org.gnome.desktop.lockdown disable-printing true
+  - org.gnome.desktop.lockdown disable-lock-screen true
+  - org.gnome.desktop.lockdown disable-print-setup true
+  - org.gnome.desktop.lockdown user-administration-disabled false
+  - org.gnome.shell.extensions.desktop-icons show-mount false
+  - org.gnome.shell.extensions.desktop-icons show-home false
+  - org.gnome.shell.extensions.desktop-icons show-trash false
+gnome_desktop_icons:
+  - code
+  - firefox
+gnome_applications:
+  - gnome-kiosk-script-session
+  - gnome-classic-session
+  - gnome-shell-extension-desktop-icons
+  - gnome-themes-extra
+  - gdm
+  - firefox

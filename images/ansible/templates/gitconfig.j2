@@ -4,17 +4,17 @@
         bare = false
         logallrefupdates = true
 [remote "origin"]
-        url = {{ gitea_app_url }}/{{ student_user }}/{{ gitea_repo_name }}.git
+        url = {{ gitea_app_url }}/{{ student_username }}/{{ gitea_repo_name }}.git
         fetch = +refs/heads/*:refs/remotes/origin/*
 [init]
         defaultBranch = main
 [safe]
-        directory = /home/{{ student_user }}/{{ gitea_repo_name }}
+        directory = /home/{{ student_username }}/{{ gitea_repo_name }}
 [user]
-        name = {{ student_user }}
-        email = {{ student_user }}@acme.com
+        name = {{ student_username }}
+        email = {{ student_username }}@acme.com
         password = {{ student_password }}
 [http]
         sslVerify = False
 [credential]
-        helper = store --file ~{{ student_user }}/.git-creds
+        helper = store --file ~{{ student_username }}/.git-creds

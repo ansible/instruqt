@@ -1,0 +1,49 @@
+---
+argument_specs:
+  # roles/vnc_server/tasks/main.yml entry point
+  main:
+    short_description: The main entry point for the kiosk_mode role.
+    options:
+      kiosk_username:
+        type: "str"
+        required: false
+        default: "student"
+        description: "The default kiosk username."
+      kiosk_script_file:
+        type: "str"
+        required: false
+        default: "gnome-kiosk-script"
+        description: "Name of the GDM xsession Ansible template file for the Kiosk user."
+      gnome_gsettings:
+        type: "list"
+        required: false
+        default:
+          - org.gnome.desktop.background show-desktop-icons true
+          - org.gnome.desktop.wm.preferences theme 'Adwaita-dark'
+          - org.gnome.desktop.lockdown disable-log-out true
+          - org.gnome.desktop.lockdown disable-printing true
+          - org.gnome.desktop.lockdown disable-lock-screen true
+          - org.gnome.desktop.lockdown disable-print-setup true
+          - org.gnome.desktop.lockdown user-administration-disabled false
+          - org.gnome.shell.extensions.desktop-icons show-mount false
+          - org.gnome.shell.extensions.desktop-icons show-home false
+          - org.gnome.shell.extensions.desktop-icons show-trash false
+        description: "Common GNOME settings to customize kiosk user desktop."
+      gnome_desktop_icons:
+        type: "list"
+        required: false
+        default:
+          - code
+          - firefox
+        description: "GNOME desktop icons based on Ansible templates with the same filename."
+      gnome_applications:
+        type: "list"
+        required: false
+        default:
+          - gnome-kiosk-script-session
+          - gnome-classic-session
+          - gnome-shell-extension-desktop-icons
+          - gnome-themes-extra
+          - gdm
+          - firefox
+        description: "GNOME desktop and applications."

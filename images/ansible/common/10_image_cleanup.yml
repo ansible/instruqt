@@ -71,7 +71,7 @@
     path: "{{ item.path }}"
     state: absent
   when: (__ansible_temp_dirs.files is defined)
-  loop: "{{__ansible_temp_dirs.files }}"
+  loop: "{{ __ansible_temp_dirs.files }}"
 
 - name: Remove bash history file
   ansible.builtin.file:

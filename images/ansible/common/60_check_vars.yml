@@ -17,9 +17,13 @@
 
 - name: Include vars file from extra_vars directory
   block:
-    - name: Include file - {{ track_slug }}_vars.yml
+    - name: Include vars files - {{ track_slug }}
       ansible.builtin.include_vars:
-        file: "{{ track_slug }}_vars.yml"
+        file: "{{ item }}"
+      loop:
+        - "vault_{{ track_slug }}_vars.yml"
+        - "{{ track_slug }}_vars.yml"
+
   rescue:
     - name: Rescue - Include vars file
       ansible.builtin.debug:

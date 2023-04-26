@@ -1,0 +1,66 @@
+---
+- name: Ensure EPEL repository is enabled
+  ansible.builtin.yum_repository:
+    name: epel
+    description: EPEL YUM repo
+    baseurl: https://dl.fedoraproject.org/pub/epel/$releasever/Everything/$basearch
+    gpgkey: "https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
+    gpgcheck: true
+    state: present
+
+- name: Install TigerVNC packages
+  ansible.builtin.package:
+    name:
+      - tigervnc-server
+    state: present
+
+- name: Configure VNC password for a specified user
+  ansible.builtin.expect:
+    command: vncpasswd
+    responses:
+      Password: "{{ vnc_password }}"
+      Verify: "{{ vnc_password }}"
+      Would you like to enter a view-only password (y/n)?: "n"
+  args:
+    chdir: "~{{ vnc_username }}"
+    creates: "~{{ vnc_username }}/.vnc/passwd"
+  become_user: "{{ vnc_username }}"
+
+- name: Add TigerVNC user - {{ vnc_username }}
+  ansible.builtin.lineinfile:
+    path: /etc/tigervnc/vncserver.users
+    state: present
+    line: ":2={{ vnc_username }}"
+
+- name: Permit vncserver service firewalld
+  ansible.posix.firewalld:
+    state: enabled
+    service: vnc-server
+    zone: public
+    permanent: true
+    immediate: true
+
+- name: Copy VNC config template - {{ vnc_username }}
+  ansible.builtin.template:
+    src: config.j2
+    dest: "~{{ vnc_username }}/.vnc/config"
+    owner: "{{ vnc_username }}"
+    mode: 0644
+  become_user: "{{ vnc_username }}"
+
+- name: Restart VNC service if the user logs out
+  ansible.builtin.blockinfile:
+    path: "/usr/lib/systemd/system/vncserver@.service"
+    mode: "0644"
+    state: present
+    insertbefore: "Type=forking"
+    block: |
+        Restart=on-success
+        RestartSec=5
+
+- name: Enable and start VNC service
+  ansible.builtin.systemd:
+    name: vncserver@:2.service
+    state: started
+    enabled: true
+    daemon_reload: true

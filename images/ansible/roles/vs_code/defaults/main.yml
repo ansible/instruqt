@@ -1,0 +1,8 @@
+---
+vscode_username: student
+vscode_extensions:
+  # Example
+  # - name: redhat.ansible
+  #   filename: redhat.ansible-1.3.50.vsix
+  #   download_url: https://github.com/ansible/workshops/raw/devel/files/redhat.ansible-1.3.50.vsix
+  - name: redhat.ansible

@@ -1,0 +1,274 @@
+---
+- name: Configures lab nodes - {{ track_slug }}
+  hosts: all
+  become: true
+  gather_facts: true
+
+  pre_tasks:
+    - name: Include variable tasks
+      vars:
+        extra_vars:
+          - name: track_slug
+            env: TRACK_SLUG
+          - name: redhat_username
+            env: REDHAT_USERNAME
+          - name: redhat_password
+            env: REDHAT_PASSWORD
+          - name: offline_token
+            env: REDHAT_OFFLINE_TOKEN
+          - name: gcp_service_account_file
+            env: GCP_SERVICE_ACCOUNT_FILE
+          - name: gcp_service_account
+            env: GCP_SERVICE_ACCOUNT
+          - name: gcp_instances
+          - name: gcp_project
+            env: GCP_PROJECT
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/60_check_vars.yml"
+      no_log: true
+
+  tasks:
+    - name: Include common user tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/5_configure_users.yml"
+
+    # - name: Include common instance node tasks
+    #   vars:
+    #     instance_os_packages:
+    #       - podman
+    #       - subscription-manager-rhsm-certificates
+    #       - rsync
+    #       - git
+    #       - ansible-core
+    #       - ansible-navigator
+    #       - ansible-lint
+    #   ansible.builtin.include_tasks:
+    #     file: "{{ playbook_dir }}/common/30_mesh_node.yml"
+
+    - name: Get controller gcp node instance info
+      google.cloud.gcp_compute_instance_info: # noqa syntax-check
+        filters:
+          - labels.role = "{{ track_slug }}"
+          - labels.mesh-type = controller
+        zone: "{{ gcp_zone }}"
+        project: "{{ gcp_project }}"
+        auth_kind: serviceaccount
+        service_account_file: "{{ gcp_service_account_file }}"
+      delegate_to: localhost
+      become: false
+      register: __controller_instance_info
+
+    - name: Set controller hostname fact for post install tasks
+      ansible.builtin.set_fact:
+        controller_hostname: "https://{{ __controller_instance_info.resources[0].networkInterfaces[0].accessConfigs[0].natIP }}"
+      when:
+        - (__controller_instance_info is defined) and (__controller_instance_info | length > 0)
+
+    - name: Include common controller install tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/50_install_controller.yml"
+
+    # Post-install tasks here to install AWS packages for S3s
+    - name: Include common controller post install tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/70_controller_post_install.yml"
+
+    - name: Include vs_code role
+      ansible.builtin.include_role:
+        name: vs_code
+
+    - name: Include vnc_server role
+      ansible.builtin.include_role:
+        name: vnc_server
+
+    - name: Include kiosk_mode role
+      ansible.builtin.include_role:
+        name: kiosk_mode
+
+    - name: Setup containers
+      when: lab_containers is defined and lab_containers | length > 0
+      tags:
+        - create-containers
+      block:
+        - name: Start custom containers
+          containers.podman.podman_container:
+            name: "{{ __start_containers_async_item.name | default(omit) }}"
+            annotation: "{{ __start_containers_async_item.annotation | default(omit) }}"
+            label: "{{ __start_containers_async_item.label | default(omit) }}"
+            image: "{{ __start_containers_async_item.image | default(omit) }}"
+            memory: "{{ __start_containers_async_item.memory | default(omit) }}"
+            privileged: "{{ __start_containers_async_item.privileged | default(false) }}"
+            publish: "{{ __start_containers_async_item.publish | default(omit) }}"
+            volume: "{{ __start_containers_async_item.volume | default(omit) }}"
+            env_file: "{{ __start_containers_async_item.env_file | default(omit) }}"
+            env_host: "{{ __start_containers_async_item.env_host | default(omit) }}"
+            etc_hosts: "{{ __start_containers_async_item.etc_hosts | default(omit) }}"
+            ip: "{{ __start_containers_async_item.ip | default(omit) }}"
+            network: "{{ __start_containers_async_item.network | default(omit) }}"
+            state: "{{ __start_containers_async_item.state | default('started') }}"
+            env: "{{ __start_containers_async_item.env | default(omit) }}"
+            generate_systemd: "{{ __start_containers_async_item.generate_systemd | default(omit) }}"
+            cmd_args: "{{ __start_containers_async_item.cmd_args | default(omit) }}"
+          async: 1000
+          poll: 0
+          loop: "{{ lab_containers }}"
+          loop_control:
+            loop_var: __start_containers_async_item
+            label: "{{ __start_containers_async_item.name }}"
+          register: __start_containers_async
+          changed_when: not __start_containers_async.changed
+
+        - name: Start custom containers | Async
+          ansible.builtin.async_status:
+            jid: "{{ __start_containers_async_result_item.ansible_job_id }}"
+          retries: 60
+          delay: 1
+          loop: "{{ __start_containers_async.results }}"
+          loop_control:
+            loop_var: __start_containers_async_result_item
+            label: "{{ __start_containers_async_result_item.__start_containers_async_item.name }}"
+          until: __start_containers_async_result.finished
+          register: __start_containers_async_result
+          when: __start_containers_async_result_item.ansible_job_id is defined
+
+        - name: Add custom containers to /etc/hosts
+          ansible.builtin.lineinfile:
+            path: /etc/hosts
+            mode: 0644
+            state: present
+            line: "{{ __hosts_file_item.ip }} {{ __hosts_file_item.name }}"
+          loop: "{{ lab_containers }}"
+          loop_control:
+            loop_var: __hosts_file_item
+            label: "{{ __hosts_file_item.name }}"
+
+        - name: Wait for container services to start
+          ansible.builtin.wait_for:
+            host: "{{ __containers_start_async_item.name }}"
+            port: "{{ __containers_start_async_item.listen_port }}"
+            delay: 1
+            timeout: 120
+          loop: "{{ lab_containers }}"
+          loop_control:
+            loop_var: __containers_start_async_item
+            label: "{{ __containers_start_async_item.name }}"
+          async: 1000
+          poll: 0
+          register: __containers_start_async
+          changed_when: not __containers_start_async.changed
+
+        - name: Wait for container services to start | Async
+          ansible.builtin.async_status:
+            jid: "{{ __containers_start_async_result_item.ansible_job_id }}"
+          retries: 90
+          delay: 1
+          loop: "{{ __containers_start_async.results }}"
+          loop_control:
+            loop_var: __containers_start_async_result_item
+            label: "{{ __containers_start_async_result_item.__containers_start_async_item.name }}"
+          until: __containers_start_async_result.finished
+          register: __containers_start_async_result
+          when: __containers_start_async_result_item.ansible_job_id is defined
+
+        - name: Enable and start gitea container systemd
+          ansible.builtin.systemd:
+            name: container-gitea
+            state: started
+            enabled: true
+            daemon_reload: true
+
+        - name: Add custom containers to inventory
+          ansible.builtin.add_host:
+            name: "{{ __add_containers_item.name }}"
+            groups: "{{ __add_containers_item.groups | default(omit) }}"
+          # args: "{{ __add_containers_item.args | default(omit) }}"
+          loop: "{{ lab_containers }}"
+          loop_control:
+            loop_var: __add_containers_item
+            label: "{{ __add_containers_item.name }}"
+
+    - name: Configure Gitea container
+      module_defaults:
+        ansible.builtin.uri:
+          force_basic_auth: true
+          url_username: "{{ student_username }}"
+          url_password: "{{ student_password }}"
+          validate_certs: false
+          body_format: json
+      when: ('"containers" in groups' and '"gitea" in inventory_hostnames["containers"]')
+      tags:
+        - gitea
+      block:
+        - name: Create Gitea repo - {{ gitea_repo_name }}
+          ansible.builtin.uri:
+            url: "{{ gitea_app_url }}/api/v1/user/repos"
+            method: POST
+            body:
+              name: "{{ gitea_repo_name }}"
+              auto_init: false
+              private: false
+            status_code: [201, 409]
+          changed_when: (__create_user.msg is defined and '"OK" in __create_user.msg')
+
+    - name: Configure local repo - {{ student_username }}
+      tags:
+        - configure-repo
+      become_user: "{{ student_username }}"
+      block:
+        - name: Recreate repo dir - {{ gitea_repo_name }} # noqa risky-file-permissions
+          ansible.builtin.file:
+            path: "/home/{{ student_username }}/{{ gitea_repo_name }}"
+            state: "{{ item }}"
+            owner: "{{ student_username }}"
+            group: "{{ student_username }}"
+          become_user: root
+          loop:
+            - absent
+            - directory
+
+        - name: Extract initial repo files
+          ansible.builtin.unarchive:
+            src: "/opt/setup-scripts/{{ track_slug }}/files/acme_repo.tar.gz"
+            dest: "~{{ student_username }}/{{ gitea_repo_name }}"
+            # creates: "~{{ student_username }}/{{ gitea_repo_name }}/app"
+            remote_src: true
+            owner: "{{ student_username }}"
+            group: "{{ student_username }}"
+
+        - name: Initialise track repo - {{ gitea_repo_name }} # noqa command-instead-of-module
+          ansible.builtin.command:
+            cmd: /usr/bin/git init
+            chdir: "~{{ student_username }}/{{ gitea_repo_name }}"
+            creates: "~{{ student_username }}/{{ gitea_repo_name }}/.git"
+
+        - name: Add git configurations - {{ gitea_repo_name }}
+          ansible.builtin.template:
+            src: "gitconfig.j2"
+            owner: "{{ student_username }}"
+            group: "{{ student_username }}"
+            mode: 0644
+            dest: "~{{ student_username }}/{{ gitea_repo_name }}/.git/config"
+
+        - name: Store repo credentials in git-creds file
+          ansible.builtin.copy:
+            dest: "~{{ student_username }}/.git-creds"
+            content: "{{ gitea_protocol }}://{{ student_username | urlencode }}:{{ student_password | urlencode }}@{{ gitea_hostname }}:{{ gitea_http_port }}"
+            owner: "{{ student_username }}"
+            group: "{{ student_username }}"
+            mode: 0644
+
+        - name: Push initial commit to repo
+          ansible.builtin.command:
+            cmd: "{{ item }}"
+            chdir: "~{{ student_username }}/{{ gitea_repo_name }}"
+          register: __output
+          changed_when: __output.rc == 0
+          loop:
+            - "git checkout -b main"
+            - "git add ."
+            - "git commit -m'Initial commit'"
+            - "git push -u origin main --force"
+
+    - name: Include common image cleanup tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/10_image_cleanup.yml"

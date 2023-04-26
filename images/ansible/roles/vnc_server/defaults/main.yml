@@ -1,0 +1,4 @@
+---
+vnc_username: student
+vnc_password: learn_ansible
+vnc_gnome_session: gnome-classic

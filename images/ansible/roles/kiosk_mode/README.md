@@ -1,6 +1,6 @@
 # Kiosk Mode Role
 
-Configures kiosk mode on rhel to run firefox on boot in full screen mode pointing to the ignition application running in podman.
+Installs a minimal Gnome desktop and a variety of GDM xsession options on RHEL 8 & 9 machines.The role creates a kiosk user,desktop icons, and configures Gnome settings.
 
 ## Requirements
 
@@ -8,22 +8,32 @@ Any pre-requisites that may not be covered by Ansible itself or the role should 
 
 ## Role Variables
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
-
-## Dependencies
-
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+kiosk_username:
+kiosk_script_file:
+gnome_gsettings:
+gnome_desktop_icons:
+gnome_applications:
 
 ## Example Playbook
 
 Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
 
+```yaml
     - hosts: servers
+      vars:
+        kiosk_username: student
+
+        kiosk_script_file: gnome-kiosk-script
+        gnome_gsettings:
+          - org.gnome.desktop.lockdown user-administration-disabled false
+          - org.gnome.shell.extensions.desktop-icons show-mount false
+          - org.gnome.shell.extensions.desktop-icons show-home false
+          - org.gnome.shell.extensions.desktop-icons show-trash false
+        gnome_desktop_icons:
+          - code
+          - firefox
+        gnome_applications:
+          - gnome-kiosk-script-session
       roles:
-         - { role: username.rolename, x: 42 }
-
-## License
-
-Apache 2.0
-
-## Author Information
+         - kiosk_mode
+```

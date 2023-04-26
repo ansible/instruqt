@@ -1,0 +1,15 @@
+---
+argument_specs:
+  main:
+    short_description: The main entry point to install VS Code.
+    options:
+      vscode_username:
+        type: "str"
+        required: false
+        default: "student"
+        description: "VS Code installation user."
+      vscode_extensions:
+        type: "list"
+        required: false
+        default: "redhat.ansible"
+        description: "Download and install VS Code Marketplace extensions or custom extension files"

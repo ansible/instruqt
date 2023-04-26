@@ -13,6 +13,13 @@
       controller_host: "{{ controller_hostname }}"
       validate_certs: "{{ controller_validate_certs }}"
 
+- name: Update controller image admin password
+  ansible.builtin.expect:
+    command: awx-manage changepassword admin
+    responses:
+      Password: "{{ admin_password }}"
+      Password (again): "{{ admin_password }}"
+
 - name: Download and upgrade controller collections - {{ inventory_hostname }}
   community.general.ansible_galaxy_install:
     name: "{{ item }}"
@@ -22,8 +29,15 @@
   loop: "{{ controller_collections }}"
   register: __collection_install
   when: (controller_collections is defined) and (controller_collections | length > 0)
-  tags:
-    - controller-config
+
+- name: Ensure EPEL repository is enabled
+  ansible.builtin.yum_repository:
+    name: epel
+    description: EPEL YUM repo
+    baseurl: https://dl.fedoraproject.org/pub/epel/$releasever/Everything/$basearch
+    gpgkey: "https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
+    gpgcheck: true
+    state: present
 
 - name: Install OS packages
   ansible.builtin.dnf:
@@ -37,8 +51,12 @@
     state: present
   become: true
   when: (controller_pip_packages is defined) and (controller_pip_packages | length > 0)
-  tags:
-    - controller-config
+
+- name: Install unzip OS package for AWS install
+  ansible.builtin.dnf:
+    name:
+      - unzip
+    state: present
 
 - name: Download AWS CLI for S3 downloads
   ansible.builtin.unarchive:
@@ -82,7 +100,7 @@
   tags:
     - demo-content
   block:
-    - name: Demo content - remove organization
+    - name: Demo content - create organization
       awx.awx.organization:
         name: "Default"
         state: present
