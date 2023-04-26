@@ -17,6 +17,10 @@ variable "ansible_vars_file" {
     type    = string
     default = null
 }
+variable "ansible_vault_password_file" {
+    type    = string
+    default = "${env("ANSIBLE_VAULT_PASSWORD_FILE")}"
+}
 
 variable "track_slug" {
     type    = string
@@ -28,7 +32,8 @@ variable "track_slug" {
 }
 
 locals { 
-    extra_args = var.ansible_vars_file != null ? ["-e", "@images/ansible/extra-vars.yml", "-e", var.ansible_vars_file,
+    extra_args = var.ansible_vars_file != null ? ["-e", "@images/ansible/extra-vars.yml", 
+                                                "-e", var.ansible_vars_file,
                                                 "-e", "track_slug=${var.track_slug}"] : ["-e", "@images/ansible/extra-vars.yml",
                                                 "-e", "track_slug=${var.track_slug}"]
     slug_image_name = var.image_name != null ? var.image_name : "${var.track_slug}-node"
@@ -40,7 +45,7 @@ source "googlecompute" "mesh-node" {
     ssh_username        = "rhel"
     wait_to_add_ssh_keys = "60s"
     zone                = var.zone
-    machine_type        = "e2-standard-2"
+    machine_type        = "e2-standard-4"
     image_name          = local.slug_image_name
 }
 
@@ -52,5 +57,6 @@ build {
       user = "rhel"
       extra_arguments = local.extra_args
       use_proxy = false
+      ansible_env_vars = ["ANSIBLE_VAULT_PASSWORD_FILE=${var.ansible_vault_password_file}"]
     }
 }
