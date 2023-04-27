@@ -1,5 +1,4 @@
 ---
-# tasks file for kiosk_mode
 - name: Ensure hostname set
   ansible.builtin.hostname:
     name: "{{ inventory_hostname.split('.')[0] }}"
@@ -18,7 +17,7 @@
     method4: auto
     state: present
 
-- name: Create gdm configuration for kiosk kiosk_mode
+- name: Create gdm configuration for kiosk
   ansible.builtin.template:
     src: custom.conf.j2
     dest: /etc/gdm/custom.conf
@@ -62,12 +61,25 @@
         msg: "No kiosk script file found."
       when: not __kiosk_script_stat.stat.exists
 
-- name: Change default target to graphical.target
-  ansible.builtin.file:
-    src: /usr/lib/systemd/system/graphical.target
-    dest: /etc/systemd/system/default.target
-    state: link
-  notify: Reboot
+# - name: Change default target to graphical.target
+#   ansible.builtin.file:
+#     src: /usr/lib/systemd/system/graphical.target
+#     dest: /etc/systemd/system/default.target
+#     state: link
+#   notify: Reboot
+
+# Work-around to stop gnome-keyring-daemon from prompting user
+- name: Add gnome-keyring unlock in .bashrc - {{ kiosk_username }}
+  ansible.builtin.blockinfile:
+    path: "~{{ kiosk_username }}/.bashrc"
+    mode: "0644"
+    state: present
+    insertbefore: "unset rc"
+    block: |
+      killall -q -u "$(whoami)" gnome-keyring-daemon
+      eval $(echo -n "{{ kiosk_password }}" \
+      | gnome-keyring-daemon --daemonize --login \
+      | sed -e 's/^/export /')
 
 - name: Flush handlers (will reboot if needed)
   ansible.builtin.meta: flush_handlers
@@ -76,7 +88,7 @@
   ansible.builtin.file:
     path: "~{{ kiosk_username }}/{{ item }}/"
     state: directory
-    mode: '0755'
+    mode: "0755"
     owner: "{{ kiosk_username }}"
     group: "{{ kiosk_username }}"
   loop:
@@ -84,11 +96,19 @@
     - ".config"
     - "/run/user/2000/dconf"
 
+- name: Create /run/user/2000/dconf directory
+  ansible.builtin.file:
+    path: "/run/user/2000/dconf"
+    state: directory
+    mode: "0755"
+    owner: "{{ kiosk_username }}"
+    group: "{{ kiosk_username }}"
+
 - name: Create file to disable setup screens
   ansible.builtin.file:
     path: "~{{ kiosk_username }}/.config/gnome-initial-setup-done"
     state: touch
-    mode: '0755'
+    mode: "0755"
     owner: "{{ kiosk_username }}"
     group: "{{ kiosk_username }}"
 
@@ -96,23 +116,24 @@
   ansible.builtin.file:
     path: "/run/user/2000/dconf"
     state: directory
-    mode: '0755'
+    mode: "0755"
     owner: "{{ kiosk_username }}"
     group: "{{ kiosk_username }}"
 
-# Doesn't work. Needs gdm running
 - name: Customize Gnome kiosk configuration - {{ kiosk_username }}
   environment:
     - DISPLAY: :2
     - BUS_SESSION_BUS_ADDRESS: unix:path=/run/user/2000/bus
     - XDG_RUNTIME_DIR: /run/user/2000
-  ansible.builtin.shell: DISPLAY=:2 BUS_SESSION_BUS_ADDRESS=unix:path=/run/user/2000/bus XDG_RUNTIME_DIR=/run/user/2000 gsettings set {{ item }}
+  ansible.builtin.command: gsettings set {{ item }}
   loop: "{{ gnome_gsettings }}"
   become_user: "{{ kiosk_username }}"
   become: true
   register: __gnome_settings
+  failed_when: '"failed to commit changes" in __gnome_settings.stdout'
   changed_when: __gnome_settings.rc == 0
 
+# https://access.redhat.com/solutions/6976776
 - name: Remove the 'System Not Registered' notification
   ansible.builtin.lineinfile:
     path: /lib/systemd/user/org.gnome.SettingsDaemon.Subscription.service
@@ -137,6 +158,10 @@
   loop: "{{ gnome_desktop_icons }}"
 
 - name: Set desktop file metadata to trust
+  environment:
+    - DISPLAY: :2
+    - BUS_SESSION_BUS_ADDRESS: unix:path=/run/user/2000/bus
+    - XDG_RUNTIME_DIR: /run/user/2000
   ansible.builtin.command: |
     dbus-launch gio set ~{{ kiosk_username }}/Desktop/{{ item }}.desktop metadata::trusted true
   become_user: "{{ kiosk_username }}"
@@ -145,6 +170,7 @@
   changed_when: __gio_set.rc == 0
   loop: "{{ gnome_desktop_icons }}"
 
+# Making .desktop files executable must happen after above "gio" command
 - name: Make desktop icons executable
   ansible.builtin.file:
     dest: "~{{ kiosk_username }}/Desktop/{{ item }}.desktop"

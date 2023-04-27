@@ -9,6 +9,11 @@ argument_specs:
         required: false
         default: "student"
         description: "The default kiosk username."
+      kiosk_password:
+        type: "str"
+        required: false
+        default: "learn_ansible"
+        description: "Password used to unlock gnome-keyring-daemon"
       kiosk_script_file:
         type: "str"
         required: false
@@ -46,4 +51,6 @@ argument_specs:
           - gnome-themes-extra
           - gdm
           - firefox
+          - "@x-base"
+          - dbus-x11
         description: "GNOME desktop and applications."

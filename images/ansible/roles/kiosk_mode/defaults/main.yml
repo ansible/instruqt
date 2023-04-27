@@ -1,5 +1,6 @@
 ---
 kiosk_username: student
+kiosk_password: learn_ansible
 kiosk_script_file: gnome-kiosk-script
 gnome_gsettings:
   - org.gnome.desktop.background show-desktop-icons true
@@ -16,6 +17,8 @@ gnome_desktop_icons:
   - code
   - firefox
 gnome_applications:
+  - "@base-x"
+  - dbus-x11
   - gnome-kiosk-script-session
   - gnome-classic-session
   - gnome-shell-extension-desktop-icons
