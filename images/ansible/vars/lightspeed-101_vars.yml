@@ -67,9 +67,10 @@ controller_hostname: "{{ vault_controller_hostname }}"
 controller_validate_certs: "{{ vault_controller_validate_certs }}"
 controller_username: "{{ vault_controller_username }}"
 controller_password: "{{ vault_controller_password }}"
-student_user: "{{ student_username }}" # Legacy
+
 student_username: "{{ vault_student_username }}"
 student_password: "{{ vault_student_password }}"
+student_user: "{{ student_username }}" # Legacy
 
 aws_cli_install_package: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
 
@@ -125,7 +126,6 @@ lab_containers:
     env_file: /opt/setup-scripts/{{ track_slug }}/files/container-gitea.env
     env:
       GITEA__server__DOMAIN: gitea
-    # cmd_args: ['--env', 'GITEA_*']
     generate_systemd:
       path: /etc/systemd/system/
       restart_policy: always
@@ -134,54 +134,22 @@ lab_containers:
       new: true
     groups:
       - containers
-  # - name: jenkins
-  #   label:
-  #     io.containers.autoupdate: registry
-  #   listen_port: 6443
-  #   image: quay.io/acme_corp/instruqt-jenkins-devops-ssl:dev
-  #   # image: quay.io/acme_corp/instruqt-jenkins-devops-ssl:latest
-  #   state: started
-  #   memory: 1G
-  #   privileged: true
-  #   volume: jenkins:/var/jenkins_home
-  #   publish:
-  #     - "6443:6443"
-  #   env_file: /opt/setup-scripts/{{ track_slug }}/files/container-jenkins.env
-  #   # cmd_args: ['--env', 'JENKINS_*']
-  #   etc_hosts:
-  #     gitea: 10.88.0.10
-  #     jenkins: 10.88.0.20
-  #     "{{ vault_controller_hostname }}".acme.example.com: 10.88.0.1
-  #   ip: "10.88.0.20"
-  #   network: bridge
-  #   generate_systemd:
-  #     path: /etc/systemd/system/
-  #     restart_policy: always
-  #     time: 60
-  #     names: true
-  #     new: true
-  #   groups:
-  #     - containers
 
 controller_os_packages:
-  - python3-pip
-  - unzip
-  - python3-boto3
-  - python3-botocore
   - ansible-core
   - ansible-navigator
   - ansible-lint
 
 # controller_pip_packages:
-#   - ansible-navigator
-#   - ansible-lint
+  # - ansible-navigator
+  # - ansible-lint
 
 controller_collections:
   - redhat_cop.controller_configuration
   - awx.awx
   - amazon.aws
-  - amazon.community
-  - kubernetes.k8s
+  - community.aws
+  - kubernetes.core
   - community.general
   - containers.podman
   - community.docker
@@ -276,12 +244,7 @@ controller_hosts:
       ansible_host: "{{ vault_controller_hostname }}"
       ansible_python_interpreter: /usr/bin/python3
       ansible_host_key_checking: false
-  # - name: jenkins.acme.example.com
-  #   inventory: "{{ lab.inventory.name }}"
-  #   variables:
-  #     ansible_host: "{{ vault_controller_hostname }}"
-  #     ansible_python_interpreter: /usr/bin/python3
-  #     ansible_host_key_checking: false
+
   - name: repo.acme.example.com
     inventory: "{{ lab.inventory.name }}"
     variables:
