@@ -1,13 +1,13 @@
 ##
 # Create controller objects for mesh lab
 ##
-- name: Install ansible-core for ansible-galaxy command
+- name: Install OS packages needed for tasks
   ansible.builtin.dnf:
     name:
       - ansible-core
     state: present
 
-- name: Download and upgrade collections for install - host {{ inventory_hostname }}
+- name: Download and upgrade collections for install - {{ inventory_hostname }}
   community.general.ansible_galaxy_install:
     name: "{{ item }}"
     type: collection
@@ -152,3 +152,5 @@
   until: check2.json is defined and check2.json.instances[0].capacity > 0 and check2.json.instance_groups[0].capacity > 0
   retries: 60
   delay: 1
+
+
