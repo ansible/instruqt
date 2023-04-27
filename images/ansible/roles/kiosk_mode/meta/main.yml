@@ -1,6 +1,6 @@
 galaxy_info:
   author: chad ferman
-  description: "configure kiosk mode on rhel hmi devices"
+  description: "Configure kiosk mode on RHEL for VNC sessions."
   company: red hat
 
   # If the issue tracker for your role is not on github, uncomment the
@@ -28,16 +28,9 @@ galaxy_info:
   # https://galaxy.ansible.com/api/v1/platforms/
   #
   platforms:
-    - name: RHEL
+    - name: Fedora
       versions:
         - all
-      #   - 25
-      # - name: SomePlatform
-      #   versions:
-      #   - all
-      #   - 1.0
-      #   - 7
-      #   - 99.99
 
   galaxy_tags: []
     # List tags for your role here, one per line. A tag is a keyword that describes

@@ -1,19 +1,21 @@
 galaxy_info:
+  role_name: vnc_server
+  namespace: craig_br
   author: Craig Brandt
-  description: Install VS Code on RHEL 8 and 9 systems
+  description: Install VS Code on RHEL-based systems for Instruqt labs
 
   license: GPL-2.0-or-later, MIT, etc
 
   min_ansible_version: "2.9"
 
   platforms:
-    - name: RHEL
+    - name: Fedora
       versions:
-        - 8
-        - 9
+        - all
 
 
   galaxy_tags:
+    - instuqt
     - vscode
 
 dependencies: []

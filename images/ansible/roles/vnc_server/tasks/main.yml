@@ -1,5 +1,5 @@
 ---
-- name: Ensure EPEL repository is enabled
+- name: Configure EPEL repository
   ansible.builtin.yum_repository:
     name: epel
     description: EPEL YUM repo
@@ -8,13 +8,14 @@
     gpgcheck: true
     state: present
 
-- name: Install TigerVNC packages
+- name: Install TigerVNC and task OS packages
   ansible.builtin.package:
     name:
       - tigervnc-server
+      - python3-pexpect
     state: present
 
-- name: Configure VNC password for a specified user
+- name: Configure VNC user password - {{ vnc_username }}
   ansible.builtin.expect:
     command: vncpasswd
     responses:
@@ -45,13 +46,14 @@
     src: config.j2
     dest: "~{{ vnc_username }}/.vnc/config"
     owner: "{{ vnc_username }}"
-    mode: 0644
+    mode: "0644"
   become_user: "{{ vnc_username }}"
 
-- name: Restart VNC service if the user logs out
+- name: Edit VNC service restart on user log out
   ansible.builtin.blockinfile:
     path: "/usr/lib/systemd/system/vncserver@.service"
     mode: "0644"
+    owner: root
     state: present
     insertbefore: "Type=forking"
     block: |

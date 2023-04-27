@@ -328,6 +328,10 @@
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/70_controller_post_install.yml"
 
+    - name: Include kiosk_mode role
+      ansible.builtin.include_role:
+        name: kiosk_mode
+
     - name: Include vs_code role
       ansible.builtin.include_role:
         name: vs_code
@@ -335,15 +339,6 @@
     - name: Include vnc_server role
       ansible.builtin.include_role:
         name: vnc_server
-        apply:
-          tags:
-            - vnc
-      tags:
-        - vnc
-
-    - name: Include kiosk_mode role
-      ansible.builtin.include_role:
-        name: kiosk_mode
 
     - name: Setup containers
       when: lab_containers is defined and lab_containers | length > 0
@@ -394,7 +389,7 @@
         - name: Add custom containers to /etc/hosts
           ansible.builtin.lineinfile:
             path: /etc/hosts
-            mode: 0644
+            mode: "0644"
             state: present
             line: "{{ __hosts_file_item.ip }} {{ __hosts_file_item.name }}"
           loop: "{{ lab_containers }}"
@@ -477,7 +472,7 @@
       block:
         - name: Recreate repo dir - {{ gitea_repo_name }} # noqa risky-file-permissions
           ansible.builtin.file:
-            path: "/home/{{ student_username }}/{{ gitea_repo_name }}"
+            path: "~{{ student_username }}/{{ gitea_repo_name }}"
             state: "{{ item }}"
             owner: "{{ student_username }}"
             group: "{{ student_username }}"
@@ -506,7 +501,7 @@
             src: "gitconfig.j2"
             owner: "{{ student_username }}"
             group: "{{ student_username }}"
-            mode: 0644
+            mode: "0644"
             dest: "~{{ student_username }}/{{ gitea_repo_name }}/.git/config"
 
         - name: Store repo credentials in git-creds file
@@ -515,7 +510,7 @@
             content: "{{ gitea_protocol }}://{{ student_username | urlencode }}:{{ student_password | urlencode }}@{{ gitea_hostname }}:{{ gitea_http_port }}"
             owner: "{{ student_username }}"
             group: "{{ student_username }}"
-            mode: 0644
+            mode: "0644"
 
         - name: Push initial commit to repo
           ansible.builtin.command:

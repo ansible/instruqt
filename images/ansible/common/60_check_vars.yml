@@ -16,6 +16,7 @@
     - lookup('ansible.builtin.env', 'TRACK_SLUG')
 
 - name: Include vars file from extra_vars directory
+  no_log: true
   block:
     - name: Include vars files - {{ track_slug }}
       ansible.builtin.include_vars:
@@ -23,7 +24,6 @@
       loop:
         - "vault_{{ track_slug }}_vars.yml"
         - "{{ track_slug }}_vars.yml"
-
   rescue:
     - name: Rescue - Include vars file
       ansible.builtin.debug:
@@ -40,6 +40,7 @@
     loop_var: __extra_vars_item
     label: "{{ __extra_vars_item.name }}"
   loop: "{{ extra_vars }}"
+  no_log: true
 
 - name: Check required variables are set
   ansible.builtin.assert:
@@ -55,3 +56,4 @@
   loop_control:
     loop_var: __extra_vars_results_item
     label: "{{ __extra_vars_results_item.__extra_vars_item.name }}"
+  no_log: true
