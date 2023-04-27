@@ -41,6 +41,7 @@
   ansible.builtin.user:
     name: "{{ student_user }}"
     shell: /bin/bash
+    groups: users
     password: "{{ student_password | password_hash('sha512', '98263y4krwf7400') }}"
 
 - name: Restart sshd

@@ -30,7 +30,7 @@
     state: present
     shell: /bin/bash
     uid: 2000
-    group: "{{ kiosk_username }}"
+    group: users
     create_home: true
     skeleton: true
 
@@ -53,7 +53,7 @@
         src: "{{ kiosk_script_file }}.j2"
         mode: '0755'
         owner: "{{ kiosk_username }}"
-        group: "{{ kiosk_username }}"
+        group: users
       when: __kiosk_script_stat.stat.exists
   always:
     - name: Debug msg no kiosk script file found
@@ -74,6 +74,7 @@
     path: "~{{ kiosk_username }}/.bashrc"
     mode: "0644"
     state: present
+    create: true
     insertbefore: "unset rc"
     block: |
       killall -q -u "$(whoami)" gnome-keyring-daemon
@@ -90,11 +91,10 @@
     state: directory
     mode: "0755"
     owner: "{{ kiosk_username }}"
-    group: "{{ kiosk_username }}"
+    group: users
   loop:
     - ".local/bin"
     - ".config"
-    - "/run/user/2000/dconf"
 
 - name: Create /run/user/2000/dconf directory
   ansible.builtin.file:
@@ -102,7 +102,7 @@
     state: directory
     mode: "0755"
     owner: "{{ kiosk_username }}"
-    group: "{{ kiosk_username }}"
+    group: users
 
 - name: Create file to disable setup screens
   ansible.builtin.file:
@@ -110,7 +110,7 @@
     state: touch
     mode: "0755"
     owner: "{{ kiosk_username }}"
-    group: "{{ kiosk_username }}"
+    group: users
 
 - name: Create dconf directory for Gnome customization - {{ kiosk_username }}
   ansible.builtin.file:
@@ -118,20 +118,7 @@
     state: directory
     mode: "0755"
     owner: "{{ kiosk_username }}"
-    group: "{{ kiosk_username }}"
-
-- name: Customize Gnome kiosk configuration - {{ kiosk_username }}
-  environment:
-    - DISPLAY: :2
-    - BUS_SESSION_BUS_ADDRESS: unix:path=/run/user/2000/bus
-    - XDG_RUNTIME_DIR: /run/user/2000
-  ansible.builtin.command: gsettings set {{ item }}
-  loop: "{{ gnome_gsettings }}"
-  become_user: "{{ kiosk_username }}"
-  become: true
-  register: __gnome_settings
-  failed_when: '"failed to commit changes" in __gnome_settings.stdout'
-  changed_when: __gnome_settings.rc == 0
+    group: users
 
 # https://access.redhat.com/solutions/6976776
 - name: Remove the 'System Not Registered' notification
@@ -146,14 +133,14 @@
     state: directory
     mode: '0755'
     owner: "{{ kiosk_username }}"
-    group: "{{ kiosk_username }}"
+    group: users
 
 - name: Copy desktop files to Desktop directory - {{ kiosk_username }}
   ansible.builtin.copy:
     src: "{{ item }}.desktop"
     dest: "~{{ kiosk_username }}/Desktop"
     owner: "{{ kiosk_username }}"
-    group: "{{ kiosk_username }}"
+    group: users
     mode: "0644"
   loop: "{{ gnome_desktop_icons }}"
 
@@ -176,5 +163,5 @@
     dest: "~{{ kiosk_username }}/Desktop/{{ item }}.desktop"
     mode: "0755"
     owner: "{{ kiosk_username }}"
-    group: "{{ kiosk_username }}"
+    group: users
   loop: "{{ gnome_desktop_icons }}"

@@ -220,7 +220,6 @@
             path: "/home/{{ student_username }}/{{ gitea_repo_name }}"
             state: "{{ item }}"
             owner: "{{ student_username }}"
-            group: "{{ student_username }}"
           become_user: root
           loop:
             - absent

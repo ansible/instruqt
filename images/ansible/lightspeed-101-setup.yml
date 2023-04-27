@@ -331,14 +331,29 @@
     - name: Include kiosk_mode role
       ansible.builtin.include_role:
         name: kiosk_mode
+        apply:
+          tags:
+            - kiosk
+      tags:
+        - kiosk
 
     - name: Include vs_code role
       ansible.builtin.include_role:
         name: vs_code
+        apply:
+          tags:
+            - code
+      tags:
+        - code
 
     - name: Include vnc_server role
       ansible.builtin.include_role:
         name: vnc_server
+        apply:
+          tags:
+            - vnc
+      tags:
+        - vnc
 
     - name: Setup containers
       when: lab_containers is defined and lab_containers | length > 0
@@ -475,7 +490,7 @@
             path: "~{{ student_username }}/{{ gitea_repo_name }}"
             state: "{{ item }}"
             owner: "{{ student_username }}"
-            group: "{{ student_username }}"
+            # group: "{{ student_username }}"
           become_user: root
           loop:
             - absent
@@ -488,7 +503,7 @@
             # creates: "~{{ student_username }}/{{ gitea_repo_name }}/app"
             remote_src: true
             owner: "{{ student_username }}"
-            group: "{{ student_username }}"
+            # group: "{{ student_username }}"
 
         - name: Initialise track repo - {{ gitea_repo_name }} # noqa command-instead-of-module
           ansible.builtin.command:
@@ -500,7 +515,7 @@
           ansible.builtin.template:
             src: "gitconfig.j2"
             owner: "{{ student_username }}"
-            group: "{{ student_username }}"
+            # group: "{{ student_username }}"
             mode: "0644"
             dest: "~{{ student_username }}/{{ gitea_repo_name }}/.git/config"
 
@@ -509,7 +524,7 @@
             dest: "~{{ student_username }}/.git-creds"
             content: "{{ gitea_protocol }}://{{ student_username | urlencode }}:{{ student_password | urlencode }}@{{ gitea_hostname }}:{{ gitea_http_port }}"
             owner: "{{ student_username }}"
-            group: "{{ student_username }}"
+            # group: "{{ student_username }}"
             mode: "0644"
 
         - name: Push initial commit to repo
