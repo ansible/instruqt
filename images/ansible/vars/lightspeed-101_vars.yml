@@ -82,6 +82,7 @@ gitea_repo_name: acme_corp
 gitea_admin_username: "{{ vault_gitea_admin_username }}"
 gitea_admin_password: "{{ vault_gitea_admin_password }}"
 
+vscode_settings_file: "{{ playbook_dir }}/files/{{ track_slug }}_settings.json"
 # Lab vars
 lab:
   credential:
@@ -96,11 +97,12 @@ lab:
     description: ACME Corp Data center
   execution_environment:
     name: ACME Corp EE
-    image: quay.io/acme_corp/instruqt-devops-ee
+    image: quay.io/acme_corp/summit_ee
   s3_bucket_name: tmm-instruqt-content.demoredhat.com.private
   acme_venv: "/home/{{ student_username }}/.virtualenvs/acme_corp"
   workflow_name: DevOps Workflow
   default_tag_name: "0.0.1"
+  navigator_execution_environment: quay.io/acme_corp/summit_ee
 
 # Lab containers
 # Add container customisation env vars to /opt/setup-scripts/files/container-<container_name>.env
@@ -116,7 +118,7 @@ lab_containers:
     privileged: true
     volume: "gitea:/data"
     publish:
-      - 8443:8443
+      - "8443:8443"
       - "2222:2222"
     etc_hosts:
       gitea: 10.88.0.10
@@ -139,6 +141,7 @@ controller_os_packages:
   - ansible-core
   - ansible-navigator
   - ansible-lint
+  - git
 
 # controller_pip_packages:
   # - ansible-navigator

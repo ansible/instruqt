@@ -28,9 +28,10 @@
       - python3-boto3
       - python3-botocore
       - unzip
+      - ansible-core
     state: present
 
-- name: Install requested OS packages
+- name: Install OS packages - controller_os_packages
   ansible.builtin.dnf:
     name: "{{ controller_os_packages }}"
     state: present
@@ -72,6 +73,15 @@
     src: ansible.cfg.j2
     dest: "/etc/ansible/ansible.cfg"
     mode: 0644
+
+- name: Copy ansible-navigator.yml template - {{ student_username }}
+  when: lab.navigator_execution_environment is defined
+  ansible.builtin.template:
+    src: "ansible-navigator.yml.j2"
+    dest: "~{{ student_username }}/.ansible-navigator.yml"
+    mode: "0644"
+    owner: "{{ student_username }}"
+    group: "{{ student_username }}"
 
 - name: Download setup scripts to controller /opt directory - {{ lab.s3_bucket_name }}
   ansible.builtin.command:
@@ -139,7 +149,7 @@
 - name: Download custom execution environments
   when: (controller_execution_environments is defined) and (controller_execution_environments | length > 0)
   tags:
-    - controller-config
+    - execution-environments
   block:
     - name: Install containers.podman collection
       community.general.ansible_galaxy_install:
@@ -149,18 +159,31 @@
       register: __collection_install
 
     - name: Log into registry.redhat.io
-      become_user: "awx"
+      become_user: "{{ item }}"
       containers.podman.podman_login:
         registry: "registry.redhat.io"
         username: "{{ registry_username }}"
         password: "{{ registry_password }}"
+      loop:
+        - "{{ student_username }}"
+        - awx
 
-    - name: Pull execution environment images
+    - name: Pull execution environment images - awx
       become_user: "awx"
       containers.podman.podman_image:
         name: "{{ item.image }}"
       loop: "{{ controller_execution_environments }}"
-      register: __podman_pull_supported
-      until: __podman_pull_supported is not failed
+      register: __podman_pull_supported_awx
+      until: __podman_pull_supported_awx is not failed
+      retries: 40
+      delay: 2
+
+    - name: Pull execution environment images - {{ student_username }}
+      become_user: "{{ student_username }}"
+      containers.podman.podman_image:
+        name: "{{ item.image }}"
+      loop: "{{ controller_execution_environments }}"
+      register: __podman_pull_supported_student
+      until: __podman_pull_supported_student is not failed
       retries: 40
       delay: 2
