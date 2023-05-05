@@ -65,6 +65,8 @@
             name: "{{ __remove_instances_job_async_item.name }}"
             state: absent
             zone: "{{ gcp_zone }}"
+            labels: "{{ __create_instances_job_async_item.labels | default(omit) }}"
+            tags: "{{ __create_instances_job_async_item.tags | default(omit) }}"
             <<: *gcp_login
           loop: "{{ gcp_instances }}"
           loop_control:
@@ -313,11 +315,15 @@
       delegate_to: localhost
       become: false
       register: __controller_instance_info
+      tags:
+        - post-install
 
     - name: Set controller hostname fact for post install tasks
       ansible.builtin.set_fact:
         controller_hostname: "https://{{ __controller_instance_info.resources[0].networkInterfaces[0].accessConfigs[0].natIP }}"
       when: (__controller_instance_info is defined) and (__controller_instance_info | length > 0)
+      tags:
+        - post-install
 
     - name: Include common controller install tasks
       ansible.builtin.include_tasks:
@@ -327,6 +333,42 @@
     - name: Include common controller post install tasks
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/70_controller_post_install.yml"
+        apply:
+          tags:
+            - post-install
+      tags:
+        - post-install
+
+    # #  TODO add to common post install tasks
+    # - name: Copy ansible-navigator.yml template - {{ student_username }}
+    #   ansible.builtin.template:
+    #     src: "ansible-navigator.yml.j2"
+    #     dest: "~{{ student_username }}/.ansible-navigator.yml"
+    #     mode: "0644"
+    #     owner: "{{ student_username }}"
+    #     group: "{{ student_username }}"
+    #   tags:
+    #     - navigator
+
+    # - name: Download navigator execution environment - {{ student_username }}
+    #   # same var used in 50_install_controller.yml to pre-populate all mesh nodes with execution environments
+    #   when: (lab.navigator_execution_environment is defined) and (lab.navigator_execution_environment | length > 0)
+    #   tags:
+    #     - navigator
+    #   block:
+    #     - name: Install podman collection - {{ inventory_hostname }}
+    #       community.general.ansible_galaxy_install:
+    #         type: collection
+    #         name: containers.podman
+
+    #     - name: Pull execution environment images
+    #       become_user: "{{ student_username }}"
+    #       containers.podman.podman_image:
+    #         name: "{{ lab.navigator_execution_environment }}"
+    #       register: __podman_pull_nav_ee
+    #       until: __podman_pull_nav_ee is not failed
+    #       retries: 60
+    #       delay: 1
 
     - name: Include kiosk_mode role
       ansible.builtin.include_role:
@@ -490,20 +532,37 @@
             path: "~{{ student_username }}/{{ gitea_repo_name }}"
             state: "{{ item }}"
             owner: "{{ student_username }}"
-            # group: "{{ student_username }}"
+            group: "{{ student_username }}"
           become_user: root
           loop:
             - absent
             - directory
 
-        - name: Extract initial repo files
-          ansible.builtin.unarchive:
-            src: "/opt/setup-scripts/{{ track_slug }}/files/acme_repo.tar.gz"
-            dest: "~{{ student_username }}/{{ gitea_repo_name }}"
-            # creates: "~{{ student_username }}/{{ gitea_repo_name }}/app"
+        # - name: Extract initial repo files
+        #   ansible.builtin.unarchive:
+        #     src: "/opt/setup-scripts/{{ track_slug }}/files/acme_repo.tar.gz"
+        #     dest: "~{{ student_username }}/{{ gitea_repo_name }}"
+        #     remote_src: true
+        #     owner: "{{ student_username }}"
+        #     group: "{{ student_username }}"
+
+        - name: Copy initial repository files - {{ gitea_repo_name }}
+          ansible.builtin.copy:
+            src: "/opt/setup-scripts/{{ track_slug }}/{{ gitea_repo_name }}/"
+            dest: "~{{ student_username }}/{{ gitea_repo_name }}/"
             remote_src: true
             owner: "{{ student_username }}"
-            # group: "{{ student_username }}"
+            group: "{{ student_username }}"
+            directory_mode: "755"
+            mode: "0644"
+
+        - name: Fix directory permissions - {{ gitea_repo_name }}
+          ansible.builtin.file:
+            path: "~{{ student_username }}/{{ gitea_repo_name }}"
+            state: directory
+            owner: "{{ student_username }}"
+            group: "{{ student_username }}"
+            mode: "755"
 
         - name: Initialise track repo - {{ gitea_repo_name }} # noqa command-instead-of-module
           ansible.builtin.command:
@@ -515,7 +574,7 @@
           ansible.builtin.template:
             src: "gitconfig.j2"
             owner: "{{ student_username }}"
-            # group: "{{ student_username }}"
+            group: "{{ student_username }}"
             mode: "0644"
             dest: "~{{ student_username }}/{{ gitea_repo_name }}/.git/config"
 
@@ -524,7 +583,7 @@
             dest: "~{{ student_username }}/.git-creds"
             content: "{{ gitea_protocol }}://{{ student_username | urlencode }}:{{ student_password | urlencode }}@{{ gitea_hostname }}:{{ gitea_http_port }}"
             owner: "{{ student_username }}"
-            # group: "{{ student_username }}"
+            group: "{{ student_username }}"
             mode: "0644"
 
         - name: Push initial commit to repo
@@ -539,6 +598,36 @@
             - "git commit -m'Initial commit'"
             - "git push -u origin main --force"
 
+    - name: Configure worker node firewall
+      vars:
+        firewall:
+          - set_default_zone: internal
+            state: enabled
+            permanent: true
+          - service: cockpit
+            state: disabled
+            permanent: true
+            zone: internal
+          - port: 27199/tcp
+            state: enabled
+            permanent: true
+            zone: internal
+          - port: 8088/tcp
+            state: enabled
+            permanent: true
+            zone: internal
+      ansible.builtin.import_role:
+        name: fedora.linux_system_roles.firewall
+
+    - name: Include common image cleanup tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/10_image_cleanup.yml"
+
+    - name: Build Cockpit install files cache
+      ansible.builtin.dnf:
+        name: cockpit
+        state: present
+        download_only: true
     - name: Include common image cleanup tasks
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/10_image_cleanup.yml"
@@ -594,6 +683,8 @@
             name: "{{ __instances_stop_async_item.name }}"
             status: TERMINATED
             zone: "{{ gcp_zone }}"
+            labels: "{{ __create_instances_job_async_item.labels | default(omit) }}"
+            tags: "{{ __create_instances_job_async_item.tags | default(omit) }}"
             <<: *gcp_login
           loop: "{{ gcp_instances }}"
           loop_control:
@@ -708,6 +799,8 @@
         name: "{{ __remove_instances_job_async_item.name }}"
         state: absent
         zone: "{{ gcp_zone }}"
+        labels: "{{ __create_instances_job_async_item.labels | default(omit) }}"
+        tags: "{{ __create_instances_job_async_item.tags | default(omit) }}"
         <<: *gcp_login
       loop: "{{ gcp_instances }}"
       loop_control:
