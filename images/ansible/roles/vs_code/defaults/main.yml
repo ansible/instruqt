@@ -1,5 +1,6 @@
 ---
 vscode_username: student
+vscode_settings_file: settings.json
 vscode_extensions:
   # Example
   # - name: redhat.ansible

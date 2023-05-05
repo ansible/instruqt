@@ -29,7 +29,7 @@
 
 - name: Apply VS Code defaults
   ansible.builtin.copy:
-    src: settings.json
+    src: "{{ vscode_settings_file }}"
     dest: "~{{ vscode_username }}/.config/Code/User/settings.json"
     owner: "{{ vscode_username }}"
     group: "{{ vscode_username }}"
