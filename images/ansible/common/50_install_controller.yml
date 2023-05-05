@@ -106,32 +106,38 @@
   ansible.builtin.debug:
     msg: '{{ check2.json }}'
 
-- name: Load license block
+- name: Subscribe AAP
+  delegate_to: localhost
+  become: false
   block:
-    - name: Check for base64 variable first
+    - name: Apply base64_manifest licenses
       ansible.builtin.copy: # noqa template-instead-of-copy
-        dest: '{{ playbook_dir }}/manifest.zip'
-        content: '{{ base64_manifest | b64decode }}'
-        mode: 0644
-      delegate_to: localhost
-      become: false
-  rescue:
-    - name: Unable to load base64_manifest
-      ansible.builtin.debug:
-        msg: 'No base64_manifest variable found, trying to open manifest.zip'
-  always:
-    - name: Load manifest into variable
+        dest: "{{ playbook_dir }}/manifest.zip"
+        content: "{{ base64_manifest | b64decode }}"
+        mode: "0644"
+      when: base64_manifest is defined
+
+    - name: Apply license with manifest.zip
       ansible.builtin.slurp:
         src: "{{ playbook_dir }}/manifest.zip"
+      when: base64_manifest is undefined
       register: manifest_file
-      delegate_to: localhost
-      become: false
+  always:
+    - name: Assert manifest.zip exists
+      ansible.builtin.assert:
+        that:
+          - manifest_file is defined
+          - manifest_file | length > 0
+        fail_msg: | 
+          AAP subscription manifest not found or empty.
+        success_msg: 
+          Successfully loaded AAP subscription manifest file
 
 - name: Post manifest file
   ansible.builtin.uri:
     url: https://localhost/api/v2/config/
     method: POST
-    user: admin
+    user: "{{ controller_username }}"
     password: "{{ controller_password }}"
     body: '{ "eula_accepted": true, "manifest": "{{ manifest_file.content }}" }'
     body_format: json
