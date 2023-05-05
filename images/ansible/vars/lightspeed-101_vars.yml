@@ -100,10 +100,31 @@ lab:
     image: quay.io/acme_corp/summit_ee
   s3_bucket_name: tmm-instruqt-content.demoredhat.com.private
   acme_venv: "/home/{{ student_username }}/.virtualenvs/acme_corp"
-  workflow_name: DevOps Workflow
+  workflow_name: Deploy App Workflow
   default_tag_name: "0.0.1"
   navigator_execution_environment: quay.io/acme_corp/summit_ee
 
+#  Lab firewall configuration
+firewall:
+  - set_default_zone: internal
+    state: enabled
+    permanent: true
+  - service: cockpit
+    state: disabled
+    permanent: true
+    zone: internal
+  - port: 27199/tcp
+    state: enabled
+    zone: internal
+    permanent: true
+  - service: https
+    state: enabled
+    zone: internal
+    permanent: true
+  - service: ssh
+    state: enabled
+    zone: internal
+    permanent: true
 # Lab containers
 # Add container customisation env vars to /opt/setup-scripts/files/container-<container_name>.env
 lab_containers:
@@ -234,129 +255,130 @@ controller_inventories:
     organization: "{{ lab.organization }}"
     description: "{{ lab.inventory.name }}"
 
-controller_hosts:
-  - name: controller.acme.example.com
-    inventory: "{{ lab.inventory.name }}"
-    variables:
-      ansible_host: "{{ vault_controller_hostname }}"
-      ansible_python_interpreter: /usr/bin/python3
-      ansible_host_key_checking: false
-  - name: web1.acme.example.com
-    inventory: "{{ lab.inventory.name }}"
-    variables:
-      ansible_host: "{{ vault_controller_hostname }}"
-      ansible_python_interpreter: /usr/bin/python3
-      ansible_host_key_checking: false
+# controller_hosts:
+#   - name: controller.acme.example.com
+#     inventory: "{{ lab.inventory.name }}"
+#     variables:
+#       ansible_host: "{{ vault_controller_hostname }}"
+#       ansible_python_interpreter: /usr/bin/python3
+#       ansible_host_key_checking: false
 
-  - name: repo.acme.example.com
-    inventory: "{{ lab.inventory.name }}"
-    variables:
-      ansible_host: "{{ vault_controller_hostname }}"
-      ansible_python_interpreter: /usr/bin/python3
-      ansible_host_key_checking: false
+#   - name: web1.acme.example.com
+#     inventory: "{{ lab.inventory.name }}"
+#     variables:
+#       ansible_host: "{{ vault_controller_hostname }}"
+#       ansible_python_interpreter: /usr/bin/python3
+#       ansible_host_key_checking: false
 
-controller_groups:
-  - name: webservers
-    description: ACME Corp Webservers
-    inventory: "{{ lab.inventory.name }}"
-    hosts:
-      - web1.acme.example.com
+#   - name: repo.acme.example.com
+#     inventory: "{{ lab.inventory.name }}"
+#     variables:
+#       ansible_host: "{{ vault_controller_hostname }}"
+#       ansible_python_interpreter: /usr/bin/python3
+#       ansible_host_key_checking: false
+
+# controller_groups:
+#   - name: webservers
+#     description: ACME Corp Webservers
+#     inventory: "{{ lab.inventory.name }}"
+#     hosts:
+#       - web1.acme.example.com
 
 controller_templates:
-  - name: Configure Jenkins Job
+  - name: Harden app servers
     state: present
     job_type: run
-    playbook: "playbooks/configure_jenkins_job.yml"
+    playbook: "playbooks/harden_appservers.yml"
     execution_environment: "{{ lab.execution_environment.name }}"
     inventory: "{{ lab.inventory.name }}"
     verbosity: 0
     credentials:
       - "{{ lab.credential.name }}"
     project: "{{ lab.project.name }}"
-  - name: Create App Release
+  - name: Configure firewall
     state: present
     job_type: run
-    playbook: "playbooks/app_release.yml"
+    playbook: "playbooks/configure_firewall.yml"
     execution_environment: "{{ lab.execution_environment.name }}"
     inventory: "{{ lab.inventory.name }}"
     credentials:
       - "{{ lab.credential.name }}"
     project: "{{ lab.project.name }}"
-    ask_inventory_on_launch: true
-    ask_variables_on_launch: true
-  - name: Configure Webservers
+    # ask_inventory_on_launch: true
+    # ask_variables_on_launch: true
+  - name: Deploy monitoring
     state: present
     job_type: run
-    playbook: "playbooks/configure_webservers.yml"
+    playbook: "playbooks/deploy_monitoring.yml"
     execution_environment: "{{ lab.execution_environment.name }}"
     inventory: "{{ lab.inventory.name }}"
     credentials:
       - "{{ lab.credential.name }}"
     project: "{{ lab.project.name }}"
-    ask_inventory_on_launch: true
-    ask_variables_on_launch: true
-    extra_vars:
-      acme_venv: "{{ lab.acme_venv }}"
-  - name: Restart DevOps Workflow
+    # ask_inventory_on_launch: true
+    # ask_variables_on_launch: true
+    # extra_vars:
+    #   acme_venv: "{{ lab.acme_venv }}"
+  - name: Deploy ACMECorp application
     state: present
     job_type: run
-    playbook: "playbooks/restart_workflow.yml"
+    playbook: "playbooks/deploy_app.yml"
     execution_environment: "{{ lab.execution_environment.name }}"
     inventory: "{{ lab.inventory.name }}"
     credentials:
       - "{{ lab.credential.name }}"
     project: "{{ lab.project.name }}"
-    ask_variables_on_launch: true
-    extra_vars:
-      repo_user: "{{ student_username }}"
-      git_repo: "{{ gitea_app_url }}/{{ student_username }}/acme_corp.git"
-  - name: Deploy ACMECorp App
-    state: present
-    job_type: run
-    playbook: "playbooks/deploy_acme_app.yml"
-    execution_environment: "{{ lab.execution_environment.name }}"
-    inventory: "{{ lab.inventory.name }}"
-    credentials:
-      - "{{ lab.credential.name }}"
-    project: "{{ lab.project.name }}"
-    ask_inventory_on_launch: true
-    ask_variables_on_launch: true
-    extra_vars:
-      ansible_python_interpreter: "{{ lab.acme_venv }}/bin/python3"
+    # ask_variables_on_launch: true
+    # extra_vars:
+    #   repo_user: "{{ student_username }}"
+    #   git_repo: "{{ gitea_app_url }}/{{ student_username }}/acme_corp.git"
+  # - name: Deploy ACMECorp App
+  #   state: present
+  #   job_type: run
+  #   playbook: "playbooks/deploy_acme_app.yml"
+  #   execution_environment: "{{ lab.execution_environment.name }}"
+  #   inventory: "{{ lab.inventory.name }}"
+  #   credentials:
+  #     - "{{ lab.credential.name }}"
+  #   project: "{{ lab.project.name }}"
+  #   ask_inventory_on_launch: true
+  #   ask_variables_on_launch: true
+    # extra_vars:
+    #   ansible_python_interpreter: "{{ lab.acme_venv }}/bin/python3"
 
-controller_workflows:
-  - name: "{{ lab.workflow_name }}"
-    description: "{{ lab.workflow_name }}"
-    extra_vars:
-      tag_name: "{{ tag_name | default(lab.default_tag_name) }}"
-      acme_venv: "{{ lab.acme_venv }}"
-    ask_variables_on_launch: true
-    inventory: "{{ lab.inventory.name }}"
-    organization: "{{ lab.organization }}"
-    simplified_workflow_nodes:
-      - identifier: "Deploy to Prod?"
-        approval_node:
-          name: "Deploy to Prod?"
-          description: "Deploy to Prod?"
-          # timeout: 900 # 15 minutes
-        success_nodes:
-          - Config Webservers
-          - Create App Release
-      - all_parents_must_converge: false
-        identifier: Create App Release
-        unified_job_template: Create App Release
-        credentials: []
-        success_nodes:
-          - Deploy ACME App
-      - all_parents_must_converge: false
-        identifier: Config Webservers
-        unified_job_template: Configure Webservers
-        credentials: []
-        success_nodes:
-          - Deploy ACME App
-      - all_parents_must_converge: false
-        identifier: Deploy ACME App
-        unified_job_template: Deploy ACMECorp App
+# controller_workflows:
+#   - name: "{{ lab.workflow_name }}"
+#     description: "{{ lab.workflow_name }}"
+#     extra_vars:
+#       tag_name: "{{ tag_name | default(lab.default_tag_name) }}"
+#       acme_venv: "{{ lab.acme_venv }}"
+#     ask_variables_on_launch: true
+#     inventory: "{{ lab.inventory.name }}"
+#     organization: "{{ lab.organization }}"
+#     simplified_workflow_nodes:
+#       - identifier: "Deploy to Prod?"
+#         approval_node:
+#           name: "Deploy to Prod?"
+#           description: "Deploy to Prod?"
+#           # timeout: 900 # 15 minutes
+#         success_nodes:
+#           - Config Webservers
+#           - Create App Release
+#       - all_parents_must_converge: false
+#         identifier: Create App Release
+#         unified_job_template: Create App Release
+#         credentials: []
+#         success_nodes:
+#           - Deploy ACME App
+#       - all_parents_must_converge: false
+#         identifier: Config Webservers
+#         unified_job_template: Configure Webservers
+#         credentials: []
+#         success_nodes:
+#           - Deploy ACME App
+#       - all_parents_must_converge: false
+#         identifier: Deploy ACME App
+#         unified_job_template: Deploy ACMECorp App
 
 controller_user_accounts:
   # - user: "{{ jenkins_user }}"
@@ -382,25 +404,23 @@ controller_roles:
   #   role: execute
   - user: "{{ student_username }}"
     job_templates:
-      - Create App Release
-      - Configure Webservers
-      - Configure Jenkins Job
-      - Restart DevOps Workflow
-      - Deploy ACMECorp App
-    workflows:
-      - "{{ lab.workflow_name }}"
+      - Deploy monitoring
+      - Deploy ACMECorp application
+      - Configure firewall
+      - Harden app servers
+    # workflows:
+    #   - "{{ lab.workflow_name }}"
     role: execute
   - user: "{{ student_username }}"
     job_templates:
-      - Create App Release
-      - Configure Webservers
-      - Configure Jenkins Job
-      - Restart DevOps Workflow
-      - Deploy ACMECorp App
-    workflows:
-      - "{{ lab.workflow_name }}"
+      - Deploy monitoring
+      - Deploy ACMECorp application
+      - Configure firewall
+      - Harden app servers
+    # workflows:
+    #   - "{{ lab.workflow_name }}"
     role: read
-  - user: "{{ student_username }}"
-    workflows:
-      - "{{ lab.workflow_name }}"
-    role: approval
+  # - user: "{{ student_username }}"
+  #   workflows:
+  #     - "{{ lab.workflow_name }}"
+  #   role: approval

@@ -318,16 +318,52 @@
       tags:
         - post-install
 
-    - name: Set controller hostname fact for post install tasks
+    - name: Set controller hostname fact for install tasks
       ansible.builtin.set_fact:
         controller_hostname: "https://{{ __controller_instance_info.resources[0].networkInterfaces[0].accessConfigs[0].natIP }}"
       when: (__controller_instance_info is defined) and (__controller_instance_info | length > 0)
       tags:
         - post-install
+        - controller-objects
 
     - name: Include common controller install tasks
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/50_install_controller.yml"
+        apply:
+          tags:
+            - controller-install
+      tags:
+        - controller-install
+
+
+    # Kiosk mode before post-install otherwise adding kiosk user doesn't work
+    # Podman process blocks usermod for EE download
+    - name: Include kiosk_mode role
+      ansible.builtin.include_role:
+        name: kiosk_mode
+        apply:
+          tags:
+            - kiosk
+      tags:
+        - kiosk
+
+    - name: Include vs_code role
+      ansible.builtin.include_role:
+        name: vs_code
+        apply:
+          tags:
+            - code
+      tags:
+        - code
+
+    - name: Include vnc_server role
+      ansible.builtin.include_role:
+        name: vnc_server
+        apply:
+          tags:
+            - vnc
+      tags:
+        - vnc
 
     # Post-install tasks here to install AWS packages for S3s
     - name: Include common controller post install tasks
@@ -369,33 +405,6 @@
     #       until: __podman_pull_nav_ee is not failed
     #       retries: 60
     #       delay: 1
-
-    - name: Include kiosk_mode role
-      ansible.builtin.include_role:
-        name: kiosk_mode
-        apply:
-          tags:
-            - kiosk
-      tags:
-        - kiosk
-
-    - name: Include vs_code role
-      ansible.builtin.include_role:
-        name: vs_code
-        apply:
-          tags:
-            - code
-      tags:
-        - code
-
-    - name: Include vnc_server role
-      ansible.builtin.include_role:
-        name: vnc_server
-        apply:
-          tags:
-            - vnc
-      tags:
-        - vnc
 
     - name: Setup containers
       when: lab_containers is defined and lab_containers | length > 0
@@ -598,26 +607,18 @@
             - "git commit -m'Initial commit'"
             - "git push -u origin main --force"
 
+    # Lab environment prep
     - name: Configure worker node firewall
-      vars:
-        firewall:
-          - set_default_zone: internal
-            state: enabled
-            permanent: true
-          - service: cockpit
-            state: disabled
-            permanent: true
-            zone: internal
-          - port: 27199/tcp
-            state: enabled
-            permanent: true
-            zone: internal
-          - port: 8088/tcp
-            state: enabled
-            permanent: true
-            zone: internal
       ansible.builtin.import_role:
         name: fedora.linux_system_roles.firewall
+      tags:
+        - firewall
+
+    - name: Build Cockpit install files cache
+      ansible.builtin.dnf:
+        name: cockpit
+        state: present
+        download_only: true
 
     - name: Include common image cleanup tasks
       ansible.builtin.include_tasks:
@@ -634,8 +635,13 @@
 
     # https://github.com/redhat-cop/controller_configuration
     - name: Create lab controller objects
-      ansible.builtin.import_role:
+      ansible.builtin.include_role:
         name: redhat_cop.controller_configuration.dispatch
+        apply:
+          tags:
+            - controller-objects
+      tags:
+        - controller-objects
 
     # Run cleanup tasks on images
     - name: Include common image cleanup tasks

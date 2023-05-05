@@ -63,10 +63,6 @@
     group: "{{ ansible_user }}"
   register: __aws_cli_download
 
-- name: Install AWS CLI for S3 downloads
-  ansible.builtin.command:
-    cmd: /tmp/aws/install --install-dir /usr/local/aws --bin-dir /usr/bin/ --update
-    creates: /usr/bin/aws
 
 - name: Install generic ansible.cfg in home directory
   ansible.builtin.template:
@@ -82,6 +78,11 @@
     mode: "0644"
     owner: "{{ student_username }}"
     group: "{{ student_username }}"
+
+- name: Install AWS CLI for S3 downloads
+  ansible.builtin.command:
+    cmd: /tmp/aws/install --install-dir /usr/local/aws --bin-dir /usr/bin/ --update
+    creates: /usr/bin/aws
 
 - name: Download setup scripts to controller /opt directory - {{ lab.s3_bucket_name }}
   ansible.builtin.command:
@@ -148,8 +149,6 @@
 
 - name: Download custom execution environments
   when: (controller_execution_environments is defined) and (controller_execution_environments | length > 0)
-  tags:
-    - execution-environments
   block:
     - name: Install containers.podman collection
       community.general.ansible_galaxy_install:
@@ -164,6 +163,7 @@
         registry: "registry.redhat.io"
         username: "{{ registry_username }}"
         password: "{{ registry_password }}"
+      no_log: true
       loop:
         - "{{ student_username }}"
         - awx
