@@ -25,7 +25,9 @@ argument_specs:
         default:
           - code
           - firefox
-        description: "GNOME desktop icons based on Ansible templates with the same filename."
+        description: "GNOME desktop icons based on Ansible templates with the same filename.
+                      Default location for *.desktop files is {{ role_path }}/files/*.desktop.
+                      Specify custom *.desktop files location by using {{ playbook_dir }} variable."
       gnome_applications:
         type: "list"
         required: false

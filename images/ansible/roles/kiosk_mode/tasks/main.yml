@@ -18,10 +18,15 @@
     state: present
 
 - name: Create gdm configuration for kiosk
-  ansible.builtin.template:
-    src: custom.conf.j2
+  ansible.builtin.copy:
+    src: custom.conf
     dest: /etc/gdm/custom.conf
     mode: 0644
+
+- name: Create kiosk user group - {{ kiosk_username }}
+  ansible.builtin.group:
+    name: "{{ kiosk_username }}"
+    state: present
 
 - name: Add kiosk user - {{ kiosk_username }}
   ansible.builtin.user:
@@ -30,7 +35,7 @@
     state: present
     shell: /bin/bash
     uid: 2000
-    group: users
+    group: "{{ kiosk_username }}"
     create_home: true
     skeleton: true
 
@@ -53,7 +58,7 @@
         src: "{{ kiosk_script_file }}.j2"
         mode: '0755'
         owner: "{{ kiosk_username }}"
-        group: users
+        group: "{{ kiosk_username }}"
       when: __kiosk_script_stat.stat.exists
   always:
     - name: Debug msg no kiosk script file found
@@ -68,41 +73,31 @@
 #     state: link
 #   notify: Reboot
 
-# Work-around to stop gnome-keyring-daemon from prompting user
-- name: Add gnome-keyring unlock in .bashrc - {{ kiosk_username }}
-  ansible.builtin.blockinfile:
-    path: "~{{ kiosk_username }}/.bashrc"
-    mode: "0644"
-    state: present
-    create: true
-    insertbefore: "unset rc"
-    block: |
-      killall -q -u "$(whoami)" gnome-keyring-daemon
-      eval $(echo -n "{{ kiosk_password }}" \
-      | gnome-keyring-daemon --daemonize --login \
-      | sed -e 's/^/export /')
-
-- name: Flush handlers (will reboot if needed)
-  ansible.builtin.meta: flush_handlers
-
 - name: Create home config directories - {{ kiosk_username }}
   ansible.builtin.file:
     path: "~{{ kiosk_username }}/{{ item }}/"
     state: directory
     mode: "0755"
     owner: "{{ kiosk_username }}"
-    group: users
+    group: "{{ kiosk_username }}"
   loop:
     - ".local/bin"
     - ".config"
+    - ".local/share/keyrings"
 
-- name: Create /run/user/2000/dconf directory
-  ansible.builtin.file:
-    path: "/run/user/2000/dconf"
-    state: directory
-    mode: "0755"
+- name: Add Default gnome-keyring
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "~{{ kiosk_username }}/.local/share/keyrings/{{ item }}"
     owner: "{{ kiosk_username }}"
-    group: users
+    group: "{{ kiosk_username }}"
+    mode: "0600"
+  loop:
+    - default
+    - Default_keyring.keyring
+
+- name: Flush handlers (will reboot if needed)
+  ansible.builtin.meta: flush_handlers
 
 - name: Create file to disable setup screens
   ansible.builtin.file:
@@ -110,7 +105,7 @@
     state: touch
     mode: "0755"
     owner: "{{ kiosk_username }}"
-    group: users
+    group: "{{ kiosk_username }}"
 
 - name: Create dconf directory for Gnome customization - {{ kiosk_username }}
   ansible.builtin.file:
@@ -118,7 +113,7 @@
     state: directory
     mode: "0755"
     owner: "{{ kiosk_username }}"
-    group: users
+    group: "{{ kiosk_username }}"
 
 # https://access.redhat.com/solutions/6976776
 - name: Remove the 'System Not Registered' notification
@@ -133,14 +128,14 @@
     state: directory
     mode: '0755'
     owner: "{{ kiosk_username }}"
-    group: users
+    group: "{{ kiosk_username }}"
 
 - name: Copy desktop files to Desktop directory - {{ kiosk_username }}
   ansible.builtin.copy:
     src: "{{ item }}.desktop"
     dest: "~{{ kiosk_username }}/Desktop"
     owner: "{{ kiosk_username }}"
-    group: users
+    group: "{{ kiosk_username }}"
     mode: "0644"
   loop: "{{ gnome_desktop_icons }}"
 
@@ -158,10 +153,11 @@
   loop: "{{ gnome_desktop_icons }}"
 
 # Making .desktop files executable must happen after above "gio" command
+# TODO make this reusable by pointing to playbook_dir files
 - name: Make desktop icons executable
   ansible.builtin.file:
     dest: "~{{ kiosk_username }}/Desktop/{{ item }}.desktop"
     mode: "0755"
     owner: "{{ kiosk_username }}"
-    group: users
+    group: "{{ kiosk_username }}"
   loop: "{{ gnome_desktop_icons }}"

@@ -1,6 +1,6 @@
 galaxy_info:
   author: chad ferman
-  description: "Configure kiosk mode on RHEL for VNC sessions."
+  description: "Configure RHEL machine kiosk mode for VNC sessions."
   company: red hat
 
   # If the issue tracker for your role is not on github, uncomment the
