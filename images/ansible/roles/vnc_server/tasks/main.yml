@@ -13,6 +13,7 @@
     name:
       - tigervnc-server
       - python3-pexpect
+      - tigervnc-server-module
     state: present
 
 - name: Configure VNC user password - {{ vnc_username }}
