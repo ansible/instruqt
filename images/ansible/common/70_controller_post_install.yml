@@ -70,14 +70,26 @@
     dest: "/etc/ansible/ansible.cfg"
     mode: 0644
 
+#  Added for student command line tasks
 - name: Copy ansible-navigator.yml template - {{ student_username }}
-  when: lab.navigator_execution_environment is defined
   ansible.builtin.template:
     src: "ansible-navigator.yml.j2"
     dest: "~{{ student_username }}/.ansible-navigator.yml"
     mode: "0644"
     owner: "{{ student_username }}"
     group: "{{ student_username }}"
+  when: lab.navigator_execution_environment is defined
+
+ # root because of become: true
+- name: Copy vault_password file - {{ ansible_user_id }}
+  when: lab.navigator_execution_environment is defined
+  become: true
+  ansible.builtin.template:
+    src: "{{ track_slug }}_ansible_vault_password.j2"
+    dest: "~{{ ansible_user_id }}/.{{ track_slug }}_ansible_vault_password"
+    mode: "0640"
+    owner: "{{ ansible_user_id }}"
+    group: "wheel"
 
 - name: Install AWS CLI for S3 downloads
   ansible.builtin.command:
@@ -98,8 +110,6 @@
     responses:
       Password: "{{ controller_password }}"
       Password (again): "{{ controller_password }}"
-  tags:
-    - install-controller
 
 ## Remove controller demo content
 - name: Remove pre-created demo content
@@ -180,6 +190,17 @@
 
     - name: Pull execution environment images - {{ student_username }}
       become_user: "{{ student_username }}"
+      containers.podman.podman_image:
+        name: "{{ item.image }}"
+      loop: "{{ controller_execution_environments }}"
+      register: __podman_pull_supported_student
+      until: __podman_pull_supported_student is not failed
+      retries: 40
+      delay: 2
+
+    #  Added for track lifecycle scripts - root
+    - name: Pull execution environment images - {{ ansible_user_id }}
+      become: true
       containers.podman.podman_image:
         name: "{{ item.image }}"
       loop: "{{ controller_execution_environments }}"

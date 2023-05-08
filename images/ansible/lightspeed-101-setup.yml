@@ -283,6 +283,7 @@
       vars:
         extra_vars:
           - name: lab_containers
+          - name: track_slug
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/60_check_vars.yml"
         apply:
@@ -302,7 +303,6 @@
       loop:
         - "{{ admin_username }}"
         - "{{ ansible_user_id }}" # root because of become: true
-        - "{{ student_username }}"
       when: (hostvars.localhost._ssh_tempdir.path is defined) and (hostvars.localhost._ssh_tempdir.path | length > 0)
 
     - name: Get gcp node instance info
@@ -317,8 +317,9 @@
       register: __controller_instance_info
       tags:
         - post-install
+        - controller-objects
 
-    - name: Set controller hostname fact for install tasks
+    - name: Set controller hostname fact
       ansible.builtin.set_fact:
         controller_hostname: "https://{{ __controller_instance_info.resources[0].networkInterfaces[0].accessConfigs[0].natIP }}"
       when: (__controller_instance_info is defined) and (__controller_instance_info | length > 0)
@@ -547,14 +548,6 @@
             - absent
             - directory
 
-        # - name: Extract initial repo files
-        #   ansible.builtin.unarchive:
-        #     src: "/opt/setup-scripts/{{ track_slug }}/files/acme_repo.tar.gz"
-        #     dest: "~{{ student_username }}/{{ gitea_repo_name }}"
-        #     remote_src: true
-        #     owner: "{{ student_username }}"
-        #     group: "{{ student_username }}"
-
         - name: Copy initial repository files - {{ gitea_repo_name }}
           ansible.builtin.copy:
             src: "/opt/setup-scripts/{{ track_slug }}/{{ gitea_repo_name }}/"
@@ -607,6 +600,18 @@
             - "git commit -m'Initial commit'"
             - "git push -u origin main --force"
 
+    - name: Install code server
+      ansible.builtin.include_role:
+        name: code_server
+
+    # Have to restart because code_server pre_build role var only runs certain tasks
+    - name: Daemon-reload, enable and start code-server
+      ansible.builtin.systemd:
+        name: code-server
+        enabled: true
+        state: restarted
+        daemon_reload: true
+
     # Lab environment prep
     - name: Configure worker node firewall
       ansible.builtin.import_role:
@@ -620,15 +625,44 @@
         state: present
         download_only: true
 
+    # - name: Copy instruqt public SSH key to acme_key.pub
+    #   ansible.builtin.copy:
+    #     src: "~{{ student_username }}/.ssh/instruqt_lab.pub"
+    #     dest: "~{{ student_username }}/.ssh/acme_key.pub"
+    #     remote_src: true
+    #     owner: "{{ student_username }}"
+    #     group: "{{ student_username }}"
+    #     mode: "0600"
+
+        # DISPLAY=:2 BUS_SESSION_BUS_ADDRESS=unix:path=/run/user/2000/bus XDG_RUNTIME_DIR=/run/user/2000 dbus-launch gsettings set {{ item }}
+
+    - name: Customize Gnome kiosk configuration - {{ student_username }}
+      environment:
+        - DISPLAY: :2
+        - BUS_SESSION_BUS_ADDRESS: unix:path=/run/user/2000/bus
+        - XDG_RUNTIME_DIR: /run/user/2000
+      ansible.builtin.shell: |
+        DISPLAY=:2  XDG_RUNTIME_DIR=/run/user/2000 gsettings set {{ item }}
+      loop: "{{ gnome_gsettings }}"
+      become_user: "{{ student_username }}"
+      become: true
+      register: __gnome_settings
+      failed_when: '"failed to commit changes" in __gnome_settings.stdout or "Child process exited with code 1" in __gnome_settings.stdout'
+      changed_when: __gnome_settings.rc == 0
+      tags:
+        - gsettings
+
+
     - name: Include common image cleanup tasks
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/10_image_cleanup.yml"
 
-    - name: Build Cockpit install files cache
-      ansible.builtin.dnf:
-        name: cockpit
-        state: present
-        download_only: true
+    # - name: Build Cockpit install files cache
+    #   ansible.builtin.dnf:
+    #     name: cockpit
+    #     state: present
+    #     download_only: true
+
     - name: Include common image cleanup tasks
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/10_image_cleanup.yml"
@@ -817,6 +851,8 @@
       register: __remove_instances_job_async
       changed_when: not __remove_instances_job_async.changed
       when: (gcp_instances is defined) and (gcp_instances | length > 0)
+      tags:
+        - remove-instances
 
     - name: "Remove GCP instances | Wait for finish the instance deletion"
       listen: remove instances
@@ -831,3 +867,5 @@
       until: __remove_instances_job_async_result.finished
       register: __remove_instances_job_async_result
       when: __remove_instances_job_async_result_item.ansible_job_id is defined
+      tags:
+        - remove-instances

@@ -18,5 +18,9 @@
     "terminal.integrated.gpuAcceleration": "canvas",
     "ansible.executionEnvironment.enabled": true,
     "ansible.executionEnvironment.image": "quay.io/acme_corp/summit_ee",
-    "ansible.validation.lint.enabled": false
+    "ansible.validation.lint.enabled": false,
+    "ansible.lightspeed.URL": "https://wisdom-service-summit.apps.wisdom-prod.od3f.p1.openshiftapps.com/",
+    "files.associations": {
+        "*.yml": "ansible"
+    }
 }
