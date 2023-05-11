@@ -7,14 +7,15 @@
       - ansible-core
     state: present
 
-- name: Download and upgrade collections for install - {{ inventory_hostname }}
-  community.general.ansible_galaxy_install:
-    name: "{{ item }}"
-    type: collection
-  become_user: "{{ ansible_user }}"
-  loop: "{{ controller_collections }}"
-  register: __collection_install
-  when: (controller_collections is defined) and (controller_collections | length > 0)
+# - name: Download and upgrade collections for install - {{ inventory_hostname }}
+#   community.general.ansible_galaxy_install:
+#     name: "{{ item }}"
+#     type: collection
+#   become_user: "{{ ansible_user }}"
+#   loop: "{{ controller_collections }}"
+#   register: __collection_install
+#   delegate_to: localhost
+#   when: (controller_collections is defined) and (controller_collections | length > 0)
 
 - name: Check if AAP bundle file exists
   ansible.builtin.stat:

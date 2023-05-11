@@ -619,22 +619,16 @@
       tags:
         - firewall
 
-    - name: Build Cockpit install files cache
-      ansible.builtin.dnf:
-        name: cockpit
+    # - name: Build Cockpit install files cache
+    #   ansible.builtin.dnf:
+    #     name: cockpit
+    #     state: present
+    #     download_only: true
+
+    - name: Pull mattermost-preview image
+      containers.podman.podman_image:
+        name: docker.io/mattermost/mattermost-preview
         state: present
-        download_only: true
-
-    # - name: Copy instruqt public SSH key to acme_key.pub
-    #   ansible.builtin.copy:
-    #     src: "~{{ student_username }}/.ssh/instruqt_lab.pub"
-    #     dest: "~{{ student_username }}/.ssh/acme_key.pub"
-    #     remote_src: true
-    #     owner: "{{ student_username }}"
-    #     group: "{{ student_username }}"
-    #     mode: "0600"
-
-        # DISPLAY=:2 BUS_SESSION_BUS_ADDRESS=unix:path=/run/user/2000/bus XDG_RUNTIME_DIR=/run/user/2000 dbus-launch gsettings set {{ item }}
 
     - name: Customize Gnome kiosk configuration - {{ student_username }}
       environment:
@@ -652,16 +646,17 @@
       tags:
         - gsettings
 
-
     - name: Include common image cleanup tasks
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/10_image_cleanup.yml"
 
-    # - name: Build Cockpit install files cache
-    #   ansible.builtin.dnf:
-    #     name: cockpit
-    #     state: present
-    #     download_only: true
+    - name: Build Cockpit install files cache
+      ansible.builtin.dnf:
+        name: 
+          - cockpit
+          - cockpit-podman
+        state: present
+        download_only: true
 
     - name: Include common image cleanup tasks
       ansible.builtin.include_tasks:

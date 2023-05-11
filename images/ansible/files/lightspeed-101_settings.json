@@ -9,18 +9,18 @@
     "git.confirmSync": false,
     "ansible.ansibleLint.enabled": false,
     "ansible.ansible.useFullyQualifiedCollectionNames": true,
-    "redhat.telemetry.enabled": false,
+    "redhat.telemetry.enabled": false, 
     "security.workspace.trust.banner": "never",
     "security.workspace.trust.enabled": false,
     "window.titleBarStyle": "native",
     "window.openFoldersInNewWindow": "off",
-    "window.zoomLevel": 1,
     "terminal.integrated.gpuAcceleration": "canvas",
     "ansible.executionEnvironment.enabled": true,
     "ansible.executionEnvironment.image": "quay.io/acme_corp/summit_ee",
-    "ansible.validation.lint.enabled": false,
-    "ansible.lightspeed.URL": "https://wisdom-service-summit.apps.wisdom-prod.od3f.p1.openshiftapps.com/",
+    "ansible.lightspeed.URL": "https://lab.ai.ansible.redhat.com/",
+    "git.autofetch": false,
     "files.associations": {
         "*.yml": "ansible"
-    }
-}
+    },
+    "ansible.validation.lint.enabled": false
+}   

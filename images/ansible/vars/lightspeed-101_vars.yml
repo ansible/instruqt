@@ -95,7 +95,12 @@ codeserver_extensions:
 # Lab vars
 lab:
   credential:
-    name: ACME Corp Machine Credential
+    ssh:
+      name: ACME Corp Machine Credential
+    vault:
+      name: ACME Corp vault credential
+    controller:
+      name: ACME Corp controller credential
   organization: ACME Corp
   project:
     name: ACME Corp Repo
@@ -119,7 +124,7 @@ firewall:
     state: enabled
     permanent: true
   - service: cockpit
-    state: enabled
+    state: disabled
     permanent: true
     zone: internal
   - service: vnc-server
@@ -212,8 +217,8 @@ controller_collections:
   - kubernetes.core
   - community.general
   - containers.podman
-  - community.docker
   - ansible.posix
+  - fedora.linux_system_roles
 
 # CoP Collection vars https://github.com/redhat-cop/controller_configuration
 controller_configuration_credentials_secure_logging: false
@@ -259,12 +264,28 @@ controller_organizations:
     state: present
 
 controller_credentials:
-  - name: "{{ lab.credential.name }}"
-    description: "{{ lab.credential.name }}"
+  - name: "{{ lab.credential.ssh.name }}"
+    description: "{{ lab.credential.ssh.name }}"
     organization: "{{ lab.organization }}"
     credential_type: Machine
     inputs:
       ssh_key_data: "{{ lookup('file', hostvars.localhost._ssh_tempdir.path + '/instruqt_lab') }}"
+  # - name: "{{ lab.credential.vault.name }}"
+  #   organization: "{{ lab.organization }}"
+  #   credential_type: Vault
+  #   description: "{{ lab.credential.vault.name }}"
+  #   inputs:
+  #     vault_id: default
+  #     vault_password: "{{ vault_password }}"
+  - name: "{{ lab.credential.controller.name }}"
+    organization: "{{ lab.organization }}"
+    credential_type: Red Hat Ansible Automation Platform
+    description: "{{ lab.credential.controller.name }}"
+    inputs:
+      host: "{{ track_slug }}-controller"
+      verify_ssl: "{{ controller_validate_certs }}"
+      username: "{{ controller_username }}"
+      password: "{{ controller_password }}"
 
 controller_execution_environments:
   - name: "{{ lab.execution_environment.name }}"
@@ -281,54 +302,89 @@ controller_projects:
     scm_clean: false
     scm_delete_on_update: false
     scm_type: git
-    scm_update_on_launch: false
     scm_url: "{{ lab.project.repo }}"
     wait: true
     update_project: true
+    scm_update_on_launch: true
 
 controller_inventories:
   - name: "{{ lab.inventory.name }}"
     organization: "{{ lab.organization }}"
     description: "{{ lab.inventory.name }}"
+    variables:
+      ansible_ssh_private_key_file: ~/.ssh/instruqt_lab
+      ansible_host: lightspeed-101-controller
+      ansible_user: rhel
+      ansible_python_interpreter: /usr/bin/python3
+      ansible_ssh_extra_args: '-o StrictHostKeyChecking=no -o ControlMaster=auto -o ControlPersist=60s'
+      ansible_ssh_pipelining: true
 
-controller_inventory_sources:
-  - credential:
-    description: ""
-    enabled_value: ""
-    enabled_var: ""
-    execution_environment:
-    host_filter: ""
+# controller_inventory_sources:
+#   - credential:
+#     description: ""
+#     enabled_value: ""
+#     enabled_var: ""
+#     execution_environment:
+#     host_filter: ""
+#     inventory: "{{ lab.inventory.name }}"
+#     name: ACME Corp inventory source
+#     natural_key:
+#       inventory:
+#         name: ACME Corp DC
+#         organization:
+#           name: ACME Corp
+#           type: organization
+#         type: inventory
+#       name: ACME Corp inventory source
+#       type: inventory_source
+#     overwrite: false
+#     overwrite_vars: false
+#     related:
+#       notification_templates_error: []
+#       notification_templates_started: []
+#       notification_templates_success: []
+#       schedules: []
+#     source: scm
+#     source_path: inventory/inventory.yml
+#     source_project:
+#       name: ACME Corp Repo
+#       organization:
+#         name: ACME Corp
+#         type: organization
+#       type: project
+#     # source_vars: '---'
+#     timeout: 0
+#     update_cache_timeout: 0
+#     update_on_launch: false
+#     verbosity: 1
+
+controller_hosts:
+  - name: controller.acme.example.com
     inventory: "{{ lab.inventory.name }}"
-    name: ACME Corp inventory source
-    natural_key:
-      inventory:
-        name: ACME Corp DC
-        organization:
-          name: ACME Corp
-          type: organization
-        type: inventory
-      name: ACME Corp inventory source
-      type: inventory_source
-    overwrite: false
-    overwrite_vars: false
-    related:
-      notification_templates_error: []
-      notification_templates_started: []
-      notification_templates_success: []
-      schedules: []
-    source: scm
-    source_path: inventory/inventory.yml
-    source_project:
-      name: ACME Corp Repo
-      organization:
-        name: ACME Corp
-        type: organization
-      type: project
-    # source_vars: '---'
-    timeout: 0
-    update_cache_timeout: 0
-    update_on_launch: false
-    verbosity: 1
+  - name: app-01.acme.example.com
+    inventory: "{{ lab.inventory.name }}"
+  - name: app-02.acme.example.com
+    inventory: "{{ lab.inventory.name }}"
+  - name: monitor-01.acme.example.com
+    inventory: "{{ lab.inventory.name }}"
+
+controller_groups:
+  - name: appservers
+    description: ACME Corp app servers
+    inventory: "{{ lab.inventory.name }}"
+    hosts:
+      - app-01.acme.example.com
+      - app-02.acme.example.com
+  - name: monitoring
+    description: ACME Corp monitoring servers
+    inventory: "{{ lab.inventory.name }}"
+    hosts:
+      - monitor-01.acme.example.com
+  - name: automationcontroller
+    description: ACME Corp automation controller
+    inventory: "{{ lab.inventory.name }}"
+    hosts:
+      - controller.acme.example.com
 
 # controller_templates:
 #   - name: Harden app servers
