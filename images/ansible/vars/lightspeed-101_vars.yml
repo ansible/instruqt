@@ -12,7 +12,7 @@ ansible_user: rhel
 
 # AAP vars
 aap_dir: /home/{{ ansible_user }}/aap_install
-controller_install_command: ANSIBLE_BECOME_METHOD='sudo' ANSIBLE_BECOME=True ./setup.sh -e registry_username='{{ registry_username }}' -e registry_password='{{ registry_password}}' # noqa yaml[line-length]
+controller_install_command: ANSIBLE_BECOME_METHOD='sudo' ANSIBLE_BECOME=True ./setup.sh -e registry_username='{{ registry_username }}' -e registry_password='{{ registry_password }}' # noqa yaml[line-length]
 offline_token: "{{ lookup('ansible.builtin.env', 'REDHAT_OFFLINE_TOKEN') }}"
 provided_sha_value: 7456b98f2f50e0e1d4c93fb4e375fe8a9174f397a5b1c0950915224f7f020ec4 # RHEL 9 2.3
 
@@ -134,6 +134,9 @@ firewall:
   - port: 27199/tcp
     state: enabled
     zone: internal
+  - port: 28065/tcp
+    state: disabled
+    zone: internal
     permanent: true
   - service: https
     state: enabled
@@ -145,10 +148,6 @@ firewall:
     permanent: true
   - port: 8443/tcp
     state: enabled
-    zone: internal
-    permanent: true
-  - port: 8065/tcp
-    state: disabled
     zone: internal
     permanent: true
 
@@ -270,13 +269,6 @@ controller_credentials:
     credential_type: Machine
     inputs:
       ssh_key_data: "{{ lookup('file', hostvars.localhost._ssh_tempdir.path + '/instruqt_lab') }}"
-  # - name: "{{ lab.credential.vault.name }}"
-  #   organization: "{{ lab.organization }}"
-  #   credential_type: Vault
-  #   description: "{{ lab.credential.vault.name }}"
-  #   inputs:
-  #     vault_id: default
-  #     vault_password: "{{ vault_password }}"
   - name: "{{ lab.credential.controller.name }}"
     organization: "{{ lab.organization }}"
     credential_type: Red Hat Ansible Automation Platform
@@ -361,12 +353,16 @@ controller_inventories:
 controller_hosts:
   - name: controller.acme.example.com
     inventory: "{{ lab.inventory.name }}"
+    enabled: true
   - name: app-01.acme.example.com
     inventory: "{{ lab.inventory.name }}"
+    enabled: true
   - name: app-02.acme.example.com
     inventory: "{{ lab.inventory.name }}"
+    enabled: true
   - name: monitor-01.acme.example.com
     inventory: "{{ lab.inventory.name }}"
+    enabled: true
 
 controller_groups:
   - name: appservers
@@ -386,45 +382,6 @@ controller_groups:
     hosts:
       - controller.acme.example.com
 
-# controller_templates:
-#   - name: Harden app servers
-#     state: present
-#     job_type: run
-#     playbook: harden_appservers.yml
-#     execution_environment: "{{ lab.execution_environment.name }}"
-#     inventory: "{{ lab.inventory.name }}"
-#     verbosity: 0
-#     credentials:
-#       - "{{ lab.credential.name }}"
-#     project: "{{ lab.project.name }}"
-  # - name: Configure firewall
-  #   state: present
-  #   job_type: run
-  #   playbook: configure_firewall.yml
-  #   execution_environment: "{{ lab.execution_environment.name }}"
-  #   inventory: "{{ lab.inventory.name }}"
-  #   credentials:
-  #     - "{{ lab.credential.name }}"
-  #   project: "{{ lab.project.name }}"
-  # - name: Deploy monitoring
-  #   state: present
-  #   job_type: run
-  #   playbook: deploy_monitoring.yml
-  #   execution_environment: "{{ lab.execution_environment.name }}"
-  #   inventory: "{{ lab.inventory.name }}"
-  #   credentials:
-  #     - "{{ lab.credential.name }}"
-  #   project: "{{ lab.project.name }}"
-  # - name: Deploy ACME Corp app
-  #   state: present
-  #   job_type: run
-  #   playbook: deploy_app.yml
-  #   execution_environment: "{{ lab.execution_environment.name }}"
-  #   inventory: "{{ lab.inventory.name }}"
-  #   credentials:
-  #     - "{{ lab.credential.name }}"
-  #   project: "{{ lab.project.name }}"
-
 controller_user_accounts:
   - user: "{{ student_username }}"
     state: present
@@ -435,9 +392,21 @@ controller_user_accounts:
 
 controller_roles:
   - user: "{{ student_username }}"
+    credentials:
+      - "{{ lab.credential.ssh.name }}"
+    role: read
+  - user: "{{ student_username }}"
+    credentials:
+      - "{{ lab.credential.ssh.name  }}"
+    role: use
+  - user: "{{ student_username }}"
     inventories:
       - "{{ lab.inventory.name }}"
     role: read
+  - user: "{{ student_username }}"
+    inventories:
+      - "{{ lab.inventory.name }}"
+    role: use
   - user: "{{ student_username }}"
     projects:
       - "{{ lab.project.name }}"
@@ -452,282 +421,3 @@ controller_roles:
   - user: "{{ student_username }}"
     organization: "{{ lab.organization }}"
     role: job_template_admin
-  - user: "{{ student_username }}"
-    organization: "{{ lab.organization }}"
-    role: member
-
-# controller_workflows:
-#   - allow_simultaneous: false
-#     ask_inventory_on_launch: false
-#     ask_labels_on_launch: false
-#     ask_limit_on_launch: false
-#     ask_scm_branch_on_launch: false
-#     ask_skip_tags_on_launch: false
-#     # ask_tags_on_launch: false
-#     ask_variables_on_launch: false
-#     description: ""
-#     # extra_vars: ''
-#     inventory:
-#     job_tags:
-#     limit:
-#     name: Deploy app to production
-#     natural_key:
-#       name: Deploy app to production
-#       organization:
-#         name: "{{ lab.organization }}"
-#         type: organization
-#       type: workflow_job_template
-#     organization:
-#       name: "{{ lab.organization }}"
-#       type: organization
-#     related:
-#       labels: []
-#       notification_templates_approvals: []
-#       notification_templates_error: []
-#       notification_templates_started: []
-#       notification_templates_success: []
-#       schedules: []
-#       survey_spec: {}
-#       workflow_nodes:
-#         - all_parents_must_converge: false
-#           diff_mode:
-#           execution_environment:
-#           extra_data: {}
-#           forks:
-#           identifier: Sync Playbooks
-#           inventory:
-#           job_slice_count:
-#           job_tags:
-#           job_type:
-#           limit:
-#           natural_key:
-#             identifier: Sync Playbooks
-#             type: workflow_job_template_node
-#             workflow_job_template:
-#               name: Deploy app to production
-#               organization:
-#                 name: "{{ lab.organization }}"
-#                 type: organization
-#               type: workflow_job_template
-#           related:
-#             always_nodes: []
-#             credentials: []
-#             failure_nodes: []
-#             success_nodes:
-#               - identifier: 7036aa60-6651-416e-aee0-716001dddbd8
-#                 type: workflow_job_template_node
-#                 workflow_job_template:
-#                   name: Deploy app to production
-#                   organization:
-#                     name: "{{ lab.organization }}"
-#                     type: organization
-#                   type: workflow_job_template
-#               - identifier: c77990c8-a21b-414e-b957-7545b7f9449a
-#                 type: workflow_job_template_node
-#                 workflow_job_template:
-#                   name: Deploy app to production
-#                   organization:
-#                     name: "{{ lab.organization }}"
-#                     type: organization
-#                   type: workflow_job_template
-#           scm_branch:
-#           skip_tags:
-#           timeout:
-#           unified_job_template:
-#             name: ACME Corp Repo
-#             organization:
-#               name: "{{ lab.organization }}"
-#               type: organization
-#             type: project
-#           verbosity:
-#           workflow_job_template:
-#             name: Deploy app to production
-#             organization:
-#               name: "{{ lab.organization }}"
-#               type: organization
-#             type: workflow_job_template
-#         - all_parents_must_converge: false
-#           diff_mode:
-#           execution_environment:
-#           extra_data: {}
-#           forks:
-#           identifier: 7036aa60-6651-416e-aee0-716001dddbd8
-#           inventory:
-#           job_slice_count:
-#           job_tags:
-#           job_type:
-#           limit:
-#           natural_key:
-#             identifier: 7036aa60-6651-416e-aee0-716001dddbd8
-#             type: workflow_job_template_node
-#             workflow_job_template:
-#               name: Deploy app to production
-#               organization:
-#                 name: "{{ lab.organization }}"
-#                 type: organization
-#               type: workflow_job_template
-#           related:
-#             always_nodes: []
-#             credentials: []
-#             failure_nodes: []
-#             success_nodes: []
-#           scm_branch:
-#           skip_tags:
-#           timeout:
-#           unified_job_template:
-#             name: Deploy monitoring
-#             organization:
-#               name: "{{ lab.organization }}"
-#               type: organization
-#             type: job_template
-#           verbosity:
-#           workflow_job_template:
-#             name: Deploy app to production
-#             organization:
-#               name: "{{ lab.organization }}"
-#               type: organization
-#             type: workflow_job_template
-#         - all_parents_must_converge: false
-#           diff_mode:
-#           execution_environment:
-#           extra_data: {}
-#           forks:
-#           identifier: 9e4e61d2-b042-456c-8b19-921f93429a83
-#           inventory:
-#           job_slice_count:
-#           job_tags:
-#           job_type:
-#           limit:
-#           natural_key:
-#             identifier: 9e4e61d2-b042-456c-8b19-921f93429a83
-#             type: workflow_job_template_node
-#             workflow_job_template:
-#               name: Deploy app to production
-#               organization:
-#                 name: "{{ lab.organization }}"
-#                 type: organization
-#               type: workflow_job_template
-#           related:
-#             always_nodes: []
-#             credentials: []
-#             failure_nodes: []
-#             success_nodes:
-#               - identifier: "07cfac4e-2dcb-4647-8fd9-1cad9b9db7ad"
-#                 type: workflow_job_template_node
-#                 workflow_job_template:
-#                   name: Deploy app to production
-#                   organization:
-#                     name: "{{ lab.organization }}"
-#                     type: organization
-#                   type: workflow_job_template
-#           scm_branch:
-#           skip_tags:
-#           timeout:
-#           unified_job_template:
-#             name: Configure firewall
-#             organization:
-#               name: "{{ lab.organization }}"
-#               type: organization
-#             type: job_template
-#           verbosity:
-#           workflow_job_template:
-#             name: Deploy app to production
-#             organization:
-#               name: "{{ lab.organization }}"
-#               type: organization
-#             type: workflow_job_template
-#         - all_parents_must_converge: false
-#           diff_mode:
-#           execution_environment:
-#           extra_data: {}
-#           forks:
-#           identifier: c77990c8-a21b-414e-b957-7545b7f9449a
-#           inventory:
-#           job_slice_count:
-#           job_tags:
-#           job_type:
-#           limit:
-#           natural_key:
-#             identifier: c77990c8-a21b-414e-b957-7545b7f9449a
-#             type: workflow_job_template_node
-#             workflow_job_template:
-#               name: Deploy app to production
-#               organization:
-#                 name: "{{ lab.organization }}"
-#                 type: organization
-#               type: workflow_job_template
-#           related:
-#             always_nodes: []
-#             credentials: []
-#             failure_nodes: []
-#             success_nodes:
-#               - identifier: 9e4e61d2-b042-456c-8b19-921f93429a83
-#                 type: workflow_job_template_node
-#                 workflow_job_template:
-#                   name: Deploy app to production
-#                   organization:
-#                     name: "{{ lab.organization }}"
-#                     type: organization
-#                   type: workflow_job_template
-#           scm_branch:
-#           skip_tags:
-#           timeout:
-#           unified_job_template:
-#             name: Harden app servers
-#             organization:
-#               name: "{{ lab.organization }}"
-#               type: organization
-#             type: job_template
-#           verbosity:
-#           workflow_job_template:
-#             name: Deploy app to production
-#             organization:
-#               name: "{{ lab.organization }}"
-#               type: organization
-#             type: workflow_job_template
-#         - all_parents_must_converge: false
-#           diff_mode:
-#           execution_environment:
-#           extra_data: {}
-#           forks:
-#           identifier: "07cfac4e-2dcb-4647-8fd9-1cad9b9db7ad"
-#           inventory:
-#           job_slice_count:
-#           job_tags:
-#           job_type:
-#           limit:
-#           natural_key:
-#             identifier: "07cfac4e-2dcb-4647-8fd9-1cad9b9db7ad"
-#             type: workflow_job_template_node
-#             workflow_job_template:
-#               name: Deploy app to production
-#               organization:
-#                 name: "{{ lab.organization }}"
-#                 type: organization
-#               type: workflow_job_template
-#           related:
-#             always_nodes: []
-#             credentials: []
-#             failure_nodes: []
-#             success_nodes: []
-#           scm_branch:
-#           skip_tags:
-#           timeout:
-#           unified_job_template:
-#             name: Deploy ACME Corp app
-#             organization:
-#               name: "{{ lab.organization }}"
-#               type: organization
-#             type: job_template
-#           verbosity:
-#           workflow_job_template:
-#             name: Deploy app to production
-#             organization:
-#               name: "{{ lab.organization }}"
-#               type: organization
-#             type: workflow_job_template
-#     scm_branch:
-#     skip_tags:
-#     survey_enabled: false
-#     webhook_credential:
-#     webhook_service: ""

@@ -613,17 +613,33 @@
         daemon_reload: true
 
     # Lab environment prep
-    - name: Configure worker node firewall
-      ansible.builtin.import_role:
-        name: fedora.linux_system_roles.firewall
+    - name: Configure firewall
       tags:
         - firewall
+      block:
+        - name: Set firewall ports
+          ansible.builtin.import_role:
+            name: fedora.linux_system_roles.firewall
 
-    # - name: Build Cockpit install files cache
-    #   ansible.builtin.dnf:
-    #     name: cockpit
-    #     state: present
-    #     download_only: true
+        - name: Remove podman subnet from trusted zone 
+          ansible.posix.firewalld:
+            source: 10.88.0.0/16
+            zone: trusted
+            state: disabled
+            permanent: true
+            immediate: true
+
+        - name: Add podman subnet to internal zone
+          ansible.posix.firewalld:
+            source: 10.88.0.0/16
+            zone: internal
+            state: enabled
+            permanent: true
+            immediate: true
+
+        - name: Flush IPTables Net rules
+          ansible.builtin.command: "iptables -t nat -F"
+          changed_when: true
 
     - name: Pull mattermost-preview image
       containers.podman.podman_image:
@@ -645,6 +661,20 @@
       changed_when: __gnome_settings.rc == 0
       tags:
         - gsettings
+
+    - name: Allow *.redhat trusted domain in VS Code
+      ansible.builtin.lineinfile:
+        path: "/usr/share/code/resources/app/product.json"
+        line: '\1, "https://*.redhat.com"\2'
+        regexp: '^(.*?linkProtectionTrustedDomains.*?)(],)$'
+        backrefs: true
+        mode: "664"
+        owner: root
+        group: root
+        state: present
+      tags:
+        - vscode-config
+
 
     - name: Include common image cleanup tasks
       ansible.builtin.include_tasks:
