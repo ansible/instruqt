@@ -27,7 +27,7 @@
     - ".config/Code/User"
     - ".vscode/extensions"
 
-- name: Apply VS Code defaults
+- name: Apply VS Code User defaults
   ansible.builtin.copy:
     src: "{{ vscode_settings_file }}"
     dest: "~{{ vscode_username }}/.config/Code/User/settings.json"
