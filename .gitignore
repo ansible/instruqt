@@ -10,4 +10,4 @@ images/ansible/roles/instruqt_setup/tasks/main.yml
 *.swp
 extra_vars.yml
 settings.json
-images/ansible/extra-vars.yml
+images/ansible/extra-vars-sean.yml
