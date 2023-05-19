@@ -17,15 +17,15 @@ Optional module **Terraforming Clouds with Ansible** deck:
 
 ## Lab Agenda
 
-- **Infrastructure visibility** [Estimated Time ⏰ 20 minutes] - 
+- **Infrastructure visibility** [Estimated Time ⏰ 20 minutes] 
   <br>In this lab we will illustrate how we can retrieve Ansible facts (key, value pairs), also known as structured data, from public clouds and how we can use this data to provide us awareness of our cloud footprint easily
     - [Start exercise on AWS](https://play.instruqt.com/embed/redhat/tracks/cloud-visibility?token=em_IYvE6P3BoPg-Fo50)
     - [Start exercise on  Azure](https://play.instruqt.com/embed/redhat/tracks/ansible-for-azure-infrastructure-visibility?token=em_b_TKcpWZfvC6Jbwe)
-- **Cloud Operations** [Estimated Time ⏰ 20 minutes] - 
+- **Cloud Operations** [Estimated Time ⏰ 20 minutes] 
   <br>This lab will illustrate how Ansible Automation Platform can help you automate common day-2 cloud operations tasks across your public cloud. Our focus here will be on AWS, but the use cases here are ones you can extend across the hybrid cloud.
      - [Start exercise on AWS](https://play.instruqt.com/embed/redhat/tracks/cloud-operations?token=em_785MP3rpLI7oAW1Y)
      - [Start exercise on Azure](https://play.instruqt.com/embed/redhat/tracks/ansible-for-azure-cloud-operations?token=em_Iea3nZSewDSNZBW7)
-- **Infrastructure optimization** [Estimated Time ⏰ 20 minutes] - 
+- **Infrastructure optimization** [Estimated Time ⏰ 20 minutes] 
   <br>In this lab we will guide you in understanding some basic optimization exercises that can help you tame your public clouds.
     - [Start exercise on AWS](https://play.instruqt.com/embed/redhat/tracks/cloud-optimization?token=em_0h2ed0VTvBXyHNA6)
     - [Start exercise on Azure](https://play.instruqt.com/embed/redhat/tracks/ansible-for-azure-infrastructure-optimization?token=em_habXtbTR9H2f9QWd)
@@ -40,7 +40,7 @@ Optional Lab
 
 ## Lab Diagram Azure
 
-![azure diagram](img/azure_diagram.png)
+<img src="https://ipvsean.github.io/instruqt/webpages/img/azure_diagram.png" width="600px">
 
 # Free e-books
 
