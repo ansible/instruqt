@@ -10,7 +10,7 @@ Event-driven ansible is a brand new technology that helps to associate upstream 
 
 ## Lab Agenda
 
-- <a href="https://play.instruqt.com/embed/redhat/tracks/eda--ansible-rulebook?token=em_kn8hibVNgt0X03wZ" target="_blank">Getting started with event-driven ansible</a>- Ansible rulebooks combine event sources, conditions and actions to automate the response to events. This lab reviews the basics of the ansible rulebook.
-- <a href="https://play.instruqt.com/embed/redhat/tracks/eda-gitops?token=em__C74PAmX2rePq7Kk" target="_blank">Event-driven Ansible and GitOps</a> - Utilizing git events, this lab shows how event-driven ansible can be used to deploy an application from a project repository. [(Recorded - youtube)](https://youtu.be/Bb51DftLbPE)
+- <a href="https://play.instruqt.com/embed/redhat/tracks/eda--ansible-rulebook?token=em_kn8hibVNgt0X03wZ" target="_blank">Getting started with Event-Driven Ansible</a> - Ansible Rulebooks combine event sources, conditions and actions to automate the response to events. This lab reviews the basics of the Ansible Rulebook.
+- <a href="https://play.instruqt.com/embed/redhat/tracks/eda-gitops?token=em__C74PAmX2rePq7Kk" target="_blank">Event-Driven Ansible and GitOps</a> - Utilizing git project events, this lab shows how Event-Driven Ansible can be used to deploy an application from a project repository, and more importantly, how complex event structures can be handled. [(Recorded - youtube)](https://youtu.be/Bb51DftLbPE)
 
 
