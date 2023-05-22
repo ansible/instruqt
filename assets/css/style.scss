@@ -179,6 +179,16 @@ header {
   font-weight: 500;
 }
 
+.header-link-active {
+  margin-left: 40px;
+  text-decoration: none;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-size: 15px;
+  font-family: 'Red Hat Text';
+  font-weight: 500;
+}
+
 .header-link:hover {
   text-shadow: 0 0 0.02px white;
   text-decoration: none;
