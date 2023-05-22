@@ -6,7 +6,7 @@ This self-paced lab will demonstrate how Ansible Lightspeed with Watson Code Ass
 ## Presentation Deck
 
 - [Google Slides](https://docs.google.com/presentation/d/1t4_RbvgH0vAyYclYGr1tfOEXMF3-Yz8KY_t9d5S6nrY/edit?usp=sharing) - For Red Hat employees
-- [PDF](decks/lab-introduction-to-cloud-automation.pdf) - For everyone
+- [PDF](decks/Summit-2023-Intro-to-Ansible-Lightspeed-lab.pdf) - For everyone
 
 
 ## Lab Agenda
