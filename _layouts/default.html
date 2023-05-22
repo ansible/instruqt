@@ -36,11 +36,11 @@
             Home
           </a>
           {% if page.path == "webpages/ansible-cloud-lab.md" %}
-          blah
-          {% else %}
+          <a class="header-link-active" href="{{ '/webpages/ansible-cloud-lab' | relative_url }}">
+            cloud automation
+          </a>          {% else %}
           <a class="header-link" href="{{ '/webpages/ansible-cloud-lab' | relative_url }}">
             cloud automation
-            {{ page.path }}
           </a>
           {% endif %}
           <a class="header-link" href="{{ '/webpages/eda-gitops-lab' | relative_url }}">
