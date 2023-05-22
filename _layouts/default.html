@@ -35,9 +35,13 @@
           <a class="header-link" href="{{ '/' }}">
             Home
           </a>
+          {% if page.url == '/webpages/ansible-cloud-lab' | relative_url %}
+          blah
+          {% elif %}
           <a class="header-link" href="{{ '/webpages/ansible-cloud-lab' | relative_url }}">
             cloud automation
           </a>
+          {% endif %}
           <a class="header-link" href="{{ '/webpages/eda-gitops-lab' | relative_url }}">
             Gitops with EDA
           </a>
