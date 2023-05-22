@@ -1,0 +1,88 @@
+#!/bin/bash
+
+# Define the target directories and files
+ansible_files_dir="/home/rhel/ansible-files"
+hosts_file="${ansible_files_dir}/hosts"
+extended_services_yml="${ansible_files_dir}/extended_services.yml"
+
+# Define the expected content
+read -r -d '' hosts_content << 'EOF'
+[web]
+node1
+node2
+
+[database]
+node3
+EOF
+
+read -r -d '' extended_services_yml_content << 'EOF'
+---
+- name: Install extended services
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Postfix
+      ansible.builtin.package:
+        name: postfix
+        state: latest
+      when: inventory_hostname in groups["web"]
+    - name: Install database in corresponding group
+      ansible.builtin.package:
+        name: postgresql
+        state: latest
+      when: inventory_hostname in groups["database"]
+EOF
+
+# Array to store errors
+errors=()
+
+# Compare YAML files using Python
+compare_yaml() {
+    local yaml_file="$1"
+    local content="$2"
+    export YAML_FILE="$yaml_file"
+    export EXPECTED_YAML="$content"
+    python3 -c "import sys, os, yaml; sys.exit(0 if yaml.safe_load(open(os.environ['YAML_FILE'])) == yaml.safe_load(os.environ['EXPECTED_YAML']) else 1)"
+    return $?
+}
+
+# Check file and YAML content
+check_file_and_yaml_content() {
+    local yaml_file="$1"
+    local content="$2"
+    if [ -f "$yaml_file" ]; then
+        if compare_yaml "$yaml_file" "$content"; then
+            echo "$yaml_file exists and has the correct content."
+        else
+            errors+=("$yaml_file has incorrect content.")
+        fi
+    else
+        errors+=("$yaml_file does not exist.")
+    fi
+}
+
+# Check file and content
+check_file_and_content() {
+    local file="$1"
+    local content="$2"
+    if [ -f "$file" ]; then
+        local file_content
+        file_content=$(cat "$file")
+        if [ "$file_content" == "$content" ]; then
+            echo "$file exists and has the correct content."
+        else
+            errors+=("$file has incorrect content.")
+        fi
+    else
+        errors+=("$file does not exist.")
+    fi
+}
+
+check_file_and_content "$hosts_file" "$hosts_content"
+check_file_and_yaml_content "$extended_services_yml" "$extended_services_yml_content"
+
+# If there are any errors, call the fail-message function with all the errors
+if [ ${#errors[@]} -gt 0 ]; then
+    fail-message "$(IFS=$'\n'; echo "${errors[*]}")"
+    fail-message "${errors[*]}"
+fi

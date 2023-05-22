@@ -4,10 +4,6 @@ virtualmachines:
   image: red-hat-mbu/ansible
   shell: /bin/su - rhel -s /bin/bash
   machine_type: e2-small
-- name: node2
-  image: red-hat-mbu/ansible
-  shell: /bin/su - rhel -s /bin/bash
-  machine_type: e2-small
 - name: node1
   image: red-hat-mbu/ansible
   shell: /bin/su - rhel -s /bin/bash
@@ -16,3 +12,7 @@ virtualmachines:
   image: red-hat-mbu/automation-controller
   shell: /bin/su - rhel -s /bin/bash
   machine_type: n1-standard-1
+- name: node2
+  image: red-hat-mbu/ansible
+  shell: /bin/su - rhel -s /bin/bash
+  machine_type: e2-small

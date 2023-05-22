@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Define the target file
+target_file="/home/rhel/ansible-files/apache.yml"
+remote_hosts=("node1" "node2")
+remote_user="rhel"
+httpd_port=80
+
+# Define the expected line in the file
+expected_line="hosts: web"
+
+# Initialize an empty array to store errors
+errors=()
+
+# Check if the expected line is in the file
+if grep -qF "$expected_line" "$target_file"; then
+    echo "The 'apache.yml' file contains hosts: web"
+else
+    errors+=("The 'apache.yml' file does not contain the correct line. Ensure 'hosts: node1' is now 'hosts: web'")
+fi
+
+# Check if the httpd service is running on both node1 and node2
+for host in "${remote_hosts[@]}"; do
+    httpd_status=$(echo -e "HEAD / HTTP/1.0\r\n\r\n" | nc -w 3 "${host}" "${httpd_port}" | head -1)
+
+    if echo "$httpd_status" | grep -q "HTTP/1.1 200 OK"; then
+        echo "The httpd service is running on ${host}."
+    else
+        errors+=("The httpd service is NOT running on ${host}. Ensure playbook is running hosts: web")
+    fi
+done
+
+# Check if there are any errors and call the fail-message function with all the errors
+if [ ${#errors[@]} -gt 0 ]; then
+    error_message=$(printf ", %s" "${errors[@]}")
+    error_message=${error_message:2}
+    fail-message "$error_message"
+fi
+

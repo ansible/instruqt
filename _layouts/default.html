@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
 {% seo %}
-    <script src="{{ '/assets/js/scale.fix.js' }}"></script>
+    <script src="{{ '/assets/js/scale.fix.js' | relative_url }}"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -15,11 +15,11 @@
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="{{ '/assets/css/prism-vsc-dark-plus.css' }}">
-    <link rel="stylesheet" href="{{ '/assets/css/style.css?v=' | append: site.github.build_revision }}">
+    <link rel="stylesheet" href="{{ '/assets/css/prism-vsc-dark-plus.css' | relative_url }}">
+    <link rel="stylesheet" href="{{ '/assets/css/style.css?v=' | append: site.github.build_revision | relative_url }}">
   </head>
   <body>
-    <script src="{{ '/assets/prism.js' }}"></script>
+    <script src="{{ '/assets/prism.js' | relative_url }}"></script>
 
     <div class="wrapper">
       <header>
@@ -27,26 +27,52 @@
           <a href="https://ansible.com">
             <img
               class="header-logo"
-              src="{{ '/assets/images/redhat-ansible-logo.svg' }}"
+              src="{{ '/assets/images/redhat-ansible-logo.svg' | relative_url }}"
               title="Red Hat Ansible"
               alt="Red Hat Ansible"
             />
           </a>
-          <a class="header-link" href="{{ '/' }}">
-            Self-Paced Labs Home
+          <a class="header-link" href="{{ '/' | relative_url }}">
+            Home
           </a>
-          <a class="header-link" href="{{ '/webpages/ansible-cloud-lab' }}">
-            Introduction to cloud automation
+          {% if page.path == "webpages/ansible-cloud-lab.md" %}
+          <a class="header-link-active" href="{{ '/webpages/ansible-cloud-lab' | relative_url }}">
+            cloud automation
           </a>
-          <a class="header-link" href="{{ '/webpages/eda-gitops-lab' }}">
-            Gitops with Event-Driven Ansible
+          {% else %}
+          <a class="header-link" href="{{ '/webpages/ansible-cloud-lab' | relative_url }}">
+            cloud automation
           </a>
-          <a class="header-link" href="{{ '/webpages/ansible-edge-lab' }}">
-            Ansible Edge Lab
+          {% endif %}
+          {% if page.path == "webpages/eda-gitops-lab.md" %}
+          <a class="header-link-active" href="{{ '/webpages/eda-gitops-lab' | relative_url }}">
+            Gitops with EDA
           </a>
-
+          {% else %}
+          <a class="header-link" href="{{ '/webpages/eda-gitops-lab' | relative_url }}">
+            Gitops with EDA
+          </a>
+          {% endif %}
+          {% if page.path == "webpages/ansible-edge-lab.md" %}
+          <a class="header-link-active" href="{{ '/webpages/ansible-edge-lab' | relative_url }}">
+            Edge
+          </a>
+          {% else %}
+          <a class="header-link" href="{{ '/webpages/ansible-edge-lab' | relative_url }}">
+            Edge
+          </a>
+          {% endif %} 
+          {% if page.path == "webpages/lightspeed.md" %}
+          <a class="header-link-active" href="{{ '/webpages/lightspeed' | relative_url }}">
+            Lightspeed
+          </a>
+          {% else %}  
+          <a class="header-link" href="{{ '/webpages/lightspeed' | relative_url }}">
+            Lightspeed
+          </a>       
+          {% endif %}                 
           <a class="header-link" target="_new" href="https://github.com/ansible/instruqt/issues/new">
-            Open an Issue
+            Open Issue
           </a>
         </div>
       </header>
@@ -60,7 +86,7 @@
           <a href="https://redhat.com">
             <img
               class="footer-logo"
-              src="{{ '/assets/images/redhat-logo.svg' }}"
+              src="{{ '/assets/images/redhat-logo.svg' | relative_url }}"
               title="Red Hat"
               alt="Red Hat"
             />

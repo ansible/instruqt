@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Define the target directory
+target_directory="/home/rhel/ansible-files"
+
+# Create the files directory if it doesn't exist
+mkdir -p "$target_directory/files"
+
+# Create web.html in the files directory with the expected content
+cat > "${target_directory}/files/web.html" << 'EOF'
+<body>
+<h1>Apache is running fine, thanks to Ansible!</h1>
+</body>
+EOF
+
+# Create apache.yml in the target directory with the expected content
+cat > "${target_directory}/apache.yml" << 'EOF'
+---
+- name: Apache server installed
+  hosts: node1
+  become: true
+  tasks:
+  - name: latest Apache version installed
+    ansible.builtin.package:
+      name: httpd
+      state: latest
+  - name: Apache enabled and running
+    ansible.builtin.service:
+      name: httpd
+      enabled: true
+      state: started
+  - name: copy web.html
+    ansible.builtin.copy:
+      src: web.html
+      dest: /var/www/html/index.html
+EOF
+
+# Run the apache.yml playbook to install and configure Apache on node1
+cd "$target_directory"
+ansible-navigator run apache.yml
+

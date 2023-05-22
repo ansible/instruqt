@@ -1,0 +1,15 @@
+version: "3.7"
+
+services:
+  ansible-rulebook:
+    build:
+      dockerfile: rulebook-dockerfile
+    container_name: ansible-rulebook
+    restart: unless-stopped
+    volumes:
+      - .:/eda
+    command: >
+      ansible-rulebook
+      --rulebook /eda/webhook-controller.yml
+      --inventory /eda/inventory.yml
+      --verbose

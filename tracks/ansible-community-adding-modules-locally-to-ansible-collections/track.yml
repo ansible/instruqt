@@ -1,0 +1,19 @@
+slug: ansible-community-adding-modules-locally-to-ansible-collections
+id: ng8qtbl7tzl9
+title: 'Ansible Community: Adding modules locally to Ansible Collections'
+description: |
+  This execise will help users to add local modules and make them available to all playbooks and roles.
+
+  What you'll do:
+
+  - Install Ansible package
+  - Create new or Clone a module locally
+  - Using the local module in Playbook
+icon: ""
+level: beginner
+tags:
+- ""
+owner: redhat
+developers:
+- ompragash.viswanathan@gmail.com
+checksum: "7684002304934373442"

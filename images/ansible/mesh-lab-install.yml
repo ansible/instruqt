@@ -411,6 +411,14 @@
       tags:
         - configure-controller
 
+    # Using extra_vars file for this.
+    # Check https://github.com/redhat-cop/controller_configuration
+    - name: Create lab controller objects
+      ansible.builtin.import_role:
+        name: redhat_cop.controller_configuration.dispatch
+      tags:
+        - controller-install
+
     - name: Install code server
       ansible.builtin.import_role:
         name: ansible.workshops.code_server

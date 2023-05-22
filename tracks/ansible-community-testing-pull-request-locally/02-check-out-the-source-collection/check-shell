@@ -1,0 +1,6 @@
+#!/bin/bash
+
+if [ ! -d /home/devops/ansible_collections/ansible/drill ]; then
+    echo "Collection path ansible.posix isn't created. To continue, create it by executing the command 'mkdir -p ~/ansible_collections/ansible/posix'"
+    exit 1
+fi

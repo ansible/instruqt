@@ -1,6 +1,6 @@
 ---
 slug: update-pipeline
-id: t2481h50besa
+id: zzggmgddjl9d
 type: challenge
 title: Configure the ACME Corp pipeline
 teaser: We'll configure and integrate the ACME Corp pipeline using automation controller.
@@ -30,12 +30,12 @@ notes:
 tabs:
 - title: Jenkins
   type: service
-  hostname: jenkins
+  hostname: devops-controller
   path: /job/ACMECorp/
-  port: 8080
+  port: 6443
 - title: Controller
   type: service
-  hostname: controller
+  hostname: devops-controller
   port: 443
 difficulty: intermediate
 timelimit: 600
@@ -109,8 +109,6 @@ ACME Corp developers have added the following steps to the pipeline:
 ☑️ Task 2 - Controller and Jenkins integration
 ===
 
-ACME Corp operations use Ansible Automation Platform extensively and want to integrate their automation into the pipeline. This integration will help keep production deployments consistent.
-
 The `Configure Jenkins Job` controller job template adds a step to the current pipeline that calls controller’s API to start a controller workflow.
 
 Run the `Configure Jenkins Job` job template:
@@ -144,7 +142,7 @@ In the _Job Output_ window, you’ll see that it successfully *changed* the curr
 ☑️ Task 3 - Updated ACMECorp pipeline
 ===
 
-**Next, we'll have a look at the updated Jenkins pipeline:**
+**Update the Jenkins pipeline:**
 
 * Click on the _Jenkins_ tab at the top of the browser window.
 * Click on `ACME Corp` in the top menu, then click on `Configure`. This action reloads the Jenkins UI with the latest changes.

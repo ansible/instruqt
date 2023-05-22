@@ -1,0 +1,22 @@
+#!/bin/bash
+
+cat > configure_timezone.yml << EOF
+---
+- name: Change Timezone to Europe/Paris
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Change TZ
+      community.clock.timezone:
+        name: Europe/Paris
+
+- name: Change Timezone to Europe/Paris
+  hosts: localhost
+  connection: local
+  collections:
+    - community.clock
+  tasks:
+    - name: Change TZ
+      timezone:
+        name: Europe/Paris
+EOF

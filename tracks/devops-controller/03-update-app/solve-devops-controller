@@ -1,0 +1,18 @@
+#!/usr/bin/env python3
+
+import subprocess
+import yaml
+from shlex import quote
+import os
+
+os.environ["ANSIBLE_CONFIG"] = "/opt/setup-scripts/devops-controller/ansible.cfg"
+
+# Load extra_vars.yml
+extra_vars_file = open("/opt/setup-scripts/devops-controller/track_vars.yml")
+parsed_extra_vars_file = yaml.load(extra_vars_file, yaml.loader.FullLoader)
+
+# Solve controller-approval
+controller_approval_solve = subprocess.run(["ansible-playbook", 
+                                            "/opt/setup-scripts/devops-controller/setup-devops-controller.yml", 
+                                            "-e", "lab_jt_name="+quote("DevOps Workflow"),
+                                            "--tags", "update-app-solve"])

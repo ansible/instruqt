@@ -1,6 +1,6 @@
 ---
 slug: update-app
-id: jixtci9el84k
+id: xugy2avyk20c
 type: challenge
 title: Update the Let's Quiz! application code
 teaser: We'll update the Let's Quiz! application home page to trigger the DevOps workflow
@@ -31,23 +31,23 @@ notes:
 tabs:
 - title: VS Code
   type: service
-  hostname: controller
-  path: /editor/?folder=/home/rhel/acme_corp
+  hostname: devops-controller
+  path: /editor/?folder=/home/student/acme_corp
   port: 443
-- title: Jenkins
-  type: service
-  hostname: jenkins
-  path: /job/ACMECorp/
-  port: 8080
-- title: Gitea
-  type: service
-  hostname: gitea
-  path: /student/acme_corp
-  port: 3000
 - title: Let's Quiz!
   type: service
-  hostname: controller
+  hostname: devops-controller
   port: 8000
+- title: Gitea
+  type: service
+  hostname: devops-controller
+  path: /student/acme_corp
+  port: 8443
+- title: Jenkins
+  type: service
+  hostname: devops-controller
+  path: /job/ACMECorp/
+  port: 6443
 difficulty: intermediate
 timelimit: 600
 ---
@@ -71,9 +71,9 @@ ACME Corp needs to update the _Let’s Quiz!_ application home page. In this cha
 ☑️ Task 1 - Current Let's Quiz! application status
 ===
 
-Select the *Let's Quiz!* tab on the top of the browser. Currently, the *Let's Quiz!* application is not deployed into production. You’ll see the following message in the _Let’s Quiz!_ tab confirming this.
+Currently, the *Let's Quiz!* application is not deployed into production. You’ll see the following message in the _Let’s Quiz!_ tab confirming this.
 
-* The _Let’s Quiz!_ tab should be open by default.
+* Click on the _Let’s Quiz!_ tab at the top of the browser window.
 
 <!-- ![App prerelease](../assets/img/app_page_prerelease.png) -->
 <a href="#app_page_prerelease">
@@ -87,7 +87,7 @@ Select the *Let's Quiz!* tab on the top of the browser. Currently, the *Let's Qu
 ☑️ Task 2 - Updating the ACME Corp home page
 ===
 
-Let’s update the ACME Corp home page.
+**Update the ACME Corp home page.**
 
 * Open the _VS Code_ tab located at the top of the browser window.
 * On the VS Code Explorer pane, navigate to `app ⇒ lets_quiz ⇒ templates ⇒ quiz` and click on `home.html`.
@@ -101,7 +101,7 @@ Let’s update the ACME Corp home page.
   <img alt="VSCode home.html" src="../assets/img/vscode_home_edit.png" />
 </a>
 
-**We’ll edit the line directly under the  `<!-- FIX ME -->` comment in `home.html`.**
+**Edit the line directly under the  `<!-- FIX ME -->` comment in `home.html`.**
 
 * Copy and paste the below line and replace the existing line directly below the  `<!-- FIX ME -->` comment.
 
@@ -129,7 +129,7 @@ The new line should look like the below screenshot.
 ☑️ Task 3 - Commit and push the code to start the pipeline
 ===
 
-**Committing and pushing the updated `home.html` file to the _Gitea_ repository.**
+**Commit and push the updated `home.html` file to the _Gitea_ repository.**
 
 > ### **❗️ Need more guidance on committing the code?**<p>
 > Please refer to the [Visual Studio Code Version Control documentation](https://code.visualstudio.com/docs/editor/versioncontrol#_commit) for detailed instructions.
@@ -180,7 +180,7 @@ Updated home.html
 ☑️ Task 4 - Check the pipeline status
 ===
 
-**Let's see if the *Gitea* webhook started the pipeline.**
+**Check that the *Gitea* webhook started the pipeline.**
 
 * Click on the _Jenkins_ tab at the top of the browser window.
 * In the _Pipeline ACMECorp_ window, you’ll see that the _Gitea_ webhook started the pipeline.
@@ -225,7 +225,7 @@ The `tag_name` variable contains the latest _Let’s Quiz!_ application version.
 ☑️ Task 5 - Check the ACME Corp repository
 ===
 
-**Let’s look at the ACME Corp repository hosted in _Gitea_.**
+**Examine the ACME Corp repository hosted in _Gitea_.**
 
 * Click on the _Gitea_ tab at the top of the browser window.
 * Refresh the *Gitea* tab window by clicking the ↻ located at the top right hand side of the page or by refreshing the web page using your browser.
@@ -289,7 +289,6 @@ If you have encountered an issue or have noticed something not quite right, plea
     display: flex;
   }
   .lightbox img {
-    /* max-height: 100% */
     max-width: 60%;
     max-height: 60%;
   }

@@ -4,13 +4,18 @@ After=network.target
 
 [Service]
 Type=simple
-User=rhel
-WorkingDirectory=/tmp/
+User={{ codeserver_username }}
+WorkingDirectory=/home/{{ codeserver_username }}
 Restart=on-failure
 RestartSec=10
-# Environment="PASSWORD=ansible123!"
+{% if codeserver_authentication | bool %}
+Environment="PASSWORD={{ codeserver_password }}"
 
+ExecStart=/bin/code-server
+{% else %}
 ExecStart=/bin/code-server --auth none
+{% endif %}
+
 ExecStop=/bin/kill -s QUIT $MAINPID
 
 

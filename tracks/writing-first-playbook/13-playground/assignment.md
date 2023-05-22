@@ -70,7 +70,6 @@ Whether you are beginning your automation journey or a seasoned veteran, there a
     display: block;
     margin-left: auto;
     margin-right: auto;
-    width: 100%;
   }
   h1 {
     font-size: 18px;

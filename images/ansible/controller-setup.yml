@@ -12,7 +12,7 @@
 
     - name: download aap
       vars:
-        provided_sha_value: ca2541e6e7f74306197c3fe8a009c7a9b228342d0469e6707c943c8435b01fa2
+        provided_sha_value: 7456b98f2f50e0e1d4c93fb4e375fe8a9174f397a5b1c0950915224f7f020ec4
       include_role:
         name: ansible.workshops.aap_download
 
@@ -21,7 +21,7 @@
   gather_facts: true
   become: true
   vars:
-    admin_password: ansible123!
+    admin_password: "ansible123!"
     aap_dir: "/home/{{ username }}/aap_install"
     username: "{{ ansible_user }}"
     student_user: student
@@ -53,11 +53,21 @@
     - name: Install controller lab packages for controller lab
       ansible.builtin.dnf:
         state: present
+        enablerepo: "ansible-automation-platform-2.3-for-rhel-9-x86_64-rpms"
         name:
-          - automation-controller-cli
+          # - automation-controller-cli sean removed on May 16th b/c it won't install
           - httpd
           - subversion
           - python3-setuptools
+
+    # googlecompute.automation-controller9: TASK [Install controller lab packages for controller lab] **********************
+    # googlecompute.automation-controller9: fatal: [controller]: FAILED! => changed=false
+    # googlecompute.automation-controller9:   failures: []
+    # googlecompute.automation-controller9:   msg: |-
+    # googlecompute.automation-controller9:     Depsolve Error occurred:
+    # googlecompute.automation-controller9:      Problem: conflicting requests
+    # googlecompute.automation-controller9:       - nothing provides python39-setuptools needed by automation-controller-cli-4.3.8-1.el8ap.x86_64
+    # googlecompute.automation-controller9:       - nothing provides python39-pyyaml needed by automation-controller-cli-4.3.8-1.el8ap.x86_64
 
     - name: Installl pip packages
       ansible.builtin.pip:
@@ -82,13 +92,12 @@
 
 - name: Playbook to configure ansible controller post installation
   hosts: all
-
   vars:
     tmm_controller: "{{ lookup('env', 'TMM_CONTROLLER') }}"
     tmm_controller_token: "{{ lookup('env', 'TMM_CONTROLLER_TOKEN') }}"
-    controller_hostname: https://localhost:443
-    controller_username: admin
-    controller_password: ansible123!
+    controller_hostname: "https://{{ ansible_host }}"
+    controller_username: "admin"
+    controller_password: "ansible123!"
     controller_validate_certs: false
     controller_user_accounts:
       - user: student
@@ -128,11 +137,11 @@
             SN_USERNAME: "{% raw %}{{ '{{' }} SN_USERNAME {{ '}}' }}{% endraw %}"
             SN_PASSWORD: "{% raw %}{{ '{{' }} SN_PASSWORD {{ '}}' }}{% endraw %}"
 
-  collections:
-    - awx.awx
-    - redhat_cop.controller_configuration
+  tasks:
+     - {include_role: {name: redhat_cop.controller_configuration.users}, when: controller_user_accounts is defined}
+     - {include_role: {name: redhat_cop.controller_configuration.credential_types}, when: controller_credential_types is defined}
+     - {include_role: {name: redhat_cop.controller_configuration.credentials}, when: controller_credentials is defined}
 
-  roles:
-    - {role: redhat_cop.controller_configuration.users, when: controller_user_accounts is defined}
-    - {role: redhat_cop.controller_configuration.credential_types, when: controller_credential_types is defined}
-    - {role: redhat_cop.controller_configuration.credentials, when: controller_credentials is defined}
+    # - {include_role: redhat_cop.controller_configuration.users, when: controller_user_accounts is defined}
+    # - {role: redhat_cop.controller_configuration.credential_types, when: controller_credential_types is defined}
+    # - {role: redhat_cop.controller_configuration.credentials, when: controller_credentials is defined}

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+mkdir -p ~/collections/ansible_collections
+export ANSIBLE_COLLECTIONS_PATH=~/collections/ansible_collections
+cd ~/collections/ansible_collections && ansible-galaxy collection init community.clock && cd ~

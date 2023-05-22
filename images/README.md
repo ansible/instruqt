@@ -23,6 +23,7 @@ Image name | Description | connection | machine type | usage in challenge
 `red-hat-mbu/dublin-hop-image` | Mesh hop node | SSH user/pass: `rhel/ansible123!` | n1-standard-2 | none
 `red-hat-mbu/jhb-exec-image` | Mesh execution node | SSH user/pass: `rhel/ansible123!` | n1-standard-2 | none
 `red-hat-mbu/raleigh-controller` | Mesh controller node | SSH user/pass: `rhel/ansible123!` | n1-standard-4 | `type: service, port: 443`
+`red-hat-mbu/devops-controller` | Pre-configured DevOps lab controller | Student SSH user/pass: `student/learn_ansible` | n1-standard-4 | `type: service, port: 443`
 
 ## Containers
 

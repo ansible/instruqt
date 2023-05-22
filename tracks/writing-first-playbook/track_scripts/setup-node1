@@ -1,5 +1,28 @@
 dnf config-manager --disable rhui*,google*
-dnf config-manager --enable rhui-rhel-8-for-x86_64-baseos-rhui-rpms,rhui-rhel-8-for-x86_64-appstream-rhui-rpms
+
+sudo bash -c 'cat >/etc/yum.repos.d/centos8-baseos.repo <<EOL
+[centos8-baseos]
+name=CentOS 8 Stream BaseOS
+baseurl=http://mirror.centos.org/centos/8-stream/BaseOS/x86_64/os
+enabled=1
+gpgcheck=0
+
+EOL
+cat /etc/yum.repos.d/centos8-baseos.repo'
+
+sudo bash -c 'cat >/etc/yum.repos.d/centos8-appstream.repo <<EOL
+[centos8-appstream]
+name=CentOS 8 Stream AppStream
+baseurl=http://mirror.centos.org/centos/8-stream/AppStream/x86_64/os/
+enabled=1
+gpgcheck=0
+
+EOL
+cat /etc/yum.repos.d/centos8-appstream.repo'
+
+
+
+dnf clean all
 #Install a package to build metadata of the repo and not need to wait during labs
 dnf install -y cups-filesystem
 systemctl stop nginx

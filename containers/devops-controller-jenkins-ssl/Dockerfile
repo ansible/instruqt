@@ -1,13 +1,13 @@
-FROM jenkins/jenkins:2.375.1-lts-jdk11
+FROM jenkins/jenkins:2.387.1-lts-jdk11
 
-ARG https_port=6443
-ARG key_store_password="learn_ansible"
+ARG jenkins_https_port=6443
+ARG jenkins_key_store_password="learn_ansible"
 
-ENV HTTPS_PORT="${https_port}" \
-    KEY_STORE_PASSWORD="${key_store_password}"
+ENV JENKINS_HTTPS_PORT="${jenkins_https_port}" \
+    JENKINS_KEY_STORE_PASSWORD="${jenkins_key_store_password}"
 ENV CASC_JENKINS_CONFIG=/usr/share/jenkins/ref/jenkins_casc.yml \
     JAVA_OPTS="-Djenkins.install.runSetupWizard=false -Djava.net.preferIPv4Stack=true -Dblueocean.collectRuns.threads=50" \
-    JENKINS_OPTS="--httpPort=-1 --httpsPort=${HTTPS_PORT} --httpsKeyStore=/var/lib/jenkins/jenkins_keystore.jks --httpsKeyStorePassword=${KEY_STORE_PASSWORD}"
+    JENKINS_OPTS="--httpPort=-1 --httpsPort=${JENKINS_HTTPS_PORT} --httpsKeyStore=/var/lib/jenkins/jenkins_keystore.jks --httpsKeyStorePassword=${JENKINS_KEY_STORE_PASSWORD}"
 
 USER root
 COPY --chown=jenkins:jenkins src /

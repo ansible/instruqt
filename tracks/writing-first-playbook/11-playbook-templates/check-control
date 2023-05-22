@@ -1,4 +1,85 @@
 #!/bin/bash
-if [ -f /home/rhel/ansible-files/motd-facts.yml ]; then
-    echo "Success: the playbook exists"
+
+# Define the target directories and files
+ansible_files_dir="/home/rhel/ansible-files"
+templates_dir="${ansible_files_dir}/templates"
+motd_facts_j2="${templates_dir}/motd-facts.j2"
+motd_facts_yml="${ansible_files_dir}/motd-facts.yml"
+
+# Define the expected content
+read -r -d '' motd_facts_j2_content << 'EOF'
+Welcome to {{ ansible_hostname }}.
+{{ ansible_distribution }} {{ ansible_distribution_version}}
+deployed on {{ ansible_architecture }} architecture.
+EOF
+
+read -r -d '' motd_facts_yml_content << 'EOF'
+---
+- name: Fill motd file with host data
+  hosts: node1
+  become: true
+  tasks:
+    - name: Motd Template
+      ansible.builtin.template:
+        src: motd-facts.j2
+        dest: /etc/motd
+        owner: root
+        group: root
+        mode: 0644
+EOF
+
+# Array to store errors
+errors=()
+
+# Compare YAML files using Python
+compare_yaml() {
+    local yaml_file="$1"
+    local content="$2"
+    export YAML_FILE="$yaml_file"
+    export EXPECTED_YAML="$content"
+    python3 -c "import sys, os, yaml; sys.exit(0 if yaml.safe_load(open(os.environ['YAML_FILE'])) == yaml.safe_load(os.environ['EXPECTED_YAML']) else 1)"
+    return $?
+}
+
+# Check file and content
+check_file_and_content() {
+    local file="$1"
+    local expected_content="$2"
+    if [ -f "$file" ]; then
+        local file_content
+        file_content=$(cat "$file")
+        if [ "$file_content" == "$expected_content" ]; then
+            echo "$file exists and has the correct content."
+        else
+            errors+=("$file has incorrect content.")
+        fi
+    else
+        errors+=("$file does not exist.")
+    fi
+}
+
+# Check for the existence of the templates directory
+if [ -d "$templates_dir" ]; then
+    echo "The 'templates' directory exists in the ansible-files directory."
+else
+    errors+=("The 'templates' directory does not exist in the ansible-files directory.")
+fi
+
+# Check for the existence and content of the motd-facts.j2 file
+check_file_and_content "$motd_facts_j2" "$motd_facts_j2_content"
+
+# Check for the existence and content of the motd-facts.yml file
+if [ -f "$motd_facts_yml" ]; then
+    if compare_yaml "$motd_facts_yml" "$motd_facts_yml_content"; then
+        echo "$motd_facts_yml exists and has the correct content."
+    else
+        errors+=("$motd_facts_yml has incorrect content.")
+    fi
+else
+    errors+=("$motd_facts_yml does not exist.")
+fi
+
+# If there are any errors, call the fail-message function with all the errors
+if [ ${#errors[@]} -gt 0 ]; then
+    fail-message "$(IFS=$'\n'; echo "${errors[*]}")"
 fi

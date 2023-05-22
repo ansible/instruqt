@@ -1,0 +1,37 @@
+slug: ansible-community-developing-ansible-module
+id: doehzy3sdobe
+title: '3. Ansible Community: Developing Ansible Module'
+description: |-
+  Ansible module is a reusable, standalone script that runs either locally or remotely and it can be used by the Ansible API, or by the `ansible` or `ansible-playbook` executable binaries.
+
+  A module provides a defined interface, accepts arguments, and returns information to Ansible by printing a JSON string to stdout before exiting.
+
+  This course explains how to develop an Ansible module at a basic level and also the requirements to develop the same.
+
+  ## What you'll do
+
+  * Preparing the developer environment
+  * Change directory to the module path
+  * Module Standard Format
+  * Module Documentation
+  * Module Examples
+  * Module returns for use by other modules
+  * Python Imports and Module Code
+  * Check the final Module code
+  * Verify and Test the Module code
+  * Using the module in Ansible Playbook
+
+  ## Prerequisite
+
+  - Working Knowledge on Python
+  - Before you start writing a new module kindly have a look at [Should you develop a module?](https://docs.ansible.com/ansible/latest/dev_guide/developing_modules.html#module-dev-should-you) section from [Ansible Developer Guide](https://docs.ansible.com/ansible/latest/dev_guide/index.html).
+
+  If you get stuck, or something doesn't work, you can reach out to us by posting your comments on the GitHub discussion [here](https://github.com/ansible/instruqt/discussions/54).
+icon: https://www.ansible.com/hubfs/2016_Images/Assets/Ansible-Mark-Large-RGB-Pool.png?hsLang=en-us
+level: beginner
+tags:
+- ""
+owner: redhat
+developers:
+- ompragash.viswanathan@gmail.com
+checksum: "8880034130955981957"
