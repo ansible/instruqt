@@ -18,7 +18,7 @@ This self-paced lab will demonstrate how Ansible Lightspeed with Watson Code Ass
   
 ## Access Lab
 
-- <a target="_new" href="https://play.instruqt.com/embed/redhat/tracks/lightspeed-101?token=em_t1sdvaYULDs4d4a6">Click to open lab</a>
+- <a target="_new" href="https://play.instruqt.com/embed/redhat/tracks/lightspeed-101?token=em_t1sdvaYULDs4d4a6">🚀 Launch the lab</a>
 
 # Learn more about Ansible Lightspeed
 
