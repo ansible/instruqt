@@ -74,6 +74,18 @@
           <a class="header-link" target="_new" href="https://github.com/ansible/instruqt/issues/new">
             Open Issue
           </a>
+          {% if page.path == "webpages/controller.md" %}
+          <a class="header-link-active" href="{{ '/webpages/controller' | relative_url }}">
+            Automation controller
+          </a>
+          {% else %}  
+          <a class="header-link" href="{{ '/webpages/controller' | relative_url }}">
+            Automation controller
+          </a>       
+          {% endif %}                 
+          <a class="header-link" target="_new" href="https://github.com/ansible/instruqt/issues/new">
+            Open Issue
+          </a>          
         </div>
       </header>
 
