@@ -79,7 +79,16 @@
           <a class="header-link" href="{{ '/webpages/controller' | relative_url }}">
             Automation controller
           </a>       
-          {% endif %}                 
+          {% endif %}    
+          {% if page.path == "webpages/firstplaybook.md" %}
+          <a class="header-link-active" href="{{ '/webpages/firstplaybook' | relative_url }}">
+            First Playbook
+          </a>
+          {% else %}  
+          <a class="header-link" href="{{ '/webpages/firstplaybook' | relative_url }}">
+            First Playbook
+          </a>       
+          {% endif %}                        
           <a class="header-link" target="_new" href="https://github.com/ansible/instruqt/issues/new">
             Open Issue
           </a>          
