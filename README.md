@@ -5,9 +5,9 @@
 * [Community Labs (How to contribute, what's ansible-test, etc)](https://www.ansible.com/products/ansible-community-training)
 * [Product & user labs (How to use Automation Controller, Ansible Builder, etc](https://www.redhat.com/en/interactive-labs/ansible)
 
-## Feedback
+## Feedback and Issues
 
-Feedback is really important to us, for the Community Labs you can let us know what you think via [Community Labs discussion](https://github.com/ansible/instruqt/discussions/54).
+Please [open issues](https://github.com/ansible/instruqt/issues/new) so we can fix any problems that occur.
 
 
 ## Contribute
