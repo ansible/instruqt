@@ -1,0 +1,550 @@
+---
+##
+# https://play.instruqt.com/redhat/tracks/lightspeed101/
+#
+# Tags:
+# <challenge-slug>-check - check challenge
+# <challenge-slug>-solve - solve challenge
+# <challenge-slug>-setup - setup challenge
+##
+
+- name: Check, solve and setup lightspeed-101
+  hosts: automationcontroller
+  gather_facts: false
+  become: true
+
+  vars_files:
+    - track_vars.yml
+    - vault_track_vars.yml
+
+  vars:
+    controller_login: &controller_login
+      controller_username: "{{ controller_username }}"
+      controller_password: "{{ controller_password }}"
+      controller_host: "{{ controller_hostname }}.{{ lookup('env', '_SANDBOX_ID') }}.svc.cluster.local"
+      validate_certs: "{{ controller_validate_certs }}"
+    track_slug: lightspeed-101
+
+  tasks:
+
+    # Instruqt DNS entry point 127.0.0.1 for controller which fails using EEs. 
+    # Have to update ibjects with $_SANDBOX_ID in FQDN.
+    - name: Setup initial environment
+      tags:
+        - setup-env
+      block:
+        - name: Update lab inventory with Instruqt FQDN
+          awx.awx.inventory:
+            name: "{{ item.name }}"
+            organization: "{{ item.organization }}"
+            description: "{{ item.description }}"
+            variables: "{{ item.variables }}"
+            <<: *controller_login
+          loop: "{{ controller_inventories }}"
+          when: controller_inventories is defined
+
+        # Changing inventory configuration disables static hosts. Go figure
+        - name: Ensure static hosts are enabled
+          awx.awx.host:
+            name: "{{ item.name }}"
+            inventory: "{{ item.inventory }}"
+            state: "{{ item.state | default('present') }}"
+            enabled: "{{ item.enabled | default(true) }}"
+            <<: *controller_login
+          loop: "{{ controller_hosts }}"
+          when: controller_hosts is defined
+
+        - name: Update controller credential
+          awx.awx.credential:
+            name: "{{ item.name }}"
+            description: "{{ item.description }}"
+            organization: "{{ item.organization }}"
+            state: "{{ item.state }}"
+            inputs: "{{ item.inputs }}"
+            credential_type: "{{ item.credential_type }}"
+            <<: *controller_login
+          no_log: true
+          loop: "{{ controller_credentials }}"
+          when: controller_inventories is defined
+
+    - name: Setup initial playbook files for challenges
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/files/initial_playbooks/{{ item }}"
+        dest: "~{{ student_username }}/{{ gitea_repo_name }}/{{ item }}"
+        owner: "{{ student_username }}"
+        group: "{{ student_username }}"
+        remote_src: true
+        mode: "644"
+      register: __initial_playbook
+      retries: 20
+      delay: 1
+      until: not __initial_playbook.failed
+      loop: "{{ lookup('ansible.builtin.vars', content_list)['playbooks'] }}"
+      tags:
+        - setup-keywords-playbook
+        - setup-external-content-playbook
+        - setup-generate-tasks-playbook
+        - setup-workflow-playbook
+  
+    - name: Solve copy completed playbooks to {{ gitea_repo_name }}
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/files/complete_playbooks/{{ item }}"
+        dest: "~{{ student_username }}/{{ gitea_repo_name }}/{{ item }}"
+        owner: "{{ student_username }}"
+        group: "{{ student_username }}"
+        remote_src: true
+        mode: "644"
+      loop: "{{ lookup('ansible.builtin.vars', content_list)['playbooks'] }}"
+      tags:
+        - solve-keywords-playbook
+        - solve-external-content-playbook
+        - solve-generate-tasks-playbook
+
+    - name: Setup and Solve - generate_tasks add Playbooks to repo
+      ansible.builtin.command:
+        cmd: "git add {{ item }}"
+        chdir: "~{{ student_username }}/{{ gitea_repo_name }}"
+      become_user: "{{ student_username }}"
+      register: __add_output
+      changed_when: __add_output.rc == 0
+      loop: "{{ generate_tasks['playbooks']  }}"
+      tags:
+        - setup-generate-tasks-playbook
+        - solve-generate-tasks-playbook
+
+    - name: Setup and Solve - keywords add Playbooks to repo
+      ansible.builtin.command:
+        cmd: "git add {{ item }}"
+        chdir: "~{{ student_username }}/{{ gitea_repo_name }}"
+      become_user: "{{ student_username }}"
+      register: __add_output
+      changed_when: __add_output.rc == 0
+      loop: "{{ keywords['playbooks']  }}"
+      tags:
+        - setup-keywords-playbook
+        - solve-keywords-playbook
+
+    - name: Setup and Solve - external_content add Playbooks to repo
+      ansible.builtin.command:
+        cmd: "git add {{ item }}"
+        chdir: "~{{ student_username }}/{{ gitea_repo_name }}"
+      become_user: "{{ student_username }}"
+      register: __add_output
+      changed_when: __add_output.rc == 0
+      loop: "{{ external_content['playbooks']  }}"
+      tags:
+        - setup-external-content-playbook
+        - solve-external-content-playbook
+
+    - name: Setup and Solve - workflow add Playbooks to repo
+      ansible.builtin.command:
+        cmd: "git add {{ item }}"
+        chdir: "~{{ student_username }}/{{ gitea_repo_name }}"
+      become_user: "{{ student_username }}"
+      register: __add_output
+      changed_when: __add_output.rc == 0
+      loop: "{{ workflow['playbooks']  }}"
+      tags:
+        - setup-workflow-playbook
+
+    - name: Setup - Push challenge setup commit to repo
+      ansible.builtin.command:
+        cmd: "{{ item }}"
+        chdir: "~{{ student_username }}/{{ gitea_repo_name }}"
+      become_user: "{{ student_username }}"
+      register: __output
+      failed_when: false # TODO loop with matching changed_when and failed_when text.
+      loop:
+        - "git commit -m'Challenge setup commit.'"
+        - "git push -u origin main --force"
+      tags:
+        - setup-workflow-playbook
+        - setup-keywords-playbook
+        - setup-external-content-playbook
+        - setup-generate-tasks-playbook
+        - solve-keywords-playbook
+        - solve-external-content-playbook
+        - solve-generate-tasks-playbook
+
+    - name: Sync Project - {{ lab.project.name }}
+      awx.awx.project_update:
+        name: "{{ lab.project.name }}"
+        wait: true
+        timeout: 60
+        <<: *controller_login
+      tags:
+        - setup-workflow-sync
+        - setup-keywords-sync
+        - setup-external-content-sync
+        - setup-generate-tasks-sync
+        - solve-keywords-playbook
+        - solve-external-content-playbook
+        - solve-generate-tasks-playbook
+
+    - name: Setup - create job templates - {{ content_list }}
+      awx.awx.job_template:
+        name: "{{ item.name }}"
+        state: "{{ item.state }}"
+        become_enabled: "{{ item.become_enabled | default(omit)}}"
+        project: "{{ item.project }}"
+        credentials: "{{ item.credentials }}"
+        organization: "{{ item.organization }}"
+        inventory: "{{ item.inventory }}"
+        playbook: "{{ item.playbook }}"
+        survey_spec: "{{ item.survey_spec | default(omit) }}"
+        ask_inventory_on_launch: "{{ item.ask_inventory_on_launch | default(false) }}"
+        ask_limit_on_launch: "{{ item.ask_limit_on_launch | default(omit) }}"
+        extra_vars: "{{ item.extra_vars | default(omit) }}"
+        limit: "{{ item.limit | default(omit) }}"
+        execution_environment: "{{ item.execution_environment }}"
+        job_tags: "{{ item.job_tags | default(omit) }}"
+        <<: *controller_login
+      register: __create_job_templates
+      until: not __create_job_templates.failed
+      retries: 20
+      delay: 1
+      loop: "{{ controller_templates[content_list] }}"
+      when: 
+        - controller_templates[content_list] is defined
+      tags:
+        - setup-workflow-jt
+        - setup-keywords-jt
+        - setup-external-content-jt
+        - setup-generate-tasks-jt
+
+    - name: Solve configure-tools VS Code settings
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/files/settings_workspace_solve.json"
+        dest: "~{{ student_username }}/{{ gitea_repo_name }}/.vscode/settings.json"
+        owner: "{{ student_username }}"
+        group: "{{ student_username }}"
+        remote_src: true
+        mode: "0644"
+      register: __settings_file
+      tags:
+        - solve-configure-tools
+
+    - name: Check configure-tools present VS Code settings
+      tags:
+        - check-configure-tools
+      block:
+        - name: Check Lightspeed config present
+          ansible.builtin.lineinfile:
+            path: "~{{ student_username }}/{{ gitea_repo_name }}/.vscode/settings.json"
+            # path: "~{{ student_username }}/.config/Code/User/settings.json"
+            state: absent
+            backrefs: true
+            regex: "{{ item.regex }}"
+            owner: "{{ student_username }}"
+            group: "{{ student_username }}"
+            mode: "0644"
+          check_mode: "{{ check_mode | default(true) }}"
+          register: __vscode_lightspeed
+          loop: "{{ configure_tools['vscode_settings']['present'] }}"
+
+        - name: Assert __vscode_lightspeed lines found
+          ansible.builtin.assert:
+            that: 
+              - item.found > 0
+            fail_msg: The VS Code .vscode/settings.json missing Lightspeed entries.
+            success_msg: VS Code Lightspeed config entries present.
+          loop: "{{ __vscode_lightspeed.results }}"
+
+        - name: Check Ansible Lint and validation is not disabled
+          ansible.builtin.lineinfile:
+            path: "~{{ student_username }}/{{ gitea_repo_name }}/.vscode/settings.json"
+            # path: "~{{ student_username }}/.config/Code/User/settings.json"
+            state: absent
+            regex: "{{ item.regex }}"
+            owner: "{{ student_username }}"
+            group: "{{ student_username }}"
+            mode: "0644"
+          check_mode: "{{ check_mode | default(true) }}"
+          register: __vscode_lint
+          loop: "{{ configure_tools['vscode_settings']['absent'] }}"
+
+        - name: Assert __vscode_lint false not found
+          ansible.builtin.assert:
+            that: 
+              - item.found == 0
+            fail_msg: Ansible Lint or validation disabled in VS Code .vscode/settings.json.
+            success_msg: Ansible Lint and validation active in VS Code .vscode/settings.json.
+          loop: "{{ __vscode_lint.results }}"
+
+    - name: Setup generate-tasks copy sshd_config file
+      tags:
+        - setup-generate-tasks-ssh
+      block:
+        - name: Copy sshd_config file
+          ansible.builtin.copy:
+            src: generate_tasks_sshd_config
+            dest: /etc/ssh/sshd_config
+            owner: root
+            group: root
+            mode: "644"
+
+        - name: Restart SSH service
+          ansible.builtin.systemd:
+            name: sshd
+            state: restarted
+
+    - name: Check external - firewall configuration
+      tags:
+        - check-external-content-fw
+      block:
+        - name: Check external - get enabled firewall rules
+          ansible.builtin.command:
+            cmd: /usr/bin/firewall-cmd --list-all
+          changed_when: false
+          register: __firewall_rules
+
+        - name: Check external - port 9090 enabled
+          ansible.builtin.assert:
+            that: 
+              - '"9090/tcp" in __firewall_rules.stdout'
+              - '"8065/tcp" in __firewall_rules.stdout'
+            fail_msg: 9090/tcp not in firewall-cmd output.
+            success_msg: 9090/tcp and 8065/tcp configured correctly on firewall.
+
+    #  Can't use blockinfile because of markers
+    - name: Check and solve generate-tasks-ssh entries
+      ansible.builtin.lineinfile:
+        path: "/etc/ssh/sshd_config"
+        mode: "0644"
+        owner: root
+        group: root
+        search_string: "{{ item.search_string }}"
+        line: "{{ item.line }}"
+        state: present
+      check_mode: "{{ check_mode | default(true) }}"
+      register: __sshd_entries
+      tags: 
+        - check-generate-tasks-ssh
+        - solve-generate-tasks-ssh
+      loop: "{{ generate_tasks['ssh_keys'] }}"
+
+    - name: Assert __sshd_entries changed
+      ansible.builtin.assert:
+        that: 
+          - not __sshd_entries.changed
+        fail_msg: The sshd_config file changed. Missing entries.
+        success_msg: The sshd_config had the correct entries.
+      tags: 
+        - check-generate-tasks-ssh
+  
+    - name: Restart SSH service
+      ansible.builtin.systemd:
+        name: sshd
+        state: restarted
+      tags: 
+        - solve-generate-tasks-ssh
+
+    - name: Solve run job templates
+      awx.awx.job_launch:
+        name: "{{ item.name }}"
+        wait: true
+        <<: *controller_login
+      loop: "{{ controller_templates[content_list] }}"
+      when: 
+        - controller_templates[content_list] is defined
+      tags:
+        - solve-keywords-jt
+        - solve-external-content-jt
+        - solve-generate-tasks-jt
+
+    - name: Check keywords - App is running
+      tags:
+        - check-keywords-app
+      block:
+        - name: Get container info - "{{ keywords.app.name }}"
+          containers.podman.podman_container_info:
+            name:
+              - "{{ keywords.app.name }}"
+          register: __app_container_info
+
+        - name: Check keywords - assert app is running
+          ansible.builtin.assert:
+            that: 
+              - '"Error: inspecting object: no such container" not in __app_container_info.stderr'
+              - __app_container_info.containers[0]["State"]["Running"]
+            fail_msg: "Error inspecting container - {{ keywords.app.name }}."
+            success_msg: "Successfully inspected container - {{ keywords.app.name }}."
+
+    - name: Check keywords - Monitoring is running
+      tags:
+        - check-keywords-monitor
+      block:
+        - name: Check and Solve keywords - Monitor app is running
+          ansible.builtin.systemd:
+            name: cockpit.socket
+            state: started
+          check_mode: "{{ check_mode | default(true) }}"
+          register: __cockpit_service
+
+        - name: Check keywords - assert cockpit is running
+          ansible.builtin.assert:
+            that: 
+              - __cockpit_service["status"]["ActiveState"] == "active"
+            fail_msg: "Cockpit service stopped."
+            success_msg: "Cockpit service running."
+
+    - name: Create mattermost-preview container
+      tags:
+        - setup-keywords-container
+      block:
+        - name: Get host ansible_facts
+          ansible.builtin.setup:
+
+        - name: Run container with podman using mattermost_app var
+          containers.podman.podman_container:
+            name: "{{ mattermost_app.name }}"
+            image: "{{ mattermost_app.image }}"
+            state: "{{ mattermost_app.state }}"
+            ports: "{{ mattermost_app.ports }}"
+            env: "{{ mattermost_app.env }}"
+            generate_systemd: "{{ mattermost_app.generate_systemd }}"
+            recreate:  "{{ mattermost_app.recreate }}"
+          register: __container_start
+
+        - name: Enable 'app-mattermost-preview' in stopped state
+          ansible.builtin.systemd:
+            name: app-mattermost-preview
+            state: stopped
+            enabled: true
+            daemon_reload: true
+
+    - name: Setup disable Cockpit and Mattermost firewall ports
+      tags:
+        - setup-keywords-fw
+        - setup-external-content-fw
+        - setup-playground
+      block:
+        - name: Remove podman subnet from trusted zone 
+          ansible.posix.firewalld:
+            source: 10.88.0.0/16
+            zone: trusted
+            state: disabled
+            permanent: true
+            immediate: true
+
+        - name: Add podman subnet to internal zone
+          ansible.posix.firewalld:
+            source: 10.88.0.0/16
+            zone: internal
+            state: enabled
+            permanent: true
+            immediate: true
+
+        # - name: Set trusted zone to DROP
+        #   ansible.posix.firewalld:
+        #     zone: trusted
+        #     state: present
+        #     permanent: true
+        #     target: DROP
+
+        - name: Disable ports firewalld
+          ansible.posix.firewalld:
+            state: "{{ state }}"
+            port: "{{ item }}"
+            permanent: true
+            immediate: true
+            zone: internal
+          check_mode: "{{ check_mode  | default(true) }}"
+          register: __monitor_fw
+          loop:
+            - "9090/tcp"
+            - "8065/tcp"
+
+        # # - name: IPTables flush
+        # #   ansible.builtin.command: "iptables -t nat -F"
+        # #   changed_when: true
+
+        # - name: Reload firewalld
+        #   ansible.builtin.command:
+        #     firewall-cmd --reload
+        #   register: __firewall_reload
+        #   changed_when: '"success" in __firewall_reload.stdout'
+
+    - name: Check workflow exists and schema
+      check_mode: "{{ check_mode | default(true) }}"
+      connection: local
+      block:
+        - name: Workflow check workflow created
+          awx.awx.workflow_job_template:
+            name: "{{ item.name }}"
+            inventory: "{{ item.inventory | default(omit) }}"
+            extra_vars: "{{ item.extra_vars | default(omit) }}"
+            ask_variables_on_launch: "{{ item.ask_variables_on_launch | default(false) }}"
+            organization: "{{ item.organization }}"
+            state: "{{ workflow_state | default('present')}}"
+            <<: *controller_login
+          register: __workflow_create
+          loop: "{{ controller_workflows }}"
+          when: (controller_workflows is defined)
+          tags:
+            - check-workflow-create-wjt
+            - setup-playground
+
+        - name: Check workflow - assert workflow exists
+          ansible.builtin.assert:
+            that: 
+              - not __workflow_create.changed | bool
+            fail_msg:  "{{ lab.workflow_name | quote }} workflow missing."
+            success_msg: "{{ lab.workflow_name | quote }} workflow exists."
+          tags:
+            - check-workflow-create-wjt
+
+        - name: Check workflow job template nodes - {{ lab.workflow_name }}
+          awx.awx.workflow_job_template_node:
+            identifier: "{{ item.identifier }}"
+            organization: "{{ item.organization }}"
+            unified_job_template: "{{ item.unified_job_template }}"
+            workflow_job_template: "{{ item.workflow_job_template }}"
+            <<: *controller_login
+          register: __workflow_nodes_create
+          loop: "{{ controller_workflow_nodes }}"
+          when: (controller_workflow_nodes is defined)
+          tags:
+            - check-workflow-schema
+
+        - name: Check workflow job template nodes schema - {{ lab.workflow_name }}
+          awx.awx.workflow_job_template_node:
+            identifier: "{{ item.identifier }}"
+            organization: "{{ item.organization }}"
+            unified_job_template: "{{ item.unified_job_template }}"
+            workflow_job_template: "{{ item.workflow_job_template }}"
+            success_nodes: "{{ item.success_nodes | default(omit) }}"
+            always_nodes: "{{ item.always_nodes | default(omit) }}"
+            failure_nodes: "{{ item.failure_nodes | default(omit) }}"
+            <<: *controller_login
+          register: __workflow_nodes_schema
+          loop: "{{ controller_workflow_nodes }}"
+          when: (controller_workflow_nodes is defined)
+          tags:
+            - check-workflow-schema
+
+        - name: Check workflow - assert workflow config
+          ansible.builtin.assert:
+            that:  not __workflow_nodes_schema.changed | bool
+            fail_msg:  "{{ lab.workflow_name | quote }} workflow config incorrect."
+            success_msg: "{{ lab.workflow_name | quote }} workflow config correct."
+          tags:
+            - check-workflow-schema
+      
+    - name: Workflow solve run workflow
+      tags:
+        - solve-workflow-run-jt
+      block:
+        - name: Create workflow with solve job template
+          awx.awx.job_launch:
+            name: "{{ item }}"
+            wait: true
+            <<: *controller_login
+          loop: "{{ workflow.jt_names }}"
+          register: __workflow_run
+
+        - name: Workflow solve run workflow
+          awx.awx.workflow_launch:
+            name: "{{ lab.workflow_name }}"
+            wait: true
+            <<: *controller_login

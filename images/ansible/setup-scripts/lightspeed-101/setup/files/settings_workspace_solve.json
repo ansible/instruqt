@@ -1,0 +1,12 @@
+{
+    "ansible.lightspeed.suggestions.enabled": true,
+    "ansible.lightspeed.enabled": true,
+    "ansible.validation.lint.enabled": true,
+    "ansible.lightspeed.URL": "https://lab.ai.ansible.redhat.com/",
+    "ansible.executionEnvironment.enabled": true,
+    "ansible.executionEnvironment.image": "quay.io/acme_corp/summit_ee",
+    "editor.renderWhitespace": "all",
+    "ansible.validation.enabled": true,
+    "ansible.python.interpreterPath": "/bin/python3.11",
+    "window.zoomLevel": 1
+}

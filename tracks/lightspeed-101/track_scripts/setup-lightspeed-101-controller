@@ -1,0 +1,24 @@
+#!/bin/bash
+set -euxo pipefail
+
+until [ -f /opt/instruqt/bootstrap/host-bootstrap-completed ]; do
+    echo "Waiting for instruqt bootstrap to complete"
+    sleep 1
+done
+
+cp -a /root/.ssh/id_rsa* /root/.ssh/authorized_keys /home/rhel/.ssh
+chown -R rhel:rhel /home/rhel/.ssh
+
+# Update containers
+/bin/podman auto-update
+
+# Testing Get instruqt lab content
+/usr/bin/aws s3 sync --no-sign-request s3://tmm-instruqt-content.demoredhat.com.private/lightspeed-101 /opt/setup-scripts/lightspeed-101
+
+cd /opt/setup-scripts/lightspeed-101/setup/
+ln ~root/.lightspeed-101_ansible_vault_password .lightspeed-101_ansible_vault_password
+export ANSIBLE_VAULT_PASSWORD_FILE=.lightspeed-101_ansible_vault_password
+# ansible-navigator run /opt/setup-scripts/lightspeed-101/setup/lightspeed-101-lab_setup.yml --tags setup-env-key --mode stdout -vvv
+# sed -ri 's/^(\s*)(ansible_host\s*:\s*lightspeed-101-controller.*$)/\1ansible_host: lightspeed-101-controller.'"${_SANDBOX_ID}"'.svc.cluster.local/' inventory/inventory.yml
+sed -ri 's/^(\s*)(ansible_host\s*:\s*lightspeed-101-controller.*$)/\1ansible_host: lightspeed-101-controller.'"${_SANDBOX_ID}"'.svc.cluster.local/' inventory/inventory.yml
+# sed -ri 's/^(\s*)(ansible_host\s*:\s*lightspeed-101-controller.*$)/\1ansible_host: '"$(hostname -I | cut -d' ' -f1)"'/' inventory/inventory.yml

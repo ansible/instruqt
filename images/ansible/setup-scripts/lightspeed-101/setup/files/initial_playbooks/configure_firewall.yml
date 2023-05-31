@@ -1,0 +1,22 @@
+---
+- name: Configure firewall
+  hosts: appservers
+  become: true
+
+  vars:
+    firewall:
+      - permanent: true
+        port: ['9090/tcp', '8065/tcp']
+        state: enabled
+
+  tasks:
+        # TASK 1
+        # # 1a. Uncomment task description below and generate a task suggestion.
+
+    # - name: Include redhat.rhel_system_roles.firewall role
+
+        # TASK 2
+        # # 2a. Uncomment task description below and generate a task suggestion. Save.
+        # # 2b. Change "changed_when:" value to true. Save.
+
+    # - name: Run command podman network reload mattermost-preview

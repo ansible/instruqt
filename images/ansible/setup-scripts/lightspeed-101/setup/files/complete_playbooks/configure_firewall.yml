@@ -1,0 +1,27 @@
+---
+- name: Configure firewall
+  hosts: appservers
+  become: true
+
+  vars:
+    firewall:
+      - permanent: true
+        port: ['9090/tcp', '8065/tcp']
+        state: enabled
+
+  tasks:
+        # TASK 1
+        # # 1a. Uncomment task description below and generate a task suggestion.
+
+    - name: Include redhat.rhel_system_roles.firewall role
+      ansible.builtin.include_role:
+        name: redhat.rhel_system_roles.firewall
+      when: ansible_os_family == "RedHat"
+
+        # TASK 2
+        # # 2a. Uncomment task description below and generate a task suggestion. Save.
+        # # 2b. Change "changed_when:" value to true. Save.
+
+    - name: Run command podman network reload mattermost-preview
+      ansible.builtin.command: podman network reload mattermost-preview
+      changed_when: true

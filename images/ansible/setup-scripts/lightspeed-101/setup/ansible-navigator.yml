@@ -1,0 +1,25 @@
+---
+ansible-navigator:
+  ansible:
+    config:
+      path: /opt/setup-scripts/lightspeed-101/setup/ansible.cfg
+    inventory:
+      entries:
+        - /opt/setup-scripts/lightspeed-101/setup/inventory/inventory.yml
+  execution-environment:
+    container-engine: podman
+    enabled: true
+    image: quay.io/acme_corp/summit_ee:latest
+    environment-variables:
+      pass:
+        - ANSIBLE_VAULT_PASSWORD_FILE
+        - _SANDBOX_ID
+    pull:
+      policy: missing
+  playbook-artifact:
+    enable: true
+    save-as: "/tmp/{playbook_name}-artifact.json"
+    replay: "/tmp/replay-artifact.json"
+  editor:
+    command: code -g {filename}:{line_number}
+    console: false

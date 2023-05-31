@@ -1,0 +1,71 @@
+---
+- name: Harden RHEL Servers
+  hosts: appservers
+  become: true
+
+  tasks:
+        # TASK 1
+        # # 1a. Uncomment Task 1 description and generate a task suggestion.
+        # # 1b. Put your cursor at the end of the task description and pres ENTER.
+
+    - name: Set SELinux enforced on RHEL
+      ansible.posix.selinux:
+        policy: targeted
+        state: enforcing
+      when: ansible_distribution == 'RedHat'
+
+
+        # TASK 2
+        # # 2a. Uncomment Task 2 description and generate a task suggestion. Save.
+        # # 2b. Note the ansible-lint warning for Task 2.
+        # # 2c. Navigate to the bottom of Task 2 under "register:". Press "CTRL+I" to trigger auto-completion.
+        # #     select "changed_when" and set to false. Save."
+
+    - name: Run sestatus command and register sestatus_result
+      ansible.builtin.command: sestatus
+      register: sestatus_result
+      changed_when: false
+
+        # TASK 3
+        # # 3a. Uncomment Task 3 description and generate a task suggestion.
+        # # 3b. Note the "{{ msg }}" variable created by Ansible Lightspeed.
+        # #     Ansible Lightspeed provides working example values in suggestions.
+        # # 3c. Remove the current suggestion.
+        # # 3d. Change the task description, without quotation marks to:
+        # #     "- name: Print sestatus_result.stdout_lines var".
+        # # 3e. Generate a new task suggestion.
+
+    - name: Print sestatus_result.stdout_lines var
+      ansible.builtin.debug:
+        var: sestatus_result.stdout_lines
+
+        # TASK 4
+        # # 4a. Uncomment Task 4 description and generate a task suggestion.
+
+    - name: Install openssh-server on RHEL hosts
+      when: ansible_distribution == 'RedHat'
+      ansible.builtin.package:
+        name: openssh-server
+        state: present
+
+        # TASK 5
+        # # 5a. Uncomment Task 5 description and generate an Ansible Playbook task suggestion.
+
+    - name: Disable password auth on RHEL hosts
+      ansible.builtin.lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: .*PasswordAuthentication.*
+        line: PasswordAuthentication no
+      when: ansible_distribution == 'RedHat'
+
+        # TASK 6
+        # # 6a. Uncomment Task 7 description and generate an Ansible Playbook task suggestion.
+        # # 6b. Note how Ansible Lightspeed learnt as you created the Playbook
+        # #     and added "when: ansible_distribution == 'RedHat'" to the task.
+        # # 6c. Save.
+
+    - name: Restart SSH service
+      ansible.builtin.service:
+        name: sshd
+        state: restarted
+      when: ansible_distribution == 'RedHat'
