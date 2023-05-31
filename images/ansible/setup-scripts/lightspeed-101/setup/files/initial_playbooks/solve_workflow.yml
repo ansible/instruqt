@@ -1,0 +1,80 @@
+---
+- name: Solve workflow challenge
+  hosts: automationcontroller
+  gather_facts: false
+  connection: local
+
+  vars:
+    lab:
+      workflow_name: Deploy app workflow
+      organization: ACME Corp
+      controller_credential: ACME Corp controller credential
+      inventory:
+        name: ACME Corp DC
+
+    controller_workflows:
+      - name: "{{ lab.workflow_name }}"
+        description: Deploy ACME Corp app to production
+        organization: "{{ lab.organization }}"
+
+    controller_workflow_nodes:
+      - all_parents_must_converge: false
+        organization: "{{ lab.organization }}"
+        workflow_job_template: "{{ lab.workflow_name }}"
+        identifier: "Harden"
+        unified_job_template: "Harden app servers"
+        success_nodes:
+          - "Firewall"
+      - all_parents_must_converge: false
+        organization: "{{ lab.organization }}"
+        workflow_job_template: "{{ lab.workflow_name }}"
+        identifier: "Monitoring"
+        unified_job_template: "Deploy monitoring"
+      - all_parents_must_converge: false
+        organization: "{{ lab.organization }}"
+        workflow_job_template: "{{ lab.workflow_name }}"
+        identifier: "App"
+        unified_job_template: "Deploy ACME Corp app"
+      - all_parents_must_converge: false
+        organization: "{{ lab.organization }}"
+        workflow_job_template: "{{ lab.workflow_name }}"
+        identifier: "Firewall"
+        unified_job_template: "Configure firewall"
+        # inventory: "{{ lab.inventory.name }}"
+        success_nodes:
+          - "Monitoring"
+          - "App"
+    # success_nodes:
+    #   - "App"
+    #   - "Monitoring"
+  tasks:
+    - name: Create workflow job template - {{ lab.workflow_name }}
+      awx.awx.workflow_job_template:
+        name: "{{ item.name }}"
+        extra_vars: "{{ item.extra_vars | default(omit) }}"
+        ask_variables_on_launch: "{{ item.ask_variables_on_launch | default(false) }}"
+        organization: "{{ item.organization | default(omit) }}"
+        destroy_current_schema: true
+      loop: "{{ controller_workflows }}"
+      when: (controller_workflows is defined)
+
+    - name: Create workflow job template nodes - {{ lab.workflow_name }}
+      awx.awx.workflow_job_template_node:
+        identifier: "{{ item.identifier }}"
+        organization: "{{ item.organization }}"
+        unified_job_template: "{{ item.unified_job_template }}"
+        workflow_job_template: "{{ item.workflow_job_template }}"
+      loop: "{{ controller_workflow_nodes }}"
+      when: (controller_workflow_nodes is defined)
+
+    - name: Create workflow job template node schema  - {{ lab.workflow_name }}
+      awx.awx.workflow_job_template_node:
+        identifier: "{{ item.identifier }}"
+        organization: "{{ item.organization }}"
+        unified_job_template: "{{ item.unified_job_template }}"
+        workflow_job_template: "{{ item.workflow_job_template }}"
+        success_nodes: "{{ item.success_nodes | default(omit) }}"
+        always_nodes: "{{ item.always_nodes | default(omit) }}"
+        failure_nodes: "{{ item.failure_nodes | default(omit) }}"
+      loop: "{{ controller_workflow_nodes }}"
+      when: (controller_workflow_nodes is defined)

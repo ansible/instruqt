@@ -1,0 +1,28 @@
+#!/bin/bash
+
+cat <<'EOF' > /config/guacamole/user-mapping.xml
+<user-mapping>
+    <authorize
+        username="student"
+        password="learn_ansible">
+        <connection name="srv01">
+            <protocol>vnc</protocol>
+            <param name="hostname">lightspeed-101-controller</param>
+            <param name="username">student</param>
+            <param name="password">learn_ansible</param>
+            <param name="port">5902</param>
+            <param name="force-lossless">true</param>
+            <param name="resize-method">display-update</param>
+            <param name="enable-font-smoothing">true</param>
+            <param name="autoretry">10</param>
+        </connection>
+    </authorize>
+</user-mapping>
+EOF
+
+# Wait until VNC :2 is available
+while ! nc -z lightspeed-101-controller 5902; do
+  echo "Waiting for VNC :2 to be available"
+  ((c++)) && ((c==20)) && break
+  sleep 1
+done

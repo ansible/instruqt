@@ -1,0 +1,280 @@
+---
+# config vars
+ansible_ssh_pipelining: true
+ansible_ssh_extra_args: -o StrictHostKeyChecking=no -o ControlMaster=auto -o ControlPersist=60s
+ansible_host_key_checking: false
+
+track_slug: lightspeed-101
+
+controller_hostname: "{{ vault_controller_hostname }}"
+controller_validate_certs: "{{ vault_controller_validate_certs }}"
+controller_username: "{{ vault_controller_username }}"
+controller_password: "{{ vault_controller_password }}"
+
+student_username: "{{ vault_student_username }}"
+student_password: "{{ vault_student_password }}"
+
+
+# Lab vars
+lab:
+  credential:
+    ssh:
+      name: ACME Corp Machine Credential
+    controller:
+      name: ACME Corp controller credential
+  organization: ACME Corp
+  project:
+    name: ACME Corp Repo
+    repo: "{{ gitea_app_url }}/{{ student_username }}/acme_corp.git"
+    branch: main
+  inventory:
+    name: ACME Corp DC
+    description: ACME Corp Data center
+  execution_environment:
+    name: ACME Corp execution environment
+    image: quay.io/acme_corp/summit_ee
+  s3_bucket_name: tmm-instruqt-content.demoredhat.com.private
+  workflow_name: Deploy app workflow
+  navigator_execution_environment: quay.io/acme_corp/summit_ee
+
+
+# Gitea vars
+gitea_http_port: 8443
+gitea_protocol: https
+gitea_hostname: gitea
+gitea_app_url: "{{ gitea_protocol }}://{{ gitea_hostname }}:{{ gitea_http_port }}"
+gitea_repo_name: acme_corp
+
+configure_tools:
+  vscode_settings:
+    present:
+      - line: '\1"ansible.lightspeed.suggestions.enabled": true\2'
+        regex: '^(.*?)"ansible.lightspeed.suggestions.enabled": true(.*?)$'
+      - line: '\1"ansible.lightspeed.enabled": true\2'
+        regex: '^(.*?)"ansible\.lightspeed\.enabled": true(.*?)$'
+    absent:
+      - line: '\1"ansible.validation.lint.enabled": false\2'
+        regex: '^(.*?)"ansible.validation.lint.enabled": false(.*?)$'
+      - line: '\1"ansible.validation.enabled": false\2'
+        regex: '^(.*?)"ansible.validation.enabled": false(.*?)$'
+
+generate_tasks:
+  playbooks:
+    - harden_appservers.yml
+  jt_names:
+    - Harden app servers
+    # - ?? Challenge 2 - Generate Playbooks
+  ssh_keys:
+    - search_string: "PasswordAuthentication"
+      line: "PasswordAuthentication no"
+    # - search_string: "PermitRootLogin"
+    #   line: "PermitRootLogin no"
+
+keywords:
+  playbooks:
+    - deploy_monitoring.yml
+    - deploy_app.yml
+  jt_names:
+    - Deploy monitoring
+    - Deploy ACME Corp app
+    # - ?? Challenge 3 - Generate Playbooks
+  app:
+    name: mattermost-preview
+
+external_content:
+  playbooks:
+    - configure_firewall.yml
+  jt_names:
+    - Configure firewall
+    # - ?? Challenge 4 - Generate Playbooks
+workflow:
+  playbooks:
+    - solve_workflow.yml
+  jt_names:
+    - ?? Solve - Create workflow
+
+mattermost_app:
+  env:
+    MM_TEAMSETTINGS_SITENAME: ACME Corp Chat
+  generate_systemd:
+    path: /etc/systemd/system/
+    container_prefix: app
+    restart_policy: always
+  recreate: true
+  name: mattermost-preview
+  image: docker.io/mattermost/mattermost-preview
+  # state: stopped
+  # state: present
+  state: started
+  ports:
+    - 8065:8065
+    # - "{{ ansible_default_ipv4.address }}:8065:8065"
+
+# Controller objects
+controller_inventories:
+  - name: "{{ lab.inventory.name }}"
+    organization: "{{ lab.organization }}"
+    description: "{{ lab.inventory.name }}"
+    variables:
+      ansible_ssh_private_key_file: ~/.ssh/instruqt_lab
+      ansible_host: "lightspeed-101-controller.{{ lookup('env', '_SANDBOX_ID') }}.svc.cluster.local"
+      ansible_user: rhel
+      ansible_python_interpreter: /usr/bin/python3
+      ansible_ssh_extra_args: '-o StrictHostKeyChecking=no -o ControlMaster=auto -o ControlPersist=60s'
+      ansible_ssh_pipelining: true
+
+controller_hosts:
+  - name: controller.acme.example.com
+    inventory: "{{ lab.inventory.name }}"
+    enabled: true
+  - name: app-01.acme.example.com
+    inventory: "{{ lab.inventory.name }}"
+    enabled: true
+  - name: app-02.acme.example.com
+    inventory: "{{ lab.inventory.name }}"
+    enabled: true
+  - name: monitor-01.acme.example.com
+    inventory: "{{ lab.inventory.name }}"
+    enabled: true
+
+controller_credentials:
+  - name: "{{ lab.credential.controller.name }}"
+    organization: "{{ lab.organization }}"
+    credential_type: Red Hat Ansible Automation Platform
+    description: "{{ lab.credential.controller.name }}"
+    state: present
+    inputs:
+      host: "{{ controller_hostname }}.{{ lookup('env', '_SANDBOX_ID') }}.svc.cluster.local"
+      verify_ssl: "{{ controller_validate_certs }}"
+      username: "{{ controller_username }}"
+      password: "{{ controller_password }}"
+
+controller_templates:
+  keywords:
+    - name: Deploy monitoring
+      organization: "{{ lab.organization }}"
+      state: present
+      job_type: run
+      playbook: deploy_monitoring.yml
+      execution_environment: "{{ lab.execution_environment.name }}"
+      inventory: "{{ lab.inventory.name }}"
+      credentials:
+        - "{{ lab.credential.ssh.name }}"
+      project: "{{ lab.project.name }}"
+    - name: Deploy ACME Corp app
+      organization: "{{ lab.organization }}"
+      state: present
+      job_type: run
+      playbook: deploy_app.yml
+      execution_environment: "{{ lab.execution_environment.name }}"
+      inventory: "{{ lab.inventory.name }}"
+      limit: app-01.acme.example.com
+      credentials:
+        - "{{ lab.credential.ssh.name }}"
+      project: "{{ lab.project.name }}"
+  external_content:
+    - name: Configure firewall
+      organization: "{{ lab.organization }}"
+      state: present
+      job_type: run
+      playbook: configure_firewall.yml
+      execution_environment: "{{ lab.execution_environment.name }}"
+      inventory: "{{ lab.inventory.name }}"
+      credentials:
+        - "{{ lab.credential.ssh.name }}"
+      project: "{{ lab.project.name }}"
+      limit: app-01.acme.example.com
+  generate_tasks:
+    - name: Harden app servers
+      organization: "{{ lab.organization }}"
+      state: present
+      job_type: run
+      playbook: harden_appservers.yml
+      execution_environment: "{{ lab.execution_environment.name }}"
+      inventory: "{{ lab.inventory.name }}"
+      verbosity: 0
+      credentials:
+        - "{{ lab.credential.ssh.name }}"
+      project: "{{ lab.project.name }}"
+  workflow:
+    - name: ?? Solve - Create workflow
+      state: present
+      job_type: run
+      playbook: solve_workflow.yml
+      execution_environment: "{{ lab.execution_environment.name }}"
+      organization: "{{ lab.organization }}"
+      inventory: "{{ lab.inventory.name }}"
+      verbosity: 0
+      credentials:
+        - "{{ lab.credential.ssh.name }}"
+        - "{{ lab.credential.controller.name }}"
+      project: "{{ lab.project.name }}"
+
+
+  # - name: ?? Challenge 2 - Generate Playbooks
+  #   state: present
+  #   job_type: run
+  #   playbook: generate_playbook.yml
+  #   execution_environment: "{{ lab.execution_environment.name }}"
+  #   inventory: "{{ lab.inventory.name }}"
+  #   verbosity: 0
+  #   credentials:
+  #     - "{{ lab.credential.ssh.name }}"
+  #   project: "{{ lab.project.name }}"
+  #   job_tags: generate_tasks_fix_playbook
+  # # - name: ?? Challenge 3 - Generate Playbooks
+  #   state: present
+  #   job_type: run
+  #   playbook: generate_playbook.yml
+  #   execution_environment: "{{ lab.execution_environment.name }}"
+  #   inventory: "{{ lab.inventory.name }}"
+  #   verbosity: 0
+  #   credentials:
+  #     - "{{ lab.credential.ssh.name }}"
+  #   project: "{{ lab.project.name }}"
+  #   job_tags: keywords_fix_playbook
+  # - name: ?? Challenge 4 - Generate Playbooks
+  #   state: present
+  #   job_type: run
+  #   playbook: generate_playbook.yml
+  #   execution_environment: "{{ lab.execution_environment.name }}"
+  #   inventory: "{{ lab.inventory.name }}"
+  #   verbosity: 0
+  #   credentials:
+  #     - "{{ lab.credential.name }}"
+  #   project: "{{ lab.project.name }}"
+  #   job_tags: external_content_fix_playbook
+
+
+controller_workflows:
+  - name: "{{ lab.workflow_name }}"
+    description: Deploy ACME Corp app to production
+    organization: "{{ lab.organization }}"
+
+controller_workflow_nodes:
+  - all_parents_must_converge: false
+    organization: "{{ lab.organization }}"
+    workflow_job_template: "{{ lab.workflow_name }}"
+    identifier: "Harden"
+    unified_job_template: "Harden app servers"
+    success_nodes:
+      - "Firewall"
+  - all_parents_must_converge: false
+    organization: "{{ lab.organization }}"
+    workflow_job_template: "{{ lab.workflow_name }}"
+    identifier: "Monitoring"
+    unified_job_template: "Deploy monitoring"
+  - all_parents_must_converge: false
+    organization: "{{ lab.organization }}"
+    workflow_job_template: "{{ lab.workflow_name }}"
+    identifier: "App"
+    unified_job_template: "Deploy ACME Corp app"
+  - all_parents_must_converge: false
+    organization: "{{ lab.organization }}"
+    workflow_job_template: "{{ lab.workflow_name }}"
+    identifier: "Firewall"
+    unified_job_template: "Configure firewall"
+    # inventory: "{{ lab.inventory.name }}"
+    success_nodes:
+      - "Monitoring"
+      - "App"

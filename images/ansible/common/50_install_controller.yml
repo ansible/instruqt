@@ -1,15 +1,21 @@
 ##
 # Create controller objects for mesh lab
 ##
-- name: Download and upgrade collections for install - host {{ inventory_hostname }}
-  community.general.ansible_galaxy_install:
-    name: "{{ item }}"
-    type: collection
-  become_user: "{{ ansible_user }}"
-  loop: "{{ controller_collections }}"
-  register: __collection_install
-  changed_when: '"is already installed, skipping" not in __collection_install.stdout'
-  when: (controller_collections is defined) and (controller_collections | length > 0)
+- name: Install OS packages needed for tasks
+  ansible.builtin.dnf:
+    name:
+      - ansible-core
+    state: present
+
+# - name: Download and upgrade collections for install - {{ inventory_hostname }}
+#   community.general.ansible_galaxy_install:
+#     name: "{{ item }}"
+#     type: collection
+#   become_user: "{{ ansible_user }}"
+#   loop: "{{ controller_collections }}"
+#   register: __collection_install
+#   delegate_to: localhost
+#   when: (controller_collections is defined) and (controller_collections | length > 0)
 
 - name: Check if AAP bundle file exists
   ansible.builtin.stat:
@@ -101,32 +107,38 @@
   ansible.builtin.debug:
     msg: '{{ check2.json }}'
 
-- name: Load license block
+- name: Subscribe AAP
+  delegate_to: localhost
+  become: false
   block:
-    - name: Check for base64 variable first
+    - name: Apply base64_manifest licenses
       ansible.builtin.copy: # noqa template-instead-of-copy
-        dest: '{{ playbook_dir }}/manifest.zip'
-        content: '{{ base64_manifest | b64decode }}'
-        mode: 0644
-      delegate_to: localhost
-      become: false
-  rescue:
-    - name: Unable to load base64_manifest
-      ansible.builtin.debug:
-        msg: 'No base64_manifest variable found, trying to open manifest.zip'
-  always:
-    - name: Load manifest into variable
+        dest: "{{ playbook_dir }}/manifest.zip"
+        content: "{{ base64_manifest | b64decode }}"
+        mode: "0644"
+      when: base64_manifest is defined
+
+    - name: Apply license with manifest.zip
       ansible.builtin.slurp:
         src: "{{ playbook_dir }}/manifest.zip"
+      when: base64_manifest is undefined
       register: manifest_file
-      delegate_to: localhost
-      become: false
+  always:
+    - name: Assert manifest.zip exists
+      ansible.builtin.assert:
+        that:
+          - manifest_file is defined
+          - manifest_file | length > 0
+        fail_msg: | 
+          AAP subscription manifest not found or empty.
+        success_msg: 
+          Successfully loaded AAP subscription manifest file
 
 - name: Post manifest file
   ansible.builtin.uri:
     url: https://localhost/api/v2/config/
     method: POST
-    user: admin
+    user: "{{ controller_username }}"
     password: "{{ controller_password }}"
     body: '{ "eula_accepted": true, "manifest": "{{ manifest_file.content }}" }'
     body_format: json
@@ -147,3 +159,5 @@
   until: check2.json is defined and check2.json.instances[0].capacity > 0 and check2.json.instance_groups[0].capacity > 0
   retries: 60
   delay: 1
+
+

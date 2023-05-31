@@ -1,4 +1,4 @@
-## Common mesh node tasks
+## Common instance tasks
 - name: Check if AAP bundle file exists
   ansible.builtin.stat:
     path: "/tmp/aap.tar.gz"
@@ -64,9 +64,45 @@
 
 - name: Install OS packages
   ansible.builtin.dnf:
-    name: "{{ mesh_node_os_packages }}"
+    name: "{{ instance_os_packages }}"
     state: present
-  when: (mesh_node_os_packages is defined) and (mesh_node_os_packages | length > 0)
+  when: (instance_os_packages is defined) and (instance_os_packages | length > 0)
+
+- name: Install Python packages - {{ ansible_user_id }}
+  ansible.builtin.pip:
+    name: "{{ instance_pip_packages }}"
+    state: present
+  become: true
+  when: (instance_pip_packages is defined) and (instance_pip_packages | length > 0)
+  tags:
+    - controller-config
+
+- name: Install unzip OS package for AWS install
+  ansible.builtin.dnf:
+    name:
+      - unzip
+    state: present
+
+- name: Download AWS CLI for S3 downloads
+  ansible.builtin.unarchive:
+    src: "{{ aws_cli_install_package }}"
+    dest: "/tmp/"
+    remote_src: true
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+  register: __aws_cli_download
+
+- name: Install AWS CLI for S3 downloads
+  ansible.builtin.command:
+    cmd: /tmp/aws/install --install-dir /usr/local/aws --bin-dir /usr/bin/ --update
+    creates: /usr/bin/aws
+
+- name: Download setup scripts to controller /opt directory - {{ lab.s3_bucket_name }}
+  ansible.builtin.command:
+    cmd: "/usr/bin/aws s3 sync --no-sign-request s3://{{ lab.s3_bucket_name }}/{{ track_slug }} /opt/setup-scripts/{{ track_slug }}"
+  become: true
+  register: __s3_sync_output
+  changed_when: '"download:" in __s3_sync_output.stdout'
 
 - name: Download and upgrade collections - {{ inventory_hostname }}
   ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
@@ -80,10 +116,10 @@
   # same var used in 50_install_controller.yml to pre-populate all mesh nodes with execution environments
   when: (controller_execution_environments is defined) and (controller_execution_environments | length > 0)
   block:
-    - name: Download and upgrade podman collection - {{ inventory_hostname }}
-      ansible.builtin.command: "ansible-galaxy collection install containers.podman --upgrade"
-      register: __collection_install
-      changed_when: '"is already installed, skipping" not in __collection_install.stdout'
+    - name: Install podman collection - {{ inventory_hostname }}
+      community.general.ansible_galaxy_install:
+        type: collection
+        name: containers.podman
 
     - name: Log into registry.redhat.io
       become_user: "awx"

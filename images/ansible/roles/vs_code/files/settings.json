@@ -1,0 +1,22 @@
+{
+    "git.ignoreLegacyWarning": true,
+    "terminal.integrated.experimentalRefreshOnResume": true,
+    "window.menuBarVisibility": "visible",
+    "git.enableSmartCommit": true,
+    "workbench.tips.enabled": false,
+    "telemetry.enableTelemetry": false,
+    "search.smartCase": true,
+    "git.confirmSync": false,
+    "ansible.ansibleLint.enabled": false,
+    "ansible.ansible.useFullyQualifiedCollectionNames": true,
+    "redhat.telemetry.enabled": false,
+    "security.workspace.trust.banner": "never",
+    "security.workspace.trust.enabled": false,
+    "window.titleBarStyle": "native",
+    "window.openFoldersInNewWindow": "off",
+    "ansible.lightspeed.suggestions.enabled": false,
+    "ansible.lightspeed.enabled": false,
+    "terminal.integrated.gpuAcceleration": "canvas",
+    "ansible.validation.lint.enabled": true,
+    "workbench.startupEditor": "welcomePageInEmptyWorkbench"
+}

@@ -51,7 +51,7 @@
     owner: "{{ codeserver_username }}"
     group: "{{ codeserver_username }}"
 
-- name: Download VSCode extension files
+- name: Download custom VSCode extension files
   ansible.builtin.get_url:
     url: "{{ item.download_url }}"
     dest: /home/{{ codeserver_username }}/.local/share/code-server/extensions/
@@ -64,7 +64,7 @@
   until: download_extension is not failed
   retries: 5
 
-- name: Install extensions from local file
+- name: Install custom extensions from local file
   become_user: "{{ codeserver_username }}"
   ansible.builtin.command: "/bin/code-server --install-extension /home/{{ codeserver_username }}/.local/share/code-server/extensions/{{ item.filename }}"
   loop: "{{ codeserver_extensions }}"
@@ -73,7 +73,7 @@
   until: install_extension is not failed
   retries: 5
 
-- name: Install extensions from VSCode Marketplace
+- name: Install VS Code Marketplace extensions
   become_user: "{{ codeserver_username }}"
   ansible.builtin.command: "/bin/code-server --install-extension {{ item.name }}"
   loop: "{{ codeserver_extensions }}"

@@ -1,9 +1,8 @@
 ---
 ##
-# Create custom controller objects for labs
+# Perform AAP post-install tasks
 # Tags:
 # demo-content - Remove Demo Org, project, inventory and job template
-# controller-config - Setup controller env for lab
 ##
 - name: Create controller_login fact and anchor
   ansible.builtin.set_fact:
@@ -13,19 +12,26 @@
       controller_host: "{{ controller_hostname }}"
       validate_certs: "{{ controller_validate_certs }}"
 
-- name: Download and upgrade controller collections - {{ inventory_hostname }}
-  community.general.ansible_galaxy_install:
-    name: "{{ item }}"
-    dest: /usr/share/ansible/collections
-    type: collection
-  become: true
-  loop: "{{ controller_collections }}"
-  register: __collection_install
-  when: (controller_collections is defined) and (controller_collections | length > 0)
-  tags:
-    - controller-config
+- name: Install EPEL repository
+  ansible.builtin.yum_repository:
+    name: epel
+    description: EPEL YUM repo
+    baseurl: https://dl.fedoraproject.org/pub/epel/$releasever/Everything/$basearch
+    gpgkey: "https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
+    gpgcheck: true
+    state: present
 
-- name: Install OS packages
+- name: Install OS packages needed for tasks
+  ansible.builtin.dnf:
+    name:
+      - python3-pip
+      - python3-boto3
+      - python3-botocore
+      - unzip
+      - ansible-core
+    state: present
+
+- name: Install OS packages - controller_os_packages
   ansible.builtin.dnf:
     name: "{{ controller_os_packages }}"
     state: present
@@ -37,8 +43,16 @@
     state: present
   become: true
   when: (controller_pip_packages is defined) and (controller_pip_packages | length > 0)
-  tags:
-    - controller-config
+
+- name: Download and upgrade controller collections - {{ inventory_hostname }}
+  community.general.ansible_galaxy_install:
+    name: "{{ item }}"
+    dest: /usr/share/ansible/collections
+    type: collection
+  become: true
+  loop: "{{ controller_collections }}"
+  register: __collection_install
+  when: (controller_collections is defined) and (controller_collections | length > 0)
 
 - name: Download AWS CLI for S3 downloads
   ansible.builtin.unarchive:
@@ -48,23 +62,39 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
   register: __aws_cli_download
-  tags:
-    - controller-config
 
-- name: Install AWS CLI for S3 downloads
-  ansible.builtin.command:
-    cmd: /tmp/aws/install --install-dir /usr/local/aws --bin-dir /usr/bin/ --update
-    creates: /usr/bin/aws
-  tags:
-    - controller-config
 
 - name: Install generic ansible.cfg in home directory
   ansible.builtin.template:
     src: ansible.cfg.j2
     dest: "/etc/ansible/ansible.cfg"
     mode: 0644
-  tags:
-    - controller-config
+
+#  Added for student command line tasks
+- name: Copy ansible-navigator.yml template - {{ student_username }}
+  ansible.builtin.template:
+    src: "ansible-navigator.yml.j2"
+    dest: "~{{ student_username }}/.ansible-navigator.yml"
+    mode: "0644"
+    owner: "{{ student_username }}"
+    group: "{{ student_username }}"
+  when: lab.navigator_execution_environment is defined
+
+ # root because of become: true
+- name: Copy vault_password file - {{ ansible_user_id }}
+  when: lab.navigator_execution_environment is defined
+  become: true
+  ansible.builtin.template:
+    src: "{{ track_slug }}_ansible_vault_password.j2"
+    dest: "~{{ ansible_user_id }}/.{{ track_slug }}_ansible_vault_password"
+    mode: "0640"
+    owner: "{{ ansible_user_id }}"
+    group: "wheel"
+
+- name: Install AWS CLI for S3 downloads
+  ansible.builtin.command:
+    cmd: /tmp/aws/install --install-dir /usr/local/aws --bin-dir /usr/bin/ --update
+    creates: /usr/bin/aws
 
 - name: Download setup scripts to controller /opt directory - {{ lab.s3_bucket_name }}
   ansible.builtin.command:
@@ -72,8 +102,14 @@
   become: true
   register: __s3_sync_output
   changed_when: '"download:" in __s3_sync_output.stdout'
-  tags:
-    - controller-config
+
+# This changes standard controller image admin password to controller_password.
+- name: Update controller image admin password
+  ansible.builtin.expect:
+    command: awx-manage changepassword admin
+    responses:
+      Password: "{{ controller_password }}"
+      Password (again): "{{ controller_password }}"
 
 ## Remove controller demo content
 - name: Remove pre-created demo content
@@ -82,7 +118,7 @@
   tags:
     - demo-content
   block:
-    - name: Demo content - remove organization
+    - name: Demo content - create organization
       awx.awx.organization:
         name: "Default"
         state: present
@@ -123,8 +159,6 @@
 
 - name: Download custom execution environments
   when: (controller_execution_environments is defined) and (controller_execution_environments | length > 0)
-  tags:
-    - controller-config
   block:
     - name: Install containers.podman collection
       community.general.ansible_galaxy_install:
@@ -134,18 +168,43 @@
       register: __collection_install
 
     - name: Log into registry.redhat.io
-      become_user: "awx"
+      become_user: "{{ item }}"
       containers.podman.podman_login:
         registry: "registry.redhat.io"
         username: "{{ registry_username }}"
         password: "{{ registry_password }}"
+      no_log: true
+      loop:
+        - "{{ student_username }}"
+        - awx
 
-    - name: Pull execution environment images
+    - name: Pull execution environment images - awx
       become_user: "awx"
       containers.podman.podman_image:
         name: "{{ item.image }}"
       loop: "{{ controller_execution_environments }}"
-      register: __podman_pull_supported
-      until: __podman_pull_supported is not failed
+      register: __podman_pull_supported_awx
+      until: __podman_pull_supported_awx is not failed
+      retries: 40
+      delay: 2
+
+    - name: Pull execution environment images - {{ student_username }}
+      become_user: "{{ student_username }}"
+      containers.podman.podman_image:
+        name: "{{ item.image }}"
+      loop: "{{ controller_execution_environments }}"
+      register: __podman_pull_supported_student
+      until: __podman_pull_supported_student is not failed
+      retries: 40
+      delay: 2
+
+    #  Added for track lifecycle scripts - root
+    - name: Pull execution environment images - {{ ansible_user_id }}
+      become: true
+      containers.podman.podman_image:
+        name: "{{ item.image }}"
+      loop: "{{ controller_execution_environments }}"
+      register: __podman_pull_supported_student
+      until: __podman_pull_supported_student is not failed
       retries: 40
       delay: 2

@@ -1,25 +1,15 @@
 ---
-# tasks file for kiosk_mode
 - name: Ensure hostname set
   ansible.builtin.hostname:
     name: "{{ inventory_hostname.split('.')[0] }}"
 
-# - name: Register as user with password and auto-subscribe to available content.
-#   community.general.redhat_subscription:
-#     state: present
-#     username: "{{ rhsm_username }}"
-#     password: "{{ rhsm_password }}"
-#     auto_attach: true
-
-- name: install Gnome Desktop Environment
+- name: Install Gnome Desktop Environment
   ansible.builtin.package:
-    name:
-      - "@Server With GUI"
+    name: "{{ gnome_applications }}"
     state: present
-  tags:
-    - packages
+  notify: Reboot
 
-- name: persistent network configuration
+- name: Persistent network configuration
   community.general.nmcli:
     type: ethernet
     conn_name: 'eth0'
@@ -27,93 +17,147 @@
     method4: auto
     state: present
 
-- name: Create gdm configuration for kiosk kiosk_mode
-  ansible.builtin.template:
+- name: Create gdm configuration for kiosk
+  ansible.builtin.copy:
     src: custom.conf
     dest: /etc/gdm/custom.conf
     mode: 0644
-  notify: reboot
 
-- name: Add the user 'kiosk'
+- name: Create kiosk user group - {{ kiosk_username }}
+  ansible.builtin.group:
+    name: "{{ kiosk_username }}"
+    state: present
+
+- name: Add kiosk user - {{ kiosk_username }}
   ansible.builtin.user:
-    name: kiosk
-    comment: kiosk user
+    name: "{{ kiosk_username }}"
+    comment: "{{ kiosk_username }} user"
     state: present
     shell: /bin/bash
     uid: 2000
-    group: users
+    group: "{{ kiosk_username }}"
     create_home: true
     skeleton: true
-  notify: reboot
 
-- name: configure session for kiosk username /var/lib/AccountsService/users/kiosk
+# - name: Configure kiosk user session - {{ kiosk_username }}
+#   ansible.builtin.template:
+#     src: user.conf.j2
+#     dest: "/var/lib/AccountsService/users/{{ kiosk_username }}"
+#     mode: 0600
+
+- name: Create shell script to auto start on login if template file exists
+  block:
+    - name: Check if template script file exists
+      ansible.builtin.stat:
+        path: "{{ role_path }}/files/{{ kiosk_script_file }}.j2"
+      register: __kiosk_script_stat
+
+    - name: Copy kiosk script template file - {{ kiosk_script_file }}
+      ansible.builtin.template:
+        dest: "~{{ kiosk_username }}/.local/bin/{{ kiosk_script_file }}"
+        src: "{{ kiosk_script_file }}.j2"
+        mode: '0755'
+        owner: "{{ kiosk_username }}"
+        group: "{{ kiosk_username }}"
+      when: __kiosk_script_stat.stat.exists
+  always:
+    - name: Debug msg no kiosk script file found
+      ansible.builtin.debug:
+        msg: "No kiosk script file found."
+      when: not __kiosk_script_stat.stat.exists
+
+# - name: Change default target to graphical.target
+#   ansible.builtin.file:
+#     src: /usr/lib/systemd/system/graphical.target
+#     dest: /etc/systemd/system/default.target
+#     state: link
+#   notify: Reboot
+
+- name: Create home config directories - {{ kiosk_username }}
+  ansible.builtin.file:
+    path: "~{{ kiosk_username }}/{{ item }}/"
+    state: directory
+    mode: "0755"
+    owner: "{{ kiosk_username }}"
+    group: "{{ kiosk_username }}"
+  loop:
+    - ".local/bin"
+    - ".config"
+    - ".local/share/keyrings"
+
+- name: Add Default gnome-keyring
   ansible.builtin.copy:
-    src: files/kiosk.conf.j2
-    dest: /var/lib/AccountsService/users/kiosk
-    mode: 0600
-
-- name: change default target to graphical.target
-  ansible.builtin.file:
-    src: /usr/lib/systemd/system/graphical.target
-    dest: /etc/systemd/system/default.target
-    state: link
-  notify: reboot
-
-- name: permit traffic in default zone for https service
-  ansible.posix.firewalld:
-    service: https
-    permanent: true
-    state: enabled
-
-- name: install yum install gnome-session-kiosk-session
-  ansible.builtin.yum:
-    name: gnome-session-kiosk-session
-    state: present
-  notify: reboot
-
-- name: create directory local bin for kiosk mode
-  ansible.builtin.file:
-    path: /home/kiosk/.local/bin
-    state: directory
-    mode: '0755'
-    owner: kiosk
-    group: users
-  notify: reboot
-
-- name: create directory local bin for kiosk mode
-  ansible.builtin.file:
-    path: /home/kiosk/Desktop
-    state: directory
-    mode: '0755'
-    owner: kiosk
-    group: users
-  notify: reboot
-
-- name: create config directory to disable welcome screen
-  ansible.builtin.file:
-    path: /home/kiosk/.config/
-    state: directory
-    mode: '0755'
-    owner: kiosk
-    group: users
-  notify: reboot
-
-- name: create file to disable setup screens
-  ansible.builtin.file:
-    path: /home/kiosk/.config/gnome-initial-setup-done
-    state: touch
-    mode: '0755'
-    owner: kiosk
-    group: users
-
-- name: create shell script to start firefox
-  ansible.builtin.copy:
-    dest: /home/kiosk/.local/bin/redhat-kiosk
-    src: files/redhat-kiosk.j2
-    mode: '0755'
-    owner: kiosk
-    group: users
-  notify: reboot
+    src: "{{ item }}"
+    dest: "~{{ kiosk_username }}/.local/share/keyrings/{{ item }}"
+    owner: "{{ kiosk_username }}"
+    group: "{{ kiosk_username }}"
+    mode: "0600"
+  loop:
+    - default
+    - Default_keyring.keyring
 
 - name: Flush handlers (will reboot if needed)
   ansible.builtin.meta: flush_handlers
+
+- name: Create file to disable setup screens
+  ansible.builtin.file:
+    path: "~{{ kiosk_username }}/.config/gnome-initial-setup-done"
+    state: touch
+    mode: "0755"
+    owner: "{{ kiosk_username }}"
+    group: "{{ kiosk_username }}"
+
+- name: Create dconf directory for Gnome customization - {{ kiosk_username }}
+  ansible.builtin.file:
+    path: "/run/user/2000/dconf"
+    state: directory
+    mode: "0755"
+    owner: "{{ kiosk_username }}"
+    group: "{{ kiosk_username }}"
+
+# https://access.redhat.com/solutions/6976776
+- name: Remove the 'System Not Registered' notification
+  ansible.builtin.lineinfile:
+    path: /lib/systemd/user/org.gnome.SettingsDaemon.Subscription.service
+    search_string: "ExecStart=/usr/libexec/gsd-subman"
+    state: absent
+
+- name: Create Desktop directory - {{ kiosk_username }}
+  ansible.builtin.file:
+    path: "~{{ kiosk_username }}/Desktop"
+    state: directory
+    mode: '0755'
+    owner: "{{ kiosk_username }}"
+    group: "{{ kiosk_username }}"
+
+- name: Copy desktop files to Desktop directory - {{ kiosk_username }}
+  ansible.builtin.copy:
+    src: "{{ item }}.desktop"
+    dest: "~{{ kiosk_username }}/Desktop"
+    owner: "{{ kiosk_username }}"
+    group: "{{ kiosk_username }}"
+    mode: "0644"
+  loop: "{{ gnome_desktop_icons }}"
+
+- name: Set desktop file metadata to trust
+  environment:
+    - DISPLAY: :2
+    - BUS_SESSION_BUS_ADDRESS: unix:path=/run/user/2000/bus
+    - XDG_RUNTIME_DIR: /run/user/2000
+  ansible.builtin.command: |
+    dbus-launch gio set ~{{ kiosk_username }}/Desktop/{{ item }}.desktop metadata::trusted true
+  become_user: "{{ kiosk_username }}"
+  become: true
+  register: __gio_set
+  changed_when: __gio_set.rc == 0
+  loop: "{{ gnome_desktop_icons }}"
+
+# Making .desktop files executable must happen after above "gio" command
+# TODO make this reusable by pointing to playbook_dir files
+- name: Make desktop icons executable
+  ansible.builtin.file:
+    dest: "~{{ kiosk_username }}/Desktop/{{ item }}.desktop"
+    mode: "0755"
+    owner: "{{ kiosk_username }}"
+    group: "{{ kiosk_username }}"
+  loop: "{{ gnome_desktop_icons }}"

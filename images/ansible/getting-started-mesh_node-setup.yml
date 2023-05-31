@@ -34,7 +34,7 @@
 
     - name: Include common mesh worker node tasks
       vars:
-        mesh_node_os_packages:
+        instance_packages:
           - receptor
           - receptorctl
           - podman
