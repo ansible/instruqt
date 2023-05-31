@@ -114,10 +114,14 @@ check_file_and_content_with_regex() {
 
 # Check directories
 for dir in "$group_vars_dir" "$host_vars_dir" "$files_dir"; do
+    if [[ "$dir" =~ [[:upper:]] ]]; then
+        errors+=("Warning: Directory $dir contains uppercase letters. Please use lowercase letters only.")
+    fi
+
     if [ -d "$dir" ]; then
         echo "Directory $dir exists."
     else
-        errors+=("Directory $dir does not exist.")
+        errors+=("Directory $dir does not exist OR contains uppercase letters upon creation.")
     fi
 done
 
