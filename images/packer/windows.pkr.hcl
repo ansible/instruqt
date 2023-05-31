@@ -36,9 +36,12 @@ build {
 	"-e ansible_winrm_server_cert_validation=ignore",
       ]
     }
-    provisioner "powershell" {
-      inline = ["C:\\Windows\\System32\\Sysprep\\Sysprep.exe /oobe /generalize /quiet /quit", "while($true) { $imageState = Get-ItemProperty HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Setup\\State | Select ImageState; if($imageState.ImageState -ne 'IMAGE_STATE_GENERALIZE_RESEAL_TO_OOBE') { Write-Output $imageState.ImageState; Start-Sleep -s 10  } else { break } }"]
-    }
+# This runs sysprep and waits until it's finished. Added this in order to 
+# make one windows server join another's domain but some errors on instruqt
+# start after making this change that I don't understand
+#     provisioner "powershell" {
+#       inline = ["C:\\Windows\\System32\\Sysprep\\Sysprep.exe /oobe /generalize /quiet /quit", "while($true) { $imageState = Get-ItemProperty HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Setup\\State | Select ImageState; if($imageState.ImageState -ne 'IMAGE_STATE_GENERALIZE_RESEAL_TO_OOBE') { Write-Output $imageState.ImageState; Start-Sleep -s 10  } else { break } }"]
+#     }
 
 
 }
