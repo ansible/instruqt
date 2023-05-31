@@ -71,9 +71,33 @@
             Lightspeed
           </a>       
           {% endif %}                 
-          <a class="header-link" target="_new" href="https://github.com/ansible/instruqt/issues/new">
-            Open Issue
+          {% if page.path == "webpages/controller.md" %}
+          <a class="header-link-active" href="{{ '/webpages/controller' | relative_url }}">
+            Automation controller
           </a>
+          {% else %}  
+          <a class="header-link" href="{{ '/webpages/controller' | relative_url }}">
+            Automation controller
+          </a>       
+          {% endif %}    
+          {% if page.path == "webpages/firstplaybook.md" %}
+          <a class="header-link-active" href="{{ '/webpages/firstplaybook' | relative_url }}">
+            First Playbook
+          </a>
+          {% else %}  
+          <a class="header-link" href="{{ '/webpages/firstplaybook' | relative_url }}">
+            First Playbook
+          </a>       
+          {% endif %}   
+          {% if page.path == "webpages/servicenow.md" %}
+          <a class="header-link-active" href="{{ '/webpages/servicenow' | relative_url }}">
+            ServiceNow
+          </a>
+          {% else %}  
+          <a class="header-link" href="{{ '/webpages/servicenow' | relative_url }}">
+            ServiceNow
+          </a>       
+          {% endif %}                                       
         </div>
       </header>
 

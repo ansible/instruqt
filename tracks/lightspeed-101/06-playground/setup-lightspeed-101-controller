@@ -1,0 +1,25 @@
+#!/usr/bin/env python3
+
+import subprocess
+import yaml
+from shlex import quote
+import os
+
+os.environ["ANSIBLE_VAULT_PASSWORD_FILE"] = ".lightspeed-101_ansible_vault_password"
+setup_scripts_path="/opt/setup-scripts/lightspeed-101/setup/"
+
+# Change working dir
+os.chdir(setup_scripts_path)
+# Load extra_vars.yml
+extra_vars_file = open("/opt/setup-scripts/lightspeed-101/setup/vars/track_vars.yml")
+parsed_extra_vars_file = yaml.load(extra_vars_file, yaml.loader.FullLoader)
+
+#  Remove workflow
+setup_workflow_sync = subprocess.run(["ansible-navigator", "run",
+                                setup_scripts_path + "lightspeed-101-lab_setup.yml", 
+                                "--tags", "setup-playground",
+                                "-e", "workflow_state=absent",
+                                "-e", "check_mode=false",
+                                "-e", "state=disabled",
+                                "--mode", "stdout"])
+

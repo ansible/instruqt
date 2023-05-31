@@ -1,0 +1,21 @@
+---
+argument_specs:
+  # roles/vnc_server/tasks/main.yml entry point
+  main:
+    short_description: The main entry point for the vnc_server role.
+    options:
+      vnc_username:
+        type: "str"
+        required: false
+        default: "student"
+        description: "The default vnc username."
+      vnc_password:
+        type: "str"
+        required: false
+        default: "learn_ansible"
+        description: "The default vnc user password."
+      vnc_gnome_session:
+        type: "str"
+        required: false
+        default: "gnome-classic"
+        description: "Kiosk user GDM xsession name."

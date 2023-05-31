@@ -1,0 +1,20 @@
+galaxy_info:
+  role_name: vnc_server
+  namespace: craig_br
+  author: Craig Brandt
+  description: Install TigerVNC for Instruqt labs
+
+  license: Apache-2.0
+
+  min_ansible_version: "2.9"
+
+  platforms:
+    - name: Fedora
+      versions:
+        - all
+
+  galaxy_tags:
+    - tigervnc
+    - instruqt
+
+dependencies: []

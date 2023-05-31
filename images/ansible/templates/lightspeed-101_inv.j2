@@ -1,0 +1,24 @@
+[automationcontroller]
+{% for node in __controller_instance_info.resources %}
+{% if node.labels["mesh-type"] == "controller" and node.labels["role"] == track_slug %}
+{{ node.name }} ansible_connection=local
+{% endif %}
+{% endfor %}
+
+[all:vars]
+# PostgreSQL configuration
+pg_host=''
+pg_port=''
+pg_database='awx'
+pg_username='awx'
+pg_password='{{ controller_password }}'
+pg_sslmode='prefer'  # set to 'verify-full' for client-side enforced SSL
+
+automationcontroller_client_max_body_size='20M'
+ignore_preflight_errors=true
+create_preload_data=false
+admin_password='{{ controller_password }}'
+ansible_user='{{ ansible_user }}'
+ansible_ssh_private_key_file='/home/{{ ansible_user }}/.ssh/instruqt_lab'
+ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ControlMaster=auto -o ControlPersist=60s'
+ansible_ssh_pipelining=true

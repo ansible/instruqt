@@ -8,7 +8,6 @@
     "telemetry.enableTelemetry": false,
     "search.smartCase": true,
     "git.confirmSync": false,
-    "workbench.colorTheme": "Visual Studio Dark",
     "ansible.ansibleLint.enabled": false,
     "ansible.ansible.useFullyQualifiedCollectionNames": true,
     "files.associations": {
@@ -17,5 +16,6 @@
     "redhat.telemetry.enabled": false,
     "security.workspace.trust.banner": "never",
     "ansible.validation.lint.enabled": false,
-    "security.workspace.trust.enabled": false
+    "security.workspace.trust.enabled": false,
+    "workbench.colorTheme": "Default Dark+"
 }

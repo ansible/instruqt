@@ -1,0 +1,67 @@
+---
+- name: Add VS Code repository
+  ansible.builtin.yum_repository:
+    name: code
+    description: Visual Studio Code
+    baseurl: "https://packages.microsoft.com/yumrepos/vscode"
+    gpgcheck: true
+    enabled: true
+    gpgkey:
+      - "https://packages.microsoft.com/keys/microsoft.asc"
+
+- name: Update DNF cache and install VS Code
+  ansible.builtin.dnf:
+    name:
+      - code
+    state: present
+    update_cache: true
+
+- name: Create VS Code directories
+  ansible.builtin.file:
+    path: "~{{ vscode_username }}/{{ item }}/"
+    state: directory
+    mode: "0755"
+    owner: "{{ vscode_username }}"
+    group: "{{ vscode_username }}"
+  loop:
+    - ".config/Code/User"
+    - ".vscode/extensions"
+
+- name: Apply VS Code User defaults
+  ansible.builtin.copy:
+    src: "{{ vscode_settings_file }}"
+    dest: "~{{ vscode_username }}/.config/Code/User/settings.json"
+    owner: "{{ vscode_username }}"
+    group: "{{ vscode_username }}"
+    mode: "0644"
+
+- name: Download VSCode extension files
+  ansible.builtin.get_url:
+    url: "{{ item.download_url }}"
+    dest: ~{{ vscode_username }}/.vscode/extensions/
+    owner: "{{ vscode_username }}"
+    group: "{{ vscode_username }}"
+    mode: "0644"
+  loop: "{{ vscode_extensions }}"
+  when: item.download_url is defined
+  register: download_extension
+  until: download_extension is not failed
+  retries: 5
+
+- name: Install extensions from local file
+  become_user: "{{ vscode_username }}"
+  ansible.builtin.command: "/bin/code --install-extension ~{{ vscode_username }}/.vscode/extensions/{{ item.filename }}"
+  loop: "{{ vscode_extensions }}"
+  when: item.filename is defined
+  register: install_extension
+  until: install_extension is not failed
+  retries: 5
+
+- name: Install VS Code Marketplace extensions
+  become_user: "{{ vscode_username }}"
+  ansible.builtin.command: "/bin/code --install-extension {{ item.name }}"
+  loop: "{{ vscode_extensions }}"
+  when: (item.filename is undefined) or (item.download_url is undefined)
+  register: install_extension
+  until: install_extension is not failed
+  retries: 5

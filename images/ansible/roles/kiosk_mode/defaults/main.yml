@@ -1,2 +1,17 @@
 ---
-# defaults file for kiosk_mode
+kiosk_username: student
+kiosk_password: learn_ansible
+kiosk_script_file: gnome-kiosk-script
+gnome_desktop_icons:
+  - code
+  - firefox
+gnome_applications:
+  - "@base-x"
+  - dbus-x11
+  - gnome-kiosk-script-session
+  - gnome-classic-session
+  - gnome-shell-extension-desktop-icons
+  - gnome-themes-extra
+  - gdm
+  - firefox
+  - gnome-terminal

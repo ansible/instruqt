@@ -1,0 +1,41 @@
+---
+- name: Deploy podman application
+  hosts: appservers
+  become: true
+
+  vars:
+    mattermost_app:
+      env:
+        MM_TEAMSETTINGS_SITENAME: ACME Corp Chat
+      name: mattermost-preview
+      image: docker.io/mattermost/mattermost-preview
+      state: started
+      generate_systemd:
+        path: /etc/systemd/system/
+        container_prefix: app
+        restart_policy: always
+      ports:
+        - 8065:8065
+
+  tasks:
+          # TASK 1
+          # # 1a. Uncomment task description below and generate a task suggestion.
+
+    - name: Run container with podman using mattermost_app var
+      containers.podman.podman_container:
+        name: "{{ mattermost_app.name }}"
+        image: "{{ mattermost_app.image }}"
+        state: "{{ mattermost_app.state }}"
+        ports: "{{ mattermost_app.ports }}"
+        env: "{{ mattermost_app.env }}"
+        generate_systemd: "{{ mattermost_app.generate_systemd }}"
+
+          # TASK 2
+          # # 2a. Uncomment task description below and generate a task suggestion.
+
+    - name: Start and enable 'app-mattermost-preview' service
+      ansible.builtin.systemd:
+        name: app-mattermost-preview
+        state: started
+        enabled: true
+        daemon_reload: true

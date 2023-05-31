@@ -1,0 +1,41 @@
+slug: lightspeed-101
+id: nd92zv3wfctq
+title: Intro to Ansible Lightspeed with IBM Watson Code Assistant
+teaser: Experience how Ansible Lightspeed accelerates your Ansible content development
+  with its  generative AI superpowers.
+description: |-
+  # Getting started with Ansible Lightspeed
+  ***
+
+  <p>
+
+  ## This lab covers:
+
+  <p>
+
+  - Configuring Ansible Lightspeed and Ansible Lint in Visual Studio Code extension.
+  - The basics of generating Ansible Lightspeed suggestions.
+  - Examples of using Playbook context, such as `vars` and `module_defaults` sections.
+  - Customizing task descriptions to get more desirable results.
+  - Running the Playbooks in automation controller.
+  - Configuring an automation controller workflow.
+icon: https://raw.githubusercontent.com/ansible/instruqt/devel/assets/icons/Product_Icon-Red_Hat-Ansible-RGB.png
+tags:
+- ansible
+- lightspeed
+- wisdom
+- ai
+owner: redhat
+developers:
+- cbrandt@redhat.com
+- abehl@redhat.com
+maintenance: true
+show_timer: true
+skipping_enabled: true
+idle_timeout: 1800
+timelimit: 4500
+lab_config:
+  overlay: false
+  width: 25
+  position: right
+checksum: "5744931738794331988"

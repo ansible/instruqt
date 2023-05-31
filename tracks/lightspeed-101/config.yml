@@ -1,0 +1,16 @@
+version: "3"
+containers:
+- name: vnc-proxy
+  image: gcr.io/instruqt/guacamole
+  shell: /bin/bash
+  ports:
+  - 8080
+  memory: 512
+virtualmachines:
+- name: lightspeed-101-controller
+  image: instruqt-dev-356115/lightspeed-101-controller-image
+  machine_type: e2-standard-4
+secrets:
+- name: ANSIBLE_VAULT_PASSWORD
+- name: STUDENT_USERNAME
+- name: STUDENT_PASSWORD

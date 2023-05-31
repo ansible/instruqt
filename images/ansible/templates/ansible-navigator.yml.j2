@@ -1,0 +1,17 @@
+---
+ansible-navigator:
+  execution-environment:
+    container-engine: podman
+    enabled: true
+    image: "{{ lab.navigator_execution_environment }}"
+    pull:
+      policy: missing
+  playbook-artifact:
+    enable: true
+    save-as: "/tmp/{playbook_name}-artifact.json"
+    replay: "/tmp/replay-artifact.json"
+  logging:
+    file: /tmp/ansible_navigator.log
+  editor:
+    command: code -g {filename}:{line_number}
+    console: false

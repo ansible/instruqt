@@ -1,0 +1,32 @@
+---
+- name: Deploy RHEL monitoring
+  hosts: monitoring
+  become: true
+
+        # # module_defaults section below.
+
+#   module_defaults:
+#     ansible.builtin.copy:
+#       mode: "644"
+
+  tasks:
+        # TASK 1
+        # # 1a. Uncomment task description below and generate an Ansible Playbook task suggestion.
+
+    # - name: Install cockpit and cockpit-podman on RHEL
+
+        # TASK 2
+        # # 2a. Uncomment task description below and generate an Ansible Playbook task suggestion. Save.
+        # # 2b. Uncomment module_defaults: section above. Save.
+        # # 2c. Remove current Ansible Lightspeed task suggestion below and generate a new one.
+        # #     Note the suggestion no longer included the "mode:" argument.
+        # # 2d. Note the ansible-lint warning for the task.
+        # # 2e. Add "# noqa risky-file-permissions" without quotation marks to the end of task description line below.
+        # #     For example: "- name: Copy ./files/cockpit.conf to /etc/cockpit/ # noqa risky-file-permissions"
+
+    # - name: Copy ./files/cockpit.conf to /etc/cockpit/
+
+        # TASK 3
+        # # 3a. Uncomment the task description below and generate an Ansible Playbook task suggestion.
+
+    # - name: Enable and start cockpit service
