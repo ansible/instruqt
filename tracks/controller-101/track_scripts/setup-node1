@@ -1,0 +1,45 @@
+#!/bin/bash
+while [ ! -f /opt/instruqt/bootstrap/host-bootstrap-completed ]
+do
+    echo "Waiting for Instruqt to finish booting the VM"
+    sleep 1
+done
+
+touch /etc/sudoers.d/rhel_sudoers
+echo "%rhel ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/rhel_sudoers
+cp -a /root/.ssh/* /home/rhel/.ssh/.
+chown -R rhel:rhel /home/rhel/.ssh
+
+## ^ from getting started controller
+
+dnf config-manager --disable rhui*,google*
+
+sudo bash -c 'cat >/etc/yum.repos.d/centos8-baseos.repo <<EOL
+[centos8-baseos]
+name=CentOS 8 Stream BaseOS
+baseurl=http://mirror.centos.org/centos/8-stream/BaseOS/x86_64/os
+enabled=1
+gpgcheck=0
+
+EOL
+cat /etc/yum.repos.d/centos8-baseos.repo'
+
+sudo bash -c 'cat >/etc/yum.repos.d/centos8-appstream.repo <<EOL
+[centos8-appstream]
+name=CentOS 8 Stream AppStream
+baseurl=http://mirror.centos.org/centos/8-stream/AppStream/x86_64/os/
+enabled=1
+gpgcheck=0
+
+EOL
+cat /etc/yum.repos.d/centos8-appstream.repo'
+
+
+
+dnf clean all
+#Install a package to build metadata of the repo and not need to wait during labs
+dnf install -y cups-filesystem
+systemctl stop nginx
+setenforce 0
+
+

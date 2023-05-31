@@ -1,0 +1,87 @@
+#!/bin/bash
+while [ ! -f /opt/instruqt/bootstrap/host-bootstrap-completed ]
+do
+    echo "Waiting for Instruqt to finish booting the VM"
+    sleep 1
+done
+
+touch /etc/sudoers.d/rhel_sudoers
+echo "%rhel ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/rhel_sudoers
+cp -a /root/.ssh/* /home/rhel/.ssh/.
+chown -R rhel:rhel /home/rhel/.ssh
+
+## ^ from getting started controller
+
+USER=rhel
+# set ansible-navigator default settings
+su - $USER -c 'cat >/home/$USER/ansible-navigator.yml <<EOL
+---
+ansible-navigator:
+  ansible:
+    inventory:
+      entries:
+      - /home/rhel/ansible-files/hosts
+  execution-environment:
+    container-engine: podman
+    enabled: true
+    image: quay.io/acme_corp/servicenow-ee:latest
+    pull:
+      policy: missing
+  logging:
+    level: debug
+  mode: stdout
+  playbook-artifact:
+    save-as: /home/rhel/{playbook_name}-artifact-{time_stamp}.json
+
+EOL
+cat /home/$USER/ansible-navigator.yml'
+
+sudo dnf config-manager --set-disabled rhui-rhel-8-for-x86_64-baseos-rhui-rpms
+sudo dnf config-manager --set-disabled rhui-rhel-8-for-x86_64-appstream-rhui-rpms
+sudo dnf config-manager --enable ansible-automation-platform
+
+sudo bash -c 'cat >/etc/yum.repos.d/centos8-baseos.repo <<EOL
+[centos8-baseos]
+name=CentOS 8 Stream BaseOS
+baseurl=http://mirror.centos.org/centos/8-stream/BaseOS/x86_64/os
+enabled=1
+gpgcheck=0
+
+EOL
+cat /etc/yum.repos.d/centos8-baseos.repo'
+
+sudo bash -c 'cat >/etc/yum.repos.d/centos8-appstream.repo <<EOL
+[centos8-appstream]
+name=CentOS 8 Stream AppStream
+baseurl=http://mirror.centos.org/centos/8-stream/AppStream/x86_64/os/
+enabled=1
+gpgcheck=0
+
+EOL
+cat /etc/yum.repos.d/centos8-appstream.repo'
+
+
+sudo dnf clean all
+sudo dnf install -y ansible-navigator
+sudo dnf install -y ansible-lint
+sudo dnf install -y nc
+pip3.9 install yamllint
+
+
+#Switch to correct Python version
+/usr/sbin/alternatives --set python3 /usr/bin/python3.8
+
+# Set controller access env variables
+export CONTROLLER_HOST=localhost
+export CONTROLLER_USERNAME=admin
+export CONTROLLER_PASSWORD='ansible123!'
+export CONTROLLER_VERIFY_SSL=false
+
+
+# Install latest awx.awx
+su - $USER -c '/bin/ansible-galaxy collection install awx.awx'
+
+# Get playbook from repo
+/usr/bin/curl https://raw.githubusercontent.com/leogallego/instruqt-lifecycle-scripts/main/controller-101-setup-playbook.yml -o /tmp/setup-scripts/getting-started-controller/getting-started-controller-setup.yml
+# Use playbook to setup environment
+/bin/ansible-playbook /tmp/setup-scripts/getting-started-controller/getting-started-controller-setup.yml --tags setup-env
