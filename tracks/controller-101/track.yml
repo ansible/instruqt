@@ -1,0 +1,51 @@
+slug: controller-101
+id: sm81lyro6d6o
+title: Introduction to automation controller
+teaser: Automation controller is the web-UI frontend to Ansible Automation Platform,
+  explore it and learn how to run your playbooks without using the command line.
+description: |-
+  # Introduction to Ansible automation controller
+
+  Welcome to our interactive lab on Ansible automation controller, the web-based UI interface for Red Hat Ansible Automation Platform.
+
+  In this lab, we will demonstrate how easy it is to use automation controller (formerly Ansible Tower) by running some of the playbooks from the "Writing your first playbook" laboratory.
+
+  This intro laboratory is useful for both, experienced Ansible users and beginners. No prior experience is required, although understanding playbook development concepts will help.
+
+  We will create an inventory to manage our servers, import our playbooks through the Projects, create Job Templates to run the playbooks and finally, create a Workflow linking a few of those playbooks through success or failure conditions.
+
+  ![controller_dashboard](https://raw.githubusercontent.com/craig-br/instruqt-tracks/devel/assets/controller/controller_dashboard.png)
+
+  This lab covers the following topics for automation controller:
+
+  * Exploring the dashboard and web-UI interface
+  * Creating and managing our `Inventory`
+  * How to import playbooks through `Projects`
+  * How to create `Job Templates` to run our playbooks
+  * Understanding the `Credentials` feature to configure authentication
+  * How to create  `Workflow Templates` linking different playbooks through conditions
+
+  We will also explore a few of the additional features in the automation controller that can help with your enterprise automation needs, and we will dive deeper into them in a future laboratory.
+
+  You can find more information about Ansible at [Ansible.com](https://www.ansible.com/)
+
+  [**Try Ansible Automation Platform today!**](https://red.ht/try_ansible)
+icon: https://www.ansible.com/hubfs/Logo-Red_Hat-Ansible-A-Reverse-SVG.svg
+level: beginner
+tags:
+- ansible
+- infrastructure
+- gettingstarted
+- controller
+- automation
+owner: redhat
+developers:
+- lgallego@redhat.com
+show_timer: true
+skipping_enabled: true
+timelimit: 7200
+lab_config:
+  overlay: false
+  width: 33
+  position: right
+checksum: "1096537776293278577"
