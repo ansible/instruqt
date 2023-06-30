@@ -12,7 +12,7 @@
 
     - name: download aap
       vars:
-        provided_sha_value: 7456b98f2f50e0e1d4c93fb4e375fe8a9174f397a5b1c0950915224f7f020ec4
+        provided_sha_value: 95f5bfc00f65be7785098bf196f21e76c3eca54f95b203ba8655c80676f665a7
       include_role:
         name: ansible.workshops.aap_download
 
@@ -34,7 +34,7 @@
       - "{{ ee_registry_name }}/ansible-automation-platform-23/ee-supported-rhel8:latest"
       - "{{ ee_registry_name }}/ansible-automation-platform-23/ee-minimal-rhel8:latest"
     ee_default_image: "{{ ee_registry_name }}/ansible-automation-platform-23/ee-supported-rhel8:latest"
-
+    pre_build: false
   tasks:
     - name: install automation controller
       vars:
@@ -85,10 +85,10 @@
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/10_image_cleanup.yml"
 
-    - name: copy setup-scripts to control node
-      ansible.builtin.copy:
-        src: ./setup-scripts
-        dest: /tmp
+    # - name: copy setup-scripts to control node
+    #   ansible.builtin.copy:
+    #     src: ./setup-scripts
+    #     dest: /tmp
 
 - name: Playbook to configure ansible controller post installation
   hosts: all
