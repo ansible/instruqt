@@ -45,7 +45,7 @@ tabs:
   url: https://dublin-edge-lab:9090
   new_window: true
 difficulty: basic
-timelimit: 600
+timelimit: 260
 ---
 
 🔐 Login credentials for the mission
