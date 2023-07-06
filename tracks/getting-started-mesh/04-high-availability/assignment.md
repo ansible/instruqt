@@ -296,6 +296,7 @@ If you have encountered an issue or have noticed something not quite right, plea
     display: block;
     margin-left: auto;
     margin-right: auto;
+    /* width: 100%; */
   }
   h1 {
     font-size: 18px;

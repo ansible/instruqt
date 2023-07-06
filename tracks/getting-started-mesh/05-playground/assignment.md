@@ -18,7 +18,7 @@ tabs:
   hostname: raleigh-controller
   port: 443
 difficulty: basic
-timelimit: 600
+timelimit: 900
 ---
 🔐 Login credentials
 ===

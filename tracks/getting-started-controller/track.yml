@@ -32,9 +32,10 @@ tags:
 owner: redhat
 developers:
 - cbrandt@redhat.com
+maintenance: true
 show_timer: true
 lab_config:
   overlay: false
-  width: 25
+  width: 33
   position: right
-checksum: "8172677526340725163"
+checksum: "5064574641520580507"
