@@ -1,4 +1,3 @@
-ansible-core
-ansible-navigator
-ansible-lint
-yamllint
+ansible-core==2.14.1
+ansible-navigator==2.2.0
+ansible-lint==6.11.0
