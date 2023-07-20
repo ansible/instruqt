@@ -1,0 +1,155 @@
+ansible-galaxy collection install ansible.eda
+
+tee /root/kafka-example.yml << EOF
+---
+- name: Read messages from a kafka topic and act on them
+  hosts: all
+  ## Define our source for events
+  sources:   
+    - ansible.eda.kafka:
+        host: broker
+        port: 9092
+        topic: eda-topic
+        group_id:
+
+  ## Define the conditions we are looking for
+  rules:
+    - name: Say Hello
+      condition: event.message == "Ansible is cool"
+      ## Define the action we should take should the condition be met
+      action:
+        run_playbook:
+          name: say-what.yml
+
+EOF
+
+tee /root/hello-events.yml << EOF
+---
+- name: Hello Events
+  hosts: all
+  ## Define our source for events
+  sources:
+    - benthomasson.eda.range:
+        limit: 5
+  ## Define the conditions we are looking for
+  rules:
+    - name: Say Hello
+      condition: event.i == 1
+      ## Define the action we should take should the condition be met
+      action:
+        run_playbook:
+          name: benthomasson.eda.hello
+
+EOF
+
+tee /root/say-what.yml << EOF
+---
+- name: say thanks
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - debug:
+        msg: "Thank you, {{ ansible_eda.event.sender | default('my friend') }}!"
+EOF
+
+tee /root/webhook-example.yml << EOF
+---
+- name: Listen for events on a webhook
+  hosts: all
+  ## Define our source for events
+  sources:
+    - ansible.eda.webhook:
+        host: 0.0.0.0
+        port: 5000
+  ## Define the conditions we are looking for
+  rules:
+    - name: Say Hello
+      condition: event.payload.message == "Ansible is super cool"
+  ## Define the action we should take should the condition be met
+      action:
+        run_playbook:
+          name: say-what.yml
+EOF
+
+tee /root/inventory.yml << EOF
+localhost
+
+EOF
+
+tee /root/wowza.yml << EOF
+---
+- name: Site is up
+  hosts: all
+  gather_facts: false
+  tasks:
+    - debug:
+        msg: "All is up and well"
+
+EOF
+
+tee /root/url-check-example.yml << EOF
+---
+- name: Listen for events on a webhook
+  hosts: web
+  ## Define our source for events
+  sources:
+     - ansible.eda.url_check:
+        urls:
+          - http://webserver
+        delay: 10
+
+  rules:
+    ## Define the conditions we are looking for 
+    - name: Web site is up
+      condition: event.url_check.status == "up"
+    ## Define the action we should take should the condition be met  
+      action:
+        run_playbook:
+          name: wowza.yml
+
+    - name: Web site is down
+      condition: event.url_check.status == "down"
+    ## Define the action we should take should the condition be met  
+      action:
+        run_playbook:
+          name: fix_web.yml
+
+EOF
+
+tee /root/fix_web.yml << EOF
+---
+- name: Site Down
+  hosts: all
+  gather_facts: false
+  become: true
+  
+  tasks:
+    - debug:
+        msg: "Website is down!"
+
+    - name: Replace website
+      copy:
+       remote_src: yes
+       src: /tmp/index.html
+       dest: /var/www/html/
+       owner: apache
+       group: apache
+       mode: '0644'
+
+EOF
+
+tee /root/inventory_web.yml << EOF
+all:
+  hosts:
+    localhost:
+      ansible_connection: local
+web:
+  hosts:
+    webserver:
+      ansible_user: rhel
+      ansible_password: ansible123!
+EOF
+#
+
+pip install aiohttp
+pip3 install --upgrade ansible-rulebook

@@ -1,0 +1,41 @@
+version: "3"
+containers:
+- name: broker
+  image: confluentinc/cp-kafka:7.0.1
+  ports:
+  - 9092
+  environment:
+    KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:9092,PLAINTEXT_INTERNAL://broker:29092
+    KAFKA_BROKER_ID: "1"
+    KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+    KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+    KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: "1"
+    KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
+    KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+  memory: 512
+- name: zookeeper
+  image: confluentinc/cp-zookeeper:7.0.1
+  ports:
+  - 2181
+  - 2000
+  environment:
+    ZOOKEEPER_CLIENT_PORT: "2181"
+    ZOOKEEPER_TICK_TIME: "2000"
+  memory: 512
+- name: ansible-rulebook
+  image: quay.io/acme_corp/ansible-rulebook:0.4
+  shell: /bin/bash
+  ports:
+  - 5000
+  environment:
+    ANSIBLE_HOST_KEY_CHECKING: "False"
+  memory: 512
+virtualmachines:
+- name: webserver
+  image: red-hat-mbu/rhel8
+  shell: /bin/bash
+  environment:
+    GITHUB_TOKEN: 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
+  machine_type: n2-standard-2
+  allow_external_ingress:
+  - http

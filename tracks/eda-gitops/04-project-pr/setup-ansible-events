@@ -1,0 +1,129 @@
+tee /root/project/webhook.yml << EOF
+---
+- name: Capture POSTs from gitea
+  hosts: all
+  sources:
+    - ansible.eda.webhook:
+        host: 0.0.0.0
+        port: 5000
+      filters:
+        - ansible.eda.json_filter:
+            exclude_keys: ['sender', 'owner']
+        - ansible.eda.dashes_to_underscores:
+
+  rules:
+  # Capture push events on main
+    - name: Get push event details
+      condition: event.meta.headers.X_Gitea_Event == "push" 
+      action:
+        post_event:
+          event:
+            type: "{{ event.meta.headers.X_Gitea_Event }}"
+            gitref: "{{ event.payload.ref }}"
+            repo_name: "{{ event.payload.repository.name }}"
+            author: "{{ event.payload.head_commit.author.username }}"
+            clone_url: "{{ event.payload.repository.clone_url }}"   
+
+  # Capture pull_request created
+    - name: Get pull_request event details
+      condition: event.meta.headers.X_Gitea_Event == "pull_request" and event.payload.action == "opened"
+      action:
+        post_event:
+          event:
+            type: "{{ event.meta.headers.X_Gitea_Event }}"
+            gitref: "{{ event.payload.pull_request.head.ref }}"
+            repo_name: "{{ event.payload.repository.name }}"
+            author: "{{ event.payload.pull_request.user.username }}"
+            clone_url: "{{ event.payload.repository.clone_url }}"
+            pr_id: "{{ event.payload.pull_request.id }}"  
+
+  # Run action in response to push events
+    - name: Respond to push event
+      condition: event.repo_name == "eda-app" and event.type == "push"
+      action:
+        run_playbook:
+          name: playbooks/on_push.yml
+          post_events: true
+
+  # Run action in response to pull_requests
+    - name: Respond to pull_request event
+      condition: event.repo_name == "eda-app" and event.type == "pull_request"
+      action:
+        run_playbook:
+          name: playbooks/on_pr.yml
+          post_events: true
+
+  # Deploy application after push/pull_request events
+    - name: Run application deploy playbook
+      condition: event.cloned.failed == "false"
+      action:
+        run_playbook:
+          name: /tmp/eda-app/deploy.yml
+
+EOF
+
+mkdir /root/project/playbooks
+
+tee /root/project/playbooks/on_pr.yml << EOF
+---
+- name: pull_request -- update application repo
+  hosts: localhost
+  gather_facts: false
+  tasks:
+
+  - name: pull_request -- Check if repo exists locally
+    ansible.builtin.stat:
+      path: "/tmp/{{ event.repo_name }}"
+    register: repo_stat
+
+  - name: pull_request -- Clone application repository 
+    ansible.builtin.git:
+      repo: "{{ event.clone_url }}"
+      dest: "/tmp/{{ event.repo_name }}"
+      clone: true
+      update: true
+    when: repo_stat.stat.exists == false
+    register: repo_cloned
+
+  - name: pull_request -- Update application repository to event ref 
+    ansible.builtin.git:
+      repo: "{{ event.clone_url }}"
+      dest: "/tmp/{{ event.repo_name }}"
+      clone: true
+      update: true
+      version: "{{ event.gitref }}"
+    register: repo_cloned
+
+  - name: pull_request -- Comment on PR
+    ansible.builtin.uri:
+      url: http://podman:3000/api/v1/repos/{{ event.author }}/{{ event.repo_name }}/issues/{{ event.pr_id }}/comments
+      user: student
+      password: learn_ansible
+      method: POST
+      headers:
+        Sudo: ansible
+        Content-Type: application/json
+        accept: application/json
+      body:
+        body: |
+          Calling application deployment
+
+          Event type: {{ event.type }}
+          Branch: {{ event.gitref }}
+          Author: {{ event.author }}
+      force_basic_auth: yes
+      status_code: 201
+      body_format: json
+    register: comment
+
+  - set_fact:
+      cacheable: true
+      repo_stat: "{{ repo_stat }}"
+      cloned: "{{ repo_cloned }}"
+      etype: "{{ event.type }}"
+      erepo: "{{ event.repo_name }}"
+      eref: "{{ event.gitref }}"
+      eauthor: "{{ event.author }}"
+      comment: "{{ comment }}"
+
+EOF

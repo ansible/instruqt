@@ -1,0 +1,18 @@
+slug: event-driven-netops
+id: 1aqk0bes7rxe
+title: Event-Driven Ansible and NetOps
+teaser: Use Event-Driven Ansible to react to network events as well as work with ChatOps
+description: Use Event-Driven Ansible to react to network events as well as work with
+  ChatOps.
+icon: ""
+level: beginner
+tags: []
+owner: redhat
+developers:
+- nmartins@redhat.com
+timelimit: 2700
+lab_config:
+  overlay: false
+  width: 33
+  position: right
+checksum: "12414870398029422392"

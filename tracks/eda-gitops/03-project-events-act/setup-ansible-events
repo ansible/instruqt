@@ -1,0 +1,86 @@
+tee /root/project/webhook.yml << EOF
+---
+- name: Capture POSTs from gitea
+  hosts: all
+  sources:
+    - ansible.eda.webhook:
+        host: 0.0.0.0
+        port: 5000
+      filters:
+        - ansible.eda.json_filter:
+            exclude_keys: ['sender', 'owner']
+        - ansible.eda.dashes_to_underscores:
+
+  rules:
+  # Capture push events on main
+    - name: Get push event details
+      condition: event.meta.headers.X_Gitea_Event == "push"
+      action:
+        post_event:
+          event:
+            type: "{{ event.meta.headers.X_Gitea_Event }}"
+            gitref: "{{ event.payload.ref }}"
+            repo_name: "{{ event.payload.repository.name }}"
+            author: "{{ event.payload.head_commit.author.username }}"
+            clone_url: "{{ event.payload.repository.clone_url }}"    
+
+  # Run action in response to push events
+    - name: Respond to push event
+      condition: event.repo_name == "eda-app" and event.type == "push"
+      action:
+        run_playbook:
+          name: playbooks/on_push.yml
+          post_events: true
+
+  # Deploy application after push/pull_request events
+    - name: Run application deploy playbook
+      condition: event.cloned.failed == "false"
+      action:
+        run_playbook:
+          name: /tmp/eda-app/deploy.yml
+
+EOF
+
+mkdir /root/project/playbooks
+
+tee /root/project/playbooks/on_push.yml << EOF
+---
+- name: push -- update application repo
+  hosts: localhost
+  gather_facts: false
+  tasks:
+
+  - name: push -- Check if repo exists locally
+    ansible.builtin.stat:
+      path: "/tmp/{{ event.repo_name }}"
+    register: repo_stat
+
+  - name: push -- Clone application repository 
+    ansible.builtin.git:
+      repo: "{{ event.clone_url }}"
+      dest: "/tmp/{{ event.repo_name }}"
+      clone: true
+      update: true
+    when: repo_stat.stat.exists == false
+    register: repo_cloned
+
+  - name: push -- Update application repository to event ref 
+    ansible.builtin.git:
+      repo: "{{ event.clone_url }}"
+      dest: "/tmp/{{ event.repo_name }}"
+      clone: true
+      update: true
+      version: "{{ event.gitref | split('/') | last }}"
+    register: repo_cloned
+
+  - set_fact:
+      cacheable: true
+      repo_stat: "{{ repo_stat }}"
+      cloned: "{{ repo_cloned }}"
+      etype: "{{ event.type }}"
+      erepo: "{{ event.repo_name }}"
+      eref: "{{ event.gitref | split('/') | last }}"
+      eauthor: "{{ event.author }}"
+
+EOF
+

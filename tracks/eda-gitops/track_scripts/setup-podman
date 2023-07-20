@@ -1,0 +1,114 @@
+# Generate the custom Gitea config >>>
+tee /root/app.ini << EOF 
+APP_NAME = Gitea: Git with a cup of tea
+RUN_MODE = prod
+RUN_USER = git
+
+[repository]
+ROOT = /data/git/repositories
+
+[repository.local]
+LOCAL_COPY_PATH = /data/gitea/tmp/local-repo
+
+[repository.upload]
+TEMP_PATH = /data/gitea/uploads
+
+[server]
+APP_DATA_PATH    = /data/gitea
+# DOMAIN           = podman-3000-${_SANDBOX_ID}.env.play.instruqt.com
+# SSH_DOMAIN       = podman-3000-${_SANDBOX_ID}.env.play.instruqt.com
+DOMAIN           = podman:3000
+SSH_DOMAIN       = podman:3000
+PROTOCOL         = http
+USE_PROXY_PROTOCOL = true
+HTTP_PORT        = 3000
+# ROOT_URL         = http://podman-3000-${_SANDBOX_ID}.env.play.instruqt.com
+ROOT_URL         = http://podman:3000
+DISABLE_SSH      = false
+SSH_PORT         = 2222
+SSH_LISTEN_PORT  = 22
+OFFLINE_MODE     = true
+REDIRECT_OTHER_PORT = true
+PORT_TO_REDIRECT = 80
+
+[webhook]
+ALLOWED_HOST_LIST = *
+
+[database]
+PATH     = /data/gitea/gitea.db
+DB_TYPE  = sqlite3
+HOST     = localhost:3306
+NAME     = gitea
+USER     = root
+PASSWD   = 
+LOG_SQL  = false
+SCHEMA   = 
+SSL_MODE = disable
+CHARSET  = utf8
+
+[indexer]
+ISSUE_INDEXER_PATH = /data/gitea/indexers/issues.bleve
+
+[session]
+PROVIDER_CONFIG = /data/gitea/sessions
+PROVIDER        = file
+COOKIE_SECURE   = false
+SAME_SITE       = lax
+
+[picture]
+AVATAR_UPLOAD_PATH            = /data/gitea/avatars
+REPOSITORY_AVATAR_UPLOAD_PATH = /data/gitea/repo-avatars
+DISABLE_GRAVATAR              = true
+ENABLE_FEDERATED_AVATAR       = true
+
+[attachment]
+PATH = /data/gitea/attachments
+
+[log]
+MODE      = console
+LEVEL     = debug
+ROUTER    = console
+ROOT_PATH = /data/gitea/log
+
+[security]
+INSTALL_LOCK                  = true
+REVERSE_PROXY_LIMIT           = 1
+REVERSE_PROXY_TRUSTED_PROXIES = *
+
+[service]
+DISABLE_REGISTRATION              = false
+REQUIRE_SIGNIN_VIEW               = false
+REGISTER_EMAIL_CONFIRM            = false
+ENABLE_NOTIFY_MAIL                = false
+ALLOW_ONLY_EXTERNAL_REGISTRATION  = false
+ENABLE_CAPTCHA                    = false
+DEFAULT_KEEP_EMAIL_PRIVATE        = false
+DEFAULT_ALLOW_CREATE_ORGANIZATION = true
+DEFAULT_ENABLE_TIMETRACKING       = true
+NO_REPLY_ADDRESS                  = noreply.localhost
+
+[mailer]
+ENABLED = false
+
+[openid]
+ENABLE_OPENID_SIGNIN = false
+ENABLE_OPENID_SIGNUP = false
+
+EOF
+
+# start gitea container
+podman run -d --name gitea \
+-p 3000:3000 \
+-v ./app.ini:/data/gitea/conf/app.ini:Z \
+-e USER_UID=1000 \
+-e USER_GID=1000 \
+gitea/gitea:1.16.8
+
+# wait a few seconds
+echo "... waiting before continuing ..." && sleep 10
+
+# create student user
+podman exec -u git gitea /usr/local/bin/gitea admin user create --admin --username student --password learn_ansible --email student@example.com
+
+# create ansible user
+podman exec -u git gitea /usr/local/bin/gitea admin user create --admin --username ansible --password learn_ansible --email ansible@example.com

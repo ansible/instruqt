@@ -1,0 +1,39 @@
+USER=rhel
+
+su - $USER -c 'sudo dnf config-manager --set-enabled rhui*'
+su - $USER -c 'sudo yum -y install httpd'
+#su - $USER -c 'systemctl start httpd'
+#su - $USER -c 'firewall-cmd --permanent --add-service=http'
+#su - $USER -c 'firewall-cmd --reload'
+
+tee /var/www/html/index.html << EOF
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>Sample Page for EDA</h1>
+<p>This is a basic page - WOOO HOOOOO!</p>
+
+</body>
+</html>
+
+EOF
+
+tee /tmp/index.html << EOF
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>Sample Page for EDA</h1>
+<p>This is a basic page - WOOO HOOOOO!</p>
+
+</body>
+</html>
+
+EOF
+
+
+systemctl start httpd
+firewall-cmd --permanent --add-service=http
+firewall-cmd --permanent --add-service=https
+firewall-cmd --reload

@@ -1,0 +1,24 @@
+version: "3"
+containers:
+- name: ansible-events
+  image: quay.io/aizquier/ansible-rulebook:v0.9.0
+  ports:
+  - 5000
+  environment:
+    RULES_ENGINE: durable_rules
+  memory: 512
+virtualmachines:
+- name: podman
+  image: red-hat-mbu/rhel8
+  machine_type: n1-standard-1
+  allow_external_ingress:
+  - https
+  - high-ports
+  - http
+- name: rhel
+  image: red-hat-mbu/rhel8
+  shell: /bin/su - rhel -s /bin/bash
+  machine_type: n1-standard-1
+  allow_external_ingress:
+  - https
+  - high-ports
