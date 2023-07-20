@@ -34,8 +34,6 @@ virtualmachines:
 - name: webserver
   image: red-hat-mbu/rhel8
   shell: /bin/bash
-  environment:
-    GITHUB_TOKEN: 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
   machine_type: n2-standard-2
   allow_external_ingress:
   - http
