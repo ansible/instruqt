@@ -1,0 +1,6 @@
+---
+- name: use apache_vhost role playbook
+  hosts: node2
+  become: true
+  roles:
+    - apache_vhost
