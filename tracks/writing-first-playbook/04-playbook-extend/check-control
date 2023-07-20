@@ -54,4 +54,3 @@ if [ -f "$target_file" ]; then
 else
     echo "The 'apache.yml' file does not exist in the ansible-files directory"
 fi
-

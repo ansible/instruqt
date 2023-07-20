@@ -28,12 +28,14 @@ tags:
 - gettingstarted
 owner: redhat
 developers:
-- moshah@redhat.com
 - rlopez@redhat.com
 - lgallego@redhat.com
 show_timer: true
+idle_timeout: 600
+timelimit: 3300
 lab_config:
   overlay: false
-  width: 25
+  width: 33
   position: right
-checksum: "16546557101313416669"
+  extend_ttl: 3300
+checksum: "98958277858529269"
