@@ -19,7 +19,7 @@
       vars:
         extra_vars:
           - name: track_slug
-            env: TRACK_SLUG
+            env: track_slug
           - name: gcp_service_account_file
             env: GCP_SERVICE_ACCOUNT_FILE
           - name: gcp_service_account
@@ -40,7 +40,6 @@
     - name: Install collections - {{ inventory_hostname }}
       vars:
         controller_collections:
-          - ansible.workshops
           - google.cloud
           - ansible.posix
           - community.crypto
@@ -56,7 +55,6 @@
       when: (controller_collections is defined) and (controller_collections | length > 0)
       tags:
         - never
-        - install-collections
 
     - name: Remove existing gcloud instances
       when: (gcp_instances is defined) and (gcp_instances | length > 0)
@@ -68,6 +66,8 @@
             name: "{{ __remove_instances_job_async_item.name }}"
             state: absent
             zone: "{{ gcp_zone }}"
+            labels: "{{ __create_instances_job_async_item.labels | default(omit) }}"
+            tags: "{{ __create_instances_job_async_item.tags | default(omit) }}"
             <<: *gcp_login
           loop: "{{ gcp_instances }}"
           loop_control:
@@ -104,9 +104,10 @@
             tags: "{{ __create_instances_job_async_item.tags | default(omit) }}"
             state: present
             zone: "{{ gcp_zone }}"
-            <<: *gcp_login
             network_interfaces: "{{ __create_instances_job_async_item.network_interfaces }}"
             disks: "{{ __create_instances_job_async_item.disks }}"
+            metadata: "{{ __create_instances_job_async_item.metadata }}"
+            <<: *gcp_login
           loop: "{{ gcp_instances }}"
           loop_control:
             loop_var: __create_instances_job_async_item
@@ -269,8 +270,8 @@
         key: "{{ lookup('file', hostvars.localhost._ssh_tempdir.path + '/instruqt_lab.pub') }}"
         comment: "Instruqt lab key"
       loop:
-        - "{{ student_user }}"
-        - "{{ ansible_user }}"
+        - "{{ student_username }}"
+        - "{{ admin_username }}"
         - "{{ ansible_user_id }}" # root because of become: true
 
 # Controller config
@@ -298,11 +299,11 @@
         dest: "~{{ item }}/.ssh/"
         owner: "{{ item }}"
         group: "{{ item }}"
-        mode: "0600"
+        mode: "600"
       loop:
         - "{{ ansible_user }}"
         - "{{ ansible_user_id }}" # root because of become: true
-        - "{{ student_user }}"
+        # - "{{ student_username }}"
       when: (hostvars.localhost._ssh_tempdir.path is defined) and (hostvars.localhost._ssh_tempdir.path | length > 0)
 
     - name: Get gcp node instance info
@@ -312,15 +313,24 @@
           - labels.mesh-type = controller
         zone: "{{ gcp_zone }}"
         <<: *gcp_login
-      delegate_to: localhost
       become: false
+      delegate_to: localhost
       register: __controller_instance_info
 
-    # Post-install tasks here to install AWS packages
-    - name: Set controller hostname fact for post install tasks
+    - name: Set controller hostname fact
       ansible.builtin.set_fact:
         controller_hostname: "https://{{ __controller_instance_info.resources[0].networkInterfaces[0].accessConfigs[0].natIP }}"
       when: (__controller_instance_info is defined) and (__controller_instance_info | length > 0)
+
+    - name: Include common controller install tasks
+      ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/common/50_install_controller.yml"
+        apply:
+          tags:
+            - controller-install
+          become: false
+      tags:
+        - controller-install
 
     - name: Include common controller post install tasks
       ansible.builtin.include_tasks:
@@ -425,7 +435,7 @@
           ansible.builtin.add_host:
             name: "{{ __add_containers_item.name }}"
             groups: "{{ __add_containers_item.groups | default(omit) }}"
-          args: "{{ __add_containers_item.args | default(omit) }}"
+          # args: "{{ __add_containers_item.args | default(omit) }}"
           loop: "{{ lab_containers }}"
           loop_control:
             loop_var: __add_containers_item
@@ -435,7 +445,7 @@
       module_defaults:
         ansible.builtin.uri:
           force_basic_auth: true
-          url_username: "{{ student_user }}"
+          url_username: "{{ student_username }}"
           url_password: "{{ student_password }}"
           validate_certs: false
           body_format: json
@@ -456,7 +466,7 @@
 
         - name: Create repo webhook - {{ jenkins_url }}
           ansible.builtin.uri:
-            url: "{{ gitea_app_url }}/api/v1/repos/{{ student_user }}/{{ gitea_repo_name }}/hooks"
+            url: "{{ gitea_app_url }}/api/v1/repos/{{ student_username }}/{{ gitea_repo_name }}/hooks"
             method: POST
             body:
               type: gitea
@@ -487,24 +497,24 @@
 
         - name: Add collaborator - {{ jenkins_user }} => {{ gitea_repo_name }} # noqa name[template]
           ansible.builtin.uri:
-            url: "{{ gitea_app_url }}/api/v1/repos/{{ student_user }}/{{ gitea_repo_name }}/collaborators/{{ jenkins_user }}"
+            url: "{{ gitea_app_url }}/api/v1/repos/{{ student_username }}/{{ gitea_repo_name }}/collaborators/{{ jenkins_user }}"
             method: PUT
             body:
               permission: Admin
             status_code: [204, 409]
 
     # Setup student git repo
-    - name: Configure local repo - {{ student_user }}
+    - name: Configure local repo - {{ student_username }}
       tags:
         - configure-repo
-      become_user: "{{ student_user }}"
+      become_user: "{{ student_username }}"
       block:
         - name: Recreate repo dir - {{ gitea_repo_name }} # noqa risky-file-permissions
           ansible.builtin.file:
-            path: "/home/{{ student_user }}/{{ gitea_repo_name }}"
+            path: "~{{ student_username }}/{{ gitea_repo_name }}"
             state: "{{ item }}"
-            owner: "{{ student_user }}"
-            group: "{{ student_user }}"
+            owner: "{{ student_username }}"
+            group: "{{ student_username }}"
           become_user: root
           loop:
             - absent
@@ -513,38 +523,46 @@
         - name: Extract initial repo files
           ansible.builtin.unarchive:
             src: "/opt/setup-scripts/{{ track_slug }}/files/acme_repo.tar.gz"
-            dest: "/home/{{ student_user }}/{{ gitea_repo_name }}"
-            creates: "/home/{{ student_user }}/{{ gitea_repo_name }}/app"
+            dest: "~{{ student_username }}/{{ gitea_repo_name }}"
+            creates: "~{{ student_username }}/{{ gitea_repo_name }}/app"
             remote_src: true
-            owner: "{{ student_user }}"
-            group: "{{ student_user }}"
+            owner: "{{ student_username }}"
+            group: "{{ student_username }}"
+
+        - name: Fix directory permissions - {{ gitea_repo_name }}
+          ansible.builtin.file:
+            path: "~{{ student_username }}/{{ gitea_repo_name }}"
+            state: directory
+            owner: "{{ student_username }}"
+            group: "{{ student_username }}"
+            mode: "755"
 
         - name: Initialise track repo - {{ gitea_repo_name }} # noqa command-instead-of-module
           ansible.builtin.command:
             cmd: /usr/bin/git init
-            chdir: "/home/{{ student_user }}/{{ gitea_repo_name }}"
-            creates: "/home/{{ student_user }}/{{ gitea_repo_name }}/.git"
+            chdir: "~{{ student_username }}/{{ gitea_repo_name }}"
+            creates: "~{{ student_username }}/{{ gitea_repo_name }}/.git"
 
         - name: Add git configurations - {{ gitea_repo_name }}
           ansible.builtin.template:
-            src: "{{ track_slug }}_gitconfig.j2"
-            owner: "{{ student_user }}"
-            group: "{{ student_user }}"
-            mode: 0644
-            dest: "/home/{{ student_user }}/{{ gitea_repo_name }}/.git/config"
+            src: gitconfig.j2
+            owner: "{{ student_username }}"
+            group: "{{ student_username }}"
+            mode: '644'
+            dest: "~{{ student_username }}/{{ gitea_repo_name }}/.git/config"
 
         - name: Store repo credentials in git-creds file
           ansible.builtin.copy:
-            dest: "~{{ student_user }}/.git-creds"
-            content: "{{ gitea_protocol }}://{{ student_user | urlencode }}:{{ student_password | urlencode }}@{{ gitea_hostname }}:{{ gitea_http_port }}"
-            owner: "{{ student_user }}"
-            group: "{{ student_user }}"
-            mode: 0644
+            dest: "~{{ student_username }}/.git-creds"
+            content: "{{ gitea_protocol }}://{{ student_username | urlencode }}:{{ student_password | urlencode }}@{{ gitea_hostname }}:{{ gitea_http_port }}"
+            owner: "{{ student_username }}"
+            group: "{{ student_username }}"
+            mode: "644"
 
         - name: Push initial commit to repo
           ansible.builtin.command:
             cmd: "{{ item }}"
-            chdir: "/home/{{ student_user }}/{{ gitea_repo_name }}"
+            chdir: "~{{ student_username }}/{{ gitea_repo_name }}"
           register: __output
           changed_when: __output.rc == 0
           loop:
@@ -558,7 +576,7 @@
       when: ('"containers" in groups' and '"jenkins" in inventory_hostnames["containers"]')
       module_defaults:
         ansible.builtin.uri:
-          url_username: "{{ student_user }}"
+          url_username: "{{ student_username }}"
           url_password: "{{ student_password }}"
           force_basic_auth: true
           return_content: true
@@ -566,7 +584,7 @@
       tags:
         - jenkins
       block:
-        - name: Generate Jenkins CSRF token - {{ student_user }}
+        - name: Generate Jenkins CSRF token - {{ student_username }}
           ansible.builtin.uri:
             method: GET
             url: "{{ jenkins_url }}/crumbIssuer/api/json"
@@ -742,7 +760,7 @@
           notify:
             - remove instances
 
-    - name: Create new Instruqt mesh images
+    - name: Create new Instruqt images
       notify:
         - remove instances
       block:

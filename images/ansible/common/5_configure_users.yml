@@ -16,13 +16,14 @@
     line: >-
       PasswordAuthentication yes
 
-- name: Setup sudo for rhel user
-  ansible.builtin.copy:
-    content: "%rhel ALL=(ALL:ALL) NOPASSWD:ALL"
-    dest: "/etc/sudoers.d/rhel_sudoers"
-    mode: "0644"
-    owner: root
-    group: root
+- name: Configure sudoers for wheel group
+  community.general.sudoers:
+    name: wheel_sudooers
+    state: present
+    commands:
+      - ALL
+    nopassword: true
+    group: wheel
 
 - name: Create receptor group
   ansible.builtin.group:
@@ -37,9 +38,9 @@
     home: /var/lib/awx
     shell: /bin/bash
 
-- name: Create restricted user - {{ student_user }}
+- name: Create restricted user - {{ student_username }}
   ansible.builtin.user:
-    name: "{{ student_user }}"
+    name: "{{ student_username }}"
     shell: /bin/bash
     groups: users
     password: "{{ student_password | password_hash('sha512', '98263y4krwf7400') }}"

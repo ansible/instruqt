@@ -15,7 +15,7 @@
     - item != ansible_user
     - item != "awx"
     - item != "pulp"
-    - item != student_user
+    - item != student_username
 
 - name: Disable dnf automatic services
   ansible.builtin.service:
