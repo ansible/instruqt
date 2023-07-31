@@ -33,6 +33,7 @@ Recommended agenda for when there is an instructor teaching.
 </tr>
 </tbody>
 </table>
+<b>Total Time</b>: 1.5 hours (90 minutes)
 
 ## Lab Index
 
