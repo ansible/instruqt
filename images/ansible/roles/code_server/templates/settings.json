@@ -4,18 +4,18 @@
     "window.menuBarVisibility": "visible",
     "git.enableSmartCommit": true,
     "workbench.tips.enabled": false,
-    "workbench.startupEditor": "readme",
     "telemetry.enableTelemetry": false,
     "search.smartCase": true,
     "git.confirmSync": false,
-    "ansible.ansibleLint.enabled": false,
+    "ansible.ansibleLint.enabled": true,
     "ansible.ansible.useFullyQualifiedCollectionNames": true,
-    "files.associations": {
-        "*.yml": "ansible"
-    },
     "redhat.telemetry.enabled": false,
     "security.workspace.trust.banner": "never",
-    "ansible.validation.lint.enabled": false,
     "security.workspace.trust.enabled": false,
-    "workbench.colorTheme": "Default Dark+"
+    "git.autofetch": false,
+    "editor.renderWhitespace": "all",
+    "ansible.executionEnvironment.enabled": true,
+    "files.associations": {
+        "*.yml": "ansible"
+    }
 }

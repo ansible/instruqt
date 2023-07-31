@@ -23,7 +23,7 @@
     dest: /etc/systemd/system/code-server.service
     owner: "{{ codeserver_username }}"
     group: wheel
-    mode: '0744'
+    mode: '744'
 
 # source: https://vscode.readthedocs.io/en/latest/getstarted/settings/
 - name: Ensure custom facts directory exists
@@ -33,7 +33,7 @@
     state: directory
     owner: "{{ codeserver_username }}"
     group: "{{ codeserver_username }}"
-    mode: "0755"
+    mode: "755"
 
 - name: Apply code server defaults
   ansible.builtin.template:
@@ -47,7 +47,7 @@
   ansible.builtin.file:
     path: /home/{{ codeserver_username }}/.local/share/code-server/extensions/
     state: directory
-    mode: "0755"
+    mode: "755"
     owner: "{{ codeserver_username }}"
     group: "{{ codeserver_username }}"
 
