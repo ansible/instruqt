@@ -6,16 +6,7 @@
     name:
       - ansible-core
     state: present
-
-# - name: Download and upgrade collections for install - {{ inventory_hostname }}
-#   community.general.ansible_galaxy_install:
-#     name: "{{ item }}"
-#     type: collection
-#   become_user: "{{ ansible_user }}"
-#   loop: "{{ controller_collections }}"
-#   register: __collection_install
-#   delegate_to: localhost
-#   when: (controller_collections is defined) and (controller_collections | length > 0)
+  become: true
 
 - name: Check if AAP bundle file exists
   ansible.builtin.stat:
@@ -159,5 +150,3 @@
   until: check2.json is defined and check2.json.instances[0].capacity > 0 and check2.json.instance_groups[0].capacity > 0
   retries: 60
   delay: 1
-
-
