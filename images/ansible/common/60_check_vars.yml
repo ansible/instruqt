@@ -16,19 +16,20 @@
     - lookup('ansible.builtin.env', 'TRACK_SLUG')
 
 - name: Include vars file from extra_vars directory
-  no_log: true
   block:
     - name: Include vars files - {{ track_slug }}
       ansible.builtin.include_vars:
-        file: "{{ item }}"
-      loop:
-        - "vault_{{ track_slug }}_vars.yml"
-        - "{{ track_slug }}_vars.yml"
-  rescue:
-    - name: Rescue - Include vars file
-      ansible.builtin.debug:
-        msg: |
-          "Rescue - Vars file '{{ track_slug }}_vars.yml' not found. Skipping
+        file: "{{ track_slug }}_vars.yml"
+
+    - name: Check if vault_{{ track_slug }} vars file is present
+      ansible.builtin.stat:
+        path: "vault_{{ track_slug }}_vars.yml"
+      register: vault_vars_file
+
+    - name: Include vault vars files - {{ track_slug }}
+      ansible.builtin.include_vars:
+        file: "vault_{{ track_slug }}_vars.yml"
+      when: vault_vars_file.stat.exists
   when: (track_slug is defined) and (track_slug | length > 0)
 
 - name: Map required variables to facts
