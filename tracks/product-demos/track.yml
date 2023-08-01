@@ -1,0 +1,23 @@
+slug: product-demos
+id: 5yerbejc6rni
+title: Automate The Enterprise
+teaser: Explore Automation solutions for Linux, Windows, Cloud, and Networking all
+  in one place
+description: This is a prototype demo workbench for the infamous Will Tome
+icon: https://www.ansible.com/hubfs/Logo-Red_Hat-Ansible-A-Reverse-SVG.svg
+level: intermediate
+tags:
+- demo
+owner: redhat
+developers:
+- seanc@redhat.com
+- msavage@redhat.com
+- wtome@redhat.com
+- abehl@redhat.com
+show_timer: true
+lab_config:
+  overlay: false
+  width: 33
+  position: right
+  extend_ttl: 3000
+checksum: "3588067618844626357"

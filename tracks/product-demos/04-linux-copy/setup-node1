@@ -1,0 +1,3 @@
+set -euxo pipefail
+# add satellite to /etc/hosts
+echo $(host satellite | tail -n1 | grep -o '[.0-9]*$') satellite.example.com >> /etc/hosts

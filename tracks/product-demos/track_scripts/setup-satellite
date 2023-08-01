@@ -1,0 +1,1 @@
+foreman-rake permissions:reset password=ansible123!
