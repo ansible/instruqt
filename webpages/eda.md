@@ -82,7 +82,7 @@ Recommended agenda for when there is an instructor teaching.
 <td>⏱️ 40 minutes</td>
 </tr>
 <tr>
-<td>Getting Started with EDA Controller</td>
+<td>Advanced EDA: Event-Driven Ansible and NetOps</td>
 <td>Use Event-Driven Ansible to react to network events as well as work with ChatOps.</td>
 <td><a targete="_new" href="https://play.instruqt.com/embed/redhat/tracks/event-driven-netops?token=em_W0qtY5GifN13CZ1a">🚀 Launch Lab</a></td>
 <td>⏱️ 40 minutes</td>
