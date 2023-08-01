@@ -95,7 +95,7 @@ Recommended agenda for when there is an instructor teaching.
 <td>Use Red Hat OpenShift events as a trigger showcasing the adaptability and effectiveness of Event-Driven Ansible</td>
 <td><a targete="_new" href="https://demo.redhat.com/catalog/babylon-catalog-prod/order/enterprise.event-driven-ansible.prod">🚀 Launch Lab</a></td>
 <td>⏱️ 40 minutes</td>
-<td><table class="important"><tr><td><div class="infobutton"></div>Important</td></tr><tr><td>This runs on demo.redhat.com and is only available to Red Hat employees</td></tr></table></td>
+<td><table class="important"><tr><td><div class="infobutton"><i class="icon-info-sign"></i></div>Important</td></tr><tr><td>This runs on demo.redhat.com and is only available to Red Hat employees</td></tr></table></td>
 </tr>
 </tbody>
 </table>
@@ -126,7 +126,7 @@ Additional material for Event-Driven Ansible
 <tr>
 <td>Work smarter using event-driven automation across IT operations</td>
 <td>Webinar</td>
-<td><a targete="_new" href="https://www.redhat.com/en/events/webinar/work-smarter-using-event-driven-automation-across-IT-operations">🎥 Watch recording from June 20, 2023</a></td>
+<td><a target="_new" href="https://www.redhat.com/en/events/webinar/work-smarter-using-event-driven-automation-across-IT-operations">🎥 Watch recording from June 20, 2023</a></td>
 </tr>
 </tbody>
 </table>
