@@ -1,0 +1,110 @@
+
+
+cat <<EOF | tee /root/netops/backup_all.yml
+---
+- hosts: leaf
+  gather_facts: false
+  connection: httpapi
+  vars:
+    ansible_httpapi_port: 443
+    ansible_httpapi_use_ssl: true
+    ansible_httpapi_validate_certs: false
+  tasks:
+
+  - name: configurable backup path
+    arista.eos.eos_config:
+      backup: yes
+      backup_options:
+        filename: "{{ inventory_hostname }}.cfg"
+EOF
+
+cat <<EOF | tee /root/netops/eda_backup_chat.yml
+
+---
+- name: Listen for events on a webhook
+  hosts: all
+  sources:
+    - ansible.eda.webhook:
+        host: 0.0.0.0
+        port: 5000
+
+  rules:
+  ## Conditions needed!
+  
+EOF
+
+cat <<EOF | tee /root/netops/eda_snow.yml
+
+---
+- name: Listen for events on a webhook
+  hosts: all
+  sources:
+    - ansible.eda.webhook:
+        host: 0.0.0.0
+        port: 5000
+
+  rules:
+  ## Conditions needed!
+  
+EOF
+
+cat <<EOF | tee /root/netops/backup_ceos2.yml
+---
+- hosts: ceos2
+  gather_facts: false
+  connection: httpapi
+  vars:
+    ansible_httpapi_port: 443
+    ansible_httpapi_use_ssl: true
+    ansible_httpapi_validate_certs: false
+  tasks:
+
+  - name: configurable backup path
+    arista.eos.eos_config:
+      backup: yes
+      backup_options:
+        filename: "{{ inventory_hostname }}.cfg"
+EOF
+
+cat <<EOF | tee /root/netops/inventory.yaml
+
+all:
+  children:
+    switches:
+      children:
+        leaf:
+          hosts:
+            ceos2:
+              ansible_become: 'yes'
+              ansible_become_method: enable
+              ansible_connection: ansible.netcommon.network_cli
+              ansible_host: podman-host
+              ansible_network_os: arista.eos.eos
+              ansible_password: ansible
+              ansible_port: 2002
+              ansible_user: ansible
+            ceos3:
+              ansible_become: 'yes'
+              ansible_become_method: enable
+              ansible_connection: ansible.netcommon.network_cli
+              ansible_host: podman-host
+              ansible_network_os: arista.eos.eos
+              ansible_password: ansible
+              ansible_port: 2003
+              ansible_user: ansible
+      hosts:
+        ceos1:
+          ansible_become: 'yes'
+          ansible_become_method: enable
+          ansible_connection: ansible.netcommon.network_cli
+          ansible_host: podman-host
+          ansible_network_os: arista.eos.eos
+          ansible_password: ansible
+          ansible_port: 2001
+          ansible_user: ansible
+    ungrouped:
+      hosts:
+        localhost: {}
+EOF
+
+

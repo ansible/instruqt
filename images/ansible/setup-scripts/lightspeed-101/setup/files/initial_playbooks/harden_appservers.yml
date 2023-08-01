@@ -28,7 +28,7 @@
         # #     "- name: Print sestatus_result.stdout_lines var".
         # # 3e. Generate a new task suggestion.
 
-    # - name: Print sestatus_result.stdout_lines var
+    # - name: Print msg
 
         # TASK 4
         # # 4a. Uncomment Task 4 description and generate a task suggestion.
@@ -41,7 +41,7 @@
     # - name: Disable password auth on RHEL hosts
 
         # TASK 6
-        # # 6a. Uncomment Task 7 description and generate an Ansible Playbook task suggestion.
+        # # 6a. Uncomment Task 6 description and generate an Ansible Playbook task suggestion.
         # # 6b. Note how Ansible Lightspeed learnt as you created the Playbook
         # #     and added "when: ansible_distribution == 'RedHat'" to the task.
         # # 6c. Save.

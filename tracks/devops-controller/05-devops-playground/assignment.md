@@ -52,7 +52,7 @@ tabs:
   hostname: devops-controller
   port: 8000
 difficulty: intermediate
-timelimit: 1440
+timelimit: 1200
 ---
 🔐 Login credentials
 ===

@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="{{ site.lang | default: "en-US" }}">
   <head>
+    <link rel="shortcut icon" type="image/x-icon" href="assets/images/favicon.png">
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
@@ -37,23 +38,26 @@
           </a>
           {% if page.path == "webpages/ansible-cloud-lab.md" %}
           <a class="header-link-active" href="{{ '/webpages/ansible-cloud-lab' | relative_url }}">
-            cloud automation
+            cloud automation workshop
           </a>
           {% else %}
           <a class="header-link" href="{{ '/webpages/ansible-cloud-lab' | relative_url }}">
-            cloud automation
+            cloud automation workshop
           </a>
           {% endif %}
-          {% if page.path == "webpages/eda-gitops-lab.md" %}
-          <a class="header-link-active" href="{{ '/webpages/eda-gitops-lab' | relative_url }}">
-            Gitops with EDA
+          {% if page.path == "webpages/eda.md" %}
+          <a class="header-link-active" href="{{ '/webpages/eda' | relative_url }}">
+            Event-Driven Ansible Workshop
           </a>
           {% else %}
-          <a class="header-link" href="{{ '/webpages/eda-gitops-lab' | relative_url }}">
-            Gitops with EDA
+          <a class="header-link" href="{{ '/webpages/eda' | relative_url }}">
+            Event-Driven Ansible Workshop
           </a>
           {% endif %}
-          {% if page.path == "webpages/ansible-edge-lab.md" %}
+          <a class="header-link" target="_new" href="https://github.com/ansible/instruqt/issues/new">
+            Open an Issue
+          </a>
+          <!-- {% if page.path == "webpages/ansible-edge-lab.md" %}
           <a class="header-link-active" href="{{ '/webpages/ansible-edge-lab' | relative_url }}">
             Edge
           </a>
@@ -61,17 +65,8 @@
           <a class="header-link" href="{{ '/webpages/ansible-edge-lab' | relative_url }}">
             Edge
           </a>
-          {% endif %} 
-          {% if page.path == "webpages/lightspeed.md" %}
-          <a class="header-link-active" href="{{ '/webpages/lightspeed' | relative_url }}">
-            Lightspeed
-          </a>
-          {% else %}  
-          <a class="header-link" href="{{ '/webpages/lightspeed' | relative_url }}">
-            Lightspeed
-          </a>       
-          {% endif %}                 
-          {% if page.path == "webpages/controller.md" %}
+          {% endif %}                -->
+          <!-- {% if page.path == "webpages/controller.md" %}
           <a class="header-link-active" href="{{ '/webpages/controller' | relative_url }}">
             Automation controller
           </a>
@@ -97,7 +92,7 @@
           <a class="header-link" href="{{ '/webpages/servicenow' | relative_url }}">
             ServiceNow
           </a>       
-          {% endif %}                                       
+          {% endif %}                                        -->
         </div>
       </header>
 
@@ -115,7 +110,7 @@
               alt="Red Hat"
             />
           </a>
-          <p class="footer-copyright">Copyright © 2022 Red Hat, Inc.</p>
+          <p class="footer-copyright">Copyright © 2023 Red Hat, Inc.</p>
           <div class="footer-linkContainer">
             <a href="https://www.redhat.com/en/about/privacy-policy" class="footer-link">Privacy statement</a>
             <span class="footer-linkSpacer">|</span>

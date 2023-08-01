@@ -1,5 +1,5 @@
 ansible_signed=`curl -u admin:ansible123! https://privatehub-01/api/galaxy/_ui/v1/repo/published/ansible/test_collection/ -k | jq .latest_version.sign_state`
-community_signed =`curl -u admin:ansible123! https://privatehub-01/api/galaxy/_ui/v1/repo/published/community/lab_collection/ -k | jq .latest_version.sign_state`
+community_signed= `curl -u admin:ansible123! https://privatehub-01/api/galaxy/_ui/v1/repo/published/community/lab_collection/ -k | jq .latest_version.sign_state`
 if [ $ansible_signed != "\"signed\"" ] || [ $community_signed != "\"signed\"" ]
 then
     fail-message "Collections are not signed!"

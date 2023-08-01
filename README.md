@@ -1,14 +1,64 @@
-# ansible/instruqt
+# Ansible Self-Paced Workshop Directory
+These are 90 minute workshops with multiple self-paced labs in them.
 
-## How to access the labs
 
-* [Community Labs (How to contribute, what's ansible-test, etc)](https://www.ansible.com/products/ansible-community-training)
-* [Product & user labs (How to use Automation Controller, Ansible Builder, etc](https://www.redhat.com/en/interactive-labs/ansible)
+| Workshop Title  | Link |
+|---|---|
+| Cloud Automation Technical Workshop | [🔬 Open Workshop](./webpages/ansible-cloud-lab.md) |
+| Event-Driven Ansible Technical Workshop | [🔬 Open Workshop](./webpages/eda.md) |
+
+# Self-Paced Labs Directory
+
+## Event-Driven Ansible (EDA)
+
+<table>
+<thead>
+<tr>
+<th>Lab Title</th>
+<th>Link</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Get started with Event-Driven Ansible and Ansible rulebooks</td>
+<td><a target="_blank" href="https://play.instruqt.com/redhat/invite/wzlzehptcqi6/tracks/eda--ansible-rulebook">🚀 Launch Lab</a></td>
+</tr>
+<tr>
+<td>Event-Driven Ansible and NetOps</td>
+<td><a target="_blank" href="https://play.instruqt.com/embed/redhat/tracks/event-driven-netops?token=em_W0qtY5GifN13CZ1a">🚀 Launch Lab</a></td>
+</tr>
+<tr>
+<td>GitOps with Event-Driven Ansible</td>
+<td><a target="_blank" href="https://play.instruqt.com/embed/redhat/tracks/eda-gitops?token=em__C74PAmX2rePq7Kk">🚀 Launch Lab</a></td>
+</tr>
+</tbody>
+</table>
+
+## Network Automation
+
+<table>
+<thead>
+<tr>
+<th>Lab Title</th>
+<th>Link</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Palo Alto Networks firewall automation with AAP</td>
+<td><a target="_blank" href="https://play.instruqt.com/embed/redhat/tracks/ansible-panos-automation?token=em_iiCtxt5JWd5Iube8">🚀 Launch Lab</a></td>
+</tr>
+</tbody>
+</table>
 
 ## Feedback and Issues
 
 Please [open issues](https://github.com/ansible/instruqt/issues/new) so we can fix any problems that occur.
 
+## External Lab webpages
+
+* [Community Labs (How to contribute, what's ansible-test, etc)](https://www.ansible.com/products/ansible-community-training)
+* [Product & user labs (How to use Automation Controller, Ansible Builder, etc](https://www.redhat.com/en/interactive-labs/ansible)
 
 ## Contribute
 

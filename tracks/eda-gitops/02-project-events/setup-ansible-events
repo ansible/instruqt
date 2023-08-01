@@ -1,0 +1,33 @@
+tee /root/project/webhook.yml << EOF
+---
+- name: Capture POSTs from gitea
+  hosts: all
+  sources:
+    - ansible.eda.webhook:
+        host: 0.0.0.0
+        port: 5000
+      filters:
+        - ansible.eda.dashes_to_underscores:
+
+  rules:
+    - name: Update repo
+      condition: event.payload is defined
+      action:
+        debug:
+
+EOF
+
+tee /root/project/inventory.yml << EOF
+all:
+  hosts:
+    localhost:
+      ansible_connection: local
+  children:
+    appnodes:
+      hosts:
+        rhel:
+          ansible_password: ansible123!
+          ansible_user: rhel
+    ungrouped: {}
+
+EOF

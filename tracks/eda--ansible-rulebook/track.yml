@@ -1,0 +1,28 @@
+slug: eda--ansible-rulebook
+id: 9pfnvyfvmwso
+title: Get started with Event-Driven Ansible and Ansible rulebooks
+teaser: Learn about the fundamental components of Event-Driven Ansible and go through
+  some examples.
+description: |2
+
+
+  ![Overview](./assets/overview.png)
+
+
+
+  Currently in developer preview as was announced at AnsibleFest 2022 - Event-Driven Ansible offers you the ability to respond to triggers from sources with playbooks, modules or other actions. In this getting started lab we will give you hands on exposure to working with `ansible-rulebook`, which is a critical component of Event-Driven Ansible.
+icon: ""
+tags:
+- event-driven
+owner: redhat
+developers:
+- colin@redhat.com
+- nmartins@redhat.com
+show_timer: true
+skipping_enabled: true
+timelimit: 3600
+lab_config:
+  overlay: false
+  width: 33
+  position: right
+checksum: "6652506218815849400"

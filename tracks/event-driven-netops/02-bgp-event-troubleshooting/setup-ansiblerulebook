@@ -1,0 +1,64 @@
+mkdir /root/netops
+
+cat <<EOF | tee /root/netops/trouble_bgp.yml
+---
+- name: Connecting to Leaf
+  hosts: ceos3
+  connection: local
+  gather_facts: false
+
+  tasks:
+
+    - name: Correct Interfaces
+      arista.eos.eos_interfaces:
+        config:
+         - name: Ethernet1
+           enabled: false
+
+EOF
+
+cat <<EOF | tee /root/netops/new_port_config.yml
+---
+- name: Connecting to Leaf
+  hosts: switch
+  connection: local
+  gather_facts: false
+
+  tasks:
+
+    - name: Download Network Config from Source of Truth
+      ansible.builtin.git:
+       repo: http://gitea:3000/student/leaf.git
+       dest: /tmp/srv
+       clone: yes
+
+    - name: Restoring Configuration of Interfaces
+      include_vars: /tmp/srv/switch_desired_conf.yml
+
+    - name: Merge Configurations
+      arista.eos.eos_l2_interfaces:
+       config: "{{ my_sot }}"
+       state: merged
+
+EOF
+
+cat <<EOF | tee /root/netops/port_status.yml
+---
+- name: Port State Event from Arista
+
+  hosts: all
+  sources:
+   - ansible.eda.kafka:
+       host: broker
+       port: 9092
+       topic: network
+
+  rules:
+   - name: Port is down
+     condition: event.fields.admin_status == "DOWN"
+     action:
+       run_playbook:
+        name: desired_port_state.yml
+
+
+EOF

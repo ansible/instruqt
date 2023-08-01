@@ -1,0 +1,14 @@
+---
+- name: Apache server installed
+  hosts: node1
+  become: true
+  tasks:
+  - name: latest Apache version installed
+    ansible.builtin.package:
+      name: httpd
+      state: latest
+  - name: Apache enabled and running
+    ansible.builtin.service:
+      name: httpd
+      enabled: true
+      state: started

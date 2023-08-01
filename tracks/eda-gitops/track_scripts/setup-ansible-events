@@ -1,0 +1,6 @@
+ansible-galaxy collection install ansible.eda
+ansible-galaxy collection install containers.podman
+mkdir /root/project/
+# echo "alias ansible-rulebook='ansible-events'" >> /root/.bashrc
+# source /root/.bashrc
+dnf install -y sshpass

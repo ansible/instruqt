@@ -1,0 +1,160 @@
+cat <<EOF | tee /etc/yum.repos.d/influxdb.repo
+[influxdb]
+name = InfluxDB Repository - RHEL \$releasever
+baseurl = https://repos.influxdata.com/rhel/\$releasever/\$basearch/stable
+enabled = 1
+gpgcheck = 1
+gpgkey = https://repos.influxdata.com/influxdata-archive_compat.key
+
+EOF
+
+dnf -y install telegraf
+
+cat <<EOF | tee /etc/telegraf/telegraf.conf
+
+############################################## SWITCH 01  #############################################
+
+[[inputs.gnmi]]
+## Address and port of the GNMI GRPC server
+ addresses = ["localhost:6031"] ## Container Switch
+ name_override = "ceos1"
+## credentials
+ username = "ansible"
+ password = "ansible"
+
+## redial in case of failures after
+# redial = "10s"
+
+[[inputs.gnmi.subscription]]
+  name = "Ethernet1"
+  origin = "openconfig"
+  subscription_mode = "on_change"
+  path = "/interfaces/interface[name=Ethernet1]/state/admin-status"
+  sample_interval = "1s"
+
+
+############################################## SWITCH 02  #############################################
+
+
+[[inputs.gnmi]]
+## Address and port of the GNMI GRPC server
+ addresses = ["localhost:6032"]
+ name_override = "ceos2"
+## credentials
+ username = "ansible"
+ password = "ansible"
+
+## redial in case of failures after
+# redial = "10s"
+
+[[inputs.gnmi.subscription]]
+  name = "Ethernet1"
+  origin = "openconfig"
+  subscription_mode = "on_change"
+  path = "/interfaces/interface[name=Ethernet1]/state/admin-status"
+  sample_interval = "1s"
+
+
+############################################## SWITCH 03  #############################################
+
+
+[[inputs.gnmi]]
+## Address and port of the GNMI GRPC server
+ addresses = ["localhost:6033"]
+ name_override = "ceos3"
+## credentials
+ username = "ansible"
+ password = "ansible"
+
+## redial in case of failures after
+# redial = "10s"
+
+[[inputs.gnmi.subscription]]
+  name = "Ethernet1"
+  origin = "openconfig"
+  subscription_mode = "on_change"
+  path = "/interfaces/interface[name=Ethernet1]/state/admin-status"
+  sample_interval = "1s"
+
+############################################## OUTPUTS  ####################################################
+
+[outputs.kafka]
+# URLs of kafka brokers
+  brokers = ["broker:9092"] # EDIT THIS LINE
+# Kafka topic for producer messages
+  topic = "network"
+  data_format = "json"
+EOF
+sleep 30
+
+systemctl start telegraf
+systemctl enable telegraf
+
+
+
+###############################
+
+### Helpers
+
+cat <<EOF | tee /root/lab_config_restore.yml
+---
+- name: Connecting to Leaf
+  hosts: switches
+  connection: local
+  gather_facts: false
+
+  tasks:
+
+    - name: Default BGP Links
+      arista.eos.eos_interfaces:
+       config:
+        - name: Ethernet1
+          description: "Corp Server/LAN Port"
+          enabled: true
+        - name: Ethernet2
+          description: "BGP LINK to cEOS02"
+          enabled: true
+        - name: Ethernet3
+          description: "BGP LINK to cEOS01"
+          enabled: true
+       state: merged
+EOF
+cat <<EOF | tee /root/inventory.yaml
+
+all:
+  children:
+    switches:
+      hosts:
+        ceos1:
+          ansible_become: 'yes'
+          ansible_become_method: enable
+          ansible_connection: ansible.netcommon.network_cli
+          ansible_network_os: arista.eos.eos
+          ansible_password: ansible
+          ansible_port: 2001
+          ansible_user: ansible
+          ansible_host: podman-host
+        ceos2:
+          ansible_become: 'yes'
+          ansible_become_method: enable
+          ansible_connection: ansible.netcommon.network_cli
+          ansible_network_os: arista.eos.eos
+          ansible_password: ansible
+          ansible_port: 2002
+          ansible_user: ansible
+          ansible_host: podman-host
+        ceos3:
+          ansible_become: 'yes'
+          ansible_become_method: enable
+          ansible_connection: ansible.netcommon.network_cli
+          ansible_network_os: arista.eos.eos
+          ansible_password: ansible
+          ansible_port: 2003
+          ansible_user: ansible
+          ansible_host: podman-host
+    ungrouped: {}
+EOF
+
+
+
+

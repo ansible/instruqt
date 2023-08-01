@@ -1,0 +1,5 @@
+pip install aiohttp
+#yum install git -y
+#git clone https://github.com/nmartins0611/instruqt_resources.git
+
+#sh bin chmod -R 777 instruqt_resources

@@ -1,0 +1,211 @@
+mkdir /root/netops
+mkdir /root/lab_restore
+
+cat <<EOF | tee /root/netops/desired_port_state.yml
+---
+- name: Connecting to Leaf
+  hosts: switches
+  connection: local
+  gather_facts: false
+
+  tasks:
+
+    - name: Correct Interfaces
+      arista.eos.eos_interfaces:
+        config:
+         - name: Ethernet1
+           enabled: true
+
+EOF
+
+#cat <<EOF | tee /root/netops/new_port_config.yml
+#---
+#- name: Connecting to Leaf
+#  hosts: "{{ ansible_eda.event.name }}"
+#  connection: local
+#  gather_facts: false
+
+#  tasks:
+
+#    - name: Download Network Config from Source of Truth
+#      ansible.builtin.git:
+#       repo: http://gitea:3000/student/leaf.git
+#       dest: /tmp/srv
+#       clone: yes
+
+#    - name: Restoring Configuration of Interfaces
+#      include_vars: /tmp/srv/switch_desired_conf.yml
+
+#    - name: Merge Configurations
+#      arista.eos.eos_l2_interfaces:
+#       config: "{{ my_sot }}"
+#       state: merged
+
+#EOF
+
+cat <<EOF | tee /root/netops/inventory.yaml
+all:
+  children:
+    switches:
+      hosts:
+        ceos1:
+          ansible_become: 'yes'
+          ansible_become_method: enable
+          ansible_connection: ansible.netcommon.network_cli
+          ansible_host: podman-host
+          ansible_network_os: arista.eos.eos
+          ansible_password: ansible
+          ansible_port: 2001
+          ansible_user: ansible
+        ceos2:
+          ansible_become: 'yes'
+          ansible_become_method: enable
+          ansible_connection: ansible.netcommon.network_cli
+          ansible_host: podman-host
+          ansible_network_os: arista.eos.eos
+          ansible_password: ansible
+          ansible_port: 2002
+          ansible_user: ansible
+        ceos3:
+          ansible_become: 'yes'
+          ansible_become_method: enable
+          ansible_connection: ansible.netcommon.network_cli
+          ansible_host: podman-host
+          ansible_network_os: arista.eos.eos
+          ansible_password: ansible
+          ansible_port: 2003
+          ansible_user: ansible
+    ungrouped:
+      hosts:
+        localhost: {}
+
+EOF
+
+cat <<EOF | tee /root/netops/port_status.yml
+---
+- name: Port State Event from Arista
+
+  hosts: all
+  sources:
+   - ansible.eda.kafka:
+       host: broker
+       port: 9092
+       topic: network
+
+  rules:
+   - name: Port is down
+     condition: event.fields.admin_status == "DOWN"
+     action:
+       run_playbook:
+        name: desired_port_state.yml
+
+
+EOF
+
+#cat <<EOF | tee /root/netops/inventory.yml
+
+#[switch]
+#ceos1 ansible_port=2001
+#ceos2 ansible_port=2002
+#ceos3 ansible_port=2003
+
+#[switch:vars]
+#ansible_become='yes' ansible_become_method=enable ansible_connection=ansible.netcommon.network_cli ansible_network_os=arista.eos.eos ansible_password=ansible ansible_user=ansible ansible_host=podman-host
+
+#EOF
+
+cat <<EOF | tee /opt/app-root/src/.ansible/collections/ansible_collections/ansible/eda/plugins/event_filter/slashes_to_underscores.py
+
+"""
+slashes_to_underscores.py:
+    An event filter that changes forward slashes in keys to underscores.
+    For instance, the key X/Y becomes the new key X_Y.
+Arguments:
+    * overwrite: Overwrite the values if there is a collision with a new key.
+"""
+import multiprocessing as mp
+def main(event, overwrite=True):
+    logger = mp.get_logger()
+    logger.info("slashes_to_underscores")
+    q = []
+    q.append(event)
+    while q:
+        o = q.pop()
+        if isinstance(o, dict):
+            for key in list(o.keys()):
+                value = o[key]
+                q.append(value)
+                if "-" in key:
+                    new_key = key.replace("/", "_")
+                    del o[key]
+                    if new_key in o and overwrite:
+                        o[new_key] = value
+                        logger.info("Replacing %s with %s", key, new_key)
+                    elif new_key not in o:
+                        o[new_key] = value
+                        logger.info("Replacing %s with %s", key, new_key)
+    return event
+EOF
+
+ansible-galaxy collection install ansible.eda
+
+####### HELPERS
+
+cat <<EOF | tee /opt/lab_break.yml
+---
+- name: Connecting to Leaf
+  hosts: switches
+  connection: local
+  gather_facts: false
+
+  tasks:
+
+    - name: Default BGP Links
+      arista.eos.eos_interfaces:
+       config:
+        - name: Ethernet1
+          description: "Corp Server/LAN Port"
+          enabled: true
+        - name: Ethernet2
+          description: "BGP LINK to cEOS02"
+          enabled: true
+        - name: Ethernet3
+          description: "BGP LINK to cEOS01"
+          enabled: false
+       state: merged
+EOF
+
+cat <<EOF | tee /opt/lab_restore.yml
+---
+- name: Connecting to Leaf
+  hosts: switches
+  connection: local
+  gather_facts: false
+
+  tasks:
+
+    - name: Default BGP Links
+      arista.eos.eos_interfaces:
+       config:
+        - name: Ethernet1
+          description: "Corp Server/LAN Port"
+          enabled: true
+        - name: Ethernet2
+          description: "BGP LINK to cEOS02"
+          enabled: true
+        - name: Ethernet3
+          description: "BGP LINK to cEOS01"
+          enabled: true
+       state: merged
+EOF
+
+#cp /root/netops/inventory.yaml /root/netops/lab_restore/inventory.yaml
+
+cat <<EOF | tee /root/LAB_RESTORE.sh
+#!/bin/bash
+
+echo "Restoring configuration"
+ansible-playbook /opt/lab_restore.yml -i inventory.yaml 
+EOF
+
+chmod +x /root/LAB_RESTORE.sh

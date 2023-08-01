@@ -14,10 +14,4 @@ This self-paced lab will demonstrate how to use automation controller.
 
 - <a target="_new" href="https://play.instruqt.com/embed/redhat/tracks/controller-101?token=em_mUfT4xw1TXybXnBr">🚀 Launch the lab</a>
 
-## Leo
-
-<video controls autoplay loop muted>
-  <source src="img/leo.mp4" type="video/mp4">
-  This browser does not display the video tag.
-</video>
 

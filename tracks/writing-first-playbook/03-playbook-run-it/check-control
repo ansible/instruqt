@@ -2,11 +2,12 @@
 
 # Define the remote host
 remote_host="node1"
+ansible_files_dir="/home/rhel/ansible-files"
 
 # Check if the 'httpd' package is installed on the remote host
-httpd_package_info=$(ssh $remote_host "rpm -qi httpd")
+httpd_package_info=$(ansible $remote_host -i $ansible_files_dir/hosts -m ansible.builtin.shell -a "rpm -q httpd")
 
-if echo "$httpd_package_info" | grep -q "Name\s*:\s*httpd"; then
+if echo "$httpd_package_info" | grep -q "httpd-"; then
     echo "The 'httpd' package is installed on the $remote_host host."
 else
     echo "The 'httpd' package is NOT installed on $remote_host. Please run the Ansible playbook."
