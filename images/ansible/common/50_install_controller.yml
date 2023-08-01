@@ -39,7 +39,7 @@
           Authorization: "Bearer {{ temp_token.json.access_token }}"
         dest: "/tmp/aap.tar.gz"
         checksum: "sha256: {{ provided_sha_value }}"
-        mode: 0644
+        mode: '0644'
         owner: "{{ ansible_user }}"
       register: download_aap_tarball
       until: download_aap_tarball is not failed
@@ -51,7 +51,7 @@
     path: "{{ aap_dir }}"
     state: directory
     owner: "{{ ansible_user }}"
-    mode: 0755
+    mode: '0755'
 
 - name: Extract AAP tar.gz install
   ansible.builtin.unarchive:
@@ -73,7 +73,7 @@
     src: "{{ track_slug }}_inv.j2"
     dest: "{{ aap_dir }}/inventory"
     owner: "{{ ansible_user }}"
-    mode: 0644
+    mode: '0644'
 
 - name: Run controller setup - {{ inventory_hostname }}
   ansible.builtin.shell: "{{ controller_install_command }}" # noqa command-instead-of-shell
@@ -106,7 +106,7 @@
       ansible.builtin.copy: # noqa template-instead-of-copy
         dest: "{{ playbook_dir }}/manifest.zip"
         content: "{{ base64_manifest | b64decode }}"
-        mode: "0644"
+        mode: '0644'
       when: base64_manifest is defined
 
     - name: Apply license with manifest.zip
@@ -120,9 +120,9 @@
         that:
           - manifest_file is defined
           - manifest_file | length > 0
-        fail_msg: | 
+        fail_msg: |
           AAP subscription manifest not found or empty.
-        success_msg: 
+        success_msg:
           Successfully loaded AAP subscription manifest file
 
 - name: Post manifest file

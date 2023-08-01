@@ -80,7 +80,7 @@
   become: false
   when: lab.navigator_execution_environment is defined
 
-- name: Check '{{ track_slug }}_ansible_vault_password.j2' template exists
+- name: Check '{{ track_slug }}_ansible_vault_password.j2' template exists # noqa name[template]
   ansible.builtin.stat:
     path: "{{ playbook_dir }}/templates/{{ track_slug }}_ansible_vault_password_file.j2"
   delegate_to: localhost

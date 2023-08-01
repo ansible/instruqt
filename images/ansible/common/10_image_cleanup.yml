@@ -40,7 +40,7 @@
     dest: /etc/yum.repos.d/rh-cloud.repo
     owner: root
     group: root
-    mode: 0644
+    mode: '0644'
 
 - name: Update dnf cache
   ansible.builtin.command: dnf -y makecache

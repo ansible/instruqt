@@ -36,7 +36,7 @@
         - always
 
   tasks:
-    # use '--tags never' if using ansible-playbook to install collections
+    # use '--tags never' if using ansible-playbook to install collections on localhost
     - name: Install collections - {{ inventory_hostname }}
       vars:
         controller_collections:
@@ -385,7 +385,7 @@
         - name: Add custom containers to /etc/hosts
           ansible.builtin.lineinfile:
             path: /etc/hosts
-            mode: 0644
+            mode: '0644'
             state: present
             line: "{{ __hosts_file_item.ip }} {{ __hosts_file_item.name }}"
           loop: "{{ lab_containers }}"
@@ -636,7 +636,7 @@
 
     # https://github.com/redhat-cop/controller_configuration
     - name: Create lab controller objects
-      ansible.builtin.import_role:
+      ansible.builtin.include_role:
         name: redhat_cop.controller_configuration.dispatch
 
     - name: Install code server
