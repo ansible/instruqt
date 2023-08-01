@@ -16,7 +16,7 @@ gcp_service_account_file: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT
 gcp_service_account: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT') }}"
 gcp_instances:
   - name: "{{ track_slug }}"
-    source_image: automation-controller
+    # source_image: automation-controller
     network_interfaces:
       - access_configs:
         - name: External NAT # yamllint disable-line rule:indentation
@@ -26,8 +26,8 @@ gcp_instances:
         boot: true
         device_name: "{{ track_slug }}"
         initialize_params:
-          # source_image: "projects/{{ gcp_project }}/global/images/automation-controller"
-          source_image: projects/rhel-cloud/global/images/family/rhel-9
+          source_image: "projects/{{ gcp_project }}/global/images/automation-controller"
+          # source_image: projects/rhel-cloud/global/images/family/rhel-9
           disk_size_gb: 20
           disk_type: pd-balanced
     labels:
@@ -51,7 +51,7 @@ gcp_inventory_host_vars:
 aap_dir: /home/{{ ansible_user }}/aap_install
 controller_install_command: ANSIBLE_BECOME_METHOD='sudo' ANSIBLE_BECOME=True ./setup.sh -e registry_username='{{ registry_username }}' -e registry_password='{{ registry_password }}' # noqa yaml[line-length]
 offline_token: "{{ lookup('ansible.builtin.env', 'REDHAT_OFFLINE_TOKEN') }}"
-provided_sha_value: 95f5bfc00f65be7785098bf196f21e76c3eca54f95b203ba8655c80676f665a7 # RHEL 9 2.4
+provided_sha_value: 011a80be33c9b202e94f3a18e673e3d19eb1b2f480c49ef662205443576cfceb # RHEL 9 2.4
 
 # Base controller custom setup vars
 ansible_user: rhel
@@ -188,6 +188,9 @@ controller_os_packages:
   - ansible-navigator
   - automation-controller-cli
 
+controller_pip_packages:
+  - python-jenkins
+
 controller_collections:
   - redhat_cop.controller_configuration
   - awx.awx
@@ -273,24 +276,28 @@ controller_inventories:
 controller_hosts:
   - name: controller.acme.example.com
     inventory: "{{ lab.inventory.name }}"
+    enabled: true
     variables:
       ansible_host: devops-controller
       ansible_python_interpreter: /usr/bin/python3
       ansible_host_key_checking: false
   - name: web1.acme.example.com
     inventory: "{{ lab.inventory.name }}"
+    enabled: true
     variables:
       ansible_host: devops-controller
       ansible_python_interpreter: /usr/bin/python3
       ansible_host_key_checking: false
   - name: jenkins.acme.example.com
     inventory: "{{ lab.inventory.name }}"
+    enabled: true
     variables:
       ansible_host: devops-controller
       ansible_python_interpreter: /usr/bin/python3
       ansible_host_key_checking: false
   - name: repo.acme.example.com
     inventory: "{{ lab.inventory.name }}"
+    enabled: true
     variables:
       ansible_host: devops-controller
       ansible_python_interpreter: /usr/bin/python3
@@ -432,6 +439,10 @@ controller_roles:
       - "{{ lab.workflow_name }}"
     role: execute
   - user: "{{ student_username }}"
+    inventories:
+      - "{{ lab.inventory.name }}"
+    role: use
+  - user: "{{ student_username }}"
     job_templates:
       - Create App Release
       - Configure Webservers
@@ -440,6 +451,8 @@ controller_roles:
       - Deploy ACMECorp App
     workflows:
       - "{{ lab.workflow_name }}"
+    inventories:
+      - "{{ lab.inventory.name }}"
     role: read
   - user: "{{ student_username }}"
     workflows:
