@@ -95,7 +95,7 @@ Recommended agenda for when there is an instructor teaching.
 <td>Use Red Hat OpenShift events as a trigger showcasing the adaptability and effectiveness of Event-Driven Ansible</td>
 <td><a targete="_new" href="https://demo.redhat.com/catalog/babylon-catalog-prod/order/enterprise.event-driven-ansible.prod">🚀 Launch Lab</a></td>
 <td>⏱️ 40 minutes</td>
-<td><table id="important"><tr><td>Important</td></tr><tr><td>This runs on demo.redhat.com and is only available to Red Hat employees</td></tr></table></div></td>
+<td><table id="important"><tr><td>Important</td></tr><tr><td>This runs on demo.redhat.com and is only available to Red Hat employees</td></tr></table></td>
 </tr>
 </tbody>
 </table>

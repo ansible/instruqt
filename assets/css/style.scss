@@ -304,3 +304,19 @@ a h3:hover {
 b {
   font-weight: bolder;
 }
+
+table.important tr:first-child td {
+  background-color: rgba(92,184,92,0.8);
+  border-style: hidden;
+  text-transform: uppercase;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+table.important {
+  border-style: hidden;
+}
+
+table.important td {
+  background-color: #E6F9E6;
+}
