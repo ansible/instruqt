@@ -14,7 +14,7 @@
     "security.workspace.trust.enabled": false,
     "git.autofetch": false,
     "editor.renderWhitespace": "all",
-    "ansible.executionEnvironment.enabled": true,
+    "workbench.colorTheme": "Default Dark+",
     "files.associations": {
         "*.yml": "ansible"
     }
