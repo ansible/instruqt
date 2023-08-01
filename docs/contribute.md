@@ -33,7 +33,7 @@ It is important to know how to keep your fork in sync with the upstream Workshop
 
 ### Configuring Your Remotes
 
-Configure `ansible/workshops` as your upstream so you can stay in sync
+Configure `ansible/instruqt` as your upstream so you can stay in sync
 
 ```bash
 git remote add upstream https://github.com/ansible/instruqt.git
