@@ -26,15 +26,15 @@ gcp_instances:
         boot: true
         device_name: "{{ track_slug }}"
         initialize_params:
-          source_image: "projects/{{ gcp_project }}/global/images/automation-controller"
-          # source_image: projects/rhel-cloud/global/images/family/rhel-9
+          # source_image: "projects/{{ gcp_project }}/global/images/automation-controller"
+          source_image: projects/rhel-cloud/global/images/family/rhel-9
           disk_size_gb: 20
           disk_type: pd-balanced
     labels:
       role: "{{ track_slug }}"
       mesh-type: controller
       location: raleigh
-    machine_type: e2-standard-4
+    machine_type: n2-standard-4
     metadata:
       ssh-keys: "{{ lookup('file', '~/.ssh/instruqt/instruqt_provision.pub') }}"
     tags:
@@ -190,6 +190,7 @@ controller_os_packages:
 
 controller_pip_packages:
   - python-jenkins
+  - yamllint
 
 controller_collections:
   - redhat_cop.controller_configuration
