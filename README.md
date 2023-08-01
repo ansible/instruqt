@@ -11,7 +11,7 @@ These are 90 minute workshops with multiple self-paced labs in them.
 <tbody>
 <tr>
 <td>Cloud Automation Technical Workshop</td>
-<td><a href="./webpages/ansible-cloud-lab.md">🔬 Open Workshop</a></td>
+<td>[🔬 Open Workshop](./webpages/ansible-cloud-lab.md)<a href="./webpages/ansible-cloud-lab.md">🔬 Open Workshop</a></td>
 </tr>
 <tr>
 <td>Event-Driven Ansible Technical Workshop</td>
