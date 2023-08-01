@@ -1,10 +1,3 @@
-# ansible/instruqt
-
-## How to access the labs
-
-* [Community Labs (How to contribute, what's ansible-test, etc)](https://www.ansible.com/products/ansible-community-training)
-* [Product & user labs (How to use Automation Controller, Ansible Builder, etc](https://www.redhat.com/en/interactive-labs/ansible)
-
 # Ansible Self-Paced Workshop Directory
 These are 90 minute workshops with multiple self-paced labs in them.
 
@@ -75,6 +68,10 @@ These are 90 minute workshops with multiple self-paced labs in them.
 
 Please [open issues](https://github.com/ansible/instruqt/issues/new) so we can fix any problems that occur.
 
+## External Lab webpages
+
+* [Community Labs (How to contribute, what's ansible-test, etc)](https://www.ansible.com/products/ansible-community-training)
+* [Product & user labs (How to use Automation Controller, Ansible Builder, etc](https://www.redhat.com/en/interactive-labs/ansible)
 
 ## Contribute
 
