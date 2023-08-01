@@ -326,5 +326,12 @@ table.important td {
   color: #fff;
   font-family: "Font Awesome 5 Free";
   font-weight: 900;
+}
+
+i.icon-info-sign:before {
   content: "\f05a";
+  float: left;
+  left: -5px;
+  position: relative;
+  font-family: 'Font Awesome 5 Free';
 }
