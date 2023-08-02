@@ -26,7 +26,7 @@ gcp_instances:
         device_name: "{{ track_slug }}"
         initialize_params:
           # source_image: "projects/{{ gcp_project }}/global/images/automation-controller"
-          source_image: projects/rhel-cloud/global/images/family/rhel-9
+          source_image: projects/rhel-cloud/global/images/family/rhel-9 # Needed for Python39 default for code-server yamllint
           disk_size_gb: 20
           disk_type: pd-balanced
     labels:
@@ -111,8 +111,10 @@ lab:
     image: quay.io/acme_corp/instruqt-devops-ee
   s3:
     bucket_name: tmm-instruqt-content.demoredhat.com.private
-    bucket_path: s3://{{ lab.s3.bucket_name }}/{{ track_slug }}-dev
+    # Dev
     # bucket_path: s3://{{ lab.s3.bucket_name }}/{{ track_slug }}-dev
+    # Prod
+    bucket_path: s3://{{ lab.s3.bucket_name }}/{{ track_slug }}
   acme_venv: "/home/{{ student_username }}/.virtualenvs/acme_corp"
   workflow_name: DevOps Workflow
   default_tag_name: "0.0.1"
@@ -192,7 +194,7 @@ controller_os_packages:
 
 controller_pip_packages:
   - python-jenkins
-  - yamllint
+  - yamllint # yamllint needs Python 3.7+. RHEL 8 default is 3.6
 
 controller_collections:
   - redhat_cop.controller_configuration
