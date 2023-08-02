@@ -556,7 +556,7 @@
             owner: "{{ student_username }}"
             group: "{{ student_username }}"
             directory_mode: "755"
-            mode: "0644"
+            mode: "644"
 
         - name: Fix directory permissions - {{ gitea_repo_name }}
           ansible.builtin.file:
@@ -577,7 +577,7 @@
             src: "gitconfig.j2"
             owner: "{{ student_username }}"
             group: "{{ student_username }}"
-            mode: "0644"
+            mode: "644"
             dest: "~{{ student_username }}/{{ gitea_repo_name }}/.git/config"
 
         - name: Store repo credentials in git-creds file
@@ -586,7 +586,7 @@
             content: "{{ gitea_protocol }}://{{ student_username | urlencode }}:{{ student_password | urlencode }}@{{ gitea_hostname }}:{{ gitea_http_port }}"
             owner: "{{ student_username }}"
             group: "{{ student_username }}"
-            mode: "0644"
+            mode: "644"
 
         - name: Push initial commit to repo
           ansible.builtin.command:

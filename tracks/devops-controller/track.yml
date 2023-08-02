@@ -1,9 +1,6 @@
 slug: devops-controller
 id: u5sh0k588dhx
 title: DevOps and CI/CD with automation controller
-teaser: In this lab, we’ll integrate a simple CI/CD pipeline into automation controller
-  to demonstrate how Ansible Automation Platform supports and elevates DevOps practices
-  across the enterprise.
 description: |-
   # DevOps and CI/CD with automation controller
   ***
@@ -25,20 +22,21 @@ description: |-
   * Creating a new application release, configuring a web server and deploying the updated *Let’s Quiz!* application with a [controller workflow](https://docs.ansible.com/automation-controller/latest/html/userguide/workflows.html).
   * Using a controller [approval](https://docs.ansible.com/automation-controller/4.2.0/html/userguide/workflow_templates.html#approval-nodes) to allow final checks and sign-off before deploying to production.
 icon: ./assets/img/automation_controller.png
-level: intermediate
 tags:
+- prod
 - controller
+- prodops
 - automation controller
-- devops
 - jenkins
-- dev
 owner: redhat
 developers:
 - cbrandt@redhat.com
 show_timer: true
 skipping_enabled: true
+idle_timeout: 1200
+timelimit: 3300
 lab_config:
   overlay: false
   width: 25
   position: right
-checksum: "2979691381968800584"
+checksum: "5048473118870256566"

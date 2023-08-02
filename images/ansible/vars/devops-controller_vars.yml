@@ -16,7 +16,6 @@ gcp_service_account_file: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT
 gcp_service_account: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT') }}"
 gcp_instances:
   - name: "{{ track_slug }}"
-    source_image: automation-controller
     network_interfaces:
       - access_configs:
         - name: External NAT # yamllint disable-line rule:indentation
@@ -26,26 +25,36 @@ gcp_instances:
         boot: true
         device_name: "{{ track_slug }}"
         initialize_params:
-          source_image: "projects/{{ gcp_project }}/global/images/automation-controller"
+          # source_image: "projects/{{ gcp_project }}/global/images/automation-controller"
+          source_image: projects/rhel-cloud/global/images/family/rhel-9 # Needed for Python39 default for code-server yamllint
           disk_size_gb: 20
           disk_type: pd-balanced
     labels:
       role: "{{ track_slug }}"
       mesh-type: controller
       location: raleigh
-    machine_type: e2-standard-4
+    machine_type: n2-standard-4
+    metadata:
+      ssh-keys: "{{ lookup('file', '~/.ssh/instruqt/instruqt_provision.pub') }}"
     tags:
       items:
         - https-server
 gcp_inventory_host_vars:
   ansible_user: "{{ ansible_user }}"
-  ansible_ssh_pass: "ansible123!"
+  ansible_ssh_private_key_file: ~/.ssh/instruqt/instruqt_provision
   ansible_host_key_checking: false
   ansible_python_interpreter: "/usr/bin/python3"
   ansible_ssh_pipelining: true
 
+# AAP vars
+aap_dir: /home/{{ ansible_user }}/aap_install
+controller_install_command: ANSIBLE_BECOME_METHOD='sudo' ANSIBLE_BECOME=True ./setup.sh -e registry_username='{{ registry_username }}' -e registry_password='{{ registry_password }}' # noqa yaml[line-length]
+offline_token: "{{ lookup('ansible.builtin.env', 'REDHAT_OFFLINE_TOKEN') }}"
+provided_sha_value: 011a80be33c9b202e94f3a18e673e3d19eb1b2f480c49ef662205443576cfceb # RHEL 9 2.4
+
 # Base controller custom setup vars
 ansible_user: rhel
+admin_username: rhel
 admin_password: "ansible123!"
 redhat_username: "{{ lookup('ansible.builtin.env', 'REDHAT_USERNAME', default='') }}"
 redhat_password: "{{ lookup('ansible.builtin.env', 'REDHAT_PASSWORD', default='') }}"
@@ -56,7 +65,7 @@ controller_hostname: "{{ track_slug }}"
 controller_validate_certs: false
 controller_username: admin
 controller_password: "ansible123!"
-student_user: student
+student_username: student
 student_password: learn_ansible
 
 aws_cli_install_package: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
@@ -78,7 +87,7 @@ gitea_admin_username: ansible
 gitea_admin_password: "ansible123!"
 
 # code_server role vars
-codeserver_username: "{{ student_user }}"
+codeserver_username: "{{ student_username }}"
 codeserver_password: "{{ student_password }}"
 codeserver_prebuild: false
 codeserver_authentication: false
@@ -92,7 +101,7 @@ lab:
   organization: ACME Corp
   project:
     name: ACME Corp Repo
-    repo: "{{ gitea_app_url }}/{{ student_user }}/acme_corp.git"
+    repo: "{{ gitea_app_url }}/{{ student_username }}/acme_corp.git"
     branch: main
   inventory:
     name: ACME Corp DC
@@ -100,8 +109,13 @@ lab:
   execution_environment:
     name: ACME Corp EE
     image: quay.io/acme_corp/instruqt-devops-ee
-  s3_bucket_name: tmm-instruqt-content.demoredhat.com.private
-  acme_venv: "/home/{{ student_user }}/.virtualenvs/acme_corp"
+  s3:
+    # bucket_name: tmm-instruqt-content.demoredhat.com.private
+    # Dev
+    # bucket_path: s3://{{ lab.s3.bucket_name }}/{{ track_slug }}-dev
+    # Prod
+    bucket_path: "s3://tmm-instruqt-content.demoredhat.com.private/{{ track_slug }}"
+  acme_venv: "/home/{{ student_username }}/.virtualenvs/acme_corp"
   workflow_name: DevOps Workflow
   default_tag_name: "0.0.1"
 
@@ -172,12 +186,21 @@ controller_os_packages:
   - unzip
   - python3-boto3
   - python3-botocore
-  - python3-ansible-lint
+  - ansible-lint
+  - git
+  - ansible-core
+  - ansible-navigator
+  - automation-controller-cli
+
+controller_pip_packages:
+  - python-jenkins
+  - yamllint # yamllint needs Python 3.7+. RHEL 8 default is 3.6
 
 controller_collections:
-  - ansible.workshops
   - redhat_cop.controller_configuration
   - awx.awx
+  - community.general
+  - ansible.posix
 
 # CoP Collection vars https://github.com/redhat-cop/controller_configuration
 controller_configuration_credentials_secure_logging: false
@@ -250,36 +273,31 @@ controller_projects:
     wait: true
     update_project: true
 
+# Inventory variables updated in lab startup to get Instruqt FQDN SANDBOX_ID
 controller_inventories:
   - name: "{{ lab.inventory.name }}"
     organization: "{{ lab.organization }}"
     description: "{{ lab.inventory.name }}"
+    variables:
+      ansible_host: devops-controller
+      ansible_python_interpreter: /usr/bin/python3
+      ansible_host_key_checking: false
+      ansible_ssh_extra_args: '-o StrictHostKeyChecking=no -o ControlMaster=auto -o ControlPersist=60s'
+      ansible_ssh_pipelining: true
 
 controller_hosts:
   - name: controller.acme.example.com
     inventory: "{{ lab.inventory.name }}"
-    variables:
-      ansible_host: devops-controller
-      ansible_python_interpreter: /usr/bin/python3
-      ansible_host_key_checking: false
+    enabled: true
   - name: web1.acme.example.com
     inventory: "{{ lab.inventory.name }}"
-    variables:
-      ansible_host: devops-controller
-      ansible_python_interpreter: /usr/bin/python3
-      ansible_host_key_checking: false
+    enabled: true
   - name: jenkins.acme.example.com
     inventory: "{{ lab.inventory.name }}"
-    variables:
-      ansible_host: devops-controller
-      ansible_python_interpreter: /usr/bin/python3
-      ansible_host_key_checking: false
+    enabled: true
   - name: repo.acme.example.com
     inventory: "{{ lab.inventory.name }}"
-    variables:
-      ansible_host: devops-controller
-      ansible_python_interpreter: /usr/bin/python3
-      ansible_host_key_checking: false
+    enabled: true
 
 controller_groups:
   - name: webservers
@@ -334,8 +352,8 @@ controller_templates:
     project: "{{ lab.project.name }}"
     ask_variables_on_launch: true
     extra_vars:
-      repo_user: "{{ student_user }}"
-      git_repo: "{{ gitea_app_url }}/{{ student_user }}/acme_corp.git"
+      repo_user: "{{ student_username }}"
+      git_repo: "{{ gitea_app_url }}/{{ student_username }}/acme_corp.git"
   - name: Deploy ACMECorp App
     state: present
     job_type: run
@@ -391,11 +409,11 @@ controller_user_accounts:
     password: "{{ jenkins_password }}"
     email: "{{ jenkins_user }}@acme.example.com"
     organization: "{{ lab.organization }}"
-  - user: "{{ student_user }}"
+  - user: "{{ student_username }}"
     state: present
     is_superuser: false
     password: "{{ student_password }}"
-    email: "{{ student_user }}@acme.example.com"
+    email: "{{ student_username }}@acme.example.com"
     organization: "{{ lab.organization }}"
 
 controller_roles:
@@ -406,7 +424,7 @@ controller_roles:
     workflows:
       - "{{ lab.workflow_name }}"
     role: execute
-  - user: "{{ student_user }}"
+  - user: "{{ student_username }}"
     job_templates:
       - Create App Release
       - Configure Webservers
@@ -416,7 +434,11 @@ controller_roles:
     workflows:
       - "{{ lab.workflow_name }}"
     role: execute
-  - user: "{{ student_user }}"
+  - user: "{{ student_username }}"
+    inventories:
+      - "{{ lab.inventory.name }}"
+    role: use
+  - user: "{{ student_username }}"
     job_templates:
       - Create App Release
       - Configure Webservers
@@ -425,8 +447,10 @@ controller_roles:
       - Deploy ACMECorp App
     workflows:
       - "{{ lab.workflow_name }}"
+    inventories:
+      - "{{ lab.inventory.name }}"
     role: read
-  - user: "{{ student_user }}"
+  - user: "{{ student_username }}"
     workflows:
       - "{{ lab.workflow_name }}"
     role: approval

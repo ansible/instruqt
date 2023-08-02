@@ -397,7 +397,7 @@ controller_roles:
     role: read
   - user: "{{ student_username }}"
     credentials:
-      - "{{ lab.credential.ssh.name  }}"
+      - "{{ lab.credential.ssh.name }}"
     role: use
   - user: "{{ student_username }}"
     inventories:

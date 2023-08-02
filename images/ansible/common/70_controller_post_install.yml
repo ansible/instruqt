@@ -41,7 +41,6 @@
   ansible.builtin.pip:
     name: "{{ controller_pip_packages }}"
     state: present
-  become: true
   when: (controller_pip_packages is defined) and (controller_pip_packages | length > 0)
 
 - name: Download and upgrade controller collections - {{ inventory_hostname }}
@@ -49,7 +48,6 @@
     name: "{{ item }}"
     dest: /usr/share/ansible/collections
     type: collection
-  become: true
   loop: "{{ controller_collections }}"
   register: __collection_install
   when: (controller_collections is defined) and (controller_collections | length > 0)
@@ -61,6 +59,7 @@
     remote_src: true
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
+  become: false
   register: __aws_cli_download
 
 
@@ -68,26 +67,33 @@
   ansible.builtin.template:
     src: ansible.cfg.j2
     dest: "/etc/ansible/ansible.cfg"
-    mode: 0644
+    mode: '644'
 
 #  Added for student command line tasks
 - name: Copy ansible-navigator.yml template - {{ student_username }}
   ansible.builtin.template:
     src: "ansible-navigator.yml.j2"
     dest: "~{{ student_username }}/.ansible-navigator.yml"
-    mode: "0644"
+    mode: "644"
     owner: "{{ student_username }}"
     group: "{{ student_username }}"
+  become: false
   when: lab.navigator_execution_environment is defined
+
+- name: Check '{{ track_slug }}_ansible_vault_password.j2' template exists # noqa name[template]
+  ansible.builtin.stat:
+    path: "{{ playbook_dir }}/templates/{{ track_slug }}_ansible_vault_password_file.j2"
+  delegate_to: localhost
+  become: false
+  register: __ansible_vault_password_file
 
  # root because of become: true
 - name: Copy vault_password file - {{ ansible_user_id }}
-  when: lab.navigator_execution_environment is defined
-  become: true
+  when: __ansible_vault_password_file.stat.exists
   ansible.builtin.template:
     src: "{{ track_slug }}_ansible_vault_password.j2"
     dest: "~{{ ansible_user_id }}/.{{ track_slug }}_ansible_vault_password"
-    mode: "0640"
+    mode: "640"
     owner: "{{ ansible_user_id }}"
     group: "wheel"
 
@@ -96,10 +102,9 @@
     cmd: /tmp/aws/install --install-dir /usr/local/aws --bin-dir /usr/bin/ --update
     creates: /usr/bin/aws
 
-- name: Download setup scripts to controller /opt directory - {{ lab.s3_bucket_name }}
+- name: Download setup scripts to controller /opt directory - {{ lab.s3.bucket_path }}
   ansible.builtin.command:
-    cmd: "/usr/bin/aws s3 sync --no-sign-request s3://{{ lab.s3_bucket_name }}/{{ track_slug }} /opt/setup-scripts/{{ track_slug }}"
-  become: true
+    cmd: "/usr/bin/aws s3 sync --no-sign-request {{ lab.s3.bucket_path }} /opt/setup-scripts/{{ track_slug }}"
   register: __s3_sync_output
   changed_when: '"download:" in __s3_sync_output.stdout'
 
@@ -200,7 +205,6 @@
 
     #  Added for track lifecycle scripts - root
     - name: Pull execution environment images - {{ ansible_user_id }}
-      become: true
       containers.podman.podman_image:
         name: "{{ item.image }}"
       loop: "{{ controller_execution_environments }}"

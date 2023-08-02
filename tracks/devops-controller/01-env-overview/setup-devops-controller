@@ -1,0 +1,10 @@
+#!/bin/bash
+set -euxo pipefail
+
+echo "Copying keys to rhel"
+cp -a /root/.ssh/id_rsa* /root/.ssh/authorized_keys /home/rhel/.ssh
+chown -R rhel:rhel /home/rhel/.ssh
+
+cd /opt/setup-scripts/devops-controller
+
+ansible-playbook setup-devops-controller.yml --tags setup-env

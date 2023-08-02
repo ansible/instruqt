@@ -4,7 +4,7 @@
     name:
       - "{{ codeserver_url }}"
       - certbot
-    state: latest
+    state: present
     disable_gpg_check: true
   register: __dnf_result
   until: __dnf_result is not failed
@@ -23,7 +23,7 @@
     dest: /etc/systemd/system/code-server.service
     owner: "{{ codeserver_username }}"
     group: wheel
-    mode: '0744'
+    mode: '744'
 
 # source: https://vscode.readthedocs.io/en/latest/getstarted/settings/
 - name: Ensure custom facts directory exists
@@ -33,7 +33,7 @@
     state: directory
     owner: "{{ codeserver_username }}"
     group: "{{ codeserver_username }}"
-    mode: "0755"
+    mode: "755"
 
 - name: Apply code server defaults
   ansible.builtin.template:
@@ -47,14 +47,14 @@
   ansible.builtin.file:
     path: /home/{{ codeserver_username }}/.local/share/code-server/extensions/
     state: directory
-    mode: "0755"
+    mode: "755"
     owner: "{{ codeserver_username }}"
     group: "{{ codeserver_username }}"
 
 - name: Download custom VSCode extension files
   ansible.builtin.get_url:
     url: "{{ item.download_url }}"
-    dest: /home/{{ codeserver_username }}/.local/share/code-server/extensions/
+    dest: ~{{ codeserver_username }}/.local/share/code-server/extensions/
     owner: "{{ codeserver_username }}"
     group: "{{ codeserver_username }}"
     mode: "0644"
@@ -66,7 +66,7 @@
 
 - name: Install custom extensions from local file
   become_user: "{{ codeserver_username }}"
-  ansible.builtin.command: "/bin/code-server --install-extension /home/{{ codeserver_username }}/.local/share/code-server/extensions/{{ item.filename }}"
+  ansible.builtin.command: "/bin/code-server --install-extension ~{{ codeserver_username }}/.local/share/code-server/extensions/{{ item.filename }}"
   loop: "{{ codeserver_extensions }}"
   when: item.filename is defined
   register: install_extension

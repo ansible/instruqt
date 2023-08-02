@@ -1,6 +1,6 @@
 ---
 slug: update-pipeline
-id: zzggmgddjl9d
+id: ayydnxc4slob
 type: challenge
 title: Configure the ACME Corp pipeline
 teaser: We'll configure and integrate the ACME Corp pipeline using automation controller.
@@ -44,8 +44,17 @@ timelimit: 600
 ===
 All the logins use the same credentials.
 
->User: student<p>
->Password: learn_ansible
+User:
+
+```yaml
+student
+```
+
+Password:
+
+```yaml
+learn_ansible
+```
 
 👋 Introduction
 ===
@@ -224,7 +233,6 @@ If you have encountered an issue or have noticed something not quite right, plea
     display: flex;
   }
   .lightbox img {
-    /* max-height: 100% */
     max-width: 60%;
     max-height: 60%;
   }
@@ -236,11 +244,11 @@ If you have encountered an issue or have noticed something not quite right, plea
   h1 {
     font-size: 18px;
   }
-    h2 {
+  h2 {
     font-size: 16px;
     font-weight: 600
   }
-    h3 {
+  h3 {
     font-size: 14px;
     font-weight: 600
   }
