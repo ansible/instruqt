@@ -102,7 +102,7 @@
     cmd: /tmp/aws/install --install-dir /usr/local/aws --bin-dir /usr/bin/ --update
     creates: /usr/bin/aws
 
-- name: Download setup scripts to controller /opt directory - {{ lab.s3_bucket_name }}
+- name: Download setup scripts to controller /opt directory - {{ lab.s3.bucket_path }}
   ansible.builtin.command:
     cmd: "/usr/bin/aws s3 sync --no-sign-request {{ lab.s3.bucket_path }} /opt/setup-scripts/{{ track_slug }}"
   register: __s3_sync_output

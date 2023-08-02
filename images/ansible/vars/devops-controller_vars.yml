@@ -110,11 +110,11 @@ lab:
     name: ACME Corp EE
     image: quay.io/acme_corp/instruqt-devops-ee
   s3:
-    bucket_name: tmm-instruqt-content.demoredhat.com.private
+    # bucket_name: tmm-instruqt-content.demoredhat.com.private
     # Dev
     # bucket_path: s3://{{ lab.s3.bucket_name }}/{{ track_slug }}-dev
     # Prod
-    bucket_path: s3://{{ lab.s3.bucket_name }}/{{ track_slug }}
+    bucket_path: "s3://tmm-instruqt-content.demoredhat.com.private/{{ track_slug }}"
   acme_venv: "/home/{{ student_username }}/.virtualenvs/acme_corp"
   workflow_name: DevOps Workflow
   default_tag_name: "0.0.1"

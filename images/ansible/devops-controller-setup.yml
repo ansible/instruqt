@@ -325,12 +325,6 @@
     - name: Include common controller install tasks
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/50_install_controller.yml"
-        apply:
-          tags:
-            - controller-install
-          become: false
-      tags:
-        - controller-install
 
     - name: Include common controller post install tasks
       ansible.builtin.include_tasks:
