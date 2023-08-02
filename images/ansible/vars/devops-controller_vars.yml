@@ -16,7 +16,6 @@ gcp_service_account_file: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT
 gcp_service_account: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT') }}"
 gcp_instances:
   - name: "{{ track_slug }}"
-    # source_image: automation-controller
     network_interfaces:
       - access_configs:
         - name: External NAT # yamllint disable-line rule:indentation
@@ -110,7 +109,10 @@ lab:
   execution_environment:
     name: ACME Corp EE
     image: quay.io/acme_corp/instruqt-devops-ee
-  s3_bucket_name: tmm-instruqt-content.demoredhat.com.private
+  s3:
+    bucket_name: tmm-instruqt-content.demoredhat.com.private
+    bucket_path: s3://{{ lab.s3.bucket_name }}/{{ track_slug }}-dev
+    # bucket_path: s3://{{ lab.s3.bucket_name }}/{{ track_slug }}-dev
   acme_venv: "/home/{{ student_username }}/.virtualenvs/acme_corp"
   workflow_name: DevOps Workflow
   default_tag_name: "0.0.1"
@@ -269,40 +271,31 @@ controller_projects:
     wait: true
     update_project: true
 
+# Inventory variables updated in lab startup to get Instruqt FQDN SANDBOX_ID
 controller_inventories:
   - name: "{{ lab.inventory.name }}"
     organization: "{{ lab.organization }}"
     description: "{{ lab.inventory.name }}"
+    variables:
+      ansible_host: devops-controller
+      ansible_python_interpreter: /usr/bin/python3
+      ansible_host_key_checking: false
+      ansible_ssh_extra_args: '-o StrictHostKeyChecking=no -o ControlMaster=auto -o ControlPersist=60s'
+      ansible_ssh_pipelining: true
 
 controller_hosts:
   - name: controller.acme.example.com
     inventory: "{{ lab.inventory.name }}"
     enabled: true
-    variables:
-      ansible_host: devops-controller
-      ansible_python_interpreter: /usr/bin/python3
-      ansible_host_key_checking: false
   - name: web1.acme.example.com
     inventory: "{{ lab.inventory.name }}"
     enabled: true
-    variables:
-      ansible_host: devops-controller
-      ansible_python_interpreter: /usr/bin/python3
-      ansible_host_key_checking: false
   - name: jenkins.acme.example.com
     inventory: "{{ lab.inventory.name }}"
     enabled: true
-    variables:
-      ansible_host: devops-controller
-      ansible_python_interpreter: /usr/bin/python3
-      ansible_host_key_checking: false
   - name: repo.acme.example.com
     inventory: "{{ lab.inventory.name }}"
     enabled: true
-    variables:
-      ansible_host: devops-controller
-      ansible_python_interpreter: /usr/bin/python3
-      ansible_host_key_checking: false
 
 controller_groups:
   - name: webservers
