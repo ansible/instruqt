@@ -104,7 +104,7 @@
 
 - name: Download setup scripts to controller /opt directory - {{ lab.s3_bucket_name }}
   ansible.builtin.command:
-    cmd: "/usr/bin/aws s3 sync --no-sign-request s3://{{ lab.s3_bucket_name }}/{{ track_slug }} /opt/setup-scripts/{{ track_slug }}"
+    cmd: "/usr/bin/aws s3 sync --no-sign-request {{ lab.s3.bucket_path }} /opt/setup-scripts/{{ track_slug }}"
   register: __s3_sync_output
   changed_when: '"download:" in __s3_sync_output.stdout'
 
