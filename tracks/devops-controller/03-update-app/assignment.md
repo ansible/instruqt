@@ -1,6 +1,6 @@
 ---
 slug: update-app
-id: xugy2avyk20c
+id: kgmcnj8tgd15
 type: challenge
 title: Update the Let's Quiz! application code
 teaser: We'll update the Let's Quiz! application home page to trigger the DevOps workflow
@@ -55,8 +55,17 @@ timelimit: 600
 ===
 All the logins use the same credentials.
 
->User: student<p>
->Password: learn_ansible
+User:
+
+```yaml
+student
+```
+
+Password:
+
+```yaml
+learn_ansible
+```
 
 👋 Introduction
 ===
@@ -300,11 +309,11 @@ If you have encountered an issue or have noticed something not quite right, plea
   h1 {
     font-size: 18px;
   }
-    h2 {
+  h2 {
     font-size: 16px;
     font-weight: 600
   }
-    h3 {
+  h3 {
     font-size: 14px;
     font-weight: 600
   }
