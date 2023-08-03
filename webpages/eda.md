@@ -57,7 +57,7 @@ Recommended agenda for when there is an instructor teaching.
 <tr>
 <td>Getting Started with EDA Controller</td>
 <td>Learn how to adopt EDA into your organization with EDA Controller, which integrates into the Ansible Automation Platform with a webUI</td>
-<td><a targete="_new" href="https://play.instruqt.com/embed/redhat/tracks/testing-eda-controller-dev?token=em_pnJ8mV75JMc0MhZN">🚀 Launch Lab</a></td>
+<td><a target="_new" href="https://play.instruqt.com/embed/redhat/tracks/getting-started-eda-controller?token=em_pnJ8mV75JMc0MhZN&show_challenges=true&finish_btn_target=_blank&finish_btn_text=Learn+more&finish_btn_url=https%3A%2F%2Fansible.com%2Fevent-driven">🚀 Launch Lab</a></td>
 <td>⏱️ 40 minutes</td>
 </tr>
 </tbody>
