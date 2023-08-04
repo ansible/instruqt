@@ -24,7 +24,7 @@
     admin_password: "ansible123!"
     aap_dir: "/home/{{ username }}/aap_install"
     username: "{{ ansible_user }}"
-    student_user: student
+    student_username: student
     student_password: learn_ansible
     # Registry to pull EE images from during installation
     ee_registry_name: "registry.redhat.io"
