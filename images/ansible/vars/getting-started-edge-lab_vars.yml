@@ -107,7 +107,7 @@ controller_hostname: controller-edge-lab
 controller_validate_certs: false
 controller_username: admin
 controller_password: "ansible123!"
-student_user: student
+student_username: student
 student_password: learn_ansible
 edge_app_admin_username: admin
 edge_app_admin_password: "{{ student_password }}"
@@ -271,7 +271,7 @@ controller_instance_groups:
       - controller-edge-lab
 
 controller_user_accounts:
-  - user: "{{ student_user }}"
+  - user: "{{ student_username }}"
     password: "{{ student_password }}"
     is_superuser: true
     organization: "{{ lab_organization }}"

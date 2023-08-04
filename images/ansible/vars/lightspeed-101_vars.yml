@@ -70,7 +70,6 @@ controller_password: "{{ vault_controller_password }}"
 
 student_username: "{{ vault_student_username }}"
 student_password: "{{ vault_student_password }}"
-student_user: "{{ student_username }}" # Legacy
 
 aws_cli_install_package: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
 

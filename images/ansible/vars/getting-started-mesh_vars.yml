@@ -103,7 +103,7 @@ lab_controller_hostname: raleigh-controller
 controller_validate_certs: false
 controller_username: admin
 controller_password: "ansible123!"
-student_user: student
+student_username: student
 student_password: learn_ansible
 lab_inv_group_name: web
 
