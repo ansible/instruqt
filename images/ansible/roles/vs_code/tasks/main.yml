@@ -53,8 +53,9 @@
   ansible.builtin.command: "/bin/code --install-extension ~{{ vscode_username }}/.vscode/extensions/{{ item.filename }}"
   loop: "{{ vscode_extensions }}"
   when: item.filename is defined
-  register: install_extension
-  until: install_extension is not failed
+  register: __install_extension
+  changed_when: __install_extension is search('was successfully installed')
+  until: __install_extension is not failed
   retries: 5
 
 - name: Install VS Code Marketplace extensions
@@ -62,6 +63,7 @@
   ansible.builtin.command: "/bin/code --install-extension {{ item.name }}"
   loop: "{{ vscode_extensions }}"
   when: (item.filename is undefined) or (item.download_url is undefined)
-  register: install_extension
-  until: install_extension is not failed
+  register: __install_extension
+  changed_when: __install_extension is search('was successfully installed')
+  until: __install_extension is not failed
   retries: 5
