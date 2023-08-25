@@ -5,7 +5,7 @@ echo "Copying keys to rhel"
 cp -a /root/.ssh/id_rsa* /root/.ssh/authorized_keys /home/rhel/.ssh
 chown -R rhel:rhel /home/rhel/.ssh
 
-cd /opt/setup-scripts/lightspeed-101/setup/
-export ANSIBLE_VAULT_PASSWORD_FILE=.lightspeed-101_ansible_vault_password
+# cd /opt/setup-scripts/lightspeed-101/
+# export ANSIBLE_VAULT_PASSWORD_FILE=.lightspeed-101_ansible_vault_password
 
-ansible-navigator run /opt/setup-scripts/lightspeed-101/setup/lightspeed-101-lab_setup.yml -e check_mode=false --tags setup-env --mode stdout
+# ansible-navigator run /opt/setup-scripts/lightspeed-101/lightspeed-101-lab_setup.yml -e content_list="setup_env" -e check_mode=false --tags setup-env --mode stdout

@@ -1,41 +1,32 @@
 slug: lightspeed-101
-id: nd92zv3wfctq
-title: Intro to Ansible Lightspeed with IBM Watson Code Assistant
+id: boprlwpffdp9
+title: Intro to Ansible Lightspeed with IBM watsonx Code Assistant
 teaser: Experience how Ansible Lightspeed accelerates your Ansible content development
   with its  generative AI superpowers.
-description: |-
-  # Getting started with Ansible Lightspeed
-  ***
-
-  <p>
-
-  ## This lab covers:
-
-  <p>
-
-  - Configuring Ansible Lightspeed and Ansible Lint in Visual Studio Code extension.
-  - The basics of generating Ansible Lightspeed suggestions.
-  - Examples of using Playbook context, such as `vars` and `module_defaults` sections.
-  - Customizing task descriptions to get more desirable results.
-  - Running the Playbooks in automation controller.
-  - Configuring an automation controller workflow.
+description: "# Intro to Ansible Lightspeed with IBM watsonx Code Assistant\n***\n\n<p>\n\n##
+  This lab covers:\n\n<p>\n\n- Configuring Ansible Lightspeed in Visual Studio Code.\n-
+  The basics of generating Ansible Lightspeed suggestions.\n- Examples of using Playbook
+  context, such as `vars` and `module_defaults` sections.\n- Ansible Lightspeed Content
+  Source Matching to show potential training data sources.\n- Running the Playbooks
+  using ansible-navigator and automation controller.\n\n\t## Requirements\n\n\t- The
+  user needs a GitHub or Red Hat Customer Portal ccount to activate Ansible Lightspeed
+  in VS Code.\n\t- Certain browsers, such as Firefox and Chrome, do not support a
+  standard \"CTRL+C\" and \"CTRL+V\" copy and paste in VNC sessions. Instructions
+  are included to to use the VNC utlities to do so.\n\t## Source repository\n\thttps://github.com/craig-br/lightspeed-demos"
 icon: https://raw.githubusercontent.com/ansible/instruqt/devel/assets/icons/Product_Icon-Red_Hat-Ansible-RGB.png
 tags:
+- ai
 - ansible
 - lightspeed
-- wisdom
-- ai
 owner: redhat
 developers:
 - cbrandt@redhat.com
-- abehl@redhat.com
-maintenance: true
 show_timer: true
 skipping_enabled: true
 idle_timeout: 1800
-timelimit: 4500
+timelimit: 3300
 lab_config:
   overlay: false
-  width: 25
+  width: 33
   position: right
-checksum: "5744931738794331988"
+checksum: "9885459307280940242"

@@ -1,0 +1,28 @@
+---
+ansible-navigator:
+  execution-environment:
+    container-engine: podman
+    enabled: true
+    image: {{ lab.navigator_execution_environment.image }}
+    pull:
+      policy: missing
+    environment-variables:
+      pass:
+      - _SANDBOX_ID
+      - ANSIBLE_PRIVATE_KEY_FILE
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN
+      - AZURE_SECRET
+      - AZURE_SUBSCRIPTION_ID
+      - AZURE_CLIENT_ID
+      - AZURE_TENANT
+  playbook-artifact:
+    enable: true
+    save-as: "/tmp/{playbook_name}-artifact.json"
+    replay: "/tmp/replay-artifact.json"
+  logging:
+    level: critical
+  editor:
+    command: code -g {filename}:{line_number}
+    console: false

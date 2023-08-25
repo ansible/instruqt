@@ -14,13 +14,9 @@ os.chdir(setup_scripts_path)
 extra_vars_file = open("/opt/setup-scripts/lightspeed-101/vars/track_vars.yml")
 parsed_extra_vars_file = yaml.load(extra_vars_file, yaml.loader.FullLoader)
 
-#  Check configure-tools
-solve_configure_tools = subprocess.run(["ansible-navigator", "run",
+# Fix Playbook, git add and push and run job template
+solve_challenge = subprocess.run(["ansible-navigator", "run",
                                 setup_scripts_path + "lightspeed-101-lab_setup.yml", 
-                                "-e", "check_mode=false",
-                                "--tags", "solve-configure-tools",
+                                "-e", "content_list=monitoring",
+                                "--tags", "setup-monitoring-jt,solve-monitoring-playbooks,solve-monitoring-jt",
                                 "--mode", "stdout"])
-
-if solve_configure_tools.returncode > 0:
-    print ( "FAIL: Could not solve configure-tools VS Code settings.json." )
-    exit(1)
