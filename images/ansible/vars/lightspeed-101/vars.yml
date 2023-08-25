@@ -82,7 +82,7 @@ gitea_admin_username: "{{ vault_gitea_admin_username }}"
 gitea_admin_password: "{{ vault_gitea_admin_password }}"
 gitea_clone_address: "https://github.com/craig-br/lightspeed-demos"
 
-vscode_settings_file: "{{ playbook_dir }}/files/{{ track_slug }}/vscode_settings.json"
+vscode_settings_file: "{{ playbook_dir }}/templates/{{ track_slug }}/settings.json"
 
 # code_server role vars
 # codeserver_username: "{{ student_username }}"

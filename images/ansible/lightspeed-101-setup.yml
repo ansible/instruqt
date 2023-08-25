@@ -489,7 +489,7 @@
 
         - name: Add global git configurations - {{ student_username }}
           ansible.builtin.template:
-            src: "gitconfig.j2"
+            src: "{{ track_slug }}/gitconfig.j2"
             owner: "{{ student_username }}"
             group: "{{ student_username }}"
             mode: "644"

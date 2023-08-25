@@ -68,9 +68,11 @@
     gpgcheck: false
   become: true
 
-- name: Check if {{ track_slug }}/inventory.j2 exists
+- name: Check if custom inventory template exists - {{ track_slug }}
   ansible.builtin.stat:
-    path: "{{ track_slug }}/inventory.j2"
+    path: "templates/{{ track_slug }}/inventory.j2"
+  delegate_to: localhost
+  become: false
   register: __inventory_file
 
 - name: Template AAP setup inventory
