@@ -21,7 +21,7 @@
   ansible.builtin.copy:
     src: custom.conf
     dest: /etc/gdm/custom.conf
-    mode: 0644
+    mode: '0644'
 
 - name: Create kiosk user group - {{ kiosk_username }}
   ansible.builtin.group:
@@ -141,9 +141,9 @@
 
 - name: Set desktop file metadata to trust
   environment:
-    - DISPLAY: :2
-    - BUS_SESSION_BUS_ADDRESS: unix:path=/run/user/2000/bus
-    - XDG_RUNTIME_DIR: /run/user/2000
+    DISPLAY: :2
+    BUS_SESSION_BUS_ADDRESS: unix:path=/run/user/2000/bus
+    XDG_RUNTIME_DIR: /run/user/2000
   ansible.builtin.command: |
     dbus-launch gio set ~{{ kiosk_username }}/Desktop/{{ item }}.desktop metadata::trusted true
   become_user: "{{ kiosk_username }}"
