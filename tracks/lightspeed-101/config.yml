@@ -8,9 +8,9 @@ containers:
   memory: 512
 virtualmachines:
 - name: lightspeed-101-controller
-  image: instruqt-dev-356115/lightspeed-101-controller-image
+  image: red-hat-mbu/lightspeed-101-controller-image
   machine_type: e2-standard-4
 secrets:
-- name: ANSIBLE_VAULT_PASSWORD
 - name: STUDENT_USERNAME
+- name: ANSIBLE_VAULT_PASSWORD
 - name: STUDENT_PASSWORD
