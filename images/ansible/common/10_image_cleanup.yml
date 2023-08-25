@@ -75,5 +75,5 @@
 
 - name: Remove bash history file
   ansible.builtin.file:
-    path: "/home/{{ ansible_user }}/.bash_history"
+    path: "~{{ ansible_user }}/.bash_history"
     state: absent

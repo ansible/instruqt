@@ -102,6 +102,7 @@ lab:
   project:
     name: ACME Corp Repo
     repo: "{{ gitea_app_url }}/{{ student_username }}/acme_corp.git"
+    # branch: devel
     branch: main
   inventory:
     name: ACME Corp DC
@@ -110,11 +111,13 @@ lab:
     name: ACME Corp EE
     image: quay.io/acme_corp/instruqt-devops-ee
   s3:
-    # bucket_name: tmm-instruqt-content.demoredhat.com.private
+    # name: tmm-instruqt-content.demoredhat.com.private
     # Dev
-    # bucket_path: s3://{{ lab.s3.bucket_name }}/{{ track_slug }}-dev
+    # bucket_path: s3://{{ lab.s3.name }}/{{ track_slug }}-dev
     # Prod
-    bucket_path: "s3://tmm-instruqt-content.demoredhat.com.private/{{ track_slug }}"
+    bucket_name: tmm-instruqt-content.demoredhat.com.private
+    # bucket_path: s3://{{ lab.s3.bucket_name }}/{{ track_slug }}
+
   acme_venv: "/home/{{ student_username }}/.virtualenvs/acme_corp"
   workflow_name: DevOps Workflow
   default_tag_name: "0.0.1"
@@ -254,8 +257,8 @@ controller_credentials:
       ssh_key_data: "{{ lookup('file', hostvars.localhost._ssh_tempdir.path + '/instruqt_lab') }}"
 
 controller_execution_environments:
-  - name: "{{ lab.execution_environment.name }}"
-    image: "{{ lab.execution_environment.image }}"
+  - name: "{{ lab.navigator_execution_environment.name }}"
+    image: "{{ lab.navigator_execution_environment.image }}"
     description: "ACME Corp execution environment"
     state: present
     pull: never
@@ -311,7 +314,7 @@ controller_templates:
     state: present
     job_type: run
     playbook: "playbooks/configure_jenkins_job.yml"
-    execution_environment: "{{ lab.execution_environment.name }}"
+    execution_environment: "{{ lab.navigator_execution_environment.name }}"
     inventory: "{{ lab.inventory.name }}"
     verbosity: 0
     credentials:
@@ -321,7 +324,7 @@ controller_templates:
     state: present
     job_type: run
     playbook: "playbooks/app_release.yml"
-    execution_environment: "{{ lab.execution_environment.name }}"
+    execution_environment: "{{ lab.navigator_execution_environment.name }}"
     inventory: "{{ lab.inventory.name }}"
     credentials:
       - "{{ lab.credential.name }}"
@@ -332,7 +335,7 @@ controller_templates:
     state: present
     job_type: run
     playbook: "playbooks/configure_webservers.yml"
-    execution_environment: "{{ lab.execution_environment.name }}"
+    execution_environment: "{{ lab.navigator_execution_environment.name }}"
     inventory: "{{ lab.inventory.name }}"
     credentials:
       - "{{ lab.credential.name }}"
@@ -345,7 +348,7 @@ controller_templates:
     state: present
     job_type: run
     playbook: "playbooks/restart_workflow.yml"
-    execution_environment: "{{ lab.execution_environment.name }}"
+    execution_environment: "{{ lab.navigator_execution_environment.name }}"
     inventory: "{{ lab.inventory.name }}"
     credentials:
       - "{{ lab.credential.name }}"
@@ -358,7 +361,7 @@ controller_templates:
     state: present
     job_type: run
     playbook: "playbooks/deploy_acme_app.yml"
-    execution_environment: "{{ lab.execution_environment.name }}"
+    execution_environment: "{{ lab.navigator_execution_environment.name }}"
     inventory: "{{ lab.inventory.name }}"
     credentials:
       - "{{ lab.credential.name }}"

@@ -76,18 +76,23 @@ gcp_inventory_host_vars:
 ansible_user: rhel
 aap_dir: "/home/{{ ansible_user }}/aap_install"
 admin_password: "{{ controller_password }}" # legacy for roles
-# Code server
-username: "{{ ansible_user }}" # legacy for code server
-codeserver_url: https://github.com/coder/code-server/releases/download/v4.9.1/code-server-4.9.1-amd64.rpm
-codeserver_rescue_url: https://github.com/coder/code-server/releases/download/v4.9.1/code-server-4.9.1-amd64.rpm
+
+# code_server role vars
+codeserver_username: "{{ student_username }}"
+codeserver_password: "{{ student_password }}"
+codeserver_prebuild: false
+codeserver_authentication: false
+codeserver_extensions:
+  - name: redhat.ansible
+
 controller_install_command: "ANSIBLE_BECOME_METHOD='sudo' ANSIBLE_BECOME=True ./setup.sh -e registry_username='{{ registry_username }}' -e registry_password='{{ registry_password }}'" # noqa yaml[line-length]
 offline_token: "{{ lookup('ansible.builtin.env', 'REDHAT_OFFLINE_TOKEN') }}"
 redhat_username: "{{ lookup('ansible.builtin.env', 'REDHAT_USERNAME') }}"
 redhat_password: "{{ lookup('ansible.builtin.env', 'REDHAT_PASSWORD') }}"
 registry_username: "{{ redhat_username }}"
 registry_password: "{{ redhat_password }}"
-# AAP RHEL 9 2.3 SHA
-provided_sha_value: 89109d6c7eafc298fd96c08e041be683e0b9d47752626fadda3e0e8350fd077e
+# AAP RHEL 9 2.4 SHA
+provided_sha_value: 4f72015bea62b4fb2907be9c5f13c8d6faa3316ea2e73c6736ded3b82b467783
 
 ## Vars specific to getting-started-edge-lab
 lab_project_name: ACME Corp repo

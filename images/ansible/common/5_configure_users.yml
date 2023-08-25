@@ -18,10 +18,11 @@
 
 - name: Configure sudoers for wheel group
   community.general.sudoers:
-    name: wheel_sudooers
+    name: wheel_sudoers
     state: present
     commands:
       - ALL
+    runas: ALL
     nopassword: true
     group: wheel
 

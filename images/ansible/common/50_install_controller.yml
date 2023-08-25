@@ -1,5 +1,5 @@
 ##
-# Create controller objects for mesh lab
+# Install automation controller
 ##
 - name: Install OS packages needed for tasks
   ansible.builtin.dnf:
@@ -26,25 +26,25 @@
           grant_type: "refresh_token"
           client_id: "rhsm-api"
           refresh_token: "{{ offline_token }}"
-      register: temp_token
-      until: temp_token is not failed
-      retries: 15
-      delay: 5
+      register: __temp_token
+      until: __temp_token is not failed
+      retries: 30
+      delay: 1
 
     - name: Download aap.tar.gz
       ansible.builtin.get_url:
         url: "https://api.access.redhat.com/management/v1/images/{{ provided_sha_value }}/download"
         headers:
           accept: "application/json"
-          Authorization: "Bearer {{ temp_token.json.access_token }}"
+          Authorization: "Bearer {{ __temp_token.json.access_token }}"
         dest: "/tmp/aap.tar.gz"
         checksum: "sha256: {{ provided_sha_value }}"
         mode: '0644'
         owner: "{{ ansible_user }}"
-      register: download_aap_tarball
-      until: download_aap_tarball is not failed
-      retries: 30
-      delay: 5
+      register: __download_aap_tarball
+      until: __download_aap_tarball is not failed
+      retries: 180
+      delay: 1
 
 - name: Create directory for automation controller
   ansible.builtin.file:
@@ -68,19 +68,45 @@
     gpgcheck: false
   become: true
 
+- name: Check if {{ track_slug }}/inventory.j2 exists
+  ansible.builtin.stat:
+    path: "{{ track_slug }}/inventory.j2"
+  register: __inventory_file
+
 - name: Template AAP setup inventory
   ansible.builtin.template:
-    src: "{{ track_slug }}_inv.j2"
+    src: "{{ track_slug }}/inventory.j2"
     dest: "{{ aap_dir }}/inventory"
     owner: "{{ ansible_user }}"
     mode: '0644'
+  when: __inventory_file.stat.exists
 
 - name: Run controller setup - {{ inventory_hostname }}
-  ansible.builtin.shell: "{{ controller_install_command }}" # noqa command-instead-of-shell
-  args:
-    chdir: "{{ aap_dir }}"
-  async: 2100
-  poll: 15
+  block:
+    - name: Run controller setup.sh # noqa command-instead-of-shell
+      ansible.builtin.shell:
+      args:
+        chdir: "{{ aap_dir }}"
+        cmd: "{{ controller_install_command }}"
+      async: 1000
+      poll: 0
+      register: __controller_setup_async
+      changed_when: not __controller_setup_async.changed
+
+    - name: Run controller setup.sh  | Async - {{ inventory_hostname }}
+      ansible.builtin.async_status:
+        jid: "{{ __controller_setup_async.ansible_job_id }}"
+      retries: 1200
+      delay: 1
+      until: __controller_setup_async_result.finished
+      register: __controller_setup_async_result
+      when: __controller_setup_async.ansible_job_id is defined
+  rescue:
+    - name: Print error message
+      ansible.builtin.fail:
+        msg: |
+          "Rescue - Controller installation failed.
+          "{{ __controller_setup_async_result }}"
 
 - name: Wait for Automation Controller to be up
   ansible.builtin.uri:
@@ -88,15 +114,19 @@
     method: GET
     user: "{{ controller_username }}"
     password: "{{ controller_password }}"
-    validate_certs: false
-  register: check2
-  until: check2.json is defined and check2.json.instances[0].capacity > 0 and check2.json.instance_groups[0].capacity > 0
-  retries: 60
-  delay: 5
+    validate_certs: "{{ controller_validate_certs }}"
+  register: __check2
+  until:
+    - __check2.json is defined
+    - __check2.json.instances[0].capacity > 0
+    - __check2.json.instance_groups[0].capacity > 0
+  retries: 300
+  delay: 1
 
 - name: Display /api/v2/ping results
   ansible.builtin.debug:
-    msg: '{{ check2.json }}'
+    verbosity: 2
+    msg: '{{ __check2.json }}'
 
 - name: Subscribe AAP
   delegate_to: localhost
@@ -113,17 +143,17 @@
       ansible.builtin.slurp:
         src: "{{ playbook_dir }}/manifest.zip"
       when: base64_manifest is undefined
-      register: manifest_file
+      register: __manifest_file
   always:
     - name: Assert manifest.zip exists
       ansible.builtin.assert:
         that:
-          - manifest_file is defined
-          - manifest_file | length > 0
+          - __manifest_file is defined
+          - __manifest_file | length > 0
         fail_msg: |
           AAP subscription manifest not found or empty.
-        success_msg:
-          Successfully loaded AAP subscription manifest file
+        success_msg: |
+          Successfully loaded AAP subscription manifest file.
 
 - name: Post manifest file
   ansible.builtin.uri:
@@ -131,12 +161,14 @@
     method: POST
     user: "{{ controller_username }}"
     password: "{{ controller_password }}"
-    body: '{ "eula_accepted": true, "manifest": "{{ manifest_file.content }}" }'
+    body:
+      eula_accepted: true
+      manifest: "{{ __manifest_file.content }}"
     body_format: json
     validate_certs: false
     force_basic_auth: true
-  register: license_controller
-  until: license_controller is not failed
+  register: __license_controller
+  until: __license_controller is not failed
   retries: 5
 
 - name: Wait for controller to be up
@@ -146,7 +178,10 @@
     user: "{{ controller_username }}"
     password: "{{ controller_password }}"
     validate_certs: false
-  register: check2
-  until: check2.json is defined and check2.json.instances[0].capacity > 0 and check2.json.instance_groups[0].capacity > 0
+  register: __check3
+  until:
+    - __check3.json is defined
+    - __check3.json.instances[0].capacity > 0
+    - __check3.json.instance_groups[0].capacity > 0
   retries: 60
   delay: 1
