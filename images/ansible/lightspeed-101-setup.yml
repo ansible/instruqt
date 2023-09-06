@@ -301,6 +301,7 @@
         group: "{{ item }}"
         mode: "0600"
       loop:
+        - "{{ student_username }}" # Have to do this for ansible-navigator commands
         - "{{ admin_username }}"
         - "{{ ansible_user_id }}" # root because of become: true
       when: (hostvars.localhost._ssh_tempdir.path is defined) and (hostvars.localhost._ssh_tempdir.path | length > 0)
@@ -318,6 +319,7 @@
       tags:
         - post-install
         - controller-objects
+        - controller-install
 
     - name: Set controller hostname fact
       ansible.builtin.set_fact:
@@ -326,6 +328,7 @@
       tags:
         - post-install
         - controller-objects
+        - controller-install
 
     - name: Include common controller install tasks
       ansible.builtin.include_tasks:
@@ -336,35 +339,19 @@
       tags:
         - controller-install
 
-
     # Kiosk mode before post-install otherwise adding kiosk user doesn't work
     # Podman process blocks usermod for EE download
     - name: Include kiosk_mode role
       ansible.builtin.include_role:
         name: kiosk_mode
-        apply:
-          tags:
-            - kiosk
-      tags:
-        - kiosk
 
     - name: Include vs_code role
       ansible.builtin.include_role:
         name: vs_code
-        apply:
-          tags:
-            - code
-      tags:
-        - code
 
     - name: Include vnc_server role
       ansible.builtin.include_role:
         name: vnc_server
-        apply:
-          tags:
-            - vnc
-      tags:
-        - vnc
 
     # Post-install tasks here to install AWS packages for S3s
     - name: Include common controller post install tasks
@@ -375,37 +362,6 @@
             - post-install
       tags:
         - post-install
-
-    # #  TODO add to common post install tasks
-    # - name: Copy ansible-navigator.yml template - {{ student_username }}
-    #   ansible.builtin.template:
-    #     src: "ansible-navigator.yml.j2"
-    #     dest: "~{{ student_username }}/.ansible-navigator.yml"
-    #     mode: "0644"
-    #     owner: "{{ student_username }}"
-    #     group: "{{ student_username }}"
-    #   tags:
-    #     - navigator
-
-    # - name: Download navigator execution environment - {{ student_username }}
-    #   # same var used in 50_install_controller.yml to pre-populate all mesh nodes with execution environments
-    #   when: (lab.navigator_execution_environment is defined) and (lab.navigator_execution_environment | length > 0)
-    #   tags:
-    #     - navigator
-    #   block:
-    #     - name: Install podman collection - {{ inventory_hostname }}
-    #       community.general.ansible_galaxy_install:
-    #         type: collection
-    #         name: containers.podman
-
-    #     - name: Pull execution environment images
-    #       become_user: "{{ student_username }}"
-    #       containers.podman.podman_image:
-    #         name: "{{ lab.navigator_execution_environment }}"
-    #       register: __podman_pull_nav_ee
-    #       until: __podman_pull_nav_ee is not failed
-    #       retries: 60
-    #       delay: 1
 
     - name: Setup containers
       when: lab_containers is defined and lab_containers | length > 0
@@ -503,82 +459,41 @@
           ansible.builtin.add_host:
             name: "{{ __add_containers_item.name }}"
             groups: "{{ __add_containers_item.groups | default(omit) }}"
-          # args: "{{ __add_containers_item.args | default(omit) }}"
           loop: "{{ lab_containers }}"
           loop_control:
             loop_var: __add_containers_item
             label: "{{ __add_containers_item.name }}"
 
-    - name: Configure Gitea container
-      module_defaults:
-        ansible.builtin.uri:
-          force_basic_auth: true
-          url_username: "{{ student_username }}"
-          url_password: "{{ student_password }}"
-          validate_certs: false
-          body_format: json
+    - name: Configure local repo - {{ gitea_clone_address }}
       when: ('"containers" in groups' and '"gitea" in inventory_hostnames["containers"]')
-      tags:
-        - gitea
-      block:
-        - name: Create Gitea repo - {{ gitea_repo_name }}
-          ansible.builtin.uri:
-            url: "{{ gitea_app_url }}/api/v1/user/repos"
-            method: POST
-            body:
-              name: "{{ gitea_repo_name }}"
-              auto_init: false
-              private: false
-            status_code: [201, 409]
-          changed_when: (__create_user.msg is defined and '"OK" in __create_user.msg')
-
-    - name: Configure local repo - {{ student_username }}
       tags:
         - configure-repo
       become_user: "{{ student_username }}"
       block:
-        - name: Recreate repo dir - {{ gitea_repo_name }} # noqa risky-file-permissions
-          ansible.builtin.file:
-            path: "~{{ student_username }}/{{ gitea_repo_name }}"
-            state: "{{ item }}"
-            owner: "{{ student_username }}"
-            group: "{{ student_username }}"
-          become_user: root
-          loop:
-            - absent
-            - directory
+        - name: Clone lightspeed demo repo - {{ gitea_repo_name }}
+          ansible.builtin.uri:
+            force_basic_auth: true
+            url_username: "{{ student_username }}"
+            url_password: "{{ student_password }}"
+            validate_certs: false
+            body_format: json
+            url: "{{ gitea_app_url }}/api/v1/repos/migrate"
+            method: POST
+            body:
+              clone_addr: "{{ gitea_clone_address }}"
+              repo_name: "{{ gitea_repo_name }}"
+              private: false
+            status_code: [201, 409]
+          register: __migrate_repo
+          changed_when: __migrate_repo['status'] == 201
 
-        - name: Copy initial repository files - {{ gitea_repo_name }}
-          ansible.builtin.copy:
-            src: "/opt/setup-scripts/{{ track_slug }}/{{ gitea_repo_name }}/"
-            dest: "~{{ student_username }}/{{ gitea_repo_name }}/"
-            remote_src: true
-            owner: "{{ student_username }}"
-            group: "{{ student_username }}"
-            directory_mode: "755"
-            mode: "0644"
-
-        - name: Fix directory permissions - {{ gitea_repo_name }}
-          ansible.builtin.file:
-            path: "~{{ student_username }}/{{ gitea_repo_name }}"
-            state: directory
-            owner: "{{ student_username }}"
-            group: "{{ student_username }}"
-            mode: "755"
-
-        - name: Initialise track repo - {{ gitea_repo_name }} # noqa command-instead-of-module
-          ansible.builtin.command:
-            cmd: /usr/bin/git init
-            chdir: "~{{ student_username }}/{{ gitea_repo_name }}"
-            creates: "~{{ student_username }}/{{ gitea_repo_name }}/.git"
-
-        - name: Add git configurations - {{ gitea_repo_name }}
+        - name: Add global git configurations - {{ student_username }}
           ansible.builtin.template:
-            src: "gitconfig.j2"
+            src: "{{ track_slug }}/gitconfig.j2"
             owner: "{{ student_username }}"
             group: "{{ student_username }}"
-            mode: "0644"
-            dest: "~{{ student_username }}/{{ gitea_repo_name }}/.git/config"
+            mode: "644"
+            dest: "~{{ student_username }}/.gitconfig"
 
         - name: Store repo credentials in git-creds file
           ansible.builtin.copy:
@@ -586,71 +501,43 @@
             content: "{{ gitea_protocol }}://{{ student_username | urlencode }}:{{ student_password | urlencode }}@{{ gitea_hostname }}:{{ gitea_http_port }}"
             owner: "{{ student_username }}"
             group: "{{ student_username }}"
-            mode: "0644"
+            mode: "644"
 
-        - name: Push initial commit to repo
-          ansible.builtin.command:
-            cmd: "{{ item }}"
-            chdir: "~{{ student_username }}/{{ gitea_repo_name }}"
-          register: __output
-          changed_when: __output.rc == 0
-          loop:
-            - "git checkout -b main"
-            - "git add ."
-            - "git commit -m'Initial commit'"
-            - "git push -u origin main --force"
+        - name: Clone repository to {{ student_username }} # noqa latest[git]
+          ansible.builtin.git:
+            repo: "{{ gitea_app_url }}/{{ student_username }}/{{ gitea_repo_name }}"
+            dest: "~{{ student_username }}/acme_corp"
 
-    - name: Install code server
-      ansible.builtin.include_role:
-        name: code_server
+        - name: Copy VS Code workspace settings to repo
+          ansible.builtin.copy:
+            src: "/opt/setup-scripts/{{ track_slug }}/files/.vscode"
+            dest: "~{{ student_username }}/{{ gitea_repo_name }}/"
+            remote_src: true
+            owner: "{{ student_username }}"
+            group: "{{ student_username }}"
+            directory_mode: "755"
+            mode: "644"
 
-    # Have to restart because code_server pre_build role var only runs certain tasks
-    - name: Daemon-reload, enable and start code-server
-      ansible.builtin.systemd:
-        name: code-server
-        enabled: true
-        state: restarted
-        daemon_reload: true
+        - name: Fix directory permissions - {{ gitea_repo_name }}
+          ansible.builtin.file:
+            path: "~{{ student_username }}/{{ gitea_repo_name }}/.vscode"
+            state: directory
+            owner: "{{ student_username }}"
+            group: "{{ student_username }}"
+            mode: "755"
 
-    # Lab environment prep
-    - name: Configure firewall
-      tags:
-        - firewall
-      block:
-        - name: Set firewall ports
-          ansible.builtin.import_role:
-            name: fedora.linux_system_roles.firewall
-
-        - name: Remove podman subnet from trusted zone 
-          ansible.posix.firewalld:
-            source: 10.88.0.0/16
-            zone: trusted
-            state: disabled
-            permanent: true
-            immediate: true
-
-        - name: Add podman subnet to internal zone
-          ansible.posix.firewalld:
-            source: 10.88.0.0/16
-            zone: internal
-            state: enabled
-            permanent: true
-            immediate: true
-
-        - name: Flush IPTables Net rules
-          ansible.builtin.command: "iptables -t nat -F"
-          changed_when: true
-
-    - name: Pull mattermost-preview image
-      containers.podman.podman_image:
-        name: docker.io/mattermost/mattermost-preview
-        state: present
+    # 8 Aug 2023 - https://bugzilla.redhat.com/show_bug.cgi?id=2228948
+    - name: Downgrade Firefox for Bug - 2228948
+      ansible.builtin.dnf:
+        name:
+          - firefox-102.13.0-2.el9_2.x86_64
+        allow_downgrade: true
 
     - name: Customize Gnome kiosk configuration - {{ student_username }}
       environment:
-        - DISPLAY: :2
-        - BUS_SESSION_BUS_ADDRESS: unix:path=/run/user/2000/bus
-        - XDG_RUNTIME_DIR: /run/user/2000
+        DISPLAY: :2
+        BUS_SESSION_BUS_ADDRESS: unix:path=/run/user/2000/bus
+        XDG_RUNTIME_DIR: /run/user/2000
       ansible.builtin.shell: |
         DISPLAY=:2  XDG_RUNTIME_DIR=/run/user/2000 gsettings set {{ item }}
       loop: "{{ gnome_gsettings }}"
@@ -675,22 +562,23 @@
       tags:
         - vscode-config
 
-
     - name: Include common image cleanup tasks
       ansible.builtin.include_tasks:
         file: "{{ playbook_dir }}/common/10_image_cleanup.yml"
 
     - name: Build Cockpit install files cache
       ansible.builtin.dnf:
-        name: 
+        name:
           - cockpit
           - cockpit-podman
         state: present
         download_only: true
 
-    - name: Include common image cleanup tasks
-      ansible.builtin.include_tasks:
-        file: "{{ playbook_dir }}/common/10_image_cleanup.yml"
+    - name: Pull docker.io/dpage/pgadmin4 image
+      containers.podman.podman_image:
+        name: docker.io/dpage/pgadmin4
+        tag: 7.5
+        state: present
 
     # https://github.com/redhat-cop/controller_configuration
     - name: Create lab controller objects

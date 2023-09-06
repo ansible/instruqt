@@ -1,0 +1,17 @@
+[core]
+        repositoryformatversion = 0
+        filemode = true
+        bare = false
+        logallrefupdates = true
+[init]
+        defaultBranch = main
+[safe]
+        directory = /home/{{ student_username }}/{{ gitea_repo_name }}
+[user]
+        name = {{ student_username }}
+        email = {{ student_username }}@acme.example.com
+        password = {{ student_password }}
+[http]
+        sslVerify = False
+[credential]
+        helper = store --file ~{{ student_username }}/.git-creds

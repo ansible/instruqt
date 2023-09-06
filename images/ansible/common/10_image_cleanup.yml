@@ -15,7 +15,7 @@
     - item != ansible_user
     - item != "awx"
     - item != "pulp"
-    - item != student_user
+    - item != student_username
 
 - name: Disable dnf automatic services
   ansible.builtin.service:
@@ -40,7 +40,7 @@
     dest: /etc/yum.repos.d/rh-cloud.repo
     owner: root
     group: root
-    mode: 0644
+    mode: '0644'
 
 - name: Update dnf cache
   ansible.builtin.command: dnf -y makecache
@@ -75,5 +75,5 @@
 
 - name: Remove bash history file
   ansible.builtin.file:
-    path: "/home/{{ ansible_user }}/.bash_history"
+    path: "~{{ ansible_user }}/.bash_history"
     state: absent

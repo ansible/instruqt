@@ -1,6 +1,6 @@
 ---
 slug: env-overview
-id: 8pspyae6np2r
+id: jagqiyn61doe
 type: challenge
 title: Environment overview
 teaser: In this challenge, we'll explore the different DevOps tools ACME Corp uses
@@ -56,11 +56,25 @@ timelimit: 300
 ===
 All the logins use the same credentials.
 
->User: student<p>
->Password: learn_ansible
+User:
+
+```yaml
+student
+```
+
+Password:
+
+```yaml
+learn_ansible
+```
 
 👋 Introduction
 ===
+### ⚙️ Resources
+
+* All the Ansible content and setup files used in this lab are available in this [repository](https://github.com/craig-br/demos/tree/main/blogs/devops-controller-blog).
+* For more information on how to use these examples, please have a look at the [DevOps and CI/CD with automation controller](https://www.ansible.com/blog/devops-and-ci/cd-with-automation-controller) blog.
+
 #### Estimated time to complete: *5 minutes*<p>
 ACME Corp use a variety of tools in their DevOps pipeline. Let's have a look at each of these tools and how they're configured.
 
@@ -229,7 +243,6 @@ If you have encountered an issue or have noticed something not quite right, plea
     display: flex;
   }
   .lightbox img {
-    /* max-height: 100% */
     max-width: 60%;
     max-height: 60%;
   }

@@ -2,7 +2,7 @@
 # Uses {{ extra_vars }} dictionary to check if variables are set as yaml or environment variables using -name
 # Converts environment variables to YAML equivalent and creates facts.
 ##
-- name: Make sure track_vars variable is set
+- name: Make sure track_slug variable is set
   ansible.builtin.assert:
     that: lookup('ansible.builtin.env', 'TRACK_SLUG') or track_slug is defined
     quiet: true
@@ -15,21 +15,31 @@
     - track_slug is undefined
     - lookup('ansible.builtin.env', 'TRACK_SLUG')
 
-- name: Include vars file from extra_vars directory
+- name: Include vars file from vars directory
+  when: (track_slug is defined) and (track_slug | length > 0)
+  delegate_to: localhost
+  become: false
   no_log: true
   block:
+    - name: Check if {{ track_slug }}/vault_vars.yml vars file is present
+      ansible.builtin.stat:
+        path: "./vars/{{ track_slug }}/vault_vars.yml"
+      register: vault_vars_file
+
+    - name: Include vault vars files - {{ track_slug }}
+      ansible.builtin.include_vars:
+        file: "{{ track_slug }}/vault_vars.yml"
+      when: vault_vars_file.stat.exists
+
+    - name: Check if {{ track_slug }}/vars.yml vars file is present
+      ansible.builtin.stat:
+        path: "./vars/{{ track_slug }}/vars.yml"
+      register: vars_file
+
     - name: Include vars files - {{ track_slug }}
       ansible.builtin.include_vars:
-        file: "{{ item }}"
-      loop:
-        - "vault_{{ track_slug }}_vars.yml"
-        - "{{ track_slug }}_vars.yml"
-  rescue:
-    - name: Rescue - Include vars file
-      ansible.builtin.debug:
-        msg: |
-          "Rescue - Vars file '{{ track_slug }}_vars.yml' not found. Skipping
-  when: (track_slug is defined) and (track_slug | length > 0)
+        file: "{{ track_slug }}/vars.yml"
+      when: vars_file.stat.exists
 
 - name: Map required variables to facts
   ansible.builtin.set_fact:

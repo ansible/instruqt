@@ -5,7 +5,7 @@ cat <<'EOF' > /config/guacamole/user-mapping.xml
     <authorize
         username="student"
         password="learn_ansible">
-        <connection name="srv01">
+        <connection name="RHEL">
             <protocol>vnc</protocol>
             <param name="hostname">lightspeed-101-controller</param>
             <param name="username">student</param>

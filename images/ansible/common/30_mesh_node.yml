@@ -30,7 +30,7 @@
           Authorization: "Bearer {{ temp_token.json.access_token }}"
         dest: "/tmp/aap.tar.gz"
         checksum: "sha256: {{ provided_sha_value }}"
-        mode: 0644
+        mode: '0644'
       register: download_aap_tarball
       until: download_aap_tarball is not failed
       retries: 15
@@ -44,7 +44,7 @@
   ansible.builtin.file:
     path: "{{ aap_dir }}"
     owner: "{{ ansible_user }}"
-    mode: 0755
+    mode: '0755'
     state: directory
 
 - name: Extract AAP tar.gz install
@@ -97,20 +97,22 @@
     cmd: /tmp/aws/install --install-dir /usr/local/aws --bin-dir /usr/bin/ --update
     creates: /usr/bin/aws
 
-- name: Download setup scripts to controller /opt directory - {{ lab.s3_bucket_name }}
+- name: Download setup scripts to controller /opt directory - {{ lab.s3.bucket_name }}
   ansible.builtin.command:
-    cmd: "/usr/bin/aws s3 sync --no-sign-request s3://{{ lab.s3_bucket_name }}/{{ track_slug }} /opt/setup-scripts/{{ track_slug }}"
+    cmd: "/usr/bin/aws s3 sync --no-sign-request s3://{{ lab.s3.bucket_name }}/{{ track_slug }} /opt/setup-scripts/{{ track_slug }}"
   become: true
   register: __s3_sync_output
   changed_when: '"download:" in __s3_sync_output.stdout'
 
 - name: Download and upgrade collections - {{ inventory_hostname }}
-  ansible.builtin.command: "ansible-galaxy collection install {{ item }} --upgrade"
+  community.general.ansible_galaxy_install:
+    type: collection
+    dest: "/usr/share/ansible/collections"
+    name: "{{ item }}"
   become_user: "{{ ansible_user }}"
   loop: "{{ mesh_node_collections }}"
   register: __collection_install
   when: (mesh_node_collections is defined) and (mesh_node_collections | length > 0)
-  changed_when: '"is already installed, skipping" not in __collection_install.stdout'
 
 - name: Download custom execution environments
   # same var used in 50_install_controller.yml to pre-populate all mesh nodes with execution environments
@@ -123,6 +125,7 @@
 
     - name: Log into registry.redhat.io
       become_user: "awx"
+      no_log: true
       containers.podman.podman_login:
         registry: "registry.redhat.io"
         username: "{{ registry_username }}"

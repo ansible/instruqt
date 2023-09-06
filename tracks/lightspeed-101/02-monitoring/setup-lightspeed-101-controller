@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+
+import subprocess
+import yaml
+from shlex import quote
+import os
+
+os.environ["ANSIBLE_VAULT_PASSWORD_FILE"] = ".lightspeed-101_ansible_vault_password"
+setup_scripts_path="/opt/setup-scripts/lightspeed-101/"
+
+# Change working dir
+os.chdir(setup_scripts_path)
+# Load extra_vars.yml
+extra_vars_file = open("/opt/setup-scripts/lightspeed-101/vars/track_vars.yml")
+parsed_extra_vars_file = yaml.load(extra_vars_file, yaml.loader.FullLoader)
+
+# Configure monitoring job template
+setup_monitoring = subprocess.run(["ansible-navigator", "run",
+                                setup_scripts_path + "lightspeed-101-lab_setup.yml", 
+                                "-e", "content_list=monitoring",
+                                "--tags", "setup-monitoring-jt",
+                                "--mode", "stdout"])
+if setup_monitoring.returncode > 0:
+    print ( "Monitoring - Did not complete setup script" )

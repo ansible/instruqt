@@ -6,12 +6,12 @@ from shlex import quote
 import os
 
 os.environ["ANSIBLE_VAULT_PASSWORD_FILE"] = ".lightspeed-101_ansible_vault_password"
-setup_scripts_path="/opt/setup-scripts/lightspeed-101/setup/"
+setup_scripts_path="/opt/setup-scripts/lightspeed-101/"
 
 # Change working dir
 os.chdir(setup_scripts_path)
 # Load extra_vars.yml
-extra_vars_file = open("/opt/setup-scripts/lightspeed-101/setup/vars/track_vars.yml")
+extra_vars_file = open("/opt/setup-scripts/lightspeed-101/vars/track_vars.yml")
 parsed_extra_vars_file = yaml.load(extra_vars_file, yaml.loader.FullLoader)
 
 #  Check configure-tools
@@ -22,5 +22,5 @@ check_configure_tools = subprocess.run(["ansible-navigator", "run",
                                 "--mode", "stdout"])
 
 if check_configure_tools.returncode > 0:
-    print ( "FAIL: Please enable Ansible Lightspeed and Ansible Lint in the Ansible Visual Studio Code extension Workspace settings." )
+    print ( "FAIL: Please enable Ansible Lightspeed in the Ansible Visual Studio Code extension Workspace settings." )
     exit(1)
