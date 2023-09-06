@@ -1,0 +1,220 @@
+#!/bin/bash
+USER=rhel
+# set ansible-navigator default settings
+su - $USER -c 'cat >/home/$USER/ansible-navigator.yml <<EOL
+---
+ansible-navigator:
+  ansible:
+    inventories:
+    - /home/rhel/ansible-files/hosts
+  enabled: false
+  mode: stdout
+  execution-environment:
+    container-engine: podman
+    image: ee-supported-rhel8
+    enabled: True
+    pull-policy: never
+
+  playbook-artifact:
+    save-as: /home/rhel/playbook-artifacts/{playbook_name}-artifact-{ts_utc}.json
+
+  logging:
+    level: debug
+
+EOL
+cat /home/$USER/ansible-navigator.yml'
+
+# Fixes an issue with podman that produces this error: "Error: error creating tmpdir: mkdir /run/user/1000: permission denied"
+su - $USER -c 'loginctl enable-linger $USER'
+
+# Creates playbook artifacts dir
+su - $USER -c 'mkdir /home/$USER/playbook-artifacts'
+
+# Creates ansible-files dire
+su - $USER -c 'mkdir /home/rhel/ansible-files'
+
+# Write a new playbook to create a template from above playbook
+tee /home/rhel/setup.yml << EOF
+---
+- name: setup product demos
+  hosts: localhost
+  gather_facts: no
+  connection: local
+  vars:
+    admin_username: admin
+    admin_password: ansible123!
+    login: &login
+      controller_username: "{{ admin_username }}"
+      controller_password: "{{ admin_password }}"
+      controller_host: "https://control"
+      validate_certs: false
+
+# echo ${_SANDBOX_ID} produces t4jzh0fkmysv
+# https://controller-443-t4jzh0fkmysv.env.play.instruqt.com/
+# "https://controller-443-{{ lookup('ansible.builtin.env', '_SANDBOX_ID') }}.env.play.instruqt.com"
+#
+  tasks:
+    - name: ensure controller is online and working
+      uri:
+        url: https://control/api/v2/ping/
+        method: GET
+        user: "{{ admin_username }}"
+        password: "{{ admin_password }}"
+        validate_certs: false
+        force_basic_auth: true
+      register: controller_online
+      until: controller_online is success
+      delay: 3
+      retries: 5
+
+    - name: set base url
+      awx.awx.settings:
+        name: TOWER_URL_BASE
+        value: "https://controller-443-{{ lookup('ansible.builtin.env', '_SANDBOX_ID') }}.env.play.instruqt.com"
+        <<: *login
+        
+    - name: set base url
+      awx.awx.settings:
+        name: AWX_COLLECTIONS_ENABLED
+        value: "false"
+        <<: *login
+
+    - name: add controller credential
+      awx.awx.credential:
+        name: Controller Credential
+        credential_type: Red Hat Ansible Automation Platform
+        organization: Default      
+        inputs:
+          host: "https://control"
+          username: "{{ admin_username }}"
+          password: "{{ admin_password }}"
+        <<: *login
+
+    - name: add workshop credential
+      awx.awx.credential:
+        name: Workshop Credential
+        organization: Default
+        credential_type: Machine
+        inputs:
+          password: Passw0rd!
+          ssh_key_data: "{{ lookup('file', '/root/.ssh/id_rsa') }}"
+        <<: *login
+
+    - name: add automation hub credential
+      awx.awx.credential:
+        name: Automation Hub
+        organization: Default
+        credential_type: Ansible Galaxy/Automation Hub API Token
+        inputs:
+          url: https://console.redhat.com/api/automation-hub/content/6031449-synclist/
+          auth_url: https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token
+          token: eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJhZDUyMjdhMy1iY2ZkLTRjZjAtYTdiNi0zOTk4MzVhMDg1NjYifQ.eyJpYXQiOjE2NjI1NTIwMjQsImp0aSI6IjFhZTg5Y2ZkLTMxYTQtNGI1OC1iMWRkLTkyMzEwYWM3ODgyYiIsImlzcyI6Imh0dHBzOi8vc3NvLnJlZGhhdC5jb20vYXV0aC9yZWFsbXMvcmVkaGF0LWV4dGVybmFsIiwiYXVkIjoiaHR0cHM6Ly9zc28ucmVkaGF0LmNvbS9hdXRoL3JlYWxtcy9yZWRoYXQtZXh0ZXJuYWwiLCJzdWIiOiJmOjUyOGQ3NmZmLWY3MDgtNDNlZC04Y2Q1LWZlMTZmNGZlMGNlNjp3dG9tZTIiLCJ0eXAiOiJPZmZsaW5lIiwiYXpwIjoiY2xvdWQtc2VydmljZXMiLCJub25jZSI6IjZkYmI5OGU3LWQ1YjEtNGJmZi05ZTQwLWEzNjdmZGUzZTk0OCIsInNlc3Npb25fc3RhdGUiOiJmMTdkMDFlYS1mNGZmLTQyYTMtYjVlNC1jN2VjNzllZGMwZGIiLCJzY29wZSI6Im9wZW5pZCBhcGkuaWFtLnNlcnZpY2VfYWNjb3VudHMgb2ZmbGluZV9hY2Nlc3MiLCJzaWQiOiJmMTdkMDFlYS1mNGZmLTQyYTMtYjVlNC1jN2VjNzllZGMwZGIifQ.2q-HOSFmuqr5dQ0iUbExDogDJNKVdDsfApbe2AOQA1A
+        <<: *login
+
+    - name: add execution environment
+      awx.awx.execution_environment:
+        name: product-demos
+        image: quay.io/acme_corp/product-demos-ee:latest
+        <<: *login
+
+    - name: add automation hub credential to default organization
+      awx.awx.organization:
+        name: Default
+        default_environment: product-demos
+        galaxy_credentials:
+          - Ansible Galaxy
+          - Automation Hub
+        <<: *login
+
+    - name: add ansible official demo project
+      awx.awx.project:
+        name: Ansible official demo project
+        description: "Ansible Product demos, github.com/ansible/product-demos"
+        scm_type: git
+        scm_url: https://github.com/ansible/product-demos
+        #scm_branch: instruqt     
+        organization: Default
+        <<: *login
+      retries: 3
+      delay: 5
+        
+
+    - name: add workshop inventory
+      awx.awx.inventory:
+        name: Workshop Inventory
+        organization: Default
+        <<: *login
+
+    - name: add linux inventory hosts
+      awx.awx.host:
+        name: satellite
+        inventory: Workshop Inventory
+        variables:
+          ansible_user: rhel
+          ansible_host: satellite
+        <<: *login
+
+    - name: add linux inventory hosts
+      awx.awx.host:
+        name: node1
+        inventory: Workshop Inventory
+        variables:
+          ansible_user: rhel
+          ansible_host: node1
+        <<: *login
+      
+    - name: add windows inventory hosts
+      awx.awx.host:
+        name: win1
+        inventory: Workshop Inventory
+        variables:
+          ansible_user: instruqt
+          ansible_host: win1
+        <<: *login
+
+    - name: add linux hosts to groups
+      awx.awx.group:
+        name: os_linux
+        inventory: Workshop Inventory
+        hosts:
+          - node1
+        <<: *login
+
+    - name: add linux hosts to groups
+      awx.awx.group:
+        name: os_windows
+        inventory: Workshop Inventory
+        hosts:
+          - win1
+        <<: *login
+
+    - name: add setup job template
+      awx.awx.job_template:
+        name: "SETUP"
+        job_type: run
+        organization: Default
+        inventory: Workshop Inventory
+        project: Ansible official demo project
+        playbook: setup_demo.yml
+        credentials: Controller Credential
+        allow_simultaneous: true
+        survey_enabled: yes
+        survey_spec:
+          name: 'Survey'
+          description: ''
+          spec:
+          - type: multiplechoice
+            question_name: Demo Category
+            variable: demo
+            required: true
+            choices:
+              - linux
+              - windows
+              - cloud
+              - network
+              - satellite
+        <<: *login
+
+EOF
+
+ansible-playbook /home/rhel/setup.yml

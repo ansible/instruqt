@@ -1,0 +1,43 @@
+version: "3"
+containers:
+- name: cloud-client
+  image: gcr.io/instruqt/cloud-client
+  shell: /bin/bash
+  ports:
+  - 80
+  memory: 256
+virtualmachines:
+- name: node1
+  image: red-hat-mbu/ansible
+  shell: /bin/su - rhel -s /bin/bash
+  machine_type: e2-medium
+  allow_external_ingress:
+  - http
+  - high-ports
+- name: control
+  image: red-hat-mbu/automation-controller
+  shell: /bin/su - rhel -s /bin/bash
+  machine_type: n1-standard-1
+- name: win1
+  image: windows-cloud/windows-2022-core
+  machine_type: e2-medium
+  allow_external_ingress:
+  - http
+  - high-ports
+- name: satellite
+  image: red-hat-mbu/satellite-612-2023-07-28-145958
+  machine_type: n1-highmem-4
+aws_accounts:
+- name: AWS
+  iam_policy: |-
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Sid": "Stmt1677181068709",
+          "Action": "*",
+          "Effect": "Allow",
+          "Resource": "*"
+        }
+      ]
+    }
