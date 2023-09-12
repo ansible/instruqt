@@ -1,0 +1,13 @@
+set -euxo pipefail
+dnf config-manager --disable rhui*,google*
+dnf config-manager --enable rhui-rhel-8-for-x86_64-baseos-rhui-rpms,rhui-rhel-8-for-x86_64-appstream-rhui-rpms
+#Install a package to build metadata of the repo and not need to wait during labs
+dnf remove -y nginx
+#systemctl stop nginx
+#setenforce 0
+
+echo '%rhel ALL=(ALL:ALL) NOPASSWD:ALL' > /etc/sudoers.d/rhel_sudoers
+cp /root/.ssh/authorized_keys /home/rhel/.ssh/authorized_keys
+chown rhel:rhel /home/rhel/.ssh/authorized_keys
+
+dnf install -y yum-utils bind-utils subscription-manager

@@ -36,7 +36,7 @@ timelimit: 1200
 ---
 You have completed all challenges demonstrating how repository events can be used by Event-driven Ansible to deploy applications in a gitops fashion.
 
-If you'd like to modify any of the project files within this environmen or respond to different repository events, this is the place to try it!
+If you'd like to modify any of the project files within this environment or respond to different repository events, this is the place to try it!
 
 A new tab has also been added. The RHEL(cli) tab is the host that the containerized applications are running. You should be able to see these containers running in the output of `sudo podman container list`.
 
