@@ -71,10 +71,10 @@ You can use the **VNC Clipboard utility** to copy and paste to and from your loc
 
 Follow these steps to open the **VNC Clipboard utility**:
 -  On a Windows device with an external keyboard, the press `CTRL+ALT+SHIFT`.
--  On a Mac device with an external keyboard, press `CTRL+COMMAND+SHIFT`.
+-  On a Mac device with an external keyboard, press `CTRL+OPTION+SHIFT`.
 - The **Clipboard** text area functions as an interface between the remote clipboard and local clipboard.
 ![vnc_sidebar_clipboard.png](../assets/vnc_sidebar_clipboard.png)
-- You can close the **VNC Clipboard utility** by pressing `CTRL+ALT+SHIFT` for Windows, or  `CTRL+COMMAND+SHIFT` for Mac.
+- You can close the **VNC Clipboard utility** by pressing `CTRL+ALT+SHIFT` for Windows, or  `CTRL+OPTION+SHIFT` for Mac.
 
 👋 Introduction
 ===
@@ -163,7 +163,7 @@ Follow the instructions in the `demo_install_cockpit.yml` Playbook to generate t
 - Uncomment the line by removing the `#` symbol manually or pressing `CTRL+/` for each task description.
 - Move your cursor to the end of the task description lines and press `ENTER` to generate a suggestion and `TAB` to accept it.
 - Once you've completed the tasks, save the Playbook by navigating to `File` and clicking on `Save` or by pressing `CTRL+S`.
--
+
 ☑️ Task - Ansible Lightspeed training matches
 ===
 
@@ -224,7 +224,7 @@ Install Cockpit
 - Click **Templates** under the **Resources** section in the Navigation Pane on the left hand side.
 - Click the <img src="https://github.com/IPvSean/pictures_for_github/blob/master/launch_job.png?raw=true" style="width:4%; display:inline-block; vertical-align: middle;" /> icon on the right-hand side of the `Deploy monitoring` Job Template column.
 ![install_cockpit_launch.png](../assets/install_cockpit_launch.png)
-- Note the `Deploy monitoring` Job completed successfully!
+- Give it a few moments for the job to complete and note the `Deploy monitoring` Job completed successfully!
 ![install_ocockpit_jt_success.png](../assets/install_ocockpit_jt_success.png)
 
 

@@ -1,18 +1,18 @@
 slug: lightspeed-101
 id: boprlwpffdp9
-title: Intro to Ansible Lightspeed with IBM watsonx Code Assistant
-teaser: Experience how Ansible Lightspeed accelerates your Ansible content development
-  with its  generative AI superpowers.
-description: "# Intro to Ansible Lightspeed with IBM watsonx Code Assistant\n***\n\n<p>\n\n##
-  This lab covers:\n\n<p>\n\n- Configuring Ansible Lightspeed in Visual Studio Code.\n-
-  The basics of generating Ansible Lightspeed suggestions.\n- Examples of using Playbook
-  context, such as `vars` and `module_defaults` sections.\n- Ansible Lightspeed Content
-  Source Matching to show potential training data sources.\n- Running the Playbooks
-  using ansible-navigator and automation controller.\n\n\t## Requirements\n\n\t- The
-  user needs a GitHub or Red Hat Customer Portal ccount to activate Ansible Lightspeed
-  in VS Code.\n\t- Certain browsers, such as Firefox and Chrome, do not support a
-  standard \"CTRL+C\" and \"CTRL+V\" copy and paste in VNC sessions. Instructions
-  are included to to use the VNC utlities to do so.\n\t## Source repository\n\thttps://github.com/craig-br/lightspeed-demos"
+title: Intro to Ansible Lightspeed with IBM watsonx Code Assistant Technical Preview
+description: "# Intro to Ansible Lightspeed with IBM watsonx Code Assistant Technical
+  Preview\n***\n\n<p>\n\n## This lab covers:\n\n<p>\n\n- Configuring Ansible Lightspeed
+  in Visual Studio Code.\n- The basics of generating Ansible Lightspeed suggestions.\n-
+  Examples of using Playbook context, such as `vars` and `module_defaults` sections.\n-
+  Ansible Lightspeed Content Source Matching to show potential training data sources.\n-
+  Running the Playbooks using ansible-navigator and automation controller.\n\n\t##
+  Requirements\n\n\t- The user needs a GitHub or Red Hat Customer Portal ccount to
+  activate Ansible Lightspeed in VS Code.\n\t- Certain browsers, such as Firefox and
+  Safari, do not support a standard \"CTRL+C\" and \"CTRL+V\" copy and paste in VNC
+  sessions. Instructions are included to to use the VNC utlities to do so.\n\t- The
+  Chrome browser suppports standard copy and paste operations in the VNC console.\n\t##
+  Source repository\n\thttps://github.com/craig-br/lightspeed-demos"
 icon: https://raw.githubusercontent.com/ansible/instruqt/devel/assets/icons/Product_Icon-Red_Hat-Ansible-RGB.png
 tags:
 - ai
@@ -29,4 +29,5 @@ lab_config:
   overlay: false
   width: 33
   position: right
-checksum: "9885459307280940242"
+  loadingMessages: true
+checksum: "16252737271060257198"
