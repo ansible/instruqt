@@ -651,7 +651,7 @@
         - name: "Async | Stop gcloud instances"
           ansible.builtin.async_status:
             jid: "{{ __instances_stop_async_result_item.ansible_job_id }}"
-          retries: 60
+          retries: 120
           delay: 1
           loop: "{{ __instances_stop_async.results }}"
           loop_control:
@@ -683,8 +683,8 @@
         - name: "Async | Remove current gcloud images"
           ansible.builtin.async_status:
             jid: "{{ __images_remove_async_result_item.ansible_job_id }}"
-          retries: 35
-          delay: 5
+          retries: 175
+          delay: 1
           loop: "{{ __images_remove_async.results }}"
           loop_control:
             loop_var: __images_remove_async_result_item
