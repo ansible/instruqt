@@ -14,7 +14,7 @@ ansible_user: "{{ admin_username }}"
 aap_dir: /home/{{ ansible_user }}/aap_install
 controller_install_command: ANSIBLE_BECOME_METHOD='sudo' ANSIBLE_BECOME=True set -o pipefail && ./setup.sh -e registry_username='{{ registry_username }}' -e registry_password='{{ registry_password }}' # noqa yaml[line-length]
 offline_token: "{{ lookup('ansible.builtin.env', 'REDHAT_OFFLINE_TOKEN') }}"
-provided_sha_value: 4f72015bea62b4fb2907be9c5f13c8d6faa3316ea2e73c6736ded3b82b467783 # RHEL 9 2.4
+provided_sha_value: d3ecb5932c9f154ad279dd2f28ce3f711f1447b54ee92f50698a601f853644c3 # RHEL 9 2.4
 
 # GCP vars
 gcp_zone: us-central1-a
