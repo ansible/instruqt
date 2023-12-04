@@ -1,0 +1,6 @@
+---
+- name: Test gcp_resources
+  hosts: localhost
+  remote_user: root
+  roles:
+    - gcp_resources

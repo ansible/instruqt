@@ -1,0 +1,8 @@
+---
+gcp_resources_zone: "{{ lookup('ansible.builtin.env', 'GCP_ZONE', default='') }}"
+gcp_resources_project: "{{ lookup('ansible.builtin.env', 'GCP_PROJECT', default='') }}"
+gcp_resources_instances: []
+gcp_resources_instances_state: present
+gcp_resources_instances_status: RUNNING
+gcp_resources_images: []
+gcp_resources_images_state: present

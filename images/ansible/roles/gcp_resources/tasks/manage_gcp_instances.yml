@@ -1,0 +1,60 @@
+---
+- name: Manage Google Cloud instances
+  block:
+    - name: Manage Google Cloud instances - {{ gcp_resources_instances_state }} {{ gcp_resources_instances_status }} # noqa name[template]
+      google.cloud.gcp_compute_instance:
+        auth_kind: "{{ __manage_instances_job_async_item.auth_kind | default(omit) }}"
+        name: "{{ __manage_instances_job_async_item.name }}"
+        machine_type: "{{ __manage_instances_job_async_item.machine_type }}"
+        labels: "{{ __manage_instances_job_async_item.labels | default(omit) }}"
+        tags: "{{ __manage_instances_job_async_item.tags | default(omit) }}"
+        state: "{{ __manage_instances_job_async_item.state | default(gcp_resources_instances_state) }}"
+        zone: "{{ __manage_instances_job_async_item.zone | default(gcp_resources_zone) }}"
+        network_interfaces: "{{ __manage_instances_job_async_item.network_interfaces | default(omit) }}"
+        disks: "{{ __manage_instances_job_async_item.disks }}"
+        metadata: "{{ __manage_instances_job_async_item.metadata | default(omit) }}"
+        can_ip_forward: "{{ __manage_instances_job_async_item.can_ip_forward | default(omit) }}"
+        guest_accelerators: "{{ __manage_instances_job_async_item.guest_accelerators | default(omit) }}"
+        min_cpu_platform: "{{ __manage_instances_job_async_item.min_cpu_platform | default(omit) }}"
+        project: "{{ __manage_instances_job_async_item.project | default(gcp_resources_project) }}"
+        service_account_contents: "{{ gcp_service_account_contents | default(omit) }}"
+        service_account_email: "{{ gcp_service_account_email | default(omit) }}"
+        service_account_file: "{{ gcp_service_account_file | default(omit) }}"
+        scopes: "{{ __manage_instances_job_async_item.scopes | default(omit) }}"
+        service_accounts: "{{ gcp_service_accounts | default(omit) }}"
+        deletion_protection: "{{ __manage_instances_job_async_item.deletion_protection | default(omit) }}"
+        hostname: "{{ __manage_instances_job_async_item.hostname | default(omit) }}"
+        scheduling: "{{ __manage_instances_job_async_item.scheduling | default(omit) }}"
+        shielded_instance_config: "{{ __manage_instances_job_async_item.shielded_instance_config | default(omit) }}"
+        confidential_instance_config: "{{ __manage_instances_job_async_item.confidential_instance_config | default(omit) }}"
+        status: "{{ __manage_instances_job_async_item.status | default(gcp_resources_instances_status) }}"
+        access_token: "{{ __manage_instances_job_async_item.access_token | default(omit) }}"
+      loop: "{{ gcp_resources_instances }}"
+      loop_control:
+        loop_var: __manage_instances_job_async_item
+        label: "{{ __manage_instances_job_async_item.name }}"
+      async: 1000
+      poll: 0
+      register: __manage_instances_job_async
+      changed_when: not __manage_instances_job_async.changed
+
+    - name: Manage Google Cloud instances | Async
+      ansible.builtin.async_status:
+        jid: "{{ __manage_instances_job_async_result_item.ansible_job_id }}"
+      retries: 60
+      delay: 1
+      loop: "{{ __manage_instances_job_async.results }}"
+      loop_control:
+        loop_var: __manage_instances_job_async_result_item
+        label: "{{ __manage_instances_job_async_result_item.__manage_instances_job_async_item.name }}"
+      until: __manage_instances_job_async_result.finished
+      register: __manage_instances_job_async_result
+      when: __manage_instances_job_async_result_item.ansible_job_id is defined
+  rescue:
+    - name: Print error message
+      ansible.builtin.fail:
+        msg: |
+          "Rescue - An error occurred managing GCP instances.
+          "{{ __manage_instances_job_async_result | from_json }}"
+      notify:
+        - remove instances
