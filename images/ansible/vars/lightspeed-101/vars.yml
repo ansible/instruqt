@@ -17,43 +17,48 @@ offline_token: "{{ lookup('ansible.builtin.env', 'REDHAT_OFFLINE_TOKEN') }}"
 provided_sha_value: d3ecb5932c9f154ad279dd2f28ce3f711f1447b54ee92f50698a601f853644c3 # RHEL 9 2.4
 
 # GCP vars
-gcp_zone: us-central1-a
-gcp_project: "{{ lookup('ansible.builtin.env', 'GCP_PROJECT', default='red-hat-mbu') }}"
+gcp_resources_zone: us-central1-a
+gcp_resources_project: "{{ lookup('ansible.builtin.env', 'GCP_PROJECT', default='red-hat-mbu') }}"
 gcp_service_account_file: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT_FILE') }}"
 gcp_service_account: "{{ lookup('ansible.builtin.env', 'GCP_SERVICE_ACCOUNT') }}"
-gcp_instances:
+gcp_resources_instances:
   - name: "{{ controller_hostname }}"
-    # source_image: automation-controller
+    labels:
+      role: "{{ track_slug }}"
+      mesh-type: controller
+    machine_type: n2-standard-4
     network_interfaces:
       - access_configs:
-          - name: External NAT # yamllint disable-line rule:indentation
-            type: ONE_TO_ONE_NAT
+        - name: External NAT  # noqa yaml[indentation]
+          type: ONE_TO_ONE_NAT
     disks:
       - auto_delete: true
         boot: true
         device_name: "{{ track_slug }}-controller"
         initialize_params:
-          # source_image: "projects/{{ gcp_project }}/global/images/lightspeed-101-controller-image"
-          source_image: projects/rhel-cloud/global/images/family/rhel-9
-          # source_image: "projects/{{ gcp_project }}/global/images/rhel9"
-          disk_size_gb: 40
+          source_image: "projects/{{ gcp_resources_project }}/global/images/rhel9"
+          disk_size_gb: 20
           disk_type: pd-balanced
-    labels:
-      role: "{{ track_slug }}"
-      mesh-type: controller
-      location: raleigh
-    machine_type: n2-standard-4
-    metadata:
-      ssh-keys: "{{ lookup('file', '~/.ssh/instruqt/instruqt_provision.pub') }}"
     tags:
       items:
         - https-server
+    metadata:
+      ssh-keys: "{{ lookup('file', '~/.ssh/instruqt/instruqt_provision.pub') }}"
 gcp_inventory_host_vars:
   ansible_user: "{{ admin_username }}"
   ansible_ssh_private_key_file: ~/.ssh/instruqt/instruqt_provision
   ansible_host_key_checking: false
   ansible_python_interpreter: /usr/bin/python3
   ansible_ssh_pipelining: true
+
+gcp_resources_images:
+  - name: "{{ controller_hostname }}-image"
+    source_disk:
+      selfLink: "https://www.googleapis.com/compute/v1/projects/{{ gcp_resources_project }}/zones/\
+        {{ gcp_resources_zone }}/disks/{{ lab['jhb']['hostname'] }}"
+    labels:
+      role: "{{ track_slug }}"
+    description: "{{ track_slug }} - {{ controller_hostname }} image."
 
 # Base controller custom setup vars
 admin_username: "{{ vault_admin_username }}"
@@ -84,14 +89,6 @@ gitea_clone_address: "https://github.com/craig-br/lightspeed-demos"
 
 vscode_settings_file: "{{ playbook_dir }}/templates/{{ track_slug }}/settings.json"
 
-# code_server role vars
-# codeserver_username: "{{ student_username }}"
-# codeserver_password: "{{ student_password }}"
-# codeserver_prebuild: false
-# codeserver_authentication: false
-# codeserver_extensions:
-#   - name: redhat.ansible
-
 # Lab vars
 lab:
   credential:
@@ -115,8 +112,8 @@ lab:
     name: ACME Corp Repo
     repo: "{{ gitea_app_url }}/{{ student_username }}/acme_corp.git"
     # Temp
-    # branch: devel
-    branch: main
+    branch: devel
+    # branch: main
   inventory:
     name: ACME Corp DC
     description: ACME Corp Data center
@@ -126,9 +123,9 @@ lab:
     # image: quay.io/acme_corp/summit_ee
   s3:
     # Dev
-    # bucket_name: tmm-instruqt-content.demoredhat.com.dev
+    bucket_name: tmm-instruqt-content.demoredhat.com.dev
     # Prod
-    bucket_name: tmm-instruqt-content.demoredhat.com.private
+    # bucket_name: tmm-instruqt-content.demoredhat.com.private
   workflow_name: Deploy App Workflow
 
 # Lab containers
@@ -392,19 +389,19 @@ controller_groups:
       - controller.acme.example.com
 
 # controller_templates:
-#   - name: Prepare AWS demo
-#     state: present
-#     job_type: run
-#     playbook: "playbooks/cloud/aws/prepare_aws_environment.yml"
-#     execution_environment: "{{ lab.navigator_execution_environment.name }}"
-#     organization: "{{ lab.organization }}"
-#     inventory: "{{ lab.inventory.name }}"
-#     verbosity: 0
-#     credentials:
-#       - "{{ lab.credential.aws.name }}"
-#     project: "{{ lab.project.name }}"
-#     extra_vars:
-#       _SANDBOX_ID: "{{ lookup('ansible.builtin.env', '_SANDBOX_ID') }}" # Updated in Instruqt lifecycle script.
+  # - name: Prepare AWS demo
+  #   state: present
+  #   job_type: run
+  #   playbook: playbooks/cloud/aws/prepare_aws_environment.yml
+  #   execution_environment: "{{ lab.navigator_execution_environment.name }}"
+  #   organization: "{{ lab.organization }}"
+  #   inventory: "{{ lab.inventory.name }}"
+  #   verbosity: 0
+  #   credentials:
+  #     - "{{ lab.credential.aws.name }}"
+  #   project: "{{ lab.project.name }}"
+  #   extra_vars:
+  #     _SANDBOX_ID: "{{ lookup('ansible.builtin.env', '_SANDBOX_ID') }}" # Updated in Instruqt lifecycle script.
 #   - name: Prepare Azure demo
 #     state: present
 #     job_type: run
