@@ -77,3 +77,15 @@
   ansible.builtin.file:
     path: "~{{ ansible_user }}/.bash_history"
     state: absent
+
+- name: Logout of container registries
+  become: true
+  become_user: "{{ item }}"
+  containers.podman.podman_logout:
+    all: true
+  no_log: true
+  loop:
+    - "{{ student_username }}"
+    - awx
+    - root
+    - "{{ ansible_user }}"
