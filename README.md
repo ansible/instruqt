@@ -4,7 +4,8 @@ These are 90 minute workshops with multiple self-paced labs in them.
 
 | Workshop Title  | Link |
 |---|---|
-| Cloud Automation Technical Workshop | [🔬 Open Workshop](./webpages/ansible-cloud-lab.md) |
+| Ansible Lightspeed and Development Technical Workshop | [🔬 Open Workshop](./webpages/lightspeed.md) |
+| Event-Driven Ansible Technical Workshop | [🔬 Open Workshop](./webpages/eda.md) |
 | Event-Driven Ansible Technical Workshop | [🔬 Open Workshop](./webpages/eda.md) |
 
 # Self-Paced Labs Directory
