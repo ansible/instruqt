@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -e
+
+JT_NAME="Debug-Info"
+
+#Ansible settings
+export ANSIBLE_STDOUT_CALLBACK="community.general.yaml"
+
+# Playbook run command
+CMD="/bin/ansible-playbook /tmp/setup-scripts/getting-started-controller/getting-started-controller-setup.yml"
+
+# Check job template executed
+if ! $CMD --tags=awx-token,check-jt -e lab_jt_name=${JT_NAME} -vv; then
+    echo "FAIL: The ${JT_NAME} job template has not been executed yet. Please try again. Remember it's case-sensititve!"
+    exit 1
+fi

@@ -1,0 +1,47 @@
+#!/bin/bash
+set -e
+
+INVENTORY="Lab-Inventory"
+HOSTS=(host01 host02)
+GROUP="web"
+
+#Ansible settings
+export ANSIBLE_STDOUT_CALLBACK="community.general.yaml"
+
+# Playbook run command
+CMD="/bin/ansible-playbook /tmp/setup-scripts/getting-started-controller/getting-started-controller-setup.yml"
+
+#Check $INVENTORY exists.
+if ! $CMD --tags=awx-token,check-inventory -e lab_inventory_name=${INVENTORY} -vv; then
+ echo "FAIL: ${INVENTORY} inventory not found. Remember it's case-sensitive! Please try again."
+exit 1
+fi
+
+## Check if hosts exist
+for host in "${HOSTS[@]}"; do
+  if ! $CMD --tags=awx-token,check-hosts -e lab_host=${host} -vv; then
+    echo "FAIL: ${host} host not found or there is a duplicate ${host} host in another inventory. If so, please remove the duplicate ${host} host and check again. Remember it's case-sensititve!"
+    exit 1
+  fi
+done
+
+# Check hosts are in $INVENTORY
+for host in "${HOSTS[@]}"; do
+  if ! $CMD --tags=awx-token,check-hosts-inv -e lab_host=${host} -e lab_inventory_name=${INVENTORY} -vv; then
+     echo "FAIL: ${host} missing from ${INVENTORY} or there is a duplicate ${host} host in another inventory. If so, please remove the duplicate ${host} host and check again. Remember it's case-sensititve!"
+     exit 1
+  fi
+done
+
+# Check $GROUP exists
+if ! $CMD --tags=awx-token,check-group -e lab_inv_group_name=${GROUP} -e lab_inventory_name=${INVENTORY} -vv; then
+    echo "FAIL: ${GROUP} group is missing or there is a duplicate ${GROUP} group in another inventory. If so, please remove the duplicate ${GROUP} group and check again. Remember it's case-sensititve!"
+    exit 1
+fi
+
+# Check $GROUP is in $INVENTORY
+if ! $CMD --tags=awx-token,check-group-inv -e lab_inv_group_name=${GROUP} -e lab_inventory_name=${INVENTORY} -vv; then
+    echo "FAIL: ${GROUP} group is missing or there is a duplicate ${GROUP} group in another inventory. If so, please remove the duplicate ${GROUP} group and check again. Remember it's case-sensititve!"
+    echo "Remember it's case-sensititve! Please try again."
+    exit 1
+fi
