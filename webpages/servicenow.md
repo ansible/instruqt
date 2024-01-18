@@ -13,11 +13,11 @@ The ServiceNow integration for Ansible Automation Platform is made possible thro
 ## Lab Agenda (Estimate total time ⏱️ 90 minutes)
 
 <ul>
-<li><b>Slides: Introduction + Workshop Brief</b>[Estimated Time ⏱️ 30  minutes]<br>
-<a href="https://docs.google.com/presentation/d/1sE8nZJjQw74QyWccufUVNwEtIepxPYTbsn5YfjN3oU8/edit?usp=sharing">[Slides]</a>
+<li><b>Slides: Introduction + Workshop Brief</b> [Estimated Time ⏱️ 30  minutes]<br>
+<a href="https://docs.google.com/presentation/d/1sE8nZJjQw74QyWccufUVNwEtIepxPYTbsn5YfjN3oU8/edit?usp=sharing">[ 🖥️ Slides ]</a>
 </li>
-<li><b>Lab: Get started with ServiceNow automation</b>[Estimated Time ⏱️ 60 minutes]<br>
-<a href="https://play.instruqt.com/embed/redhat/tracks/getting-started-servicenow-automation?token=em_5ktpLJWtzpbqcDyM">[🚀 Launch the lab]</a>
+<li><b>Lab: Get started with ServiceNow automation</b> [Estimated Time ⏱️ 60 minutes]<br>
+<a href="https://play.instruqt.com/embed/redhat/tracks/getting-started-servicenow-automation?token=em_5ktpLJWtzpbqcDyM">[ 🚀 Launch the lab ]</a>
 </li>
 </ul>
 
