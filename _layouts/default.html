@@ -36,15 +36,6 @@
           <a class="header-link" href="{{ '/' | relative_url }}">
             Home
           </a>
-          {% if page.path == "webpages/ansible-cloud-lab.md" %}
-          <a class="header-link-active" href="{{ '/webpages/ansible-cloud-lab' | relative_url }}">
-            Hybrid Cloud
-          </a>
-          {% else %}
-          <a class="header-link" href="{{ '/webpages/ansible-cloud-lab' | relative_url }}">
-            Hybrid Cloud
-          </a>
-          {% endif %}
           {% if page.path == "webpages/eda.md" %}
           <a class="header-link-active" href="{{ '/webpages/eda' | relative_url }}">
             Event-Driven Ansible
@@ -54,6 +45,16 @@
             Event-Driven Ansible
           </a>
           {% endif %}
+          {% if page.path == "webpages/ansible-cloud-lab.md" %}
+          <a class="header-link-active" href="{{ '/webpages/ansible-cloud-lab' | relative_url }}">
+            Hybrid Cloud
+          </a>
+          {% else %}
+          <a class="header-link" href="{{ '/webpages/ansible-cloud-lab' | relative_url }}">
+            Hybrid Cloud
+          </a>
+          {% endif %}
+
           {% if page.path == "webpages/lightspeed.md" %}
           <a class="header-link-active" href="{{ '/webpages/lightspeed' | relative_url }}">
             Lightspeed
@@ -90,15 +91,24 @@
             First Playbook
           </a>       
           {% endif %}  --> 
+          {% if page.path == "webpages/network.md" %}
+          <a class="header-link-active" href="{{ '/webpages/network' | relative_url }}">
+            Network
+          </a>
+          {% else %}  
+          <a class="header-link" href="{{ '/webpages/network' | relative_url }}">
+            Network
+          </a>       
+          {% endif %}     
           {% if page.path == "webpages/servicenow.md" %}
           <a class="header-link-active" href="{{ '/webpages/servicenow' | relative_url }}">
-            ServiceNow
+            Network
           </a>
           {% else %}  
           <a class="header-link" href="{{ '/webpages/servicenow' | relative_url }}">
-            ServiceNow
+            Network
           </a>       
-          {% endif %}                                        
+          {% endif %}                                     
         </div>
       </header>
 
