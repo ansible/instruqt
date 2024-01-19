@@ -1,10 +1,14 @@
 # Getting Started with Network Automation
 
-The Ansible Network Automation Workshop is a 90 minute, hands-on workshop covering Ansible Automation with respect to routers and switches. Attendees will learn how to pull facts from devices, build templated network configurations, and apply these concepts at scale with Ansible Automation Platform. You’ll put it all together by exploring the job templates, surveys, access controls and more.
+The Ansible Network Automation Workshop is a 90 minute, hands-on workshop covering Ansible Automation with respect to routers and switches. Attendees will learn how to use ansible-navigator, backup and restore network configurations, and apply these concepts at scale with Ansible Automation Platform. You’ll put it all together by exploring the job templates, workflows and more.
 
-Note: In this workshop, attendees will be managing network devices, specifically a Cisco IOS-XE router.
+> **NOTE** 
+>
+> In this workshop, attendees will be managing network devices, specifically a Cisco IOS-XE router.
+> 
+<br>
 
-> **IMPORTANT TO NOTE** 
+> **NOTE** 
 > 
 > This workshop is also known as the Network Automation 90-min Technical Workshop
 > 
@@ -74,3 +78,15 @@ Simplify network administration and operations using Red Hat Ansible Automation 
 </tr>
 </tbody>
 </table>
+
+<br>
+
+# Ansible Workshop
+
+This is an official Ansible Workshop
+
+This workshop is maintained by the Red Hat Ansible Technical Marketing Team.  
+Please open an [issues on Github](https://github.com/ansible/instruqt/issues/new?title=New+network+automation+workshop+issue&body=)
+
+
+![ansible workshop logo](https://github.com/ansible/workshops/blob/devel/images/Ansible-Workshop-Logo.png?raw=true)
