@@ -5,8 +5,6 @@ The Ansible Network Automation Workshop is a 90 minute, hands-on workshop coveri
 > **NOTE** 
 >
 > In this workshop, attendees will be managing network devices, specifically a Cisco IOS-XE router.
-> 
-<br>
 
 > **NOTE** 
 > 

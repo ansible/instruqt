@@ -1,4 +1,7 @@
-# Windows Automation Technical 90-min Workshop
+# Getting Started with Windows Automation
+
+
+
 
 In this instructor-led workshop, participants learn the basics of Ansible Automation and how they can use Ansible with Windows Hosts. Attendees will get hands-on experience with the fundamentals of Ansible and will create and edit Ansible Playbooks which will be used in an Automation controller. 
 This workshop will expose participants to working with the Ansible Automation Platform while automating tasks on a Windows host. 
@@ -10,6 +13,10 @@ Tasks in this lab include:
 * Using advanced Playbook methodologies 
 * Creating and using Ansible Roles
 
+> **NOTE** 
+> 
+> Windows Automation Technical 90-min Workshop
+> 
 
 ## Presentation Deck
 
