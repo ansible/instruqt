@@ -27,7 +27,7 @@ Recommended agenda for when there is an instructor teaching.
 <table>
 <tbody>
 <tr>
-<td><b>Slides</b>: Introduction + Workshp Brief</td>
+<td><b>Slides</b>: Introduction + Workshop Brief</td>
 <td>⏱️ 15 minutes</td>
 </tr>
 <tr>
@@ -141,3 +141,13 @@ Additional material for Event-Driven Ansible
 </tr>
 </tbody>
 </table>
+
+# Ansible Workshop
+
+This is an official Ansible Workshop
+
+This workshop is maintained by the Red Hat Ansible Technical Marketing Team.  
+Please open an [issues on Github](https://github.com/ansible/instruqt/issues/new?title=New+lightspeed+workshop+issue&body=)
+
+
+![ansible workshop logo](https://github.com/ansible/workshops/blob/devel/images/Ansible-Workshop-Logo.png?raw=true)

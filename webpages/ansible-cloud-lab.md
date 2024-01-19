@@ -47,3 +47,13 @@ Optional Lab
 - [Automate your hybrid cloud at scale](https://www.redhat.com/en/engage/automate-hybrid-cloud-20221006)
 - [Connect your hybrid cloud environment with IT automation](https://www.redhat.com/en/engage/hybrid-cloud-environment-20220412)
 - [Using automation to get the most from your public cloud	](https://www.redhat.com/en/engage/automation-public-cloud-20221014)
+- 
+# Ansible Workshop
+
+This is an official Ansible Workshop
+
+This workshop is maintained by the Red Hat Ansible Technical Marketing Team.  
+Please open an [issues on Github](https://github.com/ansible/instruqt/issues/new?title=New+cloud+workshop+issue&body=)
+
+
+![ansible workshop logo](https://github.com/ansible/workshops/blob/devel/images/Ansible-Workshop-Logo.png?raw=true)

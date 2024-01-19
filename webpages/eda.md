@@ -130,3 +130,13 @@ Additional material for Event-Driven Ansible
 </tr>
 </tbody>
 </table>
+
+# Ansible Workshop
+
+This is an official Ansible Workshop
+
+This workshop is maintained by the Red Hat Ansible Technical Marketing Team.  
+Please open an [issues on Github](https://github.com/ansible/instruqt/issues/new?title=New+eda+workshop+issue&body=)
+
+
+![ansible workshop logo](https://github.com/ansible/workshops/blob/devel/images/Ansible-Workshop-Logo.png?raw=true)

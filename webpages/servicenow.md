@@ -32,3 +32,13 @@ The ServiceNow integration for Ansible Automation Platform is made possible thro
 - YouTube: [Automate ServiceNow ITSM](https://www.youtube.com/playlist?list=PLdu06OJoEf2b2O-R635ZqZERrh8Xg5e-3)
 - Webinar: [Ansible certified Content Collection for ServiceNow](https://www.ansible.com/resources/webinars-training/red-hat-ansible-certified-content-collection-for-servicenow-ondemand?sc_cid=7013a000002vvHjAAI)
 - Website: [Ansible Automation Platform: ServiceNow Integration](https://www.ansible.com/integrations/it-service-management/servicenow?hsLang=en-us)
+- 
+# Ansible Workshop
+
+This is an official Ansible Workshop
+
+This workshop is maintained by the Red Hat Ansible Technical Marketing Team.  
+Please open an [issues on Github](https://github.com/ansible/instruqt/issues/new?title=New+servicenow+workshop+issue&body=)
+
+
+![ansible workshop logo](https://github.com/ansible/workshops/blob/devel/images/Ansible-Workshop-Logo.png?raw=true)
