@@ -74,14 +74,11 @@ Here is some additional collateral:
 <td><a  target="_blank" href="https://content.redhat.com/content/rhcc/us/en/assets/display.html?id=1e38aff6-6fc3-4194-9fb6-947bd7a34ff6">Content Center</a></td>
 </tr>
 <tr>
-<tr>
 <td>Standardization and automation</td>
 <td>Overview</td>
 <td><a target="_blank" href="https://www.redhat.com/en/resources/e3-standardization-automation-analyst-paper">on redhat.com</a></td>
 <td><a  target="_blank" href="https://content.redhat.com/content/rhcc/us/en/assets/display.html?id=521048dd-2ee3-435d-bdec-0484354184d4">Content Center</a></td>
 </tr>
-<tr>
-
 </tbody>
 </table>
 
