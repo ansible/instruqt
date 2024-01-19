@@ -13,7 +13,10 @@
 
 ## Ansible 4-hour workshops
 
-TBD
+| Workshop Title  | Link |
+|---|---|
+| Event-Driven Ansible & ServiceNow Technical Workshop | [🔬 Open Workshop](./webpages/eda-4.md) |
+| Ansible Lightspeed and Development Technical Workshop | [🔬 Open Workshop](./webpages/lightspeed-4.md) |
 
 # Lab Listing
 

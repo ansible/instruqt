@@ -2,7 +2,7 @@
 
 > **IMPORTANT TO NOTE** 
 > 
-> This is the 90 minute version of this workshop.  For the longer 4-hour session please [🔬 click here](lightspeed-4.md) |
+> This is the 4-hour version of this workshop.  For the shorter 90-minute session please [🔬 click here](lightspeed.md) |
 >
 
 This workshop is for the Ansible automation engineer or application developer.  While their experience, skills, and job roles differ, both of these personas create automation.  This includes writing Ansible Playbooks, Ansible Roles, and Ansible Content Collections and learning how to distribute these throughout the organization..  This workshop will provide an opinionated experience for both of these roles.
@@ -25,54 +25,79 @@ After finishing this lab you are ready to start taking advantage of the numerous
 
 - [Google Slides](https://docs.google.com/presentation/d/1Px4Fn6VBfQeAZnx4_3ydUZDNEteOTrYPfXCOfFOZTsc/edit?usp=sharing) - For Red Hat employees
 
-## Lab Agenda (Estimate total time ⏱️ 90 minutes)
+## Lab Agenda (Estimate total time ⏱️ 4 hours)
 
-Recommended agenda for when there is an instructor teaching.
 
 <table>
 <tbody>
-<tr>
-<td><b>Slides</b>: Introduction + Workshop Brief</td>
-<td>⏱️ 15 minutes</td>
-</tr>
-<tr>
-<td><b>Lab 1</b>: Get started with ansible-builder</td>
-<td>⏱️ 30 minutes</td>
-</tr>
-<tr>
-<td><b>Slides</b>: Introduction to Red Hat Lightspeed and lab brief</td>
-<td>⏱️ 15 minutes</td>
-</tr>
-<tr>
-<td><b>Lab 2</b>: Get started with Ansible Lightspeed with IBM watsonx Code Assistant</td>
-<td>⏱️ 30 minutes</td>
-</tr>
-</tbody>
-</table>
-
-## Lab Index
-
 <table>
 <thead>
 <tr>
-<th>Lab Title</th>
+<th>Agenda Item</th>
 <th>Description</th>
 <th>Link</th>
 <th>Estimated Time</th>
 </tr>
-</thead>
-<tbody>
 <tr>
-<td>Get started with ansible-builder</td>
+<td><b>Slides</b>
+<td>Introduction + Workshop Brief</td>
+<td><a href="https://docs.google.com/presentation/d/1Px4Fn6VBfQeAZnx4_3ydUZDNEteOTrYPfXCOfFOZTsc/edit?usp=sharing">Google Slides</a>
+<td>⏱️ 10 minutes</td>
+<td>
+</tr>
+<tr>
+<td><b>Lab 1</b>: Get started with ansible-builder</td>
 <td>Install ansible-builder v3 and learn how to create custom execution environments.</td>
-<td><a target="_new" href="https://play.instruqt.com/embed/redhat/tracks/getting-started-ansible-builder?token=em_1Ih9nv5b7mX5AfJF&show_challenges=true">🚀 Launch Lab</a></td>
+<td><a href="https://play.instruqt.com/embed/redhat/tracks/getting-started-ansible-builder?token=em_1Ih9nv5b7mX5AfJF&show_challenges=true">🚀 Launch Lab</a></td>
 <td>⏱️ 30 minutes</td>
 </tr>
 <tr>
-<td>Get started with Ansible Lightspeed with IBM watsonx Code Assistant</td>
+<td><b>Slides</b></td>
+<td>Introduction to Red Hat Lightspeed and lab brief</td>
+<td><i>continue slides from above</i></td>
+<td>⏱️ 10 minutes</td>
+</tr>
+<tr>
+<td><b>Lab 2</b>: Get started with Ansible Lightspeed with IBM watsonx Code Assistant</td>
 <td>Learn how to configure, activate, and use Ansible Lightspeed to generate Ansible content.</td>
-<td><a target="_new" href="https://red.ht/lab-lightspeed-101">🚀 Launch Lab</a></td>
+<td><a href="https://red.ht/lab-lightspeed-101">🚀 Launch Lab</a></td>
 <td>⏱️ 30 minutes</td>
+</tr>
+<tr>
+<td><b>Slides</b></td>
+<td>Introduction to Ansible-sign and lab brief for lab 3</td>
+<td><i>continue slides from above</i></td>
+<td>⏱️ 10 minutes</td>
+</tr>
+<tr>
+<td><b>Lab 3</b>: Sign and verify projects with Red Hat Ansible Automation Platform</td>
+<td>Sign source repositories that include Ansible Playbooks and content, and validate signed content in the automation controller.</td>
+<td><a href="https://play.instruqt.com/embed/redhat/tracks/sign-verify-ansible-projects?token=em_Gp14R9eDyqDCt7d2">🚀 Launch Lab</a></td>
+<td>⏱️ 40 minutes</td>
+</tr>
+<tr>
+<td><b>Slides</b></td>
+<td>Introduction to Private automation hub and lab brief for lab 4</td>
+<td><i>continue slides from above</i></td>
+<td>⏱️ 10 minutes</td>
+</tr>
+<tr>
+<td><b>Lab 4</b>: Sign Ansible Content Collections with private automation hub	</td>
+<td>Learn how to sign Ansible Content Collections using a private automation hub and install collections with ansible-galaxy CLI.</td>
+<td><a href="https://play.instruqt.com/embed/redhat/tracks/private-automation-hub-signing?token=em_UTCtnLfGucfaOS0_">🚀 Launch Lab</a></td>
+<td>⏱️ 45 minutes</td>
+</tr>
+<tr>
+<td><b>Slides</b></td>
+<td>Introduction to RBAC</td>
+<td><i>continue slides from above</i></td>
+<td>⏱️ 10 minutes</td>
+</tr>
+<tr>
+<td><b>Lab 5</b>: Manage user access and content policies using private automation hub	</td>
+<td>Create groups so your automation hub users have appropriate system permissions or grant view-only access to unauthorized users.	</td>
+<td><a href="https://play.instruqt.com/embed/redhat/tracks/hub-managing-user-access?token=em_sqTC_YqGLwBSDT5r">🚀 Launch Lab</a></td>
+<td>⏱️ 45 minutes</td>
 </tr>
 </tbody>
 </table>
@@ -114,7 +139,7 @@ Additional material for Event-Driven Ansible
 This is an official Ansible Workshop
 
 This workshop is maintained by the Red Hat Ansible Technical Marketing Team.  
-Please open an [issues on Github](https://github.com/ansible/instruqt/issues/new?title=New+lightspeed+workshop+issue&body=)
+Please open an [issues on Github](https://github.com/ansible/instruqt/issues/new?title=New+lightspeed+4hour+workshop+issue&body=)
 
 
 ![ansible workshop logo](https://github.com/ansible/workshops/blob/devel/images/Ansible-Workshop-Logo.png?raw=true)
