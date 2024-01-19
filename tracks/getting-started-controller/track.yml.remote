@@ -1,0 +1,38 @@
+slug: getting-started-controller
+id: euelqtmm2wvu
+title: Get started with automation controller
+teaser: Explore the automation controller interface and complete some basic tasks.
+description: |-
+  <img src="https://raw.githubusercontent.com/craig-br/instruqt-tracks/devel/assets/logos/Logo-Red_Hat-Ansible_Automation_Platform-A-Standard-RGB.png" alt="drawing" style=";width:400px"/>
+  <br>
+
+  # Automation controller
+  * * *
+  <br>
+
+  [**Automation controller**](https://docs.ansible.com/automation-controller/latest/html/administration/index.html), formerly known as [Ansible Tower](https://www.ansible.com/products/tower), allows users of Red Hat Ansible Automation Platform to define, operate, scale, and delegate automation across their enterprise.
+
+
+  Manage inventory, launch and schedule workflows, track changes, and integrate into external systems, all from a centralized user interface and REST API.
+  <br>
+
+  In this track you:
+
+  * Will get to know the **automation controller** interface
+  * Create a standard inventory and add hosts
+  * Run automation using a job template on our inventory
+icon: https://raw.githubusercontent.com/craig-br/instruqt-tracks/devel/assets/icons/automation_controller.png
+level: beginner
+tags: []
+owner: redhat
+developers:
+- cbrandt@redhat.com
+maintenance: true
+show_timer: true
+lab_config:
+  overlay: false
+  width: 33
+  position: right
+  feedback_recap_enabled: true
+  loadingMessages: true
+checksum: "2554868279586289905"

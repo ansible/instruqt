@@ -1,0 +1,20 @@
+version: "3"
+virtualmachines:
+- name: host02
+  image: red-hat-mbu/ansible
+  shell: /bin/su - rhel -s /bin/bash
+  environment:
+    TERM: xterm
+  machine_type: n1-standard-1
+- name: host01
+  image: red-hat-mbu/ansible
+  shell: /bin/su - rhel -s /bin/bash
+  environment:
+    TERM: xterm
+  machine_type: n1-standard-1
+- name: controller
+  image: red-hat-mbu/automation-controller
+  shell: /bin/su - rhel -s /bin/bash
+  environment:
+    TERM: xterm
+  machine_type: n1-standard-4

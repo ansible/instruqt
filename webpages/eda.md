@@ -1,5 +1,10 @@
 # Event-Driven Ansible Technical Workshop
 
+> **IMPORTANT TO NOTE** 
+> 
+> This is the 90 minute version of this workshop.  For the longer 4-hour session please [🔬 click here](eda-4.md)
+>
+
 As a part of Red Hat® Ansible® Automation Platform, Event-Driven Ansible can process events containing discrete intelligence about conditions in the IT environment, determine the appropriate response to the event, then execute automated actions to address or remediate the event. This workshop will demonstrate Event-Driven Ansible and how it provides the event-handling capability needed to automate time-consuming tasks and respond to changing conditions in any IT domain. 
 
 During this workshop, we will walk through the basics of EDA (Event-Driven Ansible) covering fundamentals such as sources, rules, and actions and the corresponding technology and implementation through Ansible Rulebook CLI, rulebooks, source plugins, and EDA content collections.  This workshop requires students to have beginner-level knowledge of command-line Ansible, Visual Studio Code, and Git.
@@ -130,3 +135,13 @@ Additional material for Event-Driven Ansible
 </tr>
 </tbody>
 </table>
+
+# Ansible Workshop
+
+This is an official Ansible Workshop
+
+This workshop is maintained by the Red Hat Ansible Technical Marketing Team.  
+Please open an [issues on Github](https://github.com/ansible/instruqt/issues/new?title=New+eda+workshop+issue&body=)
+
+
+![ansible workshop logo](https://github.com/ansible/workshops/blob/devel/images/Ansible-Workshop-Logo.png?raw=true)
