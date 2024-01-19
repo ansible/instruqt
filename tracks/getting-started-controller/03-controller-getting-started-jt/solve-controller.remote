@@ -1,0 +1,3 @@
+#!/bin/bash
+
+/bin/ansible-playbook /tmp/setup-scripts/getting-started-controller/getting-started-controller-setup.yml --tags solve-jt

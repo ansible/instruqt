@@ -36,27 +36,34 @@
           <a class="header-link" href="{{ '/' | relative_url }}">
             Home
           </a>
-          {% if page.path == "webpages/ansible-cloud-lab.md" %}
-          <a class="header-link-active" href="{{ '/webpages/ansible-cloud-lab' | relative_url }}">
-            cloud automation workshop
-          </a>
-          {% else %}
-          <a class="header-link" href="{{ '/webpages/ansible-cloud-lab' | relative_url }}">
-            cloud automation workshop
-          </a>
-          {% endif %}
           {% if page.path == "webpages/eda.md" %}
           <a class="header-link-active" href="{{ '/webpages/eda' | relative_url }}">
-            Event-Driven Ansible Workshop
+            Event-Driven Ansible
           </a>
           {% else %}
           <a class="header-link" href="{{ '/webpages/eda' | relative_url }}">
-            Event-Driven Ansible Workshop
+            Event-Driven Ansible
           </a>
           {% endif %}
-          <a class="header-link" target="_new" href="https://github.com/ansible/instruqt/issues/new">
-            Open an Issue
+          {% if page.path == "webpages/ansible-cloud-lab.md" %}
+          <a class="header-link-active" href="{{ '/webpages/ansible-cloud-lab' | relative_url }}">
+            Hybrid Cloud
           </a>
+          {% else %}
+          <a class="header-link" href="{{ '/webpages/ansible-cloud-lab' | relative_url }}">
+            Hybrid Cloud
+          </a>
+          {% endif %}
+
+          {% if page.path == "webpages/lightspeed.md" %}
+          <a class="header-link-active" href="{{ '/webpages/lightspeed' | relative_url }}">
+            Lightspeed
+          </a>
+          {% else %}
+          <a class="header-link" href="{{ '/webpages/lightspeed' | relative_url }}">
+            Lightspeed
+          </a>
+          {% endif %}          
           <!-- {% if page.path == "webpages/ansible-edge-lab.md" %}
           <a class="header-link-active" href="{{ '/webpages/ansible-edge-lab' | relative_url }}">
             Edge
@@ -83,7 +90,16 @@
           <a class="header-link" href="{{ '/webpages/firstplaybook' | relative_url }}">
             First Playbook
           </a>       
-          {% endif %}   
+          {% endif %}  --> 
+          {% if page.path == "webpages/network.md" %}
+          <a class="header-link-active" href="{{ '/webpages/network' | relative_url }}">
+            Network
+          </a>
+          {% else %}  
+          <a class="header-link" href="{{ '/webpages/network' | relative_url }}">
+            Network
+          </a>       
+          {% endif %}     
           {% if page.path == "webpages/servicenow.md" %}
           <a class="header-link-active" href="{{ '/webpages/servicenow' | relative_url }}">
             ServiceNow
@@ -92,7 +108,16 @@
           <a class="header-link" href="{{ '/webpages/servicenow' | relative_url }}">
             ServiceNow
           </a>       
-          {% endif %}                                        -->
+          {% endif %}
+          {% if page.path == "webpages/windows.md" %}
+          <a class="header-link-active" href="{{ '/webpages/servicenow' | relative_url }}">
+            Windows
+          </a>
+          {% else %}  
+          <a class="header-link" href="{{ '/webpages/windows' | relative_url }}">
+            Windows
+          </a>       
+          {% endif %}                                      
         </div>
       </header>
 
@@ -110,7 +135,7 @@
               alt="Red Hat"
             />
           </a>
-          <p class="footer-copyright">Copyright © 2023 Red Hat, Inc.</p>
+          <p class="footer-copyright">Copyright © 2024 Red Hat, Inc.</p>
           <div class="footer-linkContainer">
             <a href="https://www.redhat.com/en/about/privacy-policy" class="footer-link">Privacy statement</a>
             <span class="footer-linkSpacer">|</span>

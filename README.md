@@ -1,74 +1,37 @@
-# Ansible Self-Paced Workshop Directory
-These are 90 minute workshops with multiple self-paced labs in them.
+# Ansible Workshop Directory
 
+## 90 minute online workshops
 
 | Workshop Title  | Link |
 |---|---|
-| Cloud Automation Technical Workshop | [🔬 Open Workshop](./webpages/ansible-cloud-lab.md) |
 | Event-Driven Ansible Technical Workshop | [🔬 Open Workshop](./webpages/eda.md) |
+| Introduction to cloud automation | [🔬 Open Workshop](./webpages/ansible-cloud-lab) |
+| Ansible Lightspeed and Development Technical Workshop | [🔬 Open Workshop](./webpages/lightspeed.md) |
+| Getting Started with Network Automation | [🔬 Open Workshop](./webpages/network.md) |
+| Getting Started with ServiceNow Automation | [🔬 Open Workshop](./webpages/servicenow.md) |
+| Getting Started with Windows Automation | [🔬 Open Workshop](./webpages/windows.md) |
 
-# Self-Paced Labs Directory
+## Ansible 4-hour workshops
 
-## Event-Driven Ansible (EDA)
+| Workshop Title  | Link |
+|---|---|
+| Event-Driven Ansible & ServiceNow Technical Workshop | [🔬 Open Workshop](./webpages/eda-4.md) |
+| Ansible Lightspeed and Development Technical Workshop | [🔬 Open Workshop](./webpages/lightspeed-4.md) |
 
-<table>
-<thead>
-<tr>
-<th>Lab Title</th>
-<th>Link</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Get started with Event-Driven Ansible and Ansible rulebooks</td>
-<td><a target="_blank" href="https://play.instruqt.com/redhat/invite/wzlzehptcqi6/tracks/eda--ansible-rulebook">🚀 Launch Lab</a></td>
-</tr>
-<tr>
-<td>Event-Driven Ansible and NetOps</td>
-<td><a target="_blank" href="https://play.instruqt.com/embed/redhat/tracks/event-driven-netops?token=em_W0qtY5GifN13CZ1a">🚀 Launch Lab</a></td>
-</tr>
-<tr>
-<td>GitOps with Event-Driven Ansible</td>
-<td><a target="_blank" href="https://play.instruqt.com/embed/redhat/tracks/eda-gitops?token=em__C74PAmX2rePq7Kk">🚀 Launch Lab</a></td>
-</tr>
-</tbody>
-</table>
+# Lab Listing
 
-## Network Automation
+**Interactive labs for Red Hat Ansible Automation Platform**
 
-<table>
-<thead>
-<tr>
-<th>Lab Title</th>
-<th>Link</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Palo Alto Networks firewall automation with AAP</td>
-<td><a target="_blank" href="https://play.instruqt.com/embed/redhat/tracks/ansible-panos-automation?token=em_iiCtxt5JWd5Iube8">🚀 Launch Lab</a></td>
-</tr>
-</tbody>
-</table>
+FULL LAB LISTING
+<br>
+[https://www.redhat.com/en/interactive-labs/ansible](https://www.redhat.com/en/interactive-labs/ansible)
 
 ## Feedback and Issues
 
 Please [open issues](https://github.com/ansible/instruqt/issues/new) so we can fix any problems that occur.
 
-## External Lab webpages
 
-* [Community Labs (How to contribute, what's ansible-test, etc)](https://www.ansible.com/products/ansible-community-training)
-* [Product & user labs (How to use Automation Controller, Ansible Builder, etc](https://www.redhat.com/en/interactive-labs/ansible)
 
-## Contribute
-
-This repo contains images and tracks for the [instruqt](https://instruqt.com/) platform.  Red Hat is using Instruqt for in-browser demonstrations of the Ansible Automation Platform.  If you are unfamiliar with Instruqt please refer to their [documentation](https://docs.instruqt.com/).
-
-- **[tracks](https://github.com/ansible/instruqt/tree/devel/tracks)** contains existing tracks that have been pulled from Instruqt using the CLI and pushed to this repo. It also contains helpful getting started with track development resources.
-
-- **[images](https://github.com/ansible/instruqt/tree/devel/images)** documents the current available images and image build process.
-
-- **[containers](https://github.com/ansible/instruqt/tree/devel/containers)** contains examples about how to use existing docker containers.
 
 <hr>
 
