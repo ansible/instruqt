@@ -2,7 +2,7 @@
 
 > **IMPORTANT TO NOTE** 
 > 
-> This is the 4-hour version of this workshop.  For the shorter 90-minute session please [🔬 click here](lightspeed.md) |
+> This is the 4-hour version of this workshop.  For the shorter 90-minute session please [🔬 click here](lightspeed.md)
 >
 
 This workshop is for the Ansible automation engineer or application developer.  While their experience, skills, and job roles differ, both of these personas create automation.  This includes writing Ansible Playbooks, Ansible Roles, and Ansible Content Collections and learning how to distribute these throughout the organization..  This workshop will provide an opinionated experience for both of these roles.
@@ -119,7 +119,7 @@ Additional material for Event-Driven Ansible
 <tr>
 <td>Red Hat talks to RedMonk</td>
 <td>Analyst material</td>
-<td><a targete="_new" href="https://redmonk.com/videos/a-redmonk-conversation-ai-and-it-automation-with-ansible">🎥 Watch Interview</a></td>
+<td><a target="_new" href="https://redmonk.com/videos/a-redmonk-conversation-ai-and-it-automation-with-ansible">🎥 Watch Interview</a></td>
 </tr>
 <tr>
 <td>Explore this playlist of announcements and demo</td>
