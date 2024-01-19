@@ -27,9 +27,6 @@ After finishing this lab you are ready to start taking advantage of the numerous
 
 ## Lab Agenda (Estimate total time ⏱️ 4 hours)
 
-
-<table>
-<tbody>
 <table>
 <thead>
 <tr>
@@ -38,12 +35,13 @@ After finishing this lab you are ready to start taking advantage of the numerous
 <th>Link</th>
 <th>Estimated Time</th>
 </tr>
+</thead>
+<tbody>
 <tr>
-<td><b>Slides</b>
+<td><b>Slides</b></td>
 <td>Introduction + Workshop Brief</td>
-<td><a href="https://docs.google.com/presentation/d/1Px4Fn6VBfQeAZnx4_3ydUZDNEteOTrYPfXCOfFOZTsc/edit?usp=sharing">Google Slides</a>
+<td><a href="https://docs.google.com/presentation/d/1Px4Fn6VBfQeAZnx4_3ydUZDNEteOTrYPfXCOfFOZTsc/edit?usp=sharing">Google Slides</a></td>
 <td>⏱️ 10 minutes</td>
-<td>
 </tr>
 <tr>
 <td><b>Lab 1</b>: Get started with ansible-builder</td>
@@ -82,7 +80,7 @@ After finishing this lab you are ready to start taking advantage of the numerous
 <td>⏱️ 10 minutes</td>
 </tr>
 <tr>
-<td><b>Lab 4</b>: Sign Ansible Content Collections with private automation hub	</td>
+<td><b>Lab 4</b>: Sign Ansible Content Collections with private automation hub</td>
 <td>Learn how to sign Ansible Content Collections using a private automation hub and install collections with ansible-galaxy CLI.</td>
 <td><a href="https://play.instruqt.com/embed/redhat/tracks/private-automation-hub-signing?token=em_UTCtnLfGucfaOS0_">🚀 Launch Lab</a></td>
 <td>⏱️ 45 minutes</td>
@@ -94,13 +92,10 @@ After finishing this lab you are ready to start taking advantage of the numerous
 <td>⏱️ 10 minutes</td>
 </tr>
 <tr>
-<td><b>Lab 5</b>: Manage user access and content policies using private automation hub	</td>
-<td>Create groups so your automation hub users have appropriate system permissions or grant view-only access to unauthorized users.	</td>
-<td><a href="https://play.instruqt.com/embed/redhat/tracks/hub-managing-user-access?token=em_sqTC_YqGLwBSDT5r">🚀 Launch Lab</a></td>
-<td>⏱️ 45 minutes</td>
-</tr>
-</tbody>
-</table>
+<td><b>Lab 5</b>: Manage user access and content policies using private automation hub</td>
+<td>Create groups so your automation hub users have appropriate system permissions or grant view-only access to unauthorized users.</td>
+<td><a href="https://play.instruqt.com/embed/redhat/tracks/hub-managing-user-access?token=em_sqTC_YqGLwBSDT5r">🚀 Launch
+
 
 # Going Further
 
