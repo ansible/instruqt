@@ -1,4 +1,4 @@
-# Event-Driven Ansible Technical Workshop
+# Event-Driven Ansible & ServiceNow Technical Workshop
 
 > **IMPORTANT TO NOTE** 
 > 
