@@ -15,7 +15,7 @@ Tasks in this lab include:
 
 > **NOTE** 
 > 
-> Windows Automation Technical 90-min Workshop
+> This workshop is also known as the Windows Automation Technical 90-min Workshop
 > 
 
 ## Presentation Deck
