@@ -35,6 +35,8 @@ After finishing this lab you are ready to start taking advantage of the numerous
 <th>Link</th>
 <th>Estimated Time</th>
 </tr>
+</thead>
+<tbody>
 <tr>
 <td><b>Slides</b></td>
 <td>Introduction + Workshop Brief</td>
@@ -95,6 +97,7 @@ After finishing this lab you are ready to start taking advantage of the numerous
 <td><a href="https://play.instruqt.com/embed/redhat/tracks/hub-managing-user-access?token=em_sqTC_YqGLwBSDT5r">🚀 Launch Lab</a></td>
 <td>⏱️ 45 minutes</td>
 </tr>
+</tbody>
 </table>
 
 # Going Further
