@@ -1,6 +1,6 @@
 # Ansible Workshop Directory
 
-## 90 minute online workshops
+## Ansible 90-minute workshops
 
 | Workshop Title  | Link |
 |---|---|
