@@ -103,12 +103,10 @@
       until: __controller_setup_async_result.finished
       register: __controller_setup_async_result
       when: __controller_setup_async.ansible_job_id is defined
-  rescue:
-    - name: Print error message
-      ansible.builtin.fail:
-        msg: |
-          "Rescue - Controller installation failed.
-          "{{ __controller_setup_async_result }}"
+  always:
+    - name: Print setup output
+      ansible.builtin.debug:
+        var: __controller_setup_async_result
 
 - name: Wait for Automation Controller to be up
   ansible.builtin.uri:
