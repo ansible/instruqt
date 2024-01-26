@@ -11,6 +11,7 @@
       controller_password: "{{ controller_password }}"
       controller_host: "{{ controller_hostname }}"
       validate_certs: "{{ controller_validate_certs }}"
+  no_log: true
 
 - name: Install EPEL repository
   ansible.builtin.yum_repository:
@@ -71,7 +72,7 @@
 #  Added for student command line tasks
 - name: Copy ansible-navigator.yml template - {{ student_username }}
   ansible.builtin.template:
-    src: "ansible-navigator.yml.j2"
+    src: "{{ track_slug }}/ansible-navigator.yml.j2"
     dest: "~{{ student_username }}/.ansible-navigator.yml"
     mode: "644"
     owner: "{{ student_username }}"

@@ -14,7 +14,7 @@ ansible_user: "{{ admin_username }}"
 aap_dir: /home/{{ ansible_user }}/aap_install
 controller_install_command: ANSIBLE_BECOME_METHOD='sudo' ANSIBLE_BECOME=True set -o pipefail && ./setup.sh -e registry_username='{{ registry_username }}' -e registry_password='{{ registry_password }}' # noqa yaml[line-length]
 offline_token: "{{ lookup('ansible.builtin.env', 'REDHAT_OFFLINE_TOKEN') }}"
-provided_sha_value: d3ecb5932c9f154ad279dd2f28ce3f711f1447b54ee92f50698a601f853644c3 # RHEL 9 2.4
+provided_sha_value: "{{ lookup('ansible.builtin.env', 'AAP_SHA_VALUE', default='7c4509b3436c7423a60a65815493b3d66162acd09dbca131a9b5edad9e319a40') }}" # noqa yaml[line-length] # RHEL 9 2.4
 
 # GCP vars
 gcp_resources_zone: us-central1-a
@@ -34,14 +34,33 @@ gcp_resources_instances:
     disks:
       - auto_delete: true
         boot: true
-        device_name: "{{ track_slug }}-controller"
+        device_name: "{{ controller_hostname }}"
         initialize_params:
-          source_image: "projects/{{ gcp_resources_project }}/global/images/rhel9"
+          source_image: projects/rhel-cloud/global/images/family/rhel-9
           disk_size_gb: 20
           disk_type: pd-balanced
     tags:
       items:
         - https-server
+    metadata:
+      ssh-keys: "{{ lookup('file', '~/.ssh/instruqt/instruqt_provision.pub') }}"
+  - name: "{{ track_slug }}-rhel-node"
+    labels:
+      role: "{{ track_slug }}"
+      mesh-type: rhel-node
+    machine_type: e2-standard-2
+    network_interfaces:
+      - access_configs:
+        - name: External NAT  # noqa yaml[indentation]
+          type: ONE_TO_ONE_NAT
+    disks:
+      - auto_delete: true
+        boot: true
+        device_name: "{{ track_slug }}-rhel-node"
+        initialize_params:
+          source_image: projects/rhel-cloud/global/images/family/rhel-9
+          disk_size_gb: 20
+          disk_type: pd-balanced
     metadata:
       ssh-keys: "{{ lookup('file', '~/.ssh/instruqt/instruqt_provision.pub') }}"
 gcp_inventory_host_vars:
@@ -55,16 +74,23 @@ gcp_resources_images:
   - name: "{{ controller_hostname }}-image"
     source_disk:
       selfLink: "https://www.googleapis.com/compute/v1/projects/{{ gcp_resources_project }}/zones/\
-        {{ gcp_resources_zone }}/disks/{{ lab['jhb']['hostname'] }}"
+        {{ gcp_resources_zone }}/disks/{{ controller_hostname }}"
     labels:
       role: "{{ track_slug }}"
     description: "{{ track_slug }} - {{ controller_hostname }} image."
+  - name: "{{ track_slug }}-rhel-node-image"
+    source_disk:
+      selfLink: "https://www.googleapis.com/compute/v1/projects/{{ gcp_resources_project }}/zones/\
+        {{ gcp_resources_zone }}/disks/{{ track_slug }}-rhel-node"
+    labels:
+      role: "{{ track_slug }}"
+    description: "{{ track_slug }} - {{ track_slug }}-rhel-node image."
 
 # Base controller custom setup vars
 admin_username: "{{ vault_admin_username }}"
 admin_password: "{{ vault_admin_password }}"
-redhat_username: "{{ lookup('ansible.builtin.env', 'REDHAT_USERNAME', default='') }}"
-redhat_password: "{{ lookup('ansible.builtin.env', 'REDHAT_PASSWORD', default='') }}"
+redhat_username: "{{ lookup('ansible.builtin.env', 'REDHAT_USERNAME') }}"
+redhat_password: "{{ lookup('ansible.builtin.env', 'REDHAT_PASSWORD') }}"
 registry_username: "{{ redhat_username }}"
 registry_password: "{{ redhat_password }}"
 
@@ -85,7 +111,7 @@ gitea_app_url: "{{ gitea_protocol }}://{{ gitea_hostname }}:{{ gitea_http_port }
 gitea_repo_name: acme_corp
 gitea_admin_username: "{{ vault_gitea_admin_username }}"
 gitea_admin_password: "{{ vault_gitea_admin_password }}"
-gitea_clone_address: "https://github.com/craig-br/lightspeed-demos"
+gitea_clone_address: "https://github.com/ansible/ansible-lightspeed-demos"
 
 vscode_settings_file: "{{ playbook_dir }}/templates/{{ track_slug }}/settings.json"
 
@@ -120,7 +146,6 @@ lab:
   navigator_execution_environment:
     name: ACME Corp execution environment
     image: quay.io/acme_corp/lightspeed-101_ee
-    # image: quay.io/acme_corp/summit_ee
   s3:
     # Dev
     bucket_name: tmm-instruqt-content.demoredhat.com.dev
@@ -174,6 +199,8 @@ gnome_gsettings:
   - org.gnome.shell.extensions.desktop-icons show-trash false
   - org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"
 
+controller_pip_packages:
+  - selenium
 controller_os_packages:
   - ansible-core
   - ansible-navigator
@@ -183,10 +210,6 @@ controller_os_packages:
 # VS Code extension emojis
   - google-noto-emoji-color-fonts
   - google-noto-emoji-fonts
-
-# controller_pip_packages:
-# - ansible-navigator
-# - ansible-lint
 
 controller_collections:
   - redhat_cop.controller_configuration
@@ -310,6 +333,7 @@ controller_execution_environments:
     state: present
     pull: never
 
+#  Must have scm_update_on_launch: true for lab
 controller_projects:
   - name: "{{ lab.project.name }}"
     organization: "{{ lab.organization }}"
@@ -329,7 +353,6 @@ controller_inventories:
     description: "{{ lab.inventory.name }}"
     variables:
       ansible_ssh_private_key_file: ~/.ssh/instruqt_lab
-      ansible_host: lightspeed-101-controller
       ansible_user: rhel
       ansible_python_interpreter: /usr/bin/python3
       ansible_ssh_extra_args: '-o StrictHostKeyChecking=no -o ControlMaster=auto -o ControlPersist=60s'
@@ -337,23 +360,40 @@ controller_inventories:
 
 controller_hosts:
   - name: controller.acme.example.com
+    variables:
+      ansible_host: "{{ track_slug }}-controller"
     inventory: "{{ lab.inventory.name }}"
     enabled: true
   - name: app-01.acme.example.com
     inventory: "{{ lab.inventory.name }}"
     enabled: true
+    variables:
+      ansible_host: "{{ track_slug }}-rhel-node1"
+  - name: rhel-01.acme.example.com
+    inventory: "{{ lab.inventory.name }}"
+    enabled: true
+    variables:
+      ansible_host: "{{ track_slug }}-rhel-node1"
   - name: app-02.acme.example.com
     inventory: "{{ lab.inventory.name }}"
     enabled: true
+    variables:
+      ansible_host: "{{ track_slug }}-rhel-node1"
   - name: monitor-01.acme.example.com
     inventory: "{{ lab.inventory.name }}"
     enabled: true
+    variables:
+      ansible_host: "{{ track_slug }}-rhel-node1"
   - name: db-01.acme.example.com
     inventory: "{{ lab.inventory.name }}"
     enabled: true
+    variables:
+      ansible_host: "{{ track_slug }}-rhel-node1"
   - name: web-01.acme.example.com
     inventory: "{{ lab.inventory.name }}"
     enabled: true
+    variables:
+      ansible_host: "{{ track_slug }}-rhel-node1"
 
 controller_groups:
   - name: appservers
@@ -371,7 +411,7 @@ controller_groups:
     description: ACME Corp monitoring servers
     inventory: "{{ lab.inventory.name }}"
     hosts:
-      - monitor-01.acme.example.com
+      - rhel-01.acme.example.com
   - name: databases
     description: ACME Corp monitoring servers
     inventory: "{{ lab.inventory.name }}"

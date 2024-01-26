@@ -41,7 +41,7 @@
     - name: Manage Google Cloud instances | Async
       ansible.builtin.async_status:
         jid: "{{ __manage_instances_job_async_result_item.ansible_job_id }}"
-      retries: 60
+      retries: 120
       delay: 1
       loop: "{{ __manage_instances_job_async.results }}"
       loop_control:
@@ -55,6 +55,6 @@
       ansible.builtin.fail:
         msg: |
           "Rescue - An error occurred managing GCP instances.
-          "{{ __manage_instances_job_async_result | from_json }}"
+          "{{ __manage_instances_job_async_result }}"
       notify:
         - remove instances
