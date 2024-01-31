@@ -1,6 +1,10 @@
 ---
 ---
+// SCSS content starts here
 
+@import "{{ site.theme }}";
+
+// font and color tweaks
 
 * {
   font-family: 'Red Hat Text', sans-serif;
