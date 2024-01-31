@@ -105,10 +105,10 @@ img {
 
 // table tweaks
 
-table, th, td {
-  border: 1px solid #999;
-  border-collapse: collapse;
-}
+// table, th, td {
+//   border: 1px solid #999;
+//   border-collapse: collapse;
+// }
 
 td, th {
   min-width: 100px;
@@ -307,6 +307,10 @@ a h3 {
 }
 a h3:hover {
     color: #5F0000;
+}
+
+tr:hover td {
+  background-color: #daf2f2;
 }
 
 b {
