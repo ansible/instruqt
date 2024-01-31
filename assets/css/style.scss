@@ -128,9 +128,13 @@ th {
   font-size: 16px;
 }
 
-td {
+tr {
   font-family: 'Red Hat Text';
   background: #f2f2f2;
+}
+
+tr:nth-child(even) {
+  background-color: #ffffff;
 }
 
 // codeblock tweaks
