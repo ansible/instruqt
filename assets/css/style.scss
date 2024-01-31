@@ -133,7 +133,11 @@ tr {
   background: #f2f2f2;
 }
 
-tr:nth-child(even) {
+tr:nth-child(even) td {
+  background-color: #f1f1f1;
+}
+
+ td {
   background-color: #ffffff;
 }
 
