@@ -1,12 +1,38 @@
 # Ansible Workshop Directory
 
+## 90 minute online workshops
+
 <table class="table-clickable">
-    <tbody>
-        <tr data-href="https://example.com">
-            <td>Example Link 1</td>
+    <thead>
+        <tr>
+            <th>Workshop Title</th>
+            <th>Link</th>
         </tr>
-        <tr data-href="https://another.example">
-            <td>Example Link 2</td>
+    </thead>
+    <tbody>
+        <tr data-href="./webpages/eda.md">
+            <td>Event-Driven Ansible Technical Workshop</td>
+            <td><a href="./webpages/eda.md">🔬 Open Workshop</a></td>
+        </tr>
+        <tr data-href="./webpages/ansible-cloud-lab">
+            <td>Introduction to cloud automation</td>
+            <td><a href="./webpages/ansible-cloud-lab">🔬 Open Workshop</a></td>
+        </tr>
+        <tr data-href="./webpages/lightspeed.md">
+            <td>Ansible Lightspeed and Development Technical Workshop</td>
+            <td><a href="./webpages/lightspeed.md">🔬 Open Workshop</a></td>
+        </tr>
+        <tr data-href="./webpages/network.md">
+            <td>Getting Started with Network Automation</td>
+            <td><a href="./webpages/network.md">🔬 Open Workshop</a></td>
+        </tr>
+        <tr data-href="./webpages/servicenow.md">
+            <td>Getting Started with ServiceNow Automation</td>
+            <td><a href="./webpages/servicenow.md">🔬 Open Workshop</a></td>
+        </tr>
+        <tr data-href="./webpages/windows.md">
+            <td>Getting Started with Windows Automation</td>
+            <td><a href="./webpages/windows.md">🔬 Open Workshop</a></td>
         </tr>
     </tbody>
 </table>
