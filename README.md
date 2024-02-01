@@ -10,29 +10,29 @@
         </tr>
     </thead>
     <tbody>
-        <tr data-href="./webpages/eda.md">
+        <tr data-href="./webpages/eda">
             <td>Event-Driven Ansible Technical Workshop</td>
-            <td><a href="./webpages/eda.md">🔬 Open Workshop</a></td>
+            <td><a href="./webpages/eda">🔬 Open Workshop</a></td>
         </tr>
         <tr data-href="./webpages/ansible-cloud-lab">
             <td>Introduction to cloud automation</td>
             <td><a href="./webpages/ansible-cloud-lab">🔬 Open Workshop</a></td>
         </tr>
-        <tr data-href="./webpages/lightspeed.md">
+        <tr data-href="./webpages/lightspeed">
             <td>Ansible Lightspeed and Development Technical Workshop</td>
-            <td><a href="./webpages/lightspeed.md">🔬 Open Workshop</a></td>
+            <td><a href="./webpages/lightspeed">🔬 Open Workshop</a></td>
         </tr>
-        <tr data-href="./webpages/network.md">
+        <tr data-href="./webpages/network">
             <td>Getting Started with Network Automation</td>
-            <td><a href="./webpages/network.md">🔬 Open Workshop</a></td>
+            <td><a href="./webpages/network">🔬 Open Workshop</a></td>
         </tr>
-        <tr data-href="./webpages/servicenow.md">
+        <tr data-href="./webpages/servicenow">
             <td>Getting Started with ServiceNow Automation</td>
-            <td><a href="./webpages/servicenow.md">🔬 Open Workshop</a></td>
+            <td><a href="./webpages/servicenow">🔬 Open Workshop</a></td>
         </tr>
-        <tr data-href="./webpages/windows.md">
+        <tr data-href="./webpages/windows">
             <td>Getting Started with Windows Automation</td>
-            <td><a href="./webpages/windows.md">🔬 Open Workshop</a></td>
+            <td><a href="./webpages/windows">🔬 Open Workshop</a></td>
         </tr>
     </tbody>
 </table>
@@ -74,6 +74,6 @@ Please [open issues](https://github.com/ansible/instruqt/issues/new) so we can f
 
 <hr>
 
-Want to [contribute?](docs/contribute.md)
+Want to [contribute?](docs/contribute)
 
 ![ansible demo logo image](assets/ansible-demo.png)
