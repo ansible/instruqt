@@ -1,0 +1,6 @@
+---
+- name: Test gcp_resources
+  hosts: localhost
+  become: false
+  roles:
+    - gcp_resources
