@@ -7,6 +7,6 @@
     "ansible.executionEnvironment.image": "quay.io/acme_corp/summit_ee",
     "editor.renderWhitespace": "all",
     "ansible.validation.enabled": true,
-    "ansible.python.interpreterPath": "/bin/python3.11",
+    "ansible.python.interpreterPath": "/usr/bin/python",
     "window.zoomLevel": 1
 }

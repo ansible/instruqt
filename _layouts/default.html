@@ -117,7 +117,16 @@
           <a class="header-link" href="{{ '/webpages/windows' | relative_url }}">
             Windows
           </a>       
-          {% endif %}                                      
+          {% endif %}
+          {% if page.path == "webpages/aapcasc.md" %}
+          <a class="header-link-active" href="{{ '/webpages/aapcasc' | relative_url }}">
+            AAP-CASC
+          </a>
+          {% else %}  
+          <a class="header-link" href="{{ '/webpages/aapcasc' | relative_url }}">
+            AAP-CASC
+          </a>       
+          {% endif %}
         </div>
       </header>
 

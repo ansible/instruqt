@@ -3,12 +3,16 @@
 # Converts environment variables to YAML equivalent and creates facts.
 ##
 - name: Make sure track_slug variable is set
+  run_once: true
+  delegate_to: localhost
   ansible.builtin.assert:
     that: lookup('ansible.builtin.env', 'TRACK_SLUG') or track_slug is defined
     quiet: true
     fail_msg: "Please set the Ansible 'track_slug' variable or 'TRACK_SLUG' environment variable"
 
 - name: Set track_slug fact from TRACK_SLUG environment variable
+  run_once: true
+  delegate_to: localhost
   ansible.builtin.set_fact:
     track_slug: "{{ lookup('ansible.builtin.env', 'TRACK_SLUG') }}"
   when:
@@ -17,6 +21,7 @@
 
 - name: Include vars file from vars directory
   when: (track_slug is defined) and (track_slug | length > 0)
+  run_once: true
   delegate_to: localhost
   become: false
   no_log: true
@@ -42,17 +47,23 @@
       when: vars_file.stat.exists
 
 - name: Map required variables to facts
+  run_once: true
+  delegate_to: localhost
+  when: (extra_vars is defined) and (extra_vars | length > 0)
+  no_log: true
   ansible.builtin.set_fact:
     "{{ __extra_vars_item.name }}": "{{ lookup('ansible.builtin.env', __extra_vars_item.env | default(omit) ) or lookup('ansible.builtin.vars', __extra_vars_item.name | default(omit)) }}" # yamllint disable-line rule:line-length
   register: __extra_vars_results
-  when: (extra_vars is defined) and (extra_vars | length > 0)
   loop_control:
     loop_var: __extra_vars_item
     label: "{{ __extra_vars_item.name }}"
   loop: "{{ extra_vars }}"
-  no_log: true
 
 - name: Check required variables are set
+  run_once: true
+  when: (__extra_vars_results.results is defined) and (__extra_vars_results.results | length > 0)
+  delegate_to: localhost
+  no_log: true
   ansible.builtin.assert:
     that:
       - lookup('ansible.builtin.vars', __extra_vars_results_item.__extra_vars_item.name) | length > 0
@@ -61,9 +72,7 @@
         - Environment variable - {{ __extra_vars_results_item.__extra_vars_item.env | default('Not applicable - ignore') }}.
         - Ansible variable - {{ __extra_vars_results_item.__extra_vars_item.name }}.
     quiet: true
-  when: (__extra_vars_results.results is defined) and (__extra_vars_results.results | length > 0)
   loop: "{{ __extra_vars_results.results }}"
   loop_control:
     loop_var: __extra_vars_results_item
     label: "{{ __extra_vars_results_item.__extra_vars_item.name }}"
-  no_log: true

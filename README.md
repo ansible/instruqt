@@ -1,6 +1,6 @@
 # Ansible Workshop Directory
 
-## 90 minute online workshops
+## Ansible 90-minute workshops
 
 | Workshop Title  | Link |
 |---|---|
@@ -10,6 +10,7 @@
 | Getting Started with Network Automation | [🔬 Open Workshop](./webpages/network.md) |
 | Getting Started with ServiceNow Automation | [🔬 Open Workshop](./webpages/servicenow.md) |
 | Getting Started with Windows Automation | [🔬 Open Workshop](./webpages/windows.md) |
+| Getting Started with Configuration as Code for Ansible Automation Platform 2 Technical Workshop | [🔬 Open Workshop](./webpages/aapcasc.md) |
 
 ## Ansible 4-hour workshops
 
@@ -17,6 +18,7 @@
 |---|---|
 | Event-Driven Ansible & ServiceNow Technical Workshop | [🔬 Open Workshop](./webpages/eda-4.md) |
 | Ansible Lightspeed and Development Technical Workshop | [🔬 Open Workshop](./webpages/lightspeed-4.md) |
+| Getting Started with Configuration as Code for Ansible Automation Platform 2 Technical Workshop | [🔬 Open Workshop](./webpages/aapcasc-4.md) |
 
 # Lab Listing
 

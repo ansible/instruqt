@@ -1,0 +1,31 @@
+---
+- name: Remove GCP instances
+  listen: remove instances
+  google.cloud.gcp_compute_instance:
+    name: "{{ __remove_instances_job_async_item.name }}"
+    state: absent
+    zone: "{{ gcp_zone }}"
+    labels: "{{ __create_instances_job_async_item.labels | default(omit) }}"
+    tags: "{{ __create_instances_job_async_item.tags | default(omit) }}"
+  loop: "{{ gcp_instances }}"
+  loop_control:
+    loop_var: __remove_instances_job_async_item
+    label: "{{ __remove_instances_job_async_item.name }}"
+  async: 1000
+  poll: 0
+  register: __remove_instances_job_async
+  changed_when: not __remove_instances_job_async.changed
+
+- name: Remove GCP instances | Async
+  listen: remove instances
+  ansible.builtin.async_status:
+    jid: "{{ __remove_instances_job_async_result_item.ansible_job_id }}"
+  retries: 180
+  delay: 1
+  loop: "{{ __remove_instances_job_async.results }}"
+  loop_control:
+    loop_var: __remove_instances_job_async_result_item
+    label: "{{ __remove_instances_job_async_result_item.__remove_instances_job_async_item.name }}"
+  until: __remove_instances_job_async_result.finished
+  register: __remove_instances_job_async_result
+  when: __remove_instances_job_async_result_item.ansible_job_id is defined

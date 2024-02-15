@@ -1,0 +1,45 @@
+---
+argument_specs:
+  # roles/gcp_resources/tasks/manage_gcp_instances.yml entry point
+  manage_gcp_instances:
+    short_description: Manage GCP instances
+    options:
+      gcp_resources_zone:
+        type: "str"
+        required: true
+        default: "GCP_ZONE"
+        description: "The GCP zone to provision resources.
+                      Defaults to 'GCP_ZONE' environment variable."
+      gcp_resources_project:
+        type: "str"
+        required: true
+        default: "GCP_PROJECT"
+        description: "The GCP Project name to provision resources.
+                      Defaults to 'GCP_PROJECT' environment variable."
+      gcp_resources_instances_state:
+        type: "str"
+        required: true
+        default: "present"
+        description: "State of the GCP instance."
+      gcp_resources_instances_status:
+        type: "str"
+        required: true
+        default: RUNNING
+        description: "The status of the GCP instance."
+      gcp_resources_instances:
+        type: list
+        required: true
+        description: The details of the GCP instances. Please refer to the README for an example.
+    # roles/gcp_resources/tasks/manage_gcp_instances.yml entry point
+    manage_gcp_images:
+      short_description: Manage GCP images
+      options:
+        gcp_resources_images:
+          type: list
+          required: true
+          default: present
+          description: The details of the GCP images.
+        gcp_resources_images_state:
+          type: str
+          required: true
+          description: GCP image state.

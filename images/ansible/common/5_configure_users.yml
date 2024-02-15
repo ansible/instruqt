@@ -16,7 +16,7 @@
     line: >-
       PasswordAuthentication yes
 
-- name: Configure sudoers for wheel group
+- name: Configure sudoers for wheel group # noqa args[module]
   community.general.sudoers:
     name: wheel_sudoers
     state: present

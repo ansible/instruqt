@@ -11,6 +11,7 @@
       controller_password: "{{ controller_password }}"
       controller_host: "{{ controller_hostname }}"
       validate_certs: "{{ controller_validate_certs }}"
+  no_log: true
 
 - name: Install EPEL repository
   ansible.builtin.yum_repository:
@@ -71,7 +72,7 @@
 #  Added for student command line tasks
 - name: Copy ansible-navigator.yml template - {{ student_username }}
   ansible.builtin.template:
-    src: "ansible-navigator.yml.j2"
+    src: "{{ track_slug }}/ansible-navigator.yml.j2"
     dest: "~{{ student_username }}/.ansible-navigator.yml"
     mode: "644"
     owner: "{{ student_username }}"
@@ -192,7 +193,10 @@
       loop:
         - "{{ student_username }}"
         - awx
+        - root
+        - "{{ ansible_user }}"
 
+    # TODO: Fix with inner / outer loop for user and controller_execution_environments var
     - name: Pull execution environment images - awx
       become_user: "awx"
       containers.podman.podman_image:
@@ -200,8 +204,8 @@
       loop: "{{ controller_execution_environments }}"
       register: __podman_pull_supported_awx
       until: __podman_pull_supported_awx is not failed
-      retries: 40
-      delay: 2
+      retries: 180
+      delay: 1
 
     - name: Pull execution environment images - {{ student_username }}
       become_user: "{{ student_username }}"
@@ -210,15 +214,16 @@
       loop: "{{ controller_execution_environments }}"
       register: __podman_pull_supported_student
       until: __podman_pull_supported_student is not failed
-      retries: 40
-      delay: 2
+      retries: 180
+      delay: 1
 
     #  Added for track lifecycle scripts - root
     - name: Pull execution environment images - {{ ansible_user_id }}
       containers.podman.podman_image:
         name: "{{ item.image }}"
+      become: true
       loop: "{{ controller_execution_environments }}"
       register: __podman_pull_supported_student
       until: __podman_pull_supported_student is not failed
-      retries: 40
-      delay: 2
+      retries: 180
+      delay: 1
