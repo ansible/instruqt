@@ -24,8 +24,8 @@ tabs:
   hostname: controller
   url: https://ansible.service-now.com
   new_window: true
-difficulty: basic
-timelimit: 400
+difficulty: ""
+timelimit: 420
 ---
 👋 Introduction
 ====
@@ -37,7 +37,7 @@ A new inventory has been added to Automation Controller, but it hasn't queried a
 
 👀 Review inventories
 ====
-- First, open the Automation Controller tab and navigator the right hand navigation pane to `Hosts`. Notice that this list is empty. This is because the integration between Ansible Automation Platform and ServiceNow is an API to API integration where the endpoints we're targeting are not individual hosts, but an API.
+- First, open the Automation Controller tab and navigate the right hand navigation pane to `Hosts`. Notice that this list is empty. This is because the integration between Ansible Automation Platform and ServiceNow is an API to API integration where the endpoints we're targeting are not individual hosts, but an API.
 
 ▶️ Sync ServiceNow inventory
 ====
@@ -70,4 +70,4 @@ group_by:
 
 🐛 Encountered an issue?
 ====
-If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new?labels=getting-started-servicenow-automation&title=New+servicenow+issue:+servicenow-inventory&assignees=cloin).
+If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new?labels=getting-started-servicenow-automation&title=New+servicenow+issue:+servicenow-inventory+(Sandbox+id:+[[ Instruqt-Var key="SANDBOX" hostname="controller" ]])&assignees=cloin).

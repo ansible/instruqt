@@ -40,7 +40,7 @@ tee /home/rhel/servicenow_project/problem-attach.yml << EOF
     - name: Assign a problem to a user for assessment
       servicenow.itsm.problem:
         number: "{{ problem.record.number }}"
-        state: assess
+        state: 1
         assigned_to: "{{ lookup('env', 'SN_USERNAME') }}"
 
     - name: Update incident status now that problem has been created
@@ -78,7 +78,7 @@ tee /home/rhel/challenge-2/template-create.yml << EOF
         organization: "Default"
         inventory: "Demo Inventory"
         project: "ServiceNow"
-        playbook: "problem-attach.yml"
+        playbook: "student_project/problem-attach.yml"
         execution_environment: "ServiceNow EE"
         credentials:
           - "servicenow credential"

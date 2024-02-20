@@ -31,12 +31,15 @@ tee /home/rhel/servicenow_project/create-update-config-items.yml << EOF
   connection: local
   collections:
     - servicenow.itsm
+  vars:
+    demo_username: "{{ lookup('env', 'SN_USERNAME') }}"
 
   tasks:
 
   - name: Create/update configuration item
     servicenow.itsm.configuration_item:
-      name: "{{ item.hostname }}"
+      name: "{{ item.hostname }}-{{ demo_username }}"
+      assigned_to: "{{ demo_username }}"
       ip_address: "{{ item.default_ip }}"
       mac_address: "{{ item.default_mac }}"
       environment: test
@@ -44,6 +47,12 @@ tee /home/rhel/servicenow_project/create-update-config-items.yml << EOF
         sys_class_name: cmdb_ci_linux_server
     loop: "{{ node_info }}"
     register: configuration_item
+
+  - name: debug
+    debug:
+      msg: "{{ configuration_item }}"
+
+
 
 EOF
 
@@ -68,7 +77,7 @@ tee /home/rhel/challenge-4/template-create.yml << EOF
         organization: "Default"
         inventory: "rhel inventory"
         project: "ServiceNow"
-        playbook: "collect-node-info.yml"
+        playbook: "student_project/collect-node-info.yml"
         execution_environment: "ServiceNow EE"
         credentials:
           - "rhel credential"
@@ -87,7 +96,7 @@ tee /home/rhel/challenge-4/template-create.yml << EOF
         organization: "Default"
         inventory: "Demo Inventory"
         project: "ServiceNow"
-        playbook: "create-update-config-items.yml"
+        playbook: "student_project/create-update-config-items.yml"
         execution_environment: "ServiceNow EE"
         credentials:
           - "servicenow credential"

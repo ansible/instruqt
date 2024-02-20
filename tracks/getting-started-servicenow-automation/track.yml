@@ -1,23 +1,25 @@
 slug: getting-started-servicenow-automation
 id: faoq9b1onz2h
-type: track
-title: Getting started with ServiceNow automation
-teaser: Explore base functionality provided by the ServiceNow collection for Ansible
-  Automation Platform
+title: Get started with ServiceNow automation
 description: Ansible Automation Platform brings certified integrations to some of
   the most popular IT services. Learn how to leverage a supported integration with
   ServiceNow in order to implement closed loop automation through incident and CMDB
   management to ensure your organizations source of truth remains trustworthy.
 icon: ""
-level: beginner
 tags:
 - itsm
-- ' servicenow'
-- ' cmdb'
+- cmdb
+- servicenow
 owner: redhat
 developers:
 - colin@redhat.com
-private: false
-published: true
 show_timer: true
-checksum: "17712047228775310334"
+timelimit: 3300
+lab_config:
+  overlay: false
+  width: 33
+  position: right
+  extend_ttl: 3300
+  feedback_recap_enabled: true
+  loadingMessages: true
+checksum: "13692025422635255806"
