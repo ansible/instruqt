@@ -69,7 +69,7 @@ tee /home/rhel/challenge-1/template-create.yml << EOF
         organization: "Default"
         inventory: "Demo Inventory"
         project: "ServiceNow"
-        playbook: "incident-create.yml"
+        playbook: "student_project/incident-create.yml"
         execution_environment: "ServiceNow EE"
         use_fact_cache: false
         credentials:

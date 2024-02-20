@@ -21,7 +21,7 @@ tee /home/rhel/challenge-6/create-inventory-project.yml << EOF
       organization: Default
       state: present
       scm_type: git
-      scm_url: https://github.com/cloin/servicenow_inventory
+      scm_url: https://github.com/cloin/instruqt-snow
       scm_update_on_launch: true
       controller_host: "https://localhost"
       controller_username: admin

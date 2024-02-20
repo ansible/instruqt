@@ -25,7 +25,7 @@ tabs:
   url: https://ansible.service-now.com
   new_window: true
 difficulty: basic
-timelimit: 400
+timelimit: 420
 ---
 👋 Introduction
 ====
@@ -47,4 +47,4 @@ Now that everything has been cleaned up, move onto the next challenge! Click the
 
 🐛 Encountered an issue?
 ====
-If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new?labels=getting-started-servicenow-automation&title=New+servicenow+issue:+query-and-update-records&assignees=cloin).
+If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new?labels=getting-started-servicenow-automation&title=New+servicenow+issue:+query-and-update-records+(Sandbox+id:+[[ Instruqt-Var key="SANDBOX" hostname="controller" ]])&assignees=cloin).

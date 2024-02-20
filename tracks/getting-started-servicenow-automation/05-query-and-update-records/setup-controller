@@ -138,7 +138,7 @@ tee /home/rhel/challenge-5/template-create.yml << EOF
         organization: "Default"
         inventory: "Demo Inventory"
         project: "ServiceNow"
-        playbook: "close-records-by-user.yml"
+        playbook: "student_project/close-records-by-user.yml"
         execution_environment: "ServiceNow EE"
         credentials:
           - "servicenow credential"

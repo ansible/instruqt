@@ -5,25 +5,25 @@ USER=rhel
 su - rhel -c 'mkdir /home/rhel/cleanup'
 
 # creates a playbook to create a user in SNOW
-tee /home/rhel/servicenow_project/create-snow-user.yml << EOF
----
-- name: Run JT from Controller
-  hosts: localhost
-  connection: local
-  gather_facts: false
-  vars:
-    cleanup: true
-  tasks:
+# tee /home/rhel/servicenow_project/create-snow-user.yml << EOF
+# ---
+# - name: Run JT from Controller
+#   hosts: localhost
+#   connection: local
+#   gather_facts: false
+#   vars:
+#     cleanup: true
+#   tasks:
 
-  - name: run jt
-    awx.awx.job_launch:
-      job_template: "SNOW - Configure/Destroy demo account"
-      extra_vars:
-        demo_username: "{{ lookup('env', 'SN_USERNAME') }}"
-        demo_password: "{{ lookup('env', 'SN_USERNAME') }}"
-        cleanup: "{{ cleanup }}"
+#   - name: run jt
+#     awx.awx.job_launch:
+#       job_template: "SNOW - Configure/Destroy demo account"
+#       extra_vars:
+#         demo_username: "{{ lookup('env', 'SN_USERNAME') }}"
+#         demo_password: "{{ lookup('env', 'SN_USERNAME') }}"
+#         cleanup: "{{ cleanup }}"
 
-EOF
+# EOF
 
 # chown above file
 sudo chown rhel:rhel /home/rhel/servicenow_project/create-snow-user.yml
@@ -164,7 +164,7 @@ tee /home/rhel/cleanup/cleanup.yml << EOF
         organization: "Default"
         inventory: "Demo Inventory"
         project: "ServiceNow"
-        playbook: "close-records-by-user.yml"
+        playbook: "student_project/close-records-by-user.yml"
         execution_environment: "ServiceNow EE"
         credentials:
           - "servicenow credential"
@@ -189,7 +189,7 @@ tee /home/rhel/cleanup/cleanup.yml << EOF
         organization: "Default"
         inventory: "Demo Inventory"
         project: "ServiceNow"
-        playbook: "create-snow-user.yml"
+        playbook: "admin_project/create-snow-user.yml"
         execution_environment: "ServiceNow EE"
         use_fact_cache: true
         ask_variables_on_launch: true
@@ -202,14 +202,14 @@ tee /home/rhel/cleanup/cleanup.yml << EOF
         controller_password: ansible123!
         validate_certs: false
       
-    - awx.awx.job_launch:
-        job_template: "0 - Create SNOW demo user"
-        extra_vars:
-          cleanup: true
-        controller_host: https://localhost
-        controller_username: admin
-        controller_password: ansible123!
-        validate_certs: false
+#    - awx.awx.job_launch:
+#        job_template: "0 - Create SNOW demo user"
+#        extra_vars:
+#          cleanup: true
+#        controller_host: https://localhost
+#        controller_username: admin
+#        controller_password: ansible123!
+#        validate_certs: false
 
 EOF
 

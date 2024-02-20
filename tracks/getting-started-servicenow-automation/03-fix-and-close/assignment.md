@@ -25,7 +25,7 @@ tabs:
   url: https://ansible.service-now.com
   new_window: true
 difficulty: basic
-timelimit: 400
+timelimit: 420
 ---
 👋 Introduction
 ====
@@ -36,7 +36,7 @@ A new playbook has been created in your `VS Code` tab.
 
 ▶️ Create a change request
 ====
-- Navigate to `Resources > Job Templates` in automation controller and launch the job template `3 - Attach change request (change-attach.yml)`
+- Navigate to `Resources > Templates` in automation controller and launch the job template `3 - Attach change request (change-attach.yml)`
 - Watch for job completion in automation controller
 
 🔍 Inspect results
@@ -47,4 +47,4 @@ Move onto the next section by selecting the green "Next" button below.
 
 🐛 Encountered an issue?
 ====
-If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new?labels=getting-started-servicenow-automation&title=New+servicenow+issue:+fix-and-close&assignees=cloin).
+If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new?labels=getting-started-servicenow-automation&title=New+servicenow+issue:+fix-and-close+(Sandbox+id:+[[ Instruqt-Var key="SANDBOX" hostname="controller" ]])&assignees=cloin).
