@@ -1,0 +1,8 @@
+---
+## This is play 1
+- name: Install and enable apache webserver
+  hosts: rhel
+  become: true
+  tasks:
+
+    # Install apache webserver & open firewall port 80 for the webserver &  create a custom index.html file that has "I'm a custom website" as content & start the service
