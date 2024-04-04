@@ -1,0 +1,76 @@
+---
+- name: Configure Database servers
+  hosts: rhel
+  become: true
+
+  vars:
+    pgadmin_container:
+      name: pgadmin
+      image: docker.io/dpage/pgadmin4
+      state: started
+      volumes:
+        - /etc/localtime:/etc/localtime:ro
+      env:
+        PGADMIN_DEFAULT_EMAIL: student@example.com
+        PGADMIN_DEFAULT_PASSWORD: learn_ansible
+      ports:
+        - 8083:80
+      log_options:
+        max_size: 10
+
+  tasks:
+################################################# INSTRUCTIONS TASK 1 #################################################
+# Uncomment the line just after this instructions block and Press "ENTER" at the end.
+# Press "TAB" to accept suggestion.
+# Note - The suggestion included Ansible best practices by using Fully Qualified Collection name (FQCN).
+# Note - The suggestion used natural language prompt and inferred the correct installation package.
+#######################################################################################################################
+
+    - name: Install postgresql server package
+      ansible.builtin.package:
+        name: postgresql-server
+        state: present
+
+############################################# INSTRUCTIONS TASK 2,3 and 4 #############################################
+# Press "ENTER" at the end of the multi-task prompt line just after this instructions block. DO NOT UNCOMMENT THE LINE.
+# Press "TAB" to accept suggestion.
+# Task 2 note - The suggestion used simple request and provided the correct terminal command to use.
+#               The suggestion is idempotent. An Ansible best-practice
+# Task 3 note - The suggestion used the Playbook context to know it should start the "postgresql service".
+# Task 4 note - The suggestion used the correct default PostgreSQL TCP port (5432).
+#######################################################################################################################
+
+    # Do initial postgresql config & start the service & allow the traffic through the firewall
+    - name: Do initial postgresql config
+      ansible.builtin.command: postgresql-setup --initdb
+      args:
+        creates: /var/lib/pgsql/data/postgresql.conf
+
+    - name: Start the service
+      ansible.builtin.service:
+        name: postgresql
+        state: started
+
+    - name: Allow the traffic through the firewall
+      ansible.posix.firewalld:
+        port: 5432/tcp
+        permanent: true
+        state: enabled
+        immediate: true
+
+################################################# INSTRUCTIONS TASK 5 #################################################
+# Uncomment the line just after this instructions block and Press "ENTER" at the end.
+# Press "TAB" to accept suggestion.
+# Note - The suggestion integrated the "pgadmin_container" var as requested in the prompt
+#######################################################################################################################
+
+    - name: Create podman container using pgadmin_container var
+      containers.podman.podman_container:
+        name: "{{ pgadmin_container.name }}"
+        image: "{{ pgadmin_container.image }}"
+        state: "{{ pgadmin_container.state }}"
+        restart_policy: always
+        ports: "{{ pgadmin_container.ports }}"
+        env: "{{ pgadmin_container.env }}"
+        volumes: "{{ pgadmin_container.volumes }}"
+        log_options: "{{ pgadmin_container.log_options }}"

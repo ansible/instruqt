@@ -1,0 +1,42 @@
+---
+ansible-navigator:
+  ansible:
+    config:
+      path: /opt/setup-scripts/lightspeed-101/ansible.cfg
+    inventory:
+      entries:
+        - /opt/setup-scripts/lightspeed-101/inventory/inventory.yml
+  execution-environment:
+    container-engine: podman
+    enabled: true
+    image: quay.io/acme_corp/lightspeed-101_ee:latest
+    environment-variables:
+      pass:
+        - _SANDBOX_ID
+        - ANSIBLE_PRIVATE_KEY_FILE
+        - AWS_ACCESS_KEY_ID
+        - AWS_SECRET_ACCESS_KEY
+        - AWS_SESSION_TOKEN
+        - INSTRUQT_AWS_ACCOUNT_AWSADMIN_AWS_ACCESS_KEY_ID
+        - INSTRUQT_AWS_ACCOUNT_AWSADMIN_AWS_SECRET_ACCESS_KEY
+        - AZURE_SECRET
+        - AZURE_SUBSCRIPTION_ID
+        - AZURE_CLIENT_ID
+        - AZURE_TENANT
+        - INSTRUQT_AZURE_SUBSCRIPTION_AZUREADMIN_USERNAME
+        - INSTRUQT_AZURE_SUBSCRIPTION_AZUREADMIN_SPN_ID
+        - INSTRUQT_AZURE_SUBSCRIPTION_AZUREADMIN_SPN_PASSWORD
+        - INSTRUQT_AZURE_SUBSCRIPTION_AZUREADMIN_SUBSCRIPTION_ID
+        - INSTRUQT_AZURE_SUBSCRIPTION_AZUREADMIN_TENANT_ID
+        - INSTRUQT_AZURE_SUBSCRIPTION_AZUREADMIN_PASSWORD
+    pull:
+      policy: missing
+  playbook-artifact:
+    enable: true
+    save-as: "/tmp/{playbook_name}-artifact.json"
+    replay: "/tmp/replay-artifact.json"
+  logging:
+    level: critical
+  editor:
+    command: code -g {filename}:{line_number}
+    console: false

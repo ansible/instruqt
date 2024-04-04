@@ -1,0 +1,388 @@
+---
+# config vars
+ansible_ssh_pipelining: true
+ansible_ssh_extra_args: -o StrictHostKeyChecking=no -o ControlMaster=auto -o ControlPersist=60s
+ansible_host_key_checking: false
+
+track_slug: lightspeed-101
+
+controller_hostname: "{{ vault_controller_hostname }}"
+controller_validate_certs: "{{ vault_controller_validate_certs }}"
+controller_username: "{{ vault_controller_username }}"
+controller_password: "{{ vault_controller_password }}"
+
+student_username: "{{ vault_student_username }}"
+student_password: "{{ vault_student_password }}"
+
+
+# Lab vars
+lab:
+  credential_type:
+    pub_ssh:
+      name: Public SSH key credential type
+  credential:
+    pub_ssh:
+      name: ACME Corp public SSH key
+    ssh:
+      name: ACME Corp machine credential
+    controller:
+      name: ACME Corp controller credential
+    aws:
+      name: ACME Corp AWS credential
+    azure:
+      name: ACME Corp Azure credential
+  organization: ACME Corp
+  project:
+    name: ACME Corp Repo
+    repo: "{{ gitea_app_url }}/{{ student_username }}/acme_corp.git"
+    branch: main
+  inventory:
+    name: ACME Corp DC
+    description: ACME Corp Data center
+  execution_environment:
+    name: ACME Corp execution environment
+    image: quay.io/acme_corp/lightspeed-101_ee
+  s3_bucket_name: tmm-instruqt-content.demoredhat.com.private
+  workflow_name: Database ops workflow
+  # navigator_execution_environment: quay.io/acme_corp/lightspeed-101_ee
+  navigator_execution_environment:
+    name: ACME Corp execution environment
+    image: quay.io/acme_corp/lightspeed-101_ee
+# Gitea vars
+gitea_http_port: 8443
+gitea_protocol: https
+gitea_hostname: gitea
+gitea_app_url: "{{ gitea_protocol }}://{{ gitea_hostname }}:{{ gitea_http_port }}"
+gitea_repo_name: acme_corp
+# Dev
+gitea_clone_address: "https://github.com/ansible/ansible-lightspeed-demos"
+
+configure_tools:
+  vscode_settings:
+    present:
+      - line: '\1"ansible.lightspeed.suggestions.enabled": true\2'
+        regex: '^(.*?)"ansible.lightspeed.suggestions.enabled": true(.*?)$'
+      - line: '\1"ansible.lightspeed.enabled": true\2'
+        regex: '^(.*?)"ansible\.lightspeed\.enabled": true(.*?)$'
+    # absent:
+    #   - line: '\1"ansible.validation.lint.enabled": false\2'
+    #     regex: '^(.*?)"ansible.validation.lint.enabled": false(.*?)$'
+    #   - line: '\1"ansible.validation.enabled": false\2'
+    #     regex: '^(.*?)"ansible.validation.enabled": false(.*?)$'
+
+monitoring:
+  playbooks:
+    - dest_playbook: "~{{ student_username }}/{{ gitea_repo_name }}/playbooks/infra/install_cockpit/demo_install_cockpit.yml"
+      source_playbook: "files/solution_playbooks/solution_install_cockpit.yml"
+      # remote_src: true
+  playbook_names:
+    - demo_install_cockpit.yml
+  jt_names:
+    - Deploy monitoring
+database:
+  playbooks:
+    - dest_playbook: "~{{ student_username }}/{{ gitea_repo_name }}/playbooks/infra/install_pgsql_and_pgadmin/demo_install_pgsql_pgadmin.yml"
+      source_playbook: "files/solution_playbooks/solution_install_pgsql_pgadmin.yml"
+      # remote_src: true
+  playbook_names:
+    - demo_install_pgsql_pgadmin.yml
+  jt_names:
+    - Deploy PostgreSQL and PG Admin
+aws:
+  playbooks:
+    - dest_playbook: "~{{ student_username }}/{{ gitea_repo_name }}/playbooks/cloud/aws/demo_provision_ec2_instance.yml"
+      source_playbook: "files/solution_playbooks/solution_provision_ec2_instance.yml"
+      # remote_src: true
+  playbook_names:
+    - demo_provision_ec2_instance.yml
+  jt_names:
+    - Provision EC2 instance
+azure:
+  playbooks:
+    - dest_playbook: "~{{ student_username }}/{{ gitea_repo_name }}/playbooks/cloud/azure/demo_provision_azure_vm.yml"
+      source_playbook: "files/solution_playbooks/solution_provision_azure_vm.yml"
+      # remote_src: true
+  playbook_names:
+    - demo_provision_azure_vm.yml
+  jt_names:
+    - Provision Azure VM
+# workflow:
+#   playbooks:
+#     - dest_playbook: "~{{ student_username }}/{{ gitea_repo_name }}/playbooks/create_workflow.yml"
+#       source_playbook: "files/initial_playbooks/create_workflow.yml"
+#   jt_names:
+#     - Solve - Create database ops workflow
+playground:
+  playbooks:
+    - dest_playbook: "~{{ student_username }}/{{ gitea_repo_name }}/playbooks/infra/install_cockpit/demo_install_cockpit.yml"
+      source_playbook: "files/initial_playbooks/demo_install_cockpit.yml"
+    - dest_playbook: "~{{ student_username }}/{{ gitea_repo_name }}/playbooks/infra/install_pgsql_and_pgadmin/demo_install_pgsql.yml"
+      source_playbook: "files/initial_playbooks/demo_install_pgsql_pgadmin.yml"
+    - dest_playbook: "~{{ student_username }}/{{ gitea_repo_name }}/playbooks/cloud/aws/demo_provision_ec2_instance.yml"
+      source_playbook: "files/initial_playbooks/demo_provision_ec2_instance.yml"
+    - dest_playbook: "~{{ student_username }}/{{ gitea_repo_name }}/playbooks/cloud/azure/demo_provision_azure_vm.yml"
+      source_playbook: "files/initial_playbooks/demo_provision_azure_vm.yml"
+
+# PGAdmin container
+pgadmin_service_name: app-pgadmin
+pgadmin_container:
+  name: pgadmin
+  image: docker.io/dpage/pgadmin4
+  ports:
+    - 8083:80
+  state: started
+  generate_systemd:
+    path: /etc/systemd/system/
+    container_prefix: app
+    restart_policy: always
+  network: bridge
+  env:
+    PGADMIN_DEFAULT_EMAIL: "{{ student_username }}@example.com"
+    PGADMIN_DEFAULT_PASSWORD: "{{ student_password }}"
+# mattermost_app:
+#   env:
+#     MM_TEAMSETTINGS_SITENAME: ACME Corp Chat
+#   generate_systemd:
+#     path: /etc/systemd/system/
+#     container_prefix: app
+#     restart_policy: always
+#   recreate: true
+#   name: mattermost-preview
+#   image: docker.io/mattermost/mattermost-preview
+#   state: started
+#   ports:
+#     - 8065:8065
+
+# Controller objects
+controller_inventories:
+  - name: "{{ lab.inventory.name }}"
+    organization: "{{ lab.organization }}"
+    description: "{{ lab.inventory.name }}"
+    variables:
+      ansible_ssh_private_key_file: ~/.ssh/instruqt_lab
+      ansible_host: "{{ track_slug }}-controller"
+      # ansible_host: "lightspeed-101-controller.{{ lookup('env', '_SANDBOX_ID') }}.svc.cluster.local"
+      ansible_user: rhel
+      ansible_python_interpreter: /usr/bin/python3
+      ansible_ssh_extra_args: '-o StrictHostKeyChecking=no -o ControlMaster=auto -o ControlPersist=60s'
+      ansible_ssh_pipelining: true
+
+controller_credentials:
+  # - name: "{{ lab.credential.controller.name }}"
+  #   organization: "{{ lab.organization }}"
+  #   credential_type: Red Hat Ansible Automation Platform
+  #   description: "{{ lab.credential.controller.name }}"
+  #   state: present
+  #   inputs:
+  #     host: "{{ controller_hostname }}.{{ lookup('env', '_SANDBOX_ID') }}.svc.cluster.local"
+  #     verify_ssl: "{{ controller_validate_certs }}"
+  #     username: "{{ controller_username }}"
+  #     password: "{{ controller_password }}"
+
+  #  Might be temp - depends on if we stick with this format
+  playground:
+    - name: "{{ lab.credential.aws.name }}"
+      organization: "{{ lab.organization }}"
+      credential_type: Amazon Web Services
+      description: "{{ lab.credential.aws.name }}"
+      state: present
+      inputs:
+        username: "{{ lookup('env', 'AWS_ACCESS_KEY_ID', default='empty') }}"
+        password: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY', default='empty') }}"
+    - name: "{{ lab.credential.azure.name }}"
+      organization: "{{ lab.organization }}"
+      credential_type: Microsoft Azure Resource Manager
+      description: "{{ lab.credential.azure.name }}"
+      state: present
+      inputs:
+        # Can't use proper Azure vars here created in setup-env section.
+        client: "{{ lookup('ansible.builtin.env', 'INSTRUQT_AZURE_SUBSCRIPTION_AZUREADMIN_SPN_ID') }}"
+        secret: "{{ lookup('ansible.builtin.env', 'INSTRUQT_AZURE_SUBSCRIPTION_AZUREADMIN_SPN_PASSWORD') }}"
+        subscription: "{{ lookup('ansible.builtin.env', 'INSTRUQT_AZURE_SUBSCRIPTION_AZUREADMIN_SUBSCRIPTION_ID') }}"
+        tenant: "{{ lookup('ansible.builtin.env', 'INSTRUQT_AZURE_SUBSCRIPTION_AZUREADMIN_TENANT_ID') }}"
+        username: "{{ lookup('ansible.builtin.env', 'INSTRUQT_AZURE_SUBSCRIPTION_AZUREADMIN_USERNAME') }}"
+        password: "{{ lookup('ansible.builtin.env', 'INSTRUQT_AZURE_SUBSCRIPTION_AZUREADMIN_PASSWORD') }}"
+  aws:
+    - name: "{{ lab.credential.aws.name }}"
+      organization: "{{ lab.organization }}"
+      credential_type: Amazon Web Services
+      description: "{{ lab.credential.aws.name }}"
+      state: present
+      inputs:
+        username: "{{ lookup('env', 'AWS_ACCESS_KEY_ID', default='empty') }}"
+        password: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY', default='empty') }}"
+  azure:
+    - name: "{{ lab.credential.azure.name }}"
+      organization: "{{ lab.organization }}"
+      credential_type: Microsoft Azure Resource Manager
+      description: "{{ lab.credential.azure.name }}"
+      state: present
+      inputs:
+        client: "{{ lookup('ansible.builtin.env', 'INSTRUQT_AZURE_SUBSCRIPTION_AZUREADMIN_SPN_ID') }}"
+        secret: "{{ lookup('ansible.builtin.env', 'INSTRUQT_AZURE_SUBSCRIPTION_AZUREADMIN_SPN_PASSWORD') }}"
+        subscription: "{{ lookup('ansible.builtin.env', 'INSTRUQT_AZURE_SUBSCRIPTION_AZUREADMIN_SUBSCRIPTION_ID') }}"
+        tenant: "{{ lookup('ansible.builtin.env', 'INSTRUQT_AZURE_SUBSCRIPTION_AZUREADMIN_TENANT_ID') }}"
+        username: "{{ lookup('ansible.builtin.env', 'INSTRUQT_AZURE_SUBSCRIPTION_AZUREADMIN_USERNAME') }}"
+        password: "{{ lookup('ansible.builtin.env', 'INSTRUQT_AZURE_SUBSCRIPTION_AZUREADMIN_PASSWORD') }}"
+
+controller_templates:
+  # Temp - if this works build into image
+  playground:
+    - name: Provision Azure VM
+      organization: "{{ lab.organization }}"
+      state: present
+      job_type: run
+      playbook: "playbooks/cloud/azure/demo_provision_azure_vm.yml"
+      execution_environment: "{{ lab.execution_environment.name }}"
+      inventory: "{{ lab.inventory.name }}"
+      credentials:
+        - "{{ lab.credential.azure.name }}"
+        - "{{ lab.credential.pub_ssh.name }}"
+      project: "{{ lab.project.name }}"
+      extra_vars:
+        pub_key_data: "{{ lookup('ansible.builtin.file', '~/.ssh/instruqt_lab.pub') }}"
+    - name: Provision EC2 instance
+      organization: "{{ lab.organization }}"
+      state: present
+      job_type: run
+      playbook: "playbooks/cloud/aws/demo_provision_ec2_instance.yml"
+      execution_environment: "{{ lab.execution_environment.name }}"
+      inventory: "{{ lab.inventory.name }}"
+      credentials:
+        - "{{ lab.credential.aws.name }}"
+      project: "{{ lab.project.name }}"
+    - name: Deploy monitoring
+      organization: "{{ lab.organization }}"
+      state: present
+      job_type: run
+      playbook: "playbooks/infra/install_cockpit/demo_install_cockpit.yml"
+      execution_environment: "{{ lab.execution_environment.name }}"
+      inventory: "{{ lab.inventory.name }}"
+      credentials:
+        - "{{ lab.credential.ssh.name }}"
+      project: "{{ lab.project.name }}"
+    - name: Deploy PostgreSQL and PG Admin
+      organization: "{{ lab.organization }}"
+      state: present
+      job_type: run
+      playbook: "playbooks/infra/install_pgsql_and_pgadmin/demo_install_pgsql_pgadmin.yml"
+      execution_environment: "{{ lab.execution_environment.name }}"
+      inventory: "{{ lab.inventory.name }}"
+      credentials:
+        - "{{ lab.credential.ssh.name }}"
+      project: "{{ lab.project.name }}"
+  azure:
+    - name: Provision Azure VM
+      organization: "{{ lab.organization }}"
+      state: present
+      job_type: run
+      playbook: "playbooks/cloud/azure/demo_provision_azure_vm.yml"
+      execution_environment: "{{ lab.execution_environment.name }}"
+      inventory: "{{ lab.inventory.name }}"
+      credentials:
+        - "{{ lab.credential.azure.name }}"
+        - "{{ lab.credential.pub_ssh.name }}"
+      project: "{{ lab.project.name }}"
+      extra_vars:
+        pub_key_data: "{{ lookup('ansible.builtin.file', '~/.ssh/instruqt_lab.pub') }}"
+    # - name: Prepare Azure demo
+    #   state: present
+    #   job_type: run
+    #   playbook: "playbooks/cloud/azure/prepare_azure_environment.yml"
+    #   execution_environment: "{{ lab.execution_environment.name }}"
+    #   organization: "{{ lab.organization }}"
+    #   inventory: "{{ lab.inventory.name }}"
+    #   verbosity: 0
+    #   credentials:
+    #     - "{{ lab.credential.azure.name }}"
+    #   project: "{{ lab.project.name }}"
+    #   extra_vars:
+    #     _SANDBOX_ID: "{{ lookup('ansible.builtin.env', '_SANDBOX_ID') }}" # Updated in lifecycle script.
+  aws:
+    - name: Provision EC2 instance
+      organization: "{{ lab.organization }}"
+      state: present
+      job_type: run
+      playbook: "playbooks/cloud/aws/demo_provision_ec2_instance.yml"
+      execution_environment: "{{ lab.execution_environment.name }}"
+      inventory: "{{ lab.inventory.name }}"
+      credentials:
+        - "{{ lab.credential.aws.name }}"
+      project: "{{ lab.project.name }}"
+    # - name: Prepare AWS demo
+    #   state: present
+    #   job_type: run
+    #   playbook: "playbooks/cloud/aws/prepare_aws_environment.yml"
+    #   execution_environment: "{{ lab.execution_environment.name }}"
+    #   organization: "{{ lab.organization }}"
+    #   inventory: "{{ lab.inventory.name }}"
+    #   verbosity: 0
+    #   credentials:
+    #     - "{{ lab.credential.aws.name }}"
+    #   project: "{{ lab.project.name }}"
+    #   extra_vars:
+    #     _SANDBOX_ID: "{{ lookup('ansible.builtin.env', '_SANDBOX_ID') }}" # Updated in lifecycle script.
+  monitoring:
+    - name: Deploy monitoring
+      organization: "{{ lab.organization }}"
+      state: present
+      job_type: run
+      playbook: "playbooks/infra/install_cockpit/demo_install_cockpit.yml"
+      execution_environment: "{{ lab.execution_environment.name }}"
+      inventory: "{{ lab.inventory.name }}"
+      credentials:
+        - "{{ lab.credential.ssh.name }}"
+      project: "{{ lab.project.name }}"
+  database:
+    - name: Deploy PostgreSQL and PG Admin
+      organization: "{{ lab.organization }}"
+      state: present
+      job_type: run
+      playbook: "playbooks/infra/install_pgsql_and_pgadmin/demo_install_pgsql_pgadmin.yml"
+      execution_environment: "{{ lab.execution_environment.name }}"
+      inventory: "{{ lab.inventory.name }}"
+      credentials:
+        - "{{ lab.credential.ssh.name }}"
+      project: "{{ lab.project.name }}"
+    # - name: Configure PGAdmin container
+    #   organization: "{{ lab.organization }}"
+    #   state: present
+    #   job_type: run
+    #   playbook: "playbooks/infra/install_pgsql_and_pgadmin/demo_pgadmin_podman.yml"
+    #   execution_environment: "{{ lab.execution_environment.name }}"
+    #   inventory: "{{ lab.inventory.name }}"
+    #   credentials:
+    #     - "{{ lab.credential.ssh.name }}"
+    #   project: "{{ lab.project.name }}"
+  # workflow:
+  #   - name: Solve - Create database ops workflow
+  #     state: present
+  #     job_type: run
+  #     playbook: "playbooks/create_workflow.yml"
+  #     execution_environment: "{{ lab.execution_environment.name }}"
+  #     organization: "{{ lab.organization }}"
+  #     inventory: "{{ lab.inventory.name }}"
+  #     verbosity: 0
+  #     credentials:
+  #       - "{{ lab.credential.ssh.name }}"
+  #       - "{{ lab.credential.controller.name }}"
+  #     project: "{{ lab.project.name }}"
+
+# controller_workflows:
+#   - name: "{{ lab.workflow_name }}"
+#     description: "{{ lab.workflow_name }}"
+#     organization: "{{ lab.organization }}"
+
+# controller_workflow_nodes:
+#   - all_parents_must_converge: false
+#     organization: "{{ lab.organization }}"
+#     workflow_job_template: "{{ lab.workflow_name }}"
+#     identifier: Database
+#     unified_job_template: Deploy PostgreSQL database
+#     success_nodes:
+#       - PGAdmin
+#   - all_parents_must_converge: false
+#     organization: "{{ lab.organization }}"
+#     workflow_job_template: "{{ lab.workflow_name }}"
+#     identifier: PGAdmin
+#     unified_job_template: Configure PGAdmin container

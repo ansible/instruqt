@@ -1,0 +1,41 @@
+---
+- name: Create Azure VM
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    vm_config:
+      resource_group: rg-lightspeed
+      image:
+        offer: RHEL
+        publisher: RedHat
+        sku: 9-lvm
+        version: latest
+      network_interfaces:
+        - nic-lightspeed
+      ssh_public_keys:
+        - path: /home/rhel/.ssh/authorized_keys
+          key_data: "{{ pub_key_data | default(lookup('file', 'azure_demo_ssh_key.pub', errors='ignore')) }}"
+      ssh_password_enabled: false
+      vm_size: Standard_A1_v2
+      admin_username: rhel
+
+  tasks:
+################################################# INSTRUCTIONS TASK 1 #################################################
+# Uncomment the line just after this instructions block and Press "ENTER" at the end.
+# Press "TAB" to accept suggestion.
+# Note - The suggestion used used Playbook name, `Create Azure VM`, to infer the correct `azure.azcollection` collection.
+# Note - The suggestion used the Fully Qualified Collection Name (FQCN).
+# Note - The suggestion integrated the "vm_config" var as requested in the prompt.
+#######################################################################################################################
+    - name: Create a VM called vm-lightspeed using vm_config var
+      azure.azcollection.azure_rm_virtualmachine:
+        resource_group: "{{ vm_config.resource_group }}"
+        name: vm-lightspeed
+        vm_size: "{{ vm_config.vm_size }}"
+        admin_username: "{{ vm_config.admin_username }}"
+        ssh_password_enabled: "{{ vm_config.ssh_password_enabled }}"
+        ssh_public_keys: "{{ vm_config.ssh_public_keys }}"
+        image: "{{ vm_config.image }}"
+        network_interfaces: "{{ vm_config.network_interfaces }}"

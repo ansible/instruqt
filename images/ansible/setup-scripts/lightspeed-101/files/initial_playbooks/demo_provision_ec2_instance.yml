@@ -1,0 +1,45 @@
+---
+- name: EC2 Cloud Operations
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  module_defaults:
+    group/aws:
+      region: us-east-1
+
+  vars:
+    ec2_instance:
+      name: instance-lightspeed-01
+      key_name: lightspeed-keypair
+      image_id: ami-016eb5d644c333ccb # RHEL 9 us-east-1
+      network:
+        assign_public_ip: true
+      tags:
+        function: demo-lightspeed
+      security_group: secgroup-lightspeed
+      wait: true
+
+  tasks:
+        # TASK 1
+        # # 1a. Press "ENTER" at the end of the multi-task prompt.
+        # #     Note - The suggestion used the Fully Qualified Collection Name (FQCN).
+        # #     Note - The first task used the correct AWS tag "tag:Name" in the filter.
+        # #     Note - The second task used the correct variable created in the previous task.
+
+    # Gather info from subnet called subnet-lightspeed & create vpc_subnet_id var
+
+        # TASK 2
+        # # 2a. Uncomment the single-task prompt
+        # #     Note - The suggestion used the "ec2_instance" variable declared in the "vars:" section.
+
+    # - name: Provision t3.small instance using ec2_instance var
+
+        # TASK 3
+        # # 3a. Press "ENTER" at the end of the multi-task prompt.
+        # #     Note - The suggestion used the correct variable from the previous task.
+        # #     Note - The second task used the "public_ip_address" variable based on the previous task.
+        # #     First task note - The suggestion used the correct variable from the previous task and integrated "retries".
+        # #     Second task note - The suggestion used the "public_ip_address" variable based on the previous task.
+
+    # Create var from public_ip_address with retry & print it out
