@@ -299,20 +299,14 @@
         - solve-aws-playbooks
         - solve-azure-playbooks
 
-    # - name: Sync Project - {{ lab.project.name }}
-    #   awx.awx.project_update:
-    #     name: "{{ lab.project.name }}"
-    #     wait: true
-    #     timeout: 60
-    #     <<: *controller_login
-    #   tags:
-    #     - setup-playground-playbooks
-    #     - setup-workflow-playbooks
-    #     - solve-workflow-playbooks
-    #     - solve-monitoring-playbooks
-    #     - solve-database-playbooks
-    #     - solve-aws-playbooks
-    #     - solve-azure-playbooks
+    - name: Sync Project - {{ lab.project.name }}
+      awx.awx.project_update:
+        name: "{{ lab.project.name }}"
+        wait: true
+        timeout: 60
+        <<: *controller_login
+      tags:
+        setup-env
 
     - name: Update controller credentials - {{ content_list }}
       awx.awx.credential:
