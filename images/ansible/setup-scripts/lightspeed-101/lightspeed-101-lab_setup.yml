@@ -255,6 +255,7 @@
         - solve-workflow-playbooks
         - solve-database-playbooks
         - solve-monitoring-playbooks
+        - solve-apache-playbooks
         - solve-aws-playbooks
         - solve-azure-playbooks
         - setup-playground-playbooks
@@ -271,6 +272,7 @@
         - setup-playground-playbooks
         - setup-workflow-playbooks
         - solve-monitoring-playbooks
+        - solve-apache-playbooks
         - solve-database-playbooks
         - solve-aws-playbooks
         - solve-azure-playbooks
@@ -293,6 +295,7 @@
         - solve-workflow-playbooks
         - solve-database-playbooks
         - solve-monitoring-playbooks
+        - solve-apache-playbooks
         - solve-aws-playbooks
         - solve-azure-playbooks
 
@@ -362,6 +365,7 @@
         - controller_templates[content_list] is defined
       tags:
         - setup-monitoring-jt
+        - setup-apache-jt
         - setup-database-jt
         - setup-workflow-jt
         - setup-aws-jt
@@ -566,6 +570,7 @@
       tags:
         - solve-database-jt
         - solve-monitoring-jt
+        - solve-apache-jt
         - solve-aws-jt
         - solve-azure-jt
 
@@ -774,6 +779,25 @@
               - __cockpit_service["status"]["ActiveState"] == "active"
             fail_msg: "Cockpit service stopped."
             success_msg: "Cockpit service running."
+
+    - name: Check webserver - Apache is running
+      tags:
+        - check-apache-webserver
+      block:
+        - name: Check and Solve  - Apache app is running
+          ansible.builtin.systemd:
+            name: httpd
+            state: started
+          check_mode: "{{ check_mode | default(true) }}"
+          register: __apache_service
+
+        - name: Check webserver - assert apache is running
+          ansible.builtin.assert:
+            that: 
+              - __apache_service["status"]["ActiveState"] == "active"
+            fail_msg: "Apache service stopped."
+            success_msg: "Apache service running."
+
 
     - name: Check database - Postgresql is running
       tags:

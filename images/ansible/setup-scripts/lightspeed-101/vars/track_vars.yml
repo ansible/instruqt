@@ -79,6 +79,15 @@ monitoring:
     - demo_install_cockpit.yml
   jt_names:
     - Deploy monitoring
+apache:
+  playbooks:
+    - dest_playbook: "~{{ student_username }}/{{ gitea_repo_name }}/playbooks/infra/install_apache/demo_install_apache.yml"
+      source_playbook: "files/solution_playbooks/solution_install_apache.yml"
+      # remote_src: true
+  playbook_names:
+    - demo_install_apache.yml
+  jt_names:
+    - Deploy Apache webserver
 database:
   playbooks:
     - dest_playbook: "~{{ student_username }}/{{ gitea_repo_name }}/playbooks/infra/install_pgsql_and_pgadmin/demo_install_pgsql_pgadmin.yml"
@@ -261,6 +270,16 @@ controller_templates:
       credentials:
         - "{{ lab.credential.ssh.name }}"
       project: "{{ lab.project.name }}"
+    - name: Deploy Apache webserver
+      organization: "{{ lab.organization }}"
+      state: present
+      job_type: run
+      playbook: "playbooks/infra/install_apache/demo_install_apache.yml"
+      execution_environment: "{{ lab.execution_environment.name }}"
+      inventory: "{{ lab.inventory.name }}"
+      credentials:
+        - "{{ lab.credential.ssh.name }}"
+      project: "{{ lab.project.name }}"
     - name: Deploy PostgreSQL and PG Admin
       organization: "{{ lab.organization }}"
       state: present
@@ -328,6 +347,17 @@ controller_templates:
       state: present
       job_type: run
       playbook: "playbooks/infra/install_cockpit/demo_install_cockpit.yml"
+      execution_environment: "{{ lab.execution_environment.name }}"
+      inventory: "{{ lab.inventory.name }}"
+      credentials:
+        - "{{ lab.credential.ssh.name }}"
+      project: "{{ lab.project.name }}"
+  apache:
+    - name: Deploy Apache webserver
+      organization: "{{ lab.organization }}"
+      state: present
+      job_type: run
+      playbook: "playbooks/infra/install_apache/demo_install_apache.yml"
       execution_environment: "{{ lab.execution_environment.name }}"
       inventory: "{{ lab.inventory.name }}"
       credentials:
