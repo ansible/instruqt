@@ -5,7 +5,7 @@
 | Workshop Title  | Link |
 |---|---|
 | Event-Driven Ansible Technical Workshop | [🔬 Open Workshop](./webpages/eda.md) |
-| Introduction to cloud automation | [🔬 Open Workshop](./webpages/ansible-cloud-lab) |
+| Introduction to cloud automation | [🔬 Open Workshop](./webpages/ansible-cloud-lab.md) |
 | Ansible Lightspeed and Development Technical Workshop | [🔬 Open Workshop](./webpages/lightspeed.md) |
 | Getting Started with Network Automation | [🔬 Open Workshop](./webpages/network.md) |
 | Getting Started with ServiceNow Automation | [🔬 Open Workshop](./webpages/servicenow.md) |
