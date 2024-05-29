@@ -372,9 +372,10 @@ i.icon-info-sign:before {
   flex-grow: 1; /* Ensure cards take equal height */
   flex-basis: 20.75em; /* Base size of each card */
   max-width: 20.75em;
+  max-height: 27.0em;
   overflow: hidden;
   border-radius: .5em;
-  text-decoration: none; /* Remove underline from links */
+  text-decoration: none !important; /* Remove underline from links */
   background: white;
   margin: 1em;
   padding: 2.75em 2.5em;
