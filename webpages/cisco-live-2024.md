@@ -1,8 +1,8 @@
 <section class="page-contain">
-  <a href="#" class="data-card">
-    <h3>270</h3>
-    <h4>Care Facilities</h4>
-    <p>Aenean lacinia bibendum nulla sed consectetur.</p>
+  <a target="_new" href="https://play.instruqt.com/redhat/invite/whcf52xvqbej" class="data-card">
+    <h3>DEVRHL-1001</h3>
+    <h4>Ansible for Network Automation Basics: Surveys and Workflowss</h4>
+    <p>Learn how to create an automation controller survey to configure a Cisco IOS network device with specific settings</p>
     <span class="link-text">
       View All Providers
       <svg width="25" height="16" viewBox="0 0 25 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -10,10 +10,10 @@
 </svg>
     </span>
   </a>
-  <a href="#" class="data-card">
-    <h3>12,000</h3>
-    <h4>Employees</h4>
-    <p>Etiam porta sem malesuada.</p>
+  <a target="_new" href="https://play.instruqt.com/redhat/invite/kivvxnx8xqdy" class="data-card">
+    <h3>DEVRHL-1002</h3>
+    <h4>Ansible for Network automation: Writing playbooks and completing Backups and Restores</h4>
+    <p>Learn how to write Ansible Playbooks, which describe what actions to take when running the automation.</p>
     <span class="link-text">
       View Information
       <svg width="25" height="16" viewBox="0 0 25 16" fill="none" xmlns="http://www.w3.org/2000/svg">

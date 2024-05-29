@@ -361,8 +361,8 @@ i.icon-info-sign:before {
   min-height: 100vh;
   align-items: center;
   justify-content: center;
-  background: #E7F3F1;
-  border: .75em solid white;
+  // background: #E7F3F1;
+  // border: .75em solid white;
   padding: 2em;
   font-family: 'Open Sans', sans-serif;
 }
@@ -388,7 +388,7 @@ i.icon-info-sign:before {
     line-height: 1;
     padding-bottom: .5em;
     margin: 0 0 0.142857143em;
-    border-bottom: 2px solid #753BBD;
+    border-bottom: 2px solid #ee0000;
     transition: color .45s ease, border .45s ease;
   }
 
@@ -415,7 +415,7 @@ i.icon-info-sign:before {
 
   .link-text {
     display: block;
-    color: #753BBD;
+    color: #ee0000;
     font-size: 1.125em;
     font-weight: 600;
     line-height: 1.2;
@@ -433,12 +433,12 @@ i.icon-info-sign:before {
   }
 
   &:hover {
-    background: #753BBD;
+    background: #ee0000;
     transform: scale(1.02);
 
     h3 {
       color: #FFFFFF;
-      border-bottom-color: #A754C4;
+      border-bottom-color: #5f0000;
     }
 
     h4 {
