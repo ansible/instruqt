@@ -479,14 +479,14 @@ i.icon-info-sign:before {
 
 
 .cisco-image-container {
-  width: 300px; /* Set the width of the container */
-  height: 200px; /* Set the height of the container */
-  background-image: url('"{{ '/assets/images/cisco_workshops.png' | relative_url }}"'); /* Default image */
+  width: 800px; /* Set the width of the container */
+  height: 300px; /* Set the height of the container */
+  background-image: url('"{{ site.baseurl}}"/assets/images/cisco_workshops.png'); /* Default image */
   background-size: cover; /* Cover the entire container */
   background-position: center; /* Center the image */
   transition: background-image 0.3s ease; /* Smooth transition */
 }
 
 .cisco-image-container:hover {
-  background-image: url('"{{ '/assets/images/cisco_workshops_tony.png' | relative_url }}"'); /* Image on hover */
+  background-image: url('"{{ site.baseurl}}"/assets/images/cisco_workshops_tony.png'); /* Image on hover */
 }
