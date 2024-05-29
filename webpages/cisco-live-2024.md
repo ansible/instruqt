@@ -1,4 +1,5 @@
-<h1>Cisco Live 2024</h1>
+<div class="cisco-image-container"></div>
+<p>Click for Cisco Live 2024 workshops!</p>
 <section class="page-contain">
   <a target="_new" href="https://play.instruqt.com/redhat/invite/whcf52xvqbej" class="data-card">
     <h3>DEVRHL-1001</h3>
