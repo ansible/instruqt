@@ -1,3 +1,7 @@
+---
+layout: page
+title: Ansible Workshop Directory
+---
 <h1>Ansible Workshop Directory</h1>
 
 <a href="{{ site.baseurl }}/webpages/cisco-live-2024/">
