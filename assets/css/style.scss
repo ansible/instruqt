@@ -481,12 +481,12 @@ i.icon-info-sign:before {
 .cisco-image-container {
   width: 800px; /* Set the width of the container */
   height: 300px; /* Set the height of the container */
-  background-image: url('"{{ site.baseurl}}"/assets/images/cisco_workshops.png'); /* Default image */
+  background-image: url("{{ site.baseurl }}/assets/images/cisco_workshops.png"); /* Image on hover */
   background-size: cover; /* Cover the entire container */
   background-position: center; /* Center the image */
   transition: background-image 0.3s ease; /* Smooth transition */
 }
 
 .cisco-image-container:hover {
-  background-image: url('"{{ site.baseurl}}"/assets/images/cisco_workshops_tony.png'); /* Image on hover */
+  background-image: url("{{ site.baseurl }}/assets/images/cisco_workshops_tony.png"); /* Image on hover */
 }
