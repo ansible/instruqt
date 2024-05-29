@@ -1,8 +1,9 @@
 <h1>Ansible Workshop Directory</h1>
 
-<div id="sean"></id>
+<div id="sean">
 <div class="cisco-image-container"></div>
 <a href="./webpages/cisco-live-2024">Click for Cisco Live 2024 workshops!</a>
+<br></div>
 
 ## 90 minute online workshops
 
