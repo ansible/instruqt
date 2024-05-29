@@ -34,28 +34,37 @@
             <td>Getting Started with Windows Automation</td>
             <td><a href="./webpages/windows">🔬 Open Workshop</a></td>
         </tr>
+        <tr data-href="./webpages/windows">
+            <td>Getting Started with Configuration as Code for Ansible Automation Platform 2 Technical Workshop</td>
+            <td><a href="./webpages/aapcasc.md">🔬 Open Workshop</a></td>
+        </tr>
     </tbody>
 </table>
 
-## 90 minute online workshops
-
-| Workshop Title  | Link |
-|---|---|
-| Event-Driven Ansible Technical Workshop | [🔬 Open Workshop](./webpages/eda.md) |
-| Introduction to cloud automation | [🔬 Open Workshop](./webpages/ansible-cloud-lab.md) |
-| Ansible Lightspeed and Development Technical Workshop | [🔬 Open Workshop](./webpages/lightspeed.md) |
-| Getting Started with Network Automation | [🔬 Open Workshop](./webpages/network.md) |
-| Getting Started with ServiceNow Automation | [🔬 Open Workshop](./webpages/servicenow.md) |
-| Getting Started with Windows Automation | [🔬 Open Workshop](./webpages/windows.md) |
-| Getting Started with Configuration as Code for Ansible Automation Platform 2 Technical Workshop | [🔬 Open Workshop](./webpages/aapcasc.md) |
-
 ## Ansible 4-hour workshops
 
-| Workshop Title  | Link |
-|---|---|
-| Event-Driven Ansible & ServiceNow Technical Workshop | [🔬 Open Workshop](./webpages/eda-4.md) |
-| Ansible Lightspeed and Development Technical Workshop | [🔬 Open Workshop](./webpages/lightspeed-4.md) |
-| Getting Started with Configuration as Code for Ansible Automation Platform 2 Technical Workshop | [🔬 Open Workshop](./webpages/aapcasc-4.md) |
+<table class="table-clickable">
+    <thead>
+        <tr>
+            <th>Workshop Title</th>
+            <th>Link</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr data-href="./webpages/eda-4">
+            <td>Event-Driven Ansible & ServiceNow Technical Workshop </td>
+            <td><a href="./webpages/eda-4">🔬 Open Workshop</a></td>
+        </tr>
+        <tr data-href="./webpages/lightspeed-4">
+            <td>Ansible Lightspeed and Development Technical Workshop</td>
+            <td><a href="./webpages/lightspeed-4">🔬 Open Workshop</a></td>
+        </tr>
+        <tr data-href="./webpages/aapcasc-4">
+            <td>Getting Started with Configuration as Code for Ansible Automation Platform 2 Technical Workshop</td>
+            <td><a href="./webpages/aapcasc-4">🔬 Open Workshop</a></td>
+        </tr>
+    </tbody>
+</table>
 
 # Lab Listing
 
