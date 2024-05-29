@@ -1,12 +1,7 @@
----
-layout: page
-title: Ansible Workshop Directory
----
 <h1>Ansible Workshop Directory</h1>
 
-<a href="{{ site.baseurl }}/webpages/cisco-live-2024/">
-    <div class="cisco-image-container"></div>
-</a>
+<div id="sean"></id>
+<div class="cisco-image-container"></div>
 <a href="./webpages/cisco-live-2024">Click for Cisco Live 2024 workshops!</a>
 
 ## 90 minute online workshops
