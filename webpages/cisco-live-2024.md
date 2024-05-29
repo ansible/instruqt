@@ -24,7 +24,7 @@
   <a target="_new" href="https://play.instruqt.com/redhat/invite/ev2kjalwikzi" class="data-card">
     <h3>DEVRHL-1003</h3>
     <h4>Ansible for network automation: network visibility and resource modules</h4>
-    <p>Retrieve facts from across the network infrastructure, thus creating dynamic documentation and saving you time from laborious manual inventory collection.</p>
+    <p>Retrieve facts from across the network infrastructure and create dynamic documentation.</p>
     <span class="link-text">
       Lab Page
       <svg width="25" height="16" viewBox="0 0 25 16" fill="none" xmlns="http://www.w3.org/2000/svg">
