@@ -1,5 +1,6 @@
 # Ansible Workshop Directory
 
+<a href="./webpages/cisco-live-2024.md"><div class="cisco-image-container"></div></a>
 [Click for Cisco Live 2024](./webpages/cisco-live-2024.md)
 
 ## 90 minute online workshops
