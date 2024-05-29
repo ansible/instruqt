@@ -3,7 +3,7 @@
 <a href="{{ site.baseurl }}/webpages/cisco-live-2024/">
     <div class="cisco-image-container"></div>
 </a>
-<a href="./webpages/cisco-live-2024.md">Click for Cisco Live 2024 workshops!</a>
+<a href="./webpages/cisco-live-2024">Click for Cisco Live 2024 workshops!</a>
 
 ## 90 minute online workshops
 
