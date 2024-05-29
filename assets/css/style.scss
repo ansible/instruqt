@@ -358,11 +358,10 @@ i.icon-info-sign:before {
 
 .page-contain {
   display: flex;
+  flex-wrap: wrap; /* Allow wrapping if necessary */
   min-height: 100vh;
-  align-items: center;
+  align-items: stretch; /* Stretch items to the same height */
   justify-content: center;
-  // background: #E7F3F1;
-  // border: .75em solid white;
   padding: 2em;
   font-family: 'Open Sans', sans-serif;
 }
@@ -370,11 +369,12 @@ i.icon-info-sign:before {
 .data-card {
   display: flex;
   flex-direction: column;
+  flex: 1; /* Ensure cards take equal height */
   max-width: 20.75em;
   min-height: 20.75em;
   overflow: hidden;
   border-radius: .5em;
-  text-decoration: none;
+  text-decoration: none; /* Remove underline from links */
   background: white;
   margin: 1em;
   padding: 2.75em 2.5em;
