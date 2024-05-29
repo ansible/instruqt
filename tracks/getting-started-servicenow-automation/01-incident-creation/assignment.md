@@ -7,12 +7,9 @@ teaser: Automate incident creation
 notes:
 - type: text
   contents: |-
-    <p align="center">
-    <img width="400" src="../assets/snow-aap.png">
-    </p>
     The ServiceNow integration for Ansible Automation Platform is made possible
     through a certified content collection called `servicenow.itsm`.  This collection
-    is made available on Automation Hub on `console.redhat.com`. The environment that
+    is made available on Automation Hub on [console.redhat.com](https://console.redhat.com). The environment that
     is being created for you includes this collection in an execution environment
     that allows Ansible Automation Platform to execute tasks against a ServiceNow
     instance.
@@ -37,7 +34,7 @@ tabs:
   url: https://ansible.service-now.com
   new_window: true
 difficulty: basic
-timelimit: 400
+timelimit: 420
 ---
 👋 Introduction
 ====
@@ -45,7 +42,7 @@ In ITIL, an incident refers to an unplanned outage or reduction in quality of an
 
 The servicenow.itsm certified collection allows organizations to leverage incident management within Ansible Automation Platform workflows.
 
-A playbook as been created in the `VS Code` tab called `incident-create.yml`.
+A playbook has been created in the `VS Code` tab called `incident-create.yml`.
 - Inspect this playbook and review the in-line comments to understand how the collection is being leveraged.
 
 ▶️ Create incident
@@ -59,7 +56,14 @@ A playbook as been created in the `VS Code` tab called `incident-create.yml`.
 ====
 
 If the previous step completed successfully, you should see a new incident has been created. To verify that this is the case:
-- Use the ServiceNow credentials from `readme.md` to access ServiceNow from the `ServiceNow` tab.
+- Use the ServiceNow credentials listed below or from `readme.md` to access ServiceNow from the `ServiceNow` tab.
+
+
+| key | value |
+| -------- | -------- |
+| username     | [[ Instruqt-Var key="SANDBOX" hostname="controller" ]]     |
+| password  | [[ Instruqt-Var key="SANDBOX" hostname="controller" ]]
+
 
 - In ServiceNow, click the star icon to access pre-configured favorites and select `Self-service - Incidents`:
 ![servicenow screenshot](../assets/snow-star.png)
@@ -71,4 +75,4 @@ Move onto the next section by selecting the green "Next" button below.
 
 🐛 Encountered an issue?
 ====
-If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new?labels=getting-started-servicenow-automation&title=New+servicenow+issue:+incident-creation&assignees=cloin).
+If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new?labels=getting-started-servicenow-automation&title=New+servicenow+issue:+incident-creation+(Sandbox+id:+[[ Instruqt-Var key="SANDBOX" hostname="controller" ]])&assignees=cloin&body=).

@@ -34,7 +34,7 @@ tee /home/rhel/servicenow_project/change-attach.yml << EOF
     - name: Assign problem for assessment
       servicenow.itsm.problem:
         number: "{{ item.number }}"
-        state: assess
+        state: 3
         assigned_to: "{{ demo_username }}"
       loop: "{{ problem_list }}"
 
@@ -78,7 +78,7 @@ tee /home/rhel/challenge-3/template-create.yml << EOF
         organization: "Default"
         inventory: "Demo Inventory"
         project: "ServiceNow"
-        playbook: "change-attach.yml"
+        playbook: "student_project/change-attach.yml"
         execution_environment: "ServiceNow EE"
         credentials:
           - "servicenow credential"

@@ -1,6 +1,8 @@
 #!/bin/bash
 USER=rhel
 
+agent variable set SANDBOX $INSTRUQT_PARTICIPANT_ID
+
 # creates the correct credential for servicenow on Controller
 su - rhel -c 'ansible-galaxy collection install awx.awx'
 
@@ -18,28 +20,28 @@ chmod a+x /home/rhel/
 
 # symlink project directories so they can be picked up by controller
 su - awx -c 'ln -s /home/rhel/servicenow_project/ /var/lib/awx/projects/'
-su - awx -c 'ln -s /tmp/admin_project/ /var/lib/awx/projects/'
+# su - awx -c 'ln -s /tmp/admin_project/ /var/lib/awx/projects/'
 
 # creates a playbook to create a user in SNOW
-tee /tmp/admin_project/create-snow-user.yml << EOF
----
-- name: Run JT from Controller
-  hosts: localhost
-  connection: local
-  gather_facts: false
-  vars:
-    cleanup: true
-  tasks:
+# tee /tmp/admin_project/create-snow-user.yml << EOF
+# ---
+# - name: Run JT from Controller
+#   hosts: localhost
+#   connection: local
+#   gather_facts: false
+#   vars:
+#     cleanup: true
+#   tasks:
 
-  - name: run jt
-    awx.awx.job_launch:
-      job_template: "SNOW - Configure/Destroy demo account"
-      extra_vars:
-        demo_username: "{{ lookup('env', 'SN_USERNAME') }}"
-        demo_password: "{{ lookup('env', 'SN_USERNAME') }}"
-        cleanup: "{{ cleanup }}"
+#   - name: run jt
+#     awx.awx.job_launch:
+#       job_template: "SNOW - Configure/Destroy demo account"
+#       extra_vars:
+#         demo_username: "{{ lookup('env', 'SN_USERNAME') }}"
+#         demo_password: "{{ lookup('env', 'SN_USERNAME') }}"
+#         cleanup: "{{ cleanup }}"
 
-EOF
+# EOF
 
 # chown above file
 sudo chown rhel:rhel /tmp/admin_project/create-snow-user.yml
@@ -107,6 +109,7 @@ tee /home/rhel/setup-controller.yml << EOF
       description: "rhel host"
       inventory: "rhel inventory"
       state: present
+      enabled: true
       controller_host: "https://localhost"
       controller_username: admin
       controller_password: ansible123!
@@ -136,8 +139,8 @@ tee /home/rhel/setup-controller.yml << EOF
       description: "Project containing users ServiceNow playbooks"
       organization: Default
       state: present
-      scm_type: manual
-      local_path: servicenow_project
+      scm_type: git
+      scm_url: https://github.com/cloin/instruqt-snow
       controller_host: "https://localhost"
       controller_username: admin
       controller_password: ansible123!
@@ -149,8 +152,8 @@ tee /home/rhel/setup-controller.yml << EOF
       description: "Project containing users ServiceNow playbooks for admin use"
       organization: Default
       state: present
-      scm_type: manual
-      local_path: admin_project
+      scm_type: git
+      scm_url: https://github.com/cloin/instruqt-snow
       controller_host: "https://localhost"
       controller_username: admin
       controller_password: ansible123!
@@ -163,7 +166,7 @@ tee /home/rhel/setup-controller.yml << EOF
       organization: "Default"
       inventory: "Demo Inventory"
       project: "ServiceNow - admin"
-      playbook: "create-snow-user.yml"
+      playbook: "admin_project/create-snow-user.yml"
       execution_environment: "ServiceNow EE"
       ask_variables_on_launch: true
       credentials:
@@ -184,30 +187,6 @@ tee /home/rhel/setup-controller.yml << EOF
       controller_username: admin
       controller_password: ansible123!
       validate_certs: false
-  
-  # - name: Remove job template
-  #   job_template:
-  #     name: "{{ item }}"
-  #     job_type: "run"
-  #     organization: "Default"
-  #     inventory: "Demo Inventory"
-  #     # project: "ServiceNow"
-  #     # playbook: "incident-create.yml"
-  #     # credentials:
-  #     #   - "servicenow credential"
-  #     state: "absent"
-  #     controller_host: "https://localhost"
-  #     controller_username: admin
-  #     controller_password: ansible123!
-  #     validate_certs: false
-  #   loop:
-  #     - "Demo Job Template"
-  #     - "0 - Create SNOW demo user"
-
-  # - name: Remove SNOW user create playbook from project directory
-  #   ansible.builtin.file:
-  #     path: /home/rhel/servicenow_project/create-snow-user.yml
-  #     state: absent 
 
 EOF
 
@@ -215,6 +194,7 @@ EOF
 sudo chown rhel:rhel /home/rhel/setup-controller.yml
 
 # execute above playbook
+echo "execute setup-controller playbook"
 su - rhel -c 'ansible-playbook /home/rhel/setup-controller.yml'
 
 
@@ -232,6 +212,15 @@ su - rhel -c 'tee -a /home/rhel/servicenow_project/readme.md << EOF
 
 EOF'
 
+# Fixes an issue with podman that produces this error: "Error: error creating tmpdir: mkdir /run/user/1000: permission denied"
+su - $USER -c 'loginctl enable-linger $USER'
+
+# Pull the servicenow EE
+su - $USER -c 'podman pull quay.io/acme_corp/servicenow-ee:latest'
+
+# Update ansible extension
+su - $USER -c 'code-server --install-extension redhat.ansible --force'
+
 # set vscode default settings
 su - $USER -c 'cat >/home/$USER/.local/share/code-server/User/settings.json <<EOL
 {
@@ -246,13 +235,58 @@ su - $USER -c 'cat >/home/$USER/.local/share/code-server/User/settings.json <<EO
     "workbench.colorTheme": "Solarized Dark",
     "update.showReleaseNotes": false,
     "update.mode": "none",
-    "ansible.ansibleLint.enabled": false,
+    "ansible.ansibleLint.enabled": true,
     "ansible.ansible.useFullyQualifiedCollectionNames": true,
     "redhat.telemetry.enabled": true,
     "markdown.preview.doubleClickToSwitchToEditor": false,
     "files.exclude": {
         "**/.*": true
+    },
+    "ansible.executionEnvironment.enabled": true,
+    "ansible.executionEnvironment.image": "quay.io/acme_corp/servicenow-ee:latest",
+    "ansibleServer.trace.server": "verbose",
+    "files.associations": {
+        "*.yml": "ansible"
     }
 }
+
 EOL
 cat /home/$USER/.local/share/code-server/User/settings.json'
+
+su - $USER -c 'cat >/home/rhel/servicenow_project/ansible-navigator.yml <<EOL
+---
+ansible-navigator:
+  execution-environment:
+    enabled: true
+    container-engine: podman
+    image: quay.io/acme_corp/servicenow-ee:latest
+    pull:
+      policy: never
+    environment-variables:
+      pass:
+      - SN_HOST
+      - SN_USERNAME
+      - SN_PASSWORD
+      - INSTRUQT_PARTICIPANT_ID
+  playbook-artifact:
+    enable: true
+    save-as: "{playbook_dir}/artifacts/{playbook_name}-artifact-{time_stamp}.json"
+  logging:
+    append: true
+    file: 'artifacts/ansible-navigator.log'
+    level: warning
+  editor:
+    command: code-server {filename}
+    console: false
+
+EOL
+cat /home/rhel/servicenow_project/ansible-navigator.yml'
+
+echo "set environment variables to allow for navigator execution of playbooks"
+su - $USER -c 'echo "export SN_HOST=https://ansible.service-now.com" >> /home/rhel/.bashrc'
+su - $USER -c 'echo "export SN_USERNAME=$INSTRUQT_PARTICIPANT_ID" >> /home/rhel/.bashrc'
+su - $USER -c 'echo "export SN_PASSWORD=$INSTRUQT_PARTICIPANT_ID" >> /home/rhel/.bashrc'
+echo "remove old navigator rpm install"
+su - $USER -c 'sudo dnf -y remove ansible-navigator'
+echo "get latest upstream navigator"
+# su - $USER -c 'pip3.9 install --user ansible-navigator'

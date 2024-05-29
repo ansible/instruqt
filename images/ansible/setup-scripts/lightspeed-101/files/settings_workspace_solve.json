@@ -1,0 +1,15 @@
+{
+    "ansible.lightspeed.suggestions.enabled": true,
+    "ansible.lightspeed.enabled": true,
+    "ansible.validation.lint.enabled": true,
+    "ansible.executionEnvironment.enabled": true,
+    "ansible.executionEnvironment.image": "quay.io/acme_corp/lightspeed-101_ee",
+    "editor.renderWhitespace": "boundary",
+    "ansible.validation.enabled": true,
+    "ansible.python.interpreterPath": "/usr/bin/python3",
+    "workbench.startupEditor": "readme",
+    "git.autofetch": true,
+    "workbench.editorAssociations": {
+        "*.md": "vscode.markdown.preview.editor"
+    }
+}

@@ -1,0 +1,32 @@
+---
+## This is play 1
+- name: Install and enable apache webserver
+  hosts: rhel
+  become: true
+  tasks:
+    # Install apache webserver & open firewall port 80 for the webserver &  create a custom index.html file that has "I'm a custom website" as content & start the service
+    - name: Install apache webserver
+      ansible.builtin.package:
+        name: httpd
+        state: present
+
+    - name: Open firewall port 80 for the webserver
+      ansible.posix.firewalld:
+        port: 80/tcp
+        permanent: true
+        state: enabled
+        immediate: true
+
+    - name: Create a custom index.html file that has "I'm a custom website" as content
+      ansible.builtin.copy:
+        content: I'm a custom website
+        dest: /var/www/html/index.html
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Start the service
+      ansible.builtin.service:
+        name: httpd
+        state: started
+        enabled: true
