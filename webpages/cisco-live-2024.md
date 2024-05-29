@@ -1,3 +1,4 @@
+<h1>Cisco Live 2024</h1>
 <section class="page-contain">
   <a target="_new" href="https://play.instruqt.com/redhat/invite/whcf52xvqbej" class="data-card">
     <h3>DEVRHL-1001</h3>
@@ -32,7 +33,7 @@
 </svg>
     </span>
   </a>
-  <a target="_new" href="https://play.instruqt.com/redhat/invite/ev2kjalwikzi" class="data-card">
+  <a target="_new" href="https://play.instruqt.com/redhat/invite/hjvqkq6mk54d" class="data-card">
     <h3>DEVRHL-1004</h3>
     <h4>Extending automation to remote branch networks (Meraki)</h4>
     <p>Learn how to use the Ansible Automation Platform to configure a network, add Meraki devices, and configure specific settings.</p>
@@ -43,7 +44,7 @@
 </svg>
     </span>
   </a>
-  <a target="_new" href="https://play.instruqt.com/redhat/invite/ev2kjalwikzi" class="data-card">
+  <a target="_new" href="https://play.instruqt.com/redhat/invite/gky3pw5oxhio" class="data-card">
     <h3>DEVRHL-1005</h3>
     <h4>Event-Driven Ansible for Cisco technology</h4>
     <p>Event-driven automation is a method for automatically responding to changing conditions on your network.</p>
@@ -54,7 +55,7 @@
 </svg>
     </span>
   </a>
-  <a target="_new" href="https://play.instruqt.com/redhat/invite/ev2kjalwikzi" class="data-card">
+  <a target="_new" href="https://play.instruqt.com/redhat/invite/ixtbxjyeoktc" class="data-card">
     <h3>DEVRHL-1006</h3>
     <h4>Advanced Automation: Automation mesh and network automation</h4>
     <p>Learn how to package Ansible Playbooks into Job Templates and about  Automation Mesh.</p>
