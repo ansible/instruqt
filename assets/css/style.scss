@@ -208,7 +208,6 @@ header {
 // custom footer
 
 footer {
-  position: relative;
   background: black;
   color: white;
   width: 100%;
@@ -359,7 +358,6 @@ i.icon-info-sign:before {
 .page-contain {
   display: flex;
   flex-wrap: wrap; /* Allow wrapping if necessary */
-  min-height: 100vh;
   align-items: stretch; /* Stretch items to the same height */
   justify-content: center;
   padding: 2em;
