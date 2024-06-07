@@ -1,6 +1,31 @@
 #!/bin/bash
 USER=rhel
 
+# # Create vault password file
+# echo $VAULT_PASSWORD > /tmp/vault-password.txt
+
+# # List of environment variables to capture
+# env_vars=("ADMIN_CONTROLLER_PASSWORD" "ADMIN_CONTROLLER_USERNAME")  # Replace with your desired environment variables
+
+# # Output file
+# output_file="env_vars.yml"
+
+# # Begin the YAML file
+# echo "env_vars:" > /tmp/$output_file
+
+# # Iterate over each specified environment variable and append it to the YAML file
+# for var in "${env_vars[@]}"; do
+#   value=$(printenv $var)
+#   if [ ! -z "$value" ]; then
+#     echo "  $var: \"$value\"" >> /tmp/$output_file
+#   else
+#     echo "Warning: $var is not set in the environment."
+#   fi
+# done
+
+# # Encrypt the file using Ansible Vault with the password file
+# ansible-vault encrypt --vault-password-file /tmp/vault-password.txt /tmp/$output_file
+
 agent variable set SANDBOX $INSTRUQT_PARTICIPANT_ID
 
 # creates the correct credential for servicenow on Controller
@@ -43,8 +68,8 @@ su - awx -c 'ln -s /home/rhel/servicenow_project/ /var/lib/awx/projects/'
 
 # EOF
 
-# chown above file
-sudo chown rhel:rhel /tmp/admin_project/create-snow-user.yml
+# # chown above file
+# sudo chown rhel:rhel /tmp/admin_project/create-snow-user.yml
 
 # create a playbook to customize learner Controller
 tee /home/rhel/setup-controller.yml << EOF
@@ -54,6 +79,8 @@ tee /home/rhel/setup-controller.yml << EOF
   connection: local
   collections:
     - awx.awx
+  vars:
+    TMM_CONTROLLER_TOKEN: "{{ lookup('env', 'TMM_CONTROLLER_TOKEN') }}"
   tasks:
 
   - name: Add EE to the controller instance
@@ -159,6 +186,19 @@ tee /home/rhel/setup-controller.yml << EOF
       controller_password: ansible123!
       validate_certs: false
 
+  - name: modify automation controller token
+    awx.awx.credential:
+      name: 'Automation Controller'
+      organization: Default
+      credential_type: "Red Hat Ansible Automation Platform"
+      controller_host: "https://{{ ansible_host }}"
+      controller_username: admin
+      controller_password: ansible123!
+      validate_certs: false
+      inputs:
+        host: https://ansible.demoredhat.com
+        oauth_token: "{{ TMM_CONTROLLER_TOKEN }}"
+
   - name: Post SNOW user create job template
     job_template:
       name: "0 - Create SNOW demo user"
@@ -195,7 +235,7 @@ sudo chown rhel:rhel /home/rhel/setup-controller.yml
 
 # execute above playbook
 echo "execute setup-controller playbook"
-su - rhel -c 'ansible-playbook /home/rhel/setup-controller.yml'
+su rhel -c 'export TMM_CONTROLLER_TOKEN=$ANSIBLE_TMM_CONTROLLER_TOKEN && ansible-playbook /home/rhel/setup-controller.yml'
 
 
 # populate readme file with environment credentials
@@ -290,3 +330,6 @@ echo "remove old navigator rpm install"
 su - $USER -c 'sudo dnf -y remove ansible-navigator'
 echo "get latest upstream navigator"
 # su - $USER -c 'pip3.9 install --user ansible-navigator'
+
+echo "wget playbook for check/solve"
+wget -O /tmp/check-jt-run.yml https://raw.githubusercontent.com/cloin/snow-demo-setup/main/track_check_scripts/check-jt-run.yml

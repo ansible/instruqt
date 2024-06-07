@@ -36,7 +36,7 @@ A new playbook has been created in your `VS Code` tab.
 
 ▶️ Create a change request
 ====
-- Navigate to `Resources > Templates` in automation controller and launch the job template `3 - Attach change request (change-attach.yml)`
+- Navigate to `Resources > Job Templates` in automation controller and launch the job template `3 - Attach change request (change-attach.yml)`
 - Watch for job completion in automation controller
 
 🔍 Inspect results

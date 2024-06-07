@@ -37,7 +37,7 @@ A new inventory has been added to Automation Controller, but it hasn't queried a
 
 👀 Review inventories
 ====
-- First, open the Automation Controller tab and navigate the right hand navigation pane to `Hosts`. Notice that this list is empty. This is because the integration between Ansible Automation Platform and ServiceNow is an API to API integration where the endpoints we're targeting are not individual hosts, but an API.
+- First, open the Automation Controller tab and navigator the right hand navigation pane to `Hosts`. Notice that this list is empty. This is because the integration between Ansible Automation Platform and ServiceNow is an API to API integration where the endpoints we're targeting are not individual hosts, but an API.
 
 ▶️ Sync ServiceNow inventory
 ====

@@ -157,7 +157,7 @@ tee /home/rhel/cleanup/cleanup.yml << EOF
 
   tasks:
 
-    - name: Post change-attach job template
+    - name: Post query and close job template
       job_template:
         name: "5 - Query and close records by user (close-records-by-user.yml)"
         job_type: "run"
@@ -175,14 +175,15 @@ tee /home/rhel/cleanup/cleanup.yml << EOF
         controller_password: ansible123!
         validate_certs: false
 
-    - awx.awx.job_launch:
+    - name: Launch query and close job template
+      awx.awx.job_launch:
         job_template: "5 - Query and close records by user (close-records-by-user.yml)"
-        controller_host: https://localhost:443
+        controller_host: "https://localhost:443"
         controller_username: admin
         controller_password: ansible123!
         validate_certs: false
 
-    - name: Post SNOW user create job template
+    - name: Post SNOW user cleanup job template
       job_template:
         name: "0 - Create SNOW demo user"
         job_type: "run"
@@ -201,15 +202,16 @@ tee /home/rhel/cleanup/cleanup.yml << EOF
         controller_username: admin
         controller_password: ansible123!
         validate_certs: false
-      
-#    - awx.awx.job_launch:
-#        job_template: "0 - Create SNOW demo user"
-#        extra_vars:
-#          cleanup: true
-#        controller_host: https://localhost
-#        controller_username: admin
-#        controller_password: ansible123!
-#        validate_certs: false
+
+    - name: Launch SNOW user cleanup template
+      awx.awx.job_launch:
+        job_template: "0 - Create SNOW demo user"
+        extra_vars:
+          cleanup: true
+        controller_host: https://localhost
+        controller_username: admin
+        controller_password: ansible123!
+        validate_certs: false
 
 EOF
 
