@@ -1,25 +1,6 @@
-# creates a playbook to create a user in SNOW
-tee /home/rhel/challenge-3/solve.yml << EOF
----
-- name: Run JT from Controller
-  hosts: localhost
-  connection: local
-  gather_facts: false
-  vars:
+#!/bin/bash
 
-  tasks:
+export ADMIN_CONTROLLER_USERNAME=`agent variable get ADMIN_CONTROLLER_USERNAME`
+export ADMIN_CONTROLLER_PASSWORD=`agent variable get ADMIN_CONTROLLER_PASSWORD`
 
-    - awx.awx.job_launch:
-        job_template: "3 - Attach change request (change-attach.yml)"
-        controller_host: https://localhost
-        controller_username: admin
-        controller_password: ansible123!
-        validate_certs: false
-
-EOF
-
-# chown above file
-sudo chown rhel:rhel /home/rhel/challenge-3/solve.yml
-
-# Execute above playbook
-su - rhel -c 'ansible-playbook /home/rhel/challenge-3/solve.yml'
+ansible-playbook -e "job_template_name='3 - Attach change request (change-attach.yml)'" /tmp/check-jt-run.yml --tags solve

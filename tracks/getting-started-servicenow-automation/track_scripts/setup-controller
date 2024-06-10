@@ -1,9 +1,21 @@
 #!/bin/bash
 USER=rhel
 
+# su - $USER -c is used a lot because lifecycle scripts always run as root
+# but projects and playbooks should be owned by the user that will be using them (e.g. rhel)
+
+# Secrets are only available for the lifecycle of the setup-script
+# agent variable set creates variables that are available outside of the setup-script
+# the following 2 lines create variables from the env vars that contain low value secrets
+# using secrets because they're easy to update in the Instruqt UI. 
+
+agent variable set ADMIN_CONTROLLER_USERNAME $ADMIN_CONTROLLER_USERNAME
+agent variable set ADMIN_CONTROLLER_PASSWORD $ADMIN_CONTROLLER_PASSWORD
+
+# vars set using `agent variable set` are available in the environment and can be used in challenge text
 agent variable set SANDBOX $INSTRUQT_PARTICIPANT_ID
 
-# creates the correct credential for servicenow on Controller
+# Collection used to create correct credential for servicenow on Controller
 su - rhel -c 'ansible-galaxy collection install awx.awx'
 
 # create admin project directory
@@ -20,31 +32,6 @@ chmod a+x /home/rhel/
 
 # symlink project directories so they can be picked up by controller
 su - awx -c 'ln -s /home/rhel/servicenow_project/ /var/lib/awx/projects/'
-# su - awx -c 'ln -s /tmp/admin_project/ /var/lib/awx/projects/'
-
-# creates a playbook to create a user in SNOW
-# tee /tmp/admin_project/create-snow-user.yml << EOF
-# ---
-# - name: Run JT from Controller
-#   hosts: localhost
-#   connection: local
-#   gather_facts: false
-#   vars:
-#     cleanup: true
-#   tasks:
-
-#   - name: run jt
-#     awx.awx.job_launch:
-#       job_template: "SNOW - Configure/Destroy demo account"
-#       extra_vars:
-#         demo_username: "{{ lookup('env', 'SN_USERNAME') }}"
-#         demo_password: "{{ lookup('env', 'SN_USERNAME') }}"
-#         cleanup: "{{ cleanup }}"
-
-# EOF
-
-# chown above file
-sudo chown rhel:rhel /tmp/admin_project/create-snow-user.yml
 
 # create a playbook to customize learner Controller
 tee /home/rhel/setup-controller.yml << EOF
@@ -54,6 +41,8 @@ tee /home/rhel/setup-controller.yml << EOF
   connection: local
   collections:
     - awx.awx
+  vars:
+    TMM_CONTROLLER_TOKEN: "{{ lookup('env', 'TMM_CONTROLLER_TOKEN') }}"
   tasks:
 
   - name: Add EE to the controller instance
@@ -159,6 +148,19 @@ tee /home/rhel/setup-controller.yml << EOF
       controller_password: ansible123!
       validate_certs: false
 
+  - name: modify automation controller token
+    awx.awx.credential:
+      name: 'Automation Controller'
+      organization: Default
+      credential_type: "Red Hat Ansible Automation Platform"
+      controller_host: "https://{{ ansible_host }}"
+      controller_username: admin
+      controller_password: ansible123!
+      validate_certs: false
+      inputs:
+        host: https://ansible.demoredhat.com
+        oauth_token: "{{ TMM_CONTROLLER_TOKEN }}"
+
   - name: Post SNOW user create job template
     job_template:
       name: "0 - Create SNOW demo user"
@@ -195,7 +197,11 @@ sudo chown rhel:rhel /home/rhel/setup-controller.yml
 
 # execute above playbook
 echo "execute setup-controller playbook"
-su - rhel -c 'ansible-playbook /home/rhel/setup-controller.yml'
+su rhel -c '
+  export TMM_CONTROLLER_TOKEN=$ANSIBLE_TMM_CONTROLLER_TOKEN &&
+  ansible-playbook /home/rhel/setup-controller.yml
+'
+
 
 
 # populate readme file with environment credentials
@@ -290,3 +296,7 @@ echo "remove old navigator rpm install"
 su - $USER -c 'sudo dnf -y remove ansible-navigator'
 echo "get latest upstream navigator"
 # su - $USER -c 'pip3.9 install --user ansible-navigator'
+
+echo "wget playbook for check/solve"
+wget -O /tmp/check-jt-run.yml https://raw.githubusercontent.com/cloin/snow-demo-setup/main/track_check_scripts/check-jt-run.yml
+wget -O /tmp/check-inventory-sync.yml https://raw.githubusercontent.com/cloin/snow-demo-setup/main/track_check_scripts/check-inventory-sync.yml
