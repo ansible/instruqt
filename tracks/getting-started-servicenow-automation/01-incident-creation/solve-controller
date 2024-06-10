@@ -1,11 +1,6 @@
-# creates a playbook to slove challenge
-# ansible-playbook \
-# -e 'job_template_name="1 - Create incident (incident-create.yml)"' \
-# /tmp/check-jt-run.yml \
-# --tags solve
+#!/bin/bash
 
-# # chown above file
-# sudo chown rhel:rhel /home/rhel/challenge-1/solve.yml
+export ADMIN_CONTROLLER_USERNAME=`agent variable get ADMIN_CONTROLLER_USERNAME`
+export ADMIN_CONTROLLER_PASSWORD=`agent variable get ADMIN_CONTROLLER_PASSWORD`
 
-# # Execute above playbook
-# su - rhel -c 'ansible-playbook /home/rhel/challenge-1/solve.yml'
+ansible-playbook -e "job_template_name='1 - Create incident (incident-create.yml)'" /tmp/check-jt-run.yml --tags solve

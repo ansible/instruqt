@@ -1,34 +1,21 @@
 #!/bin/bash
 USER=rhel
 
-# # Create vault password file
-# echo $VAULT_PASSWORD > /tmp/vault-password.txt
+# su - $USER -c is used a lot because lifecycle scripts always run as root
+# but projects and playbooks should be owned by the user that will be using them (e.g. rhel)
 
-# # List of environment variables to capture
-# env_vars=("ADMIN_CONTROLLER_PASSWORD" "ADMIN_CONTROLLER_USERNAME")  # Replace with your desired environment variables
+# Secrets are only available for the lifecycle of the setup-script
+# agent variable set creates variables that are available outside of the setup-script
+# the following 2 lines create variables from the env vars that contain low value secrets
+# using secrets because they're easy to update in the Instruqt UI. 
 
-# # Output file
-# output_file="env_vars.yml"
+agent variable set ADMIN_CONTROLLER_USERNAME $ADMIN_CONTROLLER_USERNAME
+agent variable set ADMIN_CONTROLLER_PASSWORD $ADMIN_CONTROLLER_PASSWORD
 
-# # Begin the YAML file
-# echo "env_vars:" > /tmp/$output_file
-
-# # Iterate over each specified environment variable and append it to the YAML file
-# for var in "${env_vars[@]}"; do
-#   value=$(printenv $var)
-#   if [ ! -z "$value" ]; then
-#     echo "  $var: \"$value\"" >> /tmp/$output_file
-#   else
-#     echo "Warning: $var is not set in the environment."
-#   fi
-# done
-
-# # Encrypt the file using Ansible Vault with the password file
-# ansible-vault encrypt --vault-password-file /tmp/vault-password.txt /tmp/$output_file
-
+# vars set using `agent variable set` are available in the environment and can be used in challenge text
 agent variable set SANDBOX $INSTRUQT_PARTICIPANT_ID
 
-# creates the correct credential for servicenow on Controller
+# Collection used to create correct credential for servicenow on Controller
 su - rhel -c 'ansible-galaxy collection install awx.awx'
 
 # create admin project directory
@@ -45,31 +32,6 @@ chmod a+x /home/rhel/
 
 # symlink project directories so they can be picked up by controller
 su - awx -c 'ln -s /home/rhel/servicenow_project/ /var/lib/awx/projects/'
-# su - awx -c 'ln -s /tmp/admin_project/ /var/lib/awx/projects/'
-
-# creates a playbook to create a user in SNOW
-# tee /tmp/admin_project/create-snow-user.yml << EOF
-# ---
-# - name: Run JT from Controller
-#   hosts: localhost
-#   connection: local
-#   gather_facts: false
-#   vars:
-#     cleanup: true
-#   tasks:
-
-#   - name: run jt
-#     awx.awx.job_launch:
-#       job_template: "SNOW - Configure/Destroy demo account"
-#       extra_vars:
-#         demo_username: "{{ lookup('env', 'SN_USERNAME') }}"
-#         demo_password: "{{ lookup('env', 'SN_USERNAME') }}"
-#         cleanup: "{{ cleanup }}"
-
-# EOF
-
-# # chown above file
-# sudo chown rhel:rhel /tmp/admin_project/create-snow-user.yml
 
 # create a playbook to customize learner Controller
 tee /home/rhel/setup-controller.yml << EOF
@@ -235,7 +197,11 @@ sudo chown rhel:rhel /home/rhel/setup-controller.yml
 
 # execute above playbook
 echo "execute setup-controller playbook"
-su rhel -c 'export TMM_CONTROLLER_TOKEN=$ANSIBLE_TMM_CONTROLLER_TOKEN && ansible-playbook /home/rhel/setup-controller.yml'
+su rhel -c '
+  export TMM_CONTROLLER_TOKEN=$ANSIBLE_TMM_CONTROLLER_TOKEN &&
+  ansible-playbook /home/rhel/setup-controller.yml
+'
+
 
 
 # populate readme file with environment credentials
@@ -333,3 +299,4 @@ echo "get latest upstream navigator"
 
 echo "wget playbook for check/solve"
 wget -O /tmp/check-jt-run.yml https://raw.githubusercontent.com/cloin/snow-demo-setup/main/track_check_scripts/check-jt-run.yml
+wget -O /tmp/check-inventory-sync.yml https://raw.githubusercontent.com/cloin/snow-demo-setup/main/track_check_scripts/check-inventory-sync.yml

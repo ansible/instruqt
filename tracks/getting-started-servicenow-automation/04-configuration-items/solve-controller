@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Define variables
-job_template_name="1 - Create incident (incident-create.yml)"
+job_template_name="4.2 - Create/update configuration items (create-update-config-items.yml)"
+workflow_job_template_name="4.0 - Query node info and update CMDB (multiple job templates)"
 playbook_path="/tmp/check-jt-run.yml"
 
 # Export environment variables
@@ -11,16 +12,25 @@ export ADMIN_CONTROLLER_PASSWORD=$(agent variable get ADMIN_CONTROLLER_PASSWORD)
 # Function to run the ansible-playbook command and handle output
 run_playbook() {
   local job_template_name="$1"
-  local playbook_path="$2"
-  
+  local workflow_job_template_name="$2"
+  local playbook_path="$3"
+
   # Run ansible-playbook and capture output and status
   local output
-  output=$(ansible-playbook -e "job_template_name='${job_template_name}'" "${playbook_path}" --tags check 2>&1)
+  output=$(
+    ansible-playbook \
+      -e "job_template_name='${job_template_name}'" \
+      -e "workflow_job_template_name='${workflow_job_template_name}'" \
+      -e "workflow_job_template=true" \
+      "${playbook_path}" \
+      --tags solve \
+      2>&1
+  )
   local status=$?
-  
+
   # Print the output for debugging
   echo "$output"
-  
+
   # Handle playbook failure and success messages
   if [ $status -ne 0 ]; then
     if echo "$output" | grep -q "No successful runs found for job template"; then
@@ -35,4 +45,4 @@ run_playbook() {
 }
 
 # Run playbook
-run_playbook "$job_template_name" "$playbook_path"
+run_playbook "$job_template_name" "$workflow_job_template_name" "$playbook_path"
