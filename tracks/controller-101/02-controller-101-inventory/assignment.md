@@ -62,7 +62,7 @@ In automation controller you will be able to run multiple playbooks against thes
 1. If you are not in the  `Lab-Inventory`, click on it again to edit it.
 2. On the tab bar, click on **Hosts**
 3. Click on the blue **Add** button.
-4. Enter the name `node1` in the **Name** text box. Leave all the other fiels as they are.
+4. Enter the name `node1` in the **Name** text box. Leave all the other fields as they are.
 5. Click **Save**
 6. Repeat the above steps to create a new host, named `node2`.
 
