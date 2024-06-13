@@ -60,7 +60,7 @@ All tasks are done in the controller dashboard
 
 * Let's have a closer look at some of the options:
   * Notice that we're using the `Lab-Inventory` we created earlier
-  * We're going to run the `playbooks/infrastructure/debug_info.yml`
+  * We're going to run the `getting-started-controller/playbooks/debug_info.yml`
   * We're using the SSH credential to authenticate to **host01** and **host02** in our `Lab-Inventory`
 ![jtexplore](https://raw.githubusercontent.com/craig-br/instruqt-tracks/devel/assets/controller/controller-inst-jt-explore.png)
 ***
