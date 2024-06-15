@@ -122,7 +122,7 @@ node3                      : ok=2    changed=1    unreachable=0    failed=0    s
 ```
 
 Did you notice the `skipping` as you ran the playbook?
-This is due to the conditional `when` statement targeting the specific hosts for the tasks even though the `hosts:` label within the `hosts` inventory file is set to `all`.
+This is due to the conditional `when` statement targeting the specific hosts for the tasks even though the `hosts:` label within the `extended_services.yml` playbook file is set to `all`.
 
 ✅ Next Challenge
 ===
