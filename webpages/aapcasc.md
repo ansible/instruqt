@@ -2,7 +2,7 @@
 
 > **IMPORTANT TO NOTE** 
 > 
-> These are 90 minute split versions of this workshop.  For the longer 4-hour session that combines all sectionsplease [🔬 click here](aapcasc-4.md)
+> These are 90 minute split versions of this workshop.  For the longer 4-hour session that combines all sections please [🔬 click here](aapcasc-4.md)
 >
 
 
