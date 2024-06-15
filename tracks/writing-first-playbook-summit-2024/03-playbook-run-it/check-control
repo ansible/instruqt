@@ -1,0 +1,37 @@
+#!/bin/bash
+## check file
+
+# Define the remote host
+remote_user="rhel"
+remote_host="node1"
+ansible_files_dir="/home/rhel/ansible-files"
+check_file="/tmp/system_setup_check.yml"
+
+su - $USER -c 'cat >/tmp/system_setup_check.yml <<EOL
+---
+- name: System Configuration Checks
+  hosts: node1
+  become: true
+  tasks:
+    - name: Check user existence
+      ansible.builtin.command:
+        cmd: id myuser
+      register: user_check
+ 
+    - name: Report user status
+      ansible.builtin.debug:
+        msg: "User 'myuser' exists."
+      when: user_check.rc == 0
+
+EOL
+cat /tmp/system_setup_check.yml'
+
+# Check if the new user exists on the remote host
+cd $ansible_files_dir
+CMD='ansible-navigator run /tmp/system_setup_check.yml -m stdout'
+
+# Check user exists.
+if ! $CMD -vv; then
+ echo "Challenge 1.2 - FAIL: myuser does not exist. Something is wrong."
+ exit 1
+fi
