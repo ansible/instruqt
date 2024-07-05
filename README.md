@@ -1,12 +1,12 @@
 <h1>Ansible Workshop Directory</h1>
 
-<div id="sean">
+<!-- <div id="sean">
     <a href="{{ site.baseurl }}/webpages/cisco-live-2024" class="cisco-link">
         <div class="cisco-image-container"></div>
         Click for Cisco Live 2024 workshops!
     </a>
     <br>
-</div>
+</div> -->
 
 
 ## 90 minute online workshops
@@ -43,9 +43,9 @@
             <td>Getting Started with Windows Automation</td>
             <td><a href="./webpages/windows">🔬 Open Workshop</a></td>
         </tr>
-        <tr data-href="./webpages/windows">
+        <tr data-href="./webpages/aapcasc">
             <td>Getting Started with Configuration as Code for Ansible Automation Platform 2 Technical Workshop</td>
-            <td><a href="./webpages/aapcasc.md">🔬 Open Workshop</a></td>
+            <td><a href="./webpages/aapcasc">🔬 Open Workshop</a></td>
         </tr>
     </tbody>
 </table>
