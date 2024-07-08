@@ -1,0 +1,55 @@
+#!/bin/bash
+
+USER=rhel
+
+# Set the target directory and file
+target_directory="/home/rhel/ansible-files"
+target_file="${target_directory}/system_setup.yml"
+templates_dir="${target_directory}/templates"
+target_motd_j2="${templates_dir}/motd.j2"
+solve_file="/tmp/first-101/solve_18_system_setup_motd.yml"
+solve_motd_j2="/tmp/first-101/solve_18_system_setup_motd.j2"
+
+# Make sure solvers exist
+/usr/bin/git clone https://github.com/leogallego/instruqt-wyfp-2024-solve.git /tmp/first-101
+
+
+
+#####################
+###### CHECK ########
+
+# Check for the existence of the templates directory
+if [ -d "$templates_dir" ]; then
+    echo "The 'templates' directory exists in the ansible-files directory."
+else
+    errors+=("The 'templates' directory does not exist in the ansible-files directory.")
+fi
+
+# Check for the existence and content of the motd.j2 file
+if [ -f "$target_motd_j2" ]; then
+    # Read the content of the target_file file and solve_file
+    motd_j2_content=$(cat "$target_motd_j2")
+    motd_j2_solve=$(cat "$solve_motd_j2")
+
+    # Compare the content of the target_file file with the expected content
+    if [ "$motd_j2_content" != "$motd_j2_solve" ]; then
+        fail-message "The 'motd.j2' file does not have the proper content. Please check the file and try again."
+    fi
+else
+    fail-message "The 'motd.j2' file does not exist in the specified directory."
+fi
+
+
+# Check if the target_file file exists
+if [ -f "$target_file" ]; then
+    # Read the content of the target_file file and solve_file
+    file_content=$(cat "$target_file")
+    solve_content=$(cat "$solve_file")
+
+    # Compare the content of the target_file file with the expected content
+    if [ "$file_content" != "$solve_content" ]; then
+        fail-message "The 'system_setup.yml' file does not have the proper content. Please check the file and try again."
+    fi
+else
+    fail-message "The 'system_setup.yml' file does not exist in the specified directory."
+fi

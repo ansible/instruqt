@@ -1,0 +1,18 @@
+version: "3"
+virtualmachines:
+- name: node3
+  image: red-hat-mbu/rhel9
+  shell: /bin/su - rhel -s /bin/bash
+  machine_type: g1-small
+- name: node1
+  image: red-hat-mbu/rhel9
+  shell: /bin/su - rhel -s /bin/bash
+  machine_type: e2-small
+- name: control
+  image: red-hat-mbu/automation-controller-summit
+  shell: /bin/su - rhel -s /bin/bash
+  machine_type: e2-standard-4
+- name: node2
+  image: red-hat-mbu/rhel9
+  shell: /bin/su - rhel -s /bin/bash
+  machine_type: g1-small

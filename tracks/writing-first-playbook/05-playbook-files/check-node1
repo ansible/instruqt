@@ -1,4 +1,0 @@
-#!/bin/bash
-if [ -f /var/www/html/index.html ]; then
-    echo "Success: the index file was copied"
-fi
