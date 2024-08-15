@@ -1,54 +1,19 @@
 #!/bin/bash
-
-## fix dns resolution in automation-controller rhel9 image
-echo "search $_SANDBOX_ID.svc.cluster.local." >> /etc/resolv.conf
-
-## wait for instruqt boot
-set -euxo pipefail
 while [ ! -f /opt/instruqt/bootstrap/host-bootstrap-completed ]
 do
     echo "Waiting for Instruqt to finish booting the VM"
     sleep 1
 done
 
-## set user name
-USER=rhel
-CONTROLLER_FQDN=control.${_SANDBOX_ID}.svc.cluster.local
-
-## setup rhel user
 touch /etc/sudoers.d/rhel_sudoers
 echo "%rhel ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/rhel_sudoers
-cp -a /root/.ssh/* /home/$USER/.ssh/.
-chown -R rhel:rhel /home/$USER/.ssh
+cp -a /root/.ssh/* /home/rhel/.ssh/.
+chown -R rhel:rhel /home/rhel/.ssh
 
+## ^ from getting started controller
 
-## ansible home
-mkdir /home/$USER/ansible
-## ansible-files dir
-mkdir /home/$USER/ansible-files
-
-## ansible.cfg
-echo "[defaults]" > /home/$USER/.ansible.cfg
-echo "inventory = /home/$USER/ansible-files/hosts" >> /home/$USER/.ansible.cfg
-echo "host_key_checking = False" >> /home/$USER/.ansible.cfg
-
-## chown and chmod all files in rhel user home
-chown -R rhel:rhel /home/$USER/ansible
-chmod 777 /home/$USER/ansible
-#touch /home/rhel/ansible-files/hosts
-chown -R rhel:rhel /home/$USER/ansible-files
-
-## git setup
-git config --global user.email "rhel@example.com"
-git config --global user.name "Red Hat"
-su - $USER -c 'git config --global user.email "rhel@example.com"'
-su - $USER -c 'git config --global user.name "Red Hat"'
-
-
-## set ansible-navigator default settings
-## for the EE to work we need to pass env variables
-## TODO: controller_host doesnt resolve with control and 127.0.0.1
-## is interpreted within the EE
+USER=rhel
+# set ansible-navigator default settings
 su - $USER -c 'cat >/home/$USER/ansible-navigator.yml <<EOL
 ---
 ansible-navigator:
@@ -62,13 +27,6 @@ ansible-navigator:
     image: quay.io/acme_corp/servicenow-ee:latest
     pull:
       policy: missing
-    environment-variables:
-      pass:
-        - CONTROLLER_USERNAME
-        - CONTROLLER_PASSWORD
-        - CONTROLLER_VERIFY_SSL
-      set:
-        CONTROLLER_HOST: control.${_SANDBOX_ID}.svc.cluster.local
   logging:
     level: debug
   mode: stdout
@@ -78,67 +36,40 @@ ansible-navigator:
 EOL
 cat /home/$USER/ansible-navigator.yml'
 
-## copy navigator settings
-su - $USER -c 'cp /home/$USER/ansible-navigator.yml /home/$USER/.ansible-navigator.yml'
-su - $USER -c 'cp /home/$USER/ansible-navigator.yml /home/$USER/ansible-files/ansible-navigator.yml'
-
-
-## set inventory hosts for commandline ansible
-su - $USER -c 'cat >/home/$USER/ansible-files/hosts <<EOL
-[web]
-node1
-node2
-
-[database]
-node3
-
-[controller]
-control
-
-EOL
-cat /home/$USER/ansible-files/hosts'
-## end inventory hosts
-
-## chown and chmod all files in rhel user home
-chown -R rhel:rhel /home/rhel/ansible
-chmod 777 /home/rhel/ansible
-#touch /home/rhel/ansible-files/hosts
-chown -R rhel:rhel /home/rhel/ansible-files
-
-
-
-## Set controller access env variables for system
-cat >/etc/environment <<EOL
-CONTROLLER_HOST=localhost
-CONTROLLER_USERNAME=admin
-CONTROLLER_PASSWORD='ansible123!'
-CONTROLLER_VERIFY_SSL=false
-
-EOL
-cat /etc/environment
-## end environment
-
-
-## ^ from getting started controller 2022
-
-
-## RHEL 9 test
-
-#sudo dnf config-manager --set-disabled rhui-rhel-9-for-x86_64-baseos-rhui-rpms
-#sudo dnf config-manager --set-disabled rhui-rhel-9-for-x86_64-appstream-rhui-rpms
-#sudo subscription-manager repos --list
-sudo dnf config-manager --disable google*
-
+sudo dnf config-manager --set-disabled rhui-rhel-8-for-x86_64-baseos-rhui-rpms
+sudo dnf config-manager --set-disabled rhui-rhel-8-for-x86_64-appstream-rhui-rpms
 sudo dnf config-manager --enable ansible-automation-platform
+
+sudo bash -c 'cat >/etc/yum.repos.d/centos8-baseos.repo <<EOL
+[centos8-baseos]
+name=CentOS 8 Stream BaseOS
+baseurl=http://mirror.centos.org/centos/8-stream/BaseOS/x86_64/os
+enabled=1
+gpgcheck=0
+
+EOL
+cat /etc/yum.repos.d/centos8-baseos.repo'
+
+sudo bash -c 'cat >/etc/yum.repos.d/centos8-appstream.repo <<EOL
+[centos8-appstream]
+name=CentOS 8 Stream AppStream
+baseurl=http://mirror.centos.org/centos/8-stream/AppStream/x86_64/os/
+enabled=1
+gpgcheck=0
+
+EOL
+cat /etc/yum.repos.d/centos8-appstream.repo'
 
 
 sudo dnf clean all
-sudo dnf install -y ansible-navigator  ansible-lint nc
-#pip3 install yamllint
+sudo dnf install -y ansible-navigator
+sudo dnf install -y ansible-lint
+sudo dnf install -y nc
+pip3.9 install yamllint
 
 
 #Switch to correct Python version
-#/usr/sbin/alternatives --set python3 /usr/bin/python3.8
+/usr/sbin/alternatives --set python3 /usr/bin/python3.8
 
 # Set controller access env variables
 export CONTROLLER_HOST=localhost
@@ -147,18 +78,10 @@ export CONTROLLER_PASSWORD='ansible123!'
 export CONTROLLER_VERIFY_SSL=false
 
 
-# Install awx.awx 24.2.0 / 2024-04-09 for rhel user
-su - $USER -c '/bin/ansible-galaxy collection install awx.awx:==24.2.0'
-# Install awx.awx 24.2.0 / 2024-04-09 for root user
-/bin/ansible-galaxy collection install awx.awx:==24.2.0
-
+# Install latest awx.awx
+su - $USER -c '/bin/ansible-galaxy collection install awx.awx'
 
 # Get playbook from repo
-/usr/bin/curl https://raw.githubusercontent.com/leogallego/instruqt-lifecycle-scripts/main/controller-101-setup-playbook.yml -o /tmp/controller-101-setup.yml
-
-## clone summit 2024 repo
-git clone https://github.com/leogallego/instruqt-controller-101.git /tmp/controller-101-2024
-
-
+/usr/bin/curl https://raw.githubusercontent.com/leogallego/instruqt-lifecycle-scripts/main/controller-101-setup-playbook.yml -o /tmp/setup-scripts/getting-started-controller/getting-started-controller-setup.yml
 # Use playbook to setup environment
-/bin/ansible-playbook /tmp/controller-101-setup.yml --tags setup-env
+/bin/ansible-playbook /tmp/setup-scripts/getting-started-controller/getting-started-controller-setup.yml --tags setup-env

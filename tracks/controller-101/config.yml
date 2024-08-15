@@ -1,18 +1,18 @@
 version: "3"
 virtualmachines:
 - name: node3
-  image: red-hat-mbu/rhel9
+  image: red-hat-mbu/ansible
   shell: /bin/su - rhel -s /bin/bash
-  machine_type: g1-small
+  machine_type: e2-small
 - name: node1
-  image: red-hat-mbu/rhel9
+  image: red-hat-mbu/ansible
   shell: /bin/su - rhel -s /bin/bash
-  machine_type: g1-small
+  machine_type: e2-small
 - name: control
-  image: red-hat-mbu/automation-controller-summit
+  image: red-hat-mbu/automation-controller
   shell: /bin/su - rhel -s /bin/bash
-  machine_type: n1-standard-4
+  machine_type: n1-standard-1
 - name: node2
-  image: red-hat-mbu/rhel9
+  image: red-hat-mbu/ansible
   shell: /bin/su - rhel -s /bin/bash
-  machine_type: g1-small
+  machine_type: e2-small
