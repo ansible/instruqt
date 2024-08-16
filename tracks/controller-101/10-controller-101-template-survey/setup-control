@@ -1,0 +1,30 @@
+#!/bin/bash
+## solve-workflow
+export CONTROLLER_HOST=localhost
+export CONTROLLER_USERNAME=admin
+export CONTROLLER_PASSWORD='ansible123!'
+export CONTROLLER_VERIFY_SSL=false
+
+#/bin/ansible-galaxy collection install awx.awx:==24.2.0
+#/bin/ansible-galaxy collection list awx.awx
+/bin/ansible-playbook /tmp/controller-101-setup.yml --tags solve-workflow
+
+## commenting home setup as added to lifecycle
+#mkdir /home/rhel/ansible-files
+#chown -R rhel:rhel /home/rhel/ansible-files
+#touch /etc/sudoers.d/rhel_sudoers
+#echo "%rhel ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/rhel_sudoers
+#cp -a /root/.ssh/* /home/rhel/.ssh/.
+#chown -R rhel:rhel /home/rhel/.ssh
+## end home setup
+
+## git setup
+#git config --global user.email "rhel@example.com"
+#git config --global user.name "Red Hat"
+
+## ansible.cfg
+#echo "[defaults]" > /home/rhel/.ansible.cfg
+#echo "inventory = /home/rhel/ansible-files/hosts" >> /home/rhel/.ansible.cfg
+#echo "host_key_checking = False" >> /home/rhel/.ansible.cfg
+#cp /home/rhel/ansible-navigator.yml /home/rhel/.ansible-navigator.yml
+#mv /home/rhel/ansible-navigator.yml /home/rhel/ansible-files/ansible-navigator.yml

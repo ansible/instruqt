@@ -1,0 +1,16 @@
+#!/bin/bash
+## solve-job_template2
+export CONTROLLER_HOST=localhost
+export CONTROLLER_USERNAME=admin
+export CONTROLLER_PASSWORD='ansible123!'
+export CONTROLLER_VERIFY_SSL=false
+
+
+## run tasks from setup plabyook / add node3 to inventory
+/bin/ansible-playbook /tmp/controller-101-setup.yml --tags solve-node3
+
+## run tasks from setup plabyook / Create Extended services Job Template
+/bin/ansible-playbook /tmp/controller-101-setup.yml --tags solve-job_template2
+
+## run tasks from setup plabyook /Create set motd Job Template
+/bin/ansible-playbook /tmp/controller-101-setup.yml --tags solve-job_template3

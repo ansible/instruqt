@@ -1,0 +1,10 @@
+#!/bin/bash
+## "solve-credentials,solve-job_template"
+export CONTROLLER_HOST=localhost
+export CONTROLLER_USERNAME=admin
+export CONTROLLER_PASSWORD='ansible123!'
+export CONTROLLER_VERIFY_SSL=false
+
+
+## run tasks from setup plabyook
+/bin/ansible-playbook /tmp/controller-101-setup.yml --tags "solve-credentials,solve-job_template"
