@@ -11,12 +11,14 @@ notes:
 
     Let's take a few minutes to review what we did until now and ask some questions if you have any doubts!
 tabs:
-- title: Automation controller
+- id: g9ys7omietp2
+  title: Automation controller
   type: service
   hostname: control
   path: /
   port: 443
-- title: Node1 Web
+- id: vw3yefxrqqis
+  title: Node1 Web
   type: service
   hostname: node1
   path: /

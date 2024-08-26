@@ -15,12 +15,14 @@ notes:
     In controller, job templates are a visual representation of the `ansible-playbook` command and all flags you can utilize when executing from the command line.
 
 tabs:
-- title: Automation controller
+- id: mhsylwrenfnc
+  title: Automation controller
   type: service
   hostname: control
   path: /
   port: 443
-- title: Node1 Web
+- id: cuakpqjrwjoy
+  title: Node1 Web
   type: service
   hostname: node1
   path: /

@@ -13,7 +13,8 @@ notes:
 
     You can manage playbooks on your server, or by placing your playbooks into a source code management (SCM) system supported by automation controller, including Git, Subversion, and Red Hat Insights.
 tabs:
-- title: Automation controller
+- id: oas3m6yyyy8x
+  title: Automation controller
   type: service
   hostname: control
   path: /
