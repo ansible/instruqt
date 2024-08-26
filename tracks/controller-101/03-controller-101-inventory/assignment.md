@@ -20,7 +20,8 @@ notes:
 
     In this challenge, we will be creating a new inventory, adding hosts and creating a host group inside the inventory.
 tabs:
-- title: Automation controller
+- id: 8lnruinhnwpt
+  title: Automation controller
   type: service
   hostname: control
   path: /

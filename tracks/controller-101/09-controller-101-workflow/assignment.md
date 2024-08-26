@@ -13,7 +13,8 @@ notes:
 
     A workflow job template links together different resources in a graphical way, this can include multiple playbooks (job templates), project syncs and even other workflows.
 tabs:
-- title: Automation controller
+- id: yagzybxkvjfj
+  title: Automation controller
   type: service
   hostname: control
   path: /

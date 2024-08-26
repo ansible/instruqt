@@ -13,7 +13,8 @@ notes:
 
     Credentials are utilized for authentication when launching Jobs against machines, synchronizing with inventory sources, and importing project content from a version control system.
 tabs:
-- title: Automation controller
+- id: yg8eiepwl9ys
+  title: Automation controller
   type: service
   hostname: control
   path: /

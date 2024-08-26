@@ -1,7 +1,0 @@
- #!/bin/bash
- ## solve-project2
-export CONTROLLER_HOST=localhost
-export CONTROLLER_USERNAME=admin
-export CONTROLLER_PASSWORD='ansible123!'
-export CONTROLLER_VERIFY_SSL=false
-/bin/ansible-playbook /tmp/setup-scripts/getting-started-controller/getting-started-controller-setup.yml --tags solve-project2

@@ -36,7 +36,8 @@ notes:
 
     Access the Schedules view by clicking Schedules from the left navigation bar. This view shows all the scheduled jobs that are configured.
 tabs:
-- title: Automation controller
+- id: pk1bgkf2e6x0
+  title: Automation controller
   type: service
   hostname: control
   path: /
