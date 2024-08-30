@@ -25,7 +25,7 @@
         </tr>
         <tr data-href="./webpages/ansible-cloud-lab">
             <td>Introduction to cloud automation</td>
-            <td><a href="./webpages/ansible-cloud-lab">🔬 Open Workshop</a></td>
+            <td><a href="./webpages/ansible-cloud-lab.md">🔬 Open Workshop</a></td>
         </tr>
         <tr data-href="./webpages/lightspeed">
             <td>Ansible Lightspeed and Development Technical Workshop</td>
