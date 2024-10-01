@@ -47,6 +47,7 @@ Tasks in this lab include:
 <i>Continue from Lab linked above</i>
 <ul><li>Exercise 3 - Intro to playbooks</li>
 <li>Exercise 4 - Configure a job template</li></ul>
+<br>
 <li><b>Lab 4: Automating Windows Active Directory</b> [Estimated Time ⏱️ 30 minutes]<br>
 <i>See Red Hat for access</i>
 </li><br>  
