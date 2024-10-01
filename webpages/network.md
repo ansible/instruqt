@@ -43,6 +43,54 @@ Simplify network administration and operations using Red Hat Ansible Automation 
 </li>
 </ul>
 
+## Supplemental Labs
+
+<table>
+<thead>
+<tr>
+<th>Lab Title</th>
+<th>Description</th>
+<th>Link</th>
+<th>Estimated Time</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Network automation basics: Resource modules</td>
+<td>Learn Red Hat Ansible Automation Platform playbook basics for network automation.</td>
+<td><a target="_new" href="https://developers.redhat.com/content-gateway/link/3884832">🚀 Launch Lab</a></td>
+<td>⏱️ 20 minutes</td>
+<td></td>
+</tr>
+<tr>
+<td>Network automation basics: Facts</td>
+<td>Learn about retrieving facts from a Cisco IOS-XE device.</td>
+<td><a target="_new" href="https://developers.redhat.com/content-gateway/link/3884833">🚀 Launch Lab</a></td>
+<td>⏱️ 20 minutes</td>
+<td></td>
+</tr>
+<tr>
+<td>Network automation basics: Infrastructure visability and awareness</td>
+<td>Learn how to use Red Hat Ansible Automation Platform to retrieve facts from network infrastructure and create dynamic documentation.</td>
+<td><a target="_new" href="https://developers.redhat.com/content-gateway/link/3884834">🚀 Launch Lab</a></td>
+<td>⏱️ 20 minutes</td>
+</tr>
+<tr>
+<td>Network automation basics: Surveys</td>
+<td>Learn how to create an automation controller survey to configure a Cisco IOS network device.</td>
+<td><a target="_new" href="https://developers.redhat.com/content-gateway/link/3884835">🚀 Launch Lab</a></td>
+<td>⏱️ 20 minutes</td>
+</tr>
+<tr>
+<td>Firewall automation with Palo Alto Networks</td>
+<td>Learn how to automate Palo Alto Networks firewalls using Ansible Automation Platform.</td>
+<td><a target="_new" href="https://developers.redhat.com/content-gateway/link/3884838">🚀 Launch Lab</a></td>
+<td>⏱️ 45 minutes</td>
+</tr>  
+</tbody>
+</table>
+
 # Learning Resources
 
 <table>
