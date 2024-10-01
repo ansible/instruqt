@@ -46,11 +46,10 @@ Tasks in this lab include:
 <li><b>Lab 3: Ansible Automation with Windows</b> [Estimated Time ⏱️ 15 minutes]<br>
 <i>Continue from Lab linked above</i>
 <ul><li>Exercise 3 - Intro to playbooks</li>
-</li><br>  
 <li>Exercise 4 - Configure a job template</li></ul>
 <li><b>Lab 4: Automating Windows Active Directory</b> [Estimated Time ⏱️ 30 minutes]<br>
 <i>See Red Hat for access</i>
-
+</li><br>  
 </li>
 </ul>
 
