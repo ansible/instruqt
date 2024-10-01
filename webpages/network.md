@@ -23,21 +23,21 @@ The Ansible Network Automation Workshop is a 90 minute, hands-on workshop coveri
 </li>
 <li><b>Lab 1:  Network automation basics - First playbook</b> [Estimated Time ⏱️ 20 minutes]<br>
 Learn the fundamentals of Red Hat Ansible Automation Platform for network automation using ansible-navigator.<br>
-<a href="https://www.redhat.com/en/interactive-labs/network-automation-basics-first-playbook">[ 🚀 Launch the lab ]</a>
+<a href="https://developers.redhat.com/content-gateway/link/3884830">[ 🚀 Launch the lab ]</a>
 </li>
 <li><b>Slides: Brief for Lab 2</b> [Estimated Time ⏱️ 10 minutes]<br>
 <a href="https://docs.google.com/presentation/d/1TVeHwv-4dtOmh8FMJa2Kd0Md8aqWGI0vHIwBpFih6_0/edit?usp=sharing">[ 🖥️ Slides ]</a>
 </li>
 <li><b>Lab 2: Network automation - Backup and restore</b> [Estimated Time ⏱️ 20 minutes]<br>
 Learn how to automate network configurations and backups using Red Hat Ansible Automation Platform.<br>
-<a href="https://play.instruqt.com/embed/redhat/tracks/network-lab-1?token=em_bkpb1mcbod8qprrg">[ 🚀 Launch the lab ]</a>
+<a href="https://developers.redhat.com/content-gateway/link/3884831">[ 🚀 Launch the lab ]</a>
 </li>
 <li><b>Slides: Brief for Lab 3</b> [Estimated Time ⏱️ 5 minutes]<br>
 <a href="https://docs.google.com/presentation/d/1TVeHwv-4dtOmh8FMJa2Kd0Md8aqWGI0vHIwBpFih6_0/edit?usp=sharing">[ 🖥️ Slides ]</a>
 </li>
 <li><b>Lab 3: Red Hat Ansible Automation Platform for network administrators</b> [Estimated Time ⏱️ 25 minutes]<br>
 Simplify network administration and operations using Red Hat Ansible Automation Platform.<br>
-<a href="https://play.instruqt.com/embed/redhat/tracks/network-oper-tasks?token=em_sH26Rq5FE7u1WeWC">[ 🚀 Launch the lab ]</a>
+<a href="https://developers.redhat.com/content-gateway/link/3884837">[ 🚀 Launch the lab ]</a>
 </li>
 <li>Wrap Up
 </li>
