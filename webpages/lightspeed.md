@@ -65,7 +65,7 @@ Recommended agenda for when there is an instructor teaching.
 <tr>
 <td>Get started with ansible-builder</td>
 <td>Install ansible-builder v3 and learn how to create custom execution environments.</td>
-<td><a target="_new" href="https://play.instruqt.com/embed/redhat/tracks/getting-started-ansible-builder?token=em_1Ih9nv5b7mX5AfJF&show_challenges=true">🚀 Launch Lab</a></td>
+<td><a target="_new" href="https://developers.redhat.com/content-gateway/link/3884763">🚀 Launch Lab</a></td>
 <td>⏱️ 30 minutes</td>
 </tr>
 <tr>
