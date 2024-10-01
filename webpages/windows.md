@@ -28,27 +28,30 @@ Tasks in this lab include:
 <li><b>Slides: Introduction + Workshop Brief</b> [Estimated Time ⏱️ 15  minutes]<br>
 <a href="https://docs.google.com/presentation/d/1RO5CQiCoqLDES1NvTI_1fQrR-oWM1NuW-uB0JRvtJzE/edit?usp=sharing">[ 🖥️ Slides ]</a>
 </li><br>
-<li><b>Lab: Ansible Automation with Windows</b> [Estimated Time ⏱️ 15 minutes]<br>
-<a href="https://play.instruqt.com/embed/redhat/tracks/ansible-windows-automation-workshop?token=em_doPKRQ1nB4Hem5dM">[ 🚀 Launch the lab ]</a>
+<li><b>Lab 1: Getting Started with Windows Automation</b> [Estimated Time ⏱️ 15 minutes]<br>
+<a href="https://developers.redhat.com/content-gateway/link/3884845">[ 🚀 Launch the lab ]</a>
 <ul><li>Exercise 1 - Configure Automation Controller
 </li></ul>
 </li><br>
 <li><b>Slides: Brief for Challenge 2</b> [Estimated Time ⏱️ 5  minutes]<br>
 <i>Continue slides from above</i>
 </li><br>
-<li><b>Lab: Ansible Automation with Windows</b> [Estimated Time ⏱️ 15 minutes]<br>
+<li><b>Lab 2: Ansible Automation with Windows</b> [Estimated Time ⏱️ 15 minutes]<br>
 <ul><li>Exercise 2 - Ad-hoc commands<br>
 <i>Continue from Lab linked above</i></li></ul>
 </li><br>
 <li><b>Slides: Brief for Challenge 3 and 4</b> [Estimated Time ⏱️ 15  minutes]<br>
 <i>Continue slides from above</i>
 </li><br>
-<li><b>Lab: Ansible Automation with Windows</b> [Estimated Time ⏱️ 15 minutes]<br>
+<li><b>Lab 3: Ansible Automation with Windows</b> [Estimated Time ⏱️ 15 minutes]<br>
 <i>Continue from Lab linked above</i>
 <ul><li>Exercise 3 - Intro to playbooks</li>
 <li>Exercise 4 - Configure a job template</li></ul>
-
-</li><br>
+<br>
+<li><b>Lab 4: Automating Windows Active Directory</b> [Estimated Time ⏱️ 30 minutes]<br>
+<i>See Red Hat for access</i>
+</li><br>  
+</li>
 </ul>
 
 # Learning Resources

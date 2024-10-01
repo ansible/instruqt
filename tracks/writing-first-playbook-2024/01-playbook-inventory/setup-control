@@ -1,0 +1,15 @@
+#!/bin/bash
+
+USER=rhel
+
+# Set the target directory and file
+target_directory="/home/rhel/ansible-files"
+target_file="${target_directory}/inventory"
+solve_file="/tmp/first-101/solve_11_system_setup.yml"
+solve_inventory="/tmp/first-101/solve_10_inventory"
+
+
+# Set the target directory and 
+#cd $target_directory
+#su - $USER -c 'ansible-navigator inventory --list -m stdout'
+#chown -R rhel:rhel $target_directory

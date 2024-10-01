@@ -17,3 +17,8 @@ virtualmachines:
   allow_external_ingress:
   - http
   - https
+secrets:
+- name: ADMIN_CONTROLLER_PASSWORD
+- name: ADMIN_CONTROLLER_USERNAME
+- name: VAULT_PASSWORD
+- name: ANSIBLE_TMM_CONTROLLER_TOKEN

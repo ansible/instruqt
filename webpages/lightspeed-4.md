@@ -46,7 +46,7 @@ After finishing this lab you are ready to start taking advantage of the numerous
 <tr>
 <td><b>Lab 1</b>: Get started with ansible-builder</td>
 <td>Install ansible-builder v3 and learn how to create custom execution environments.</td>
-<td><a href="https://play.instruqt.com/embed/redhat/tracks/getting-started-ansible-builder?token=em_1Ih9nv5b7mX5AfJF&show_challenges=true">🚀 Launch Lab</a></td>
+<td><a href="https://developers.redhat.com/content-gateway/link/3884763">🚀 Launch Lab</a></td>
 <td>⏱️ 30 minutes</td>
 </tr>
 <tr>
@@ -59,6 +59,7 @@ After finishing this lab you are ready to start taking advantage of the numerous
 <td><b>Lab 2</b>: Get started with Ansible Lightspeed with IBM watsonx Code Assistant</td>
 <td>Learn how to configure, activate, and use Ansible Lightspeed to generate Ansible content.</td>
 <td><a href="https://red.ht/lab-lightspeed-101">🚀 Launch Lab</a></td>
+  <!-- NOTE: This Lightspeed lab is deprecated and the commercial lab requires Red Hat supervision-->
 <td>⏱️ 30 minutes</td>
 </tr>
 <tr>
@@ -70,7 +71,7 @@ After finishing this lab you are ready to start taking advantage of the numerous
 <tr>
 <td><b>Lab 3</b>: Sign and verify projects with Red Hat Ansible Automation Platform</td>
 <td>Sign source repositories that include Ansible Playbooks and content, and validate signed content in the automation controller.</td>
-<td><a href="https://play.instruqt.com/embed/redhat/tracks/sign-verify-ansible-projects?token=em_Gp14R9eDyqDCt7d2">🚀 Launch Lab</a></td>
+<td><a href="https://developers.redhat.com/content-gateway/link/3884770">🚀 Launch Lab</a></td>
 <td>⏱️ 40 minutes</td>
 </tr>
 <tr>
@@ -82,7 +83,7 @@ After finishing this lab you are ready to start taking advantage of the numerous
 <tr>
 <td><b>Lab 4</b>: Sign Ansible Content Collections with private automation hub	</td>
 <td>Learn how to sign Ansible Content Collections using a private automation hub and install collections with ansible-galaxy CLI.</td>
-<td><a href="https://play.instruqt.com/embed/redhat/tracks/private-automation-hub-signing?token=em_UTCtnLfGucfaOS0_">🚀 Launch Lab</a></td>
+<td><a href="https://developers.redhat.com/content-gateway/link/3884765">🚀 Launch Lab</a></td>
 <td>⏱️ 45 minutes</td>
 </tr>
 <tr>
@@ -94,7 +95,7 @@ After finishing this lab you are ready to start taking advantage of the numerous
 <tr>
 <td><b>Lab 5</b>: Manage user access and content policies using private automation hub	</td>
 <td>Create groups so your automation hub users have appropriate system permissions or grant view-only access to unauthorized users.	</td>
-<td><a href="https://play.instruqt.com/embed/redhat/tracks/hub-managing-user-access?token=em_sqTC_YqGLwBSDT5r">🚀 Launch Lab</a></td>
+<td><a href="https://developers.redhat.com/content-gateway/link/3884769">🚀 Launch Lab</a></td>
 <td>⏱️ 45 minutes</td>
 </tr>
 </tbody>

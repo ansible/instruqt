@@ -15,7 +15,7 @@ This lab will provide code to demonstrate how to use CasC to maintain all aspect
 It is Recomended to be familiar with the Automation Controller and Ansible as this lab assumes you are familier with using those products.
 
 If you have not used the Automation controller before, a recomended place to start is this instruct lab, if you have not done so before:
-[Introduction to automation controller](https://play.instruqt.com/embed/redhat/tracks/controller-101?token=em_mUfT4xw1TXybXnBr&show_challenges=true)
+[Introduction to automation controller](https://developers.redhat.com/content-gateway/link/3884764)
 
 # Agenda
 
@@ -58,7 +58,7 @@ Recommended agenda for when there is an instructor teaching.
 <tr>
 <td>Config as code Introduction to AAP</td>
 <td>Learn about the fundamentals of using Configuration of Code to maintain the Ansible Automation Platform</td>
-<td><a target="_new" href="https://play.instruqt.com/embed/redhat/tracks/introduction-to-aap-config-as-code?token=em_ecwzhRzZINWBHKmi&show_challenges=true">🚀 Launch Lab</a></td>
+<td><a target="_new" href="(TBD)">🚀 Launch Lab</a></td>
 </tr>
 </tbody>
 </table>

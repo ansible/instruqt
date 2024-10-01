@@ -1,12 +1,12 @@
 <h1>Ansible Workshop Directory</h1>
 
-<div id="sean">
+<!-- <div id="sean">
     <a href="{{ site.baseurl }}/webpages/cisco-live-2024" class="cisco-link">
         <div class="cisco-image-container"></div>
         Click for Cisco Live 2024 workshops!
     </a>
     <br>
-</div>
+</div> -->
 
 
 ## 90 minute online workshops
@@ -19,31 +19,31 @@
         </tr>
     </thead>
     <tbody>
-        <tr data-href="./webpages/eda">
+        <tr data-href="./webpages/eda.md">
             <td>Event-Driven Ansible Technical Workshop</td>
-            <td><a href="./webpages/eda">🔬 Open Workshop</a></td>
+            <td><a href="./webpages/eda.md">🔬 Open Workshop</a></td>
         </tr>
-        <tr data-href="./webpages/ansible-cloud-lab">
+        <tr data-href="./webpages/ansible-cloud-lab.md">
             <td>Introduction to cloud automation</td>
-            <td><a href="./webpages/ansible-cloud-lab">🔬 Open Workshop</a></td>
+            <td><a href="./webpages/ansible-cloud-lab.md">🔬 Open Workshop</a></td>
         </tr>
-        <tr data-href="./webpages/lightspeed">
+        <tr data-href="./webpages/lightspeed.md">
             <td>Ansible Lightspeed and Development Technical Workshop</td>
-            <td><a href="./webpages/lightspeed">🔬 Open Workshop</a></td>
+            <td><a href="./webpages/lightspeed.md">🔬 Open Workshop</a></td>
         </tr>
-        <tr data-href="./webpages/network">
+        <tr data-href="./webpages/network.md">
             <td>Getting Started with Network Automation</td>
-            <td><a href="./webpages/network">🔬 Open Workshop</a></td>
+            <td><a href="./webpages/network.md">🔬 Open Workshop</a></td>
         </tr>
-        <tr data-href="./webpages/servicenow">
+        <tr data-href="./webpages/servicenow.md">
             <td>Getting Started with ServiceNow Automation</td>
-            <td><a href="./webpages/servicenow">🔬 Open Workshop</a></td>
+            <td><a href="./webpages/servicenow.md">🔬 Open Workshop</a></td>
         </tr>
-        <tr data-href="./webpages/windows">
+        <tr data-href="./webpages/windows.md">
             <td>Getting Started with Windows Automation</td>
-            <td><a href="./webpages/windows">🔬 Open Workshop</a></td>
+            <td><a href="./webpages/windows.md">🔬 Open Workshop</a></td>
         </tr>
-        <tr data-href="./webpages/windows">
+        <tr data-href="./webpages/aapcasc.md">
             <td>Getting Started with Configuration as Code for Ansible Automation Platform 2 Technical Workshop</td>
             <td><a href="./webpages/aapcasc.md">🔬 Open Workshop</a></td>
         </tr>
@@ -60,17 +60,17 @@
         </tr>
     </thead>
     <tbody>
-        <tr data-href="./webpages/eda-4">
+        <tr data-href="./webpages/eda-4.md">
             <td>Event-Driven Ansible & ServiceNow Technical Workshop </td>
-            <td><a href="./webpages/eda-4">🔬 Open Workshop</a></td>
+            <td><a href="./webpages/eda-4.md">🔬 Open Workshop</a></td>
         </tr>
-        <tr data-href="./webpages/lightspeed-4">
+        <tr data-href="./webpages/lightspeed-4.md">
             <td>Ansible Lightspeed and Development Technical Workshop</td>
-            <td><a href="./webpages/lightspeed-4">🔬 Open Workshop</a></td>
+            <td><a href="./webpages/lightspeed-4.md">🔬 Open Workshop</a></td>
         </tr>
-        <tr data-href="./webpages/aapcasc-4">
+        <tr data-href="./webpages/aapcasc-4.md">
             <td>Getting Started with Configuration as Code for Ansible Automation Platform 2 Technical Workshop</td>
-            <td><a href="./webpages/aapcasc-4">🔬 Open Workshop</a></td>
+            <td><a href="./webpages/aapcasc-4.md">🔬 Open Workshop</a></td>
         </tr>
     </tbody>
 </table>

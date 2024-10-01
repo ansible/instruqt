@@ -17,7 +17,7 @@ The ServiceNow integration for Ansible Automation Platform is made possible thro
 <a href="https://docs.google.com/presentation/d/1sE8nZJjQw74QyWccufUVNwEtIepxPYTbsn5YfjN3oU8/edit?usp=sharing">[ 🖥️ Slides ]</a>
 </li>
 <li><b>Lab: Get started with ServiceNow automation</b> [Estimated Time ⏱️ 60 minutes]<br>
-<a href="https://play.instruqt.com/embed/redhat/tracks/getting-started-servicenow-automation?token=em_5ktpLJWtzpbqcDyM">[ 🚀 Launch the lab ]</a>
+<a href="https://developers.redhat.com/content-gateway/link/3884768">[ 🚀 Launch the lab ]</a>
 </li>
 </ul>
 

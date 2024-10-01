@@ -2,7 +2,7 @@
 
 > **IMPORTANT TO NOTE** 
 > 
-> These are 90 minute split versions of this workshop.  For the longer 4-hour session that combines all sectionsplease [🔬 click here](aapcasc-4.md)
+> These are 90 minute split versions of this workshop.  For the longer 4-hour session that combines all sections please [🔬 click here](aapcasc-4.md)
 >
 
 
@@ -15,7 +15,7 @@ This lab will provide code to demonstrate how to use CasC to maintain all aspect
 It is Recomended to be familiar with the Automation Controller and Ansible as this lab assumes you are familier with using those products.
 
 If you have not used the Automation controller before, a recomended place to start is this instruct lab, if you have not done so before:
-[Introduction to automation controller](https://play.instruqt.com/embed/redhat/tracks/controller-101?token=em_mUfT4xw1TXybXnBr&show_challenges=true)
+[Introduction to automation controller](https://developers.redhat.com/content-gateway/link/3884764)
 
 # Agenda
 
@@ -24,19 +24,19 @@ Recommended agenda for when there is an instructor teaching.
 <table>
 <tbody>
 <tr>
-<td><b>Lab1</b>: Creating an Execution Environment</td>
+<td><b>Lab 1</b>: Creating an Execution Environment</td>
 <td>⏱️ 45 minutes</td>
 </tr>
 <tr>
-<td><b>Lab2</b>: Configuring your Automation hub</td>
+<td><b>Lab 2</b>: Configuring your Automation hub</td>
 <td>⏱️ 70 minutes</td>
 </tr>
 <tr>
-<td><b>Lab3</b>: Configuring your Automation controller</td>
+<td><b>Lab 3</b>: Configuring your Automation controller</td>
 <td>⏱️ 120 minutes</td>
 </tr>
 <tr>
-<td><b>Lab4</b>: Creating an Automation controller Workflow in code</td>
+<td><b>Lab 4</b>: Creating an Automation controller Workflow in code</td>
 <td>⏱️ 90 minutes</td>
 </tr>
 </tbody>
@@ -59,20 +59,19 @@ Recommended agenda for when there is an instructor teaching.
 <tr>
 <td>Creating an Execution Environment</td>
 <td>Learn how to use configuration as code to create execution environments.</td>
-<td><a target="_new" href="https://play.instruqt.com/embed/redhat/tracks/wip-creating-execution-environments-in-code?token=em_FOMggxn91ZFVO0He&show_challenges=true
-">🚀 Launch Lab</a></td>
+<td><a target="_new" href="(TBD)">🚀 Launch Lab</a></td>
 <td>⏱️ 45 minutes</td>
 </tr>
 <tr>
 <td>Configuring your Automation hub</td>
 <td>Learn how to use configuration as code to configure Ansible Automation hub.</td>
-<td><a target="_new" href="https://play.instruqt.com/embed/redhat/tracks/wip-config-as-code-automation-hub?token=em_Olr_et9k9qLGCA1P&show_challenges=true">🚀 Launch Lab</a></td>
+<td><a target="_new" href="(TBD)">🚀 Launch Lab</a></td>
 <td>⏱️ 70 minutes</td>
 </tr>
 <tr>
 <td>Configuring your Automation controller</td>
 <td>Learn how to use configuration as code to configure Ansible Automation controller.</td>
-<td><a target="_new" href="https://play.instruqt.com/embed/redhat/tracks/wip-config-as-code-automation-controller?token=em_PAJzYfZEFcGlg4Zg&show_challenges=true">🚀 Launch Lab</a></td>
+<td><a target="_new" href="(TBD)">🚀 Launch Lab</a></td>
 <td>⏱️ 120 minutes</td>
 </tr>
 </tbody>
@@ -93,7 +92,7 @@ Recommended agenda for when there is an instructor teaching.
 <tr>
 <td>Creating an Automation controller Workflow in code</td>
 <td>Use CasC to maintain workflows in the Automation controller.</td>
-<td><a target="_new" href="https://play.instruqt.com/embed/redhat/tracks/wip-config-as-code-automation-controller-workflows?token=em_zRdM5Hs4Tb-wum9e&show_challenges=true">🚀 Launch Lab</a></td>
+<td><a target="_new" href="(TBD)">🚀 Launch Lab</a></td>
 <td>⏱️ 90 minutes</td>
 </tr>
 </tbody>

@@ -1,9 +1,0 @@
-#!/bin/bash
-
-# Define the remote host and user
-remote_user="rhel"
-remote_host="node1"
-
-# Install the 'httpd' package on the remote host
-ssh "${remote_user}@${remote_host}" "sudo yum install -y httpd"
-

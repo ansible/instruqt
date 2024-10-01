@@ -22,4 +22,7 @@ lab_config:
   extend_ttl: 3300
   feedback_recap_enabled: true
   loadingMessages: true
-checksum: "13692025422635255806"
+  lab_v2: false
+  override_challenge_layout: false
+  hideStopButton: false
+checksum: "10624397017837304605"

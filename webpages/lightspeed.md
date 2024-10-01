@@ -65,13 +65,14 @@ Recommended agenda for when there is an instructor teaching.
 <tr>
 <td>Get started with ansible-builder</td>
 <td>Install ansible-builder v3 and learn how to create custom execution environments.</td>
-<td><a target="_new" href="https://play.instruqt.com/embed/redhat/tracks/getting-started-ansible-builder?token=em_1Ih9nv5b7mX5AfJF&show_challenges=true">🚀 Launch Lab</a></td>
+<td><a target="_new" href="https://developers.redhat.com/content-gateway/link/3884763">🚀 Launch Lab</a></td>
 <td>⏱️ 30 minutes</td>
 </tr>
 <tr>
 <td>Get started with Ansible Lightspeed with IBM watsonx Code Assistant</td>
 <td>Learn how to configure, activate, and use Ansible Lightspeed to generate Ansible content.</td>
 <td><a target="_new" href="https://red.ht/lab-lightspeed-101">🚀 Launch Lab</a></td>
+  <!-- NOTE: This Lightspeed lab is deprecated and the commercial lab requires Red Hat supervision-->
 <td>⏱️ 30 minutes</td>
 </tr>
 </tbody>

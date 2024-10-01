@@ -23,25 +23,76 @@ The Ansible Network Automation Workshop is a 90 minute, hands-on workshop coveri
 </li>
 <li><b>Lab 1:  Network automation basics - First playbook</b> [Estimated Time ⏱️ 20 minutes]<br>
 Learn the fundamentals of Red Hat Ansible Automation Platform for network automation using ansible-navigator.<br>
-<a href="https://www.redhat.com/en/interactive-labs/network-automation-basics-first-playbook">[ 🚀 Launch the lab ]</a>
+<a href="https://developers.redhat.com/content-gateway/link/3884830">[ 🚀 Launch the lab ]</a>
 </li>
 <li><b>Slides: Brief for Lab 2</b> [Estimated Time ⏱️ 10 minutes]<br>
 <a href="https://docs.google.com/presentation/d/1TVeHwv-4dtOmh8FMJa2Kd0Md8aqWGI0vHIwBpFih6_0/edit?usp=sharing">[ 🖥️ Slides ]</a>
 </li>
 <li><b>Lab 2: Network automation - Backup and restore</b> [Estimated Time ⏱️ 20 minutes]<br>
 Learn how to automate network configurations and backups using Red Hat Ansible Automation Platform.<br>
-<a href="https://play.instruqt.com/embed/redhat/tracks/network-lab-1?token=em_bkpb1mcbod8qprrg">[ 🚀 Launch the lab ]</a>
+<a href="https://developers.redhat.com/content-gateway/link/3884831">[ 🚀 Launch the lab ]</a>
 </li>
 <li><b>Slides: Brief for Lab 3</b> [Estimated Time ⏱️ 5 minutes]<br>
 <a href="https://docs.google.com/presentation/d/1TVeHwv-4dtOmh8FMJa2Kd0Md8aqWGI0vHIwBpFih6_0/edit?usp=sharing">[ 🖥️ Slides ]</a>
 </li>
 <li><b>Lab 3: Red Hat Ansible Automation Platform for network administrators</b> [Estimated Time ⏱️ 25 minutes]<br>
 Simplify network administration and operations using Red Hat Ansible Automation Platform.<br>
-<a href="https://play.instruqt.com/embed/redhat/tracks/network-oper-tasks?token=em_sH26Rq5FE7u1WeWC">[ 🚀 Launch the lab ]</a>
+<a href="https://developers.redhat.com/content-gateway/link/3884837">[ 🚀 Launch the lab ]</a>
 </li>
 <li>Wrap Up
 </li>
 </ul>
+
+## Supplemental Labs
+
+<table>
+<thead>
+<tr>
+<th>Lab Title</th>
+<th>Description</th>
+<th>Link</th>
+<th>Estimated Time</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Network automation basics: Resource modules</td>
+<td>Learn Red Hat Ansible Automation Platform playbook basics for network automation.</td>
+<td><a target="_new" href="https://developers.redhat.com/content-gateway/link/3884832">🚀 Launch Lab</a></td>
+<td>⏱️ 20 minutes</td>
+<td></td>
+</tr>
+<tr>
+<td>Network automation basics: Facts</td>
+<td>Learn about retrieving facts from a Cisco IOS-XE device.</td>
+<td><a target="_new" href="https://developers.redhat.com/content-gateway/link/3884833">🚀 Launch Lab</a></td>
+<td>⏱️ 20 minutes</td>
+<td></td>
+</tr>
+<tr>
+<td>Network automation basics: Infrastructure visability and awareness</td>
+<td>Learn how to use Red Hat Ansible Automation Platform to retrieve facts from network infrastructure and create dynamic documentation.</td>
+<td><a target="_new" href="https://developers.redhat.com/content-gateway/link/3884834">🚀 Launch Lab</a></td>
+<td>⏱️ 20 minutes</td>
+<td></td>
+</tr>
+<tr>
+<td>Network automation basics: Surveys</td>
+<td>Learn how to create an automation controller survey to configure a Cisco IOS network device.</td>
+<td><a target="_new" href="https://developers.redhat.com/content-gateway/link/3884835">🚀 Launch Lab</a></td>
+<td>⏱️ 20 minutes</td>
+<td></td>  
+</tr>
+<tr>
+<td>Firewall automation with Palo Alto Networks</td>
+<td>Learn how to automate Palo Alto Networks firewalls using Ansible Automation Platform.</td>
+<td><a target="_new" href="https://developers.redhat.com/content-gateway/link/3884838">🚀 Launch Lab</a></td>
+<td>⏱️ 45 minutes</td>
+<td></td>  
+</tr>  
+</tbody>
+</table>
 
 # Learning Resources
 
@@ -62,12 +113,12 @@ Simplify network administration and operations using Red Hat Ansible Automation 
 <tr>
 <td>Network automation guide: Expand automation across multivendor networks</td>
 <td><a target="_blank" href="https://www.redhat.com/en/engage/network-automation-guide-20221202">on redhat.com</a></td>
-<td><a  target="_blank" href="https://content.redhat.com/content/rhcc/us/en/assets/display.html?id=5c47feab-360d-42c4-8335-d7199cee4985">Content Center</a></td>
+<td><a target="_blank" href="https://content.redhat.com/content/rhcc/us/en/assets/display.html?id=5c47feab-360d-42c4-8335-d7199cee4985">Content Center</a></td>
 </tr>
 <tr>
 <td>Connect and communicate with reliable, security-focused network</td>
 <td><a target="_blank" href="https://www.redhat.com/en/resources/connect-and-communicate-network-ecosystem-ebook">on redhat.com</a></td>
-<td><a  target="_blank" href="https://content.redhat.com/content/rhcc/us/en/assets/display.html?id=e0506582-97d4-4b47-bb13-c63df3c694cf">Content Center</a></td>
+<td><a target="_blank" href="https://content.redhat.com/content/rhcc/us/en/assets/display.html?id=e0506582-97d4-4b47-bb13-c63df3c694cf">Content Center</a></td>
 </tr>
 <tr>
 <td>Automate your network with Red Hat</td>
