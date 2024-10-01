@@ -72,6 +72,7 @@ Recommended agenda for when there is an instructor teaching.
 <td>Get started with Ansible Lightspeed with IBM watsonx Code Assistant</td>
 <td>Learn how to configure, activate, and use Ansible Lightspeed to generate Ansible content.</td>
 <td><a target="_new" href="https://red.ht/lab-lightspeed-101">🚀 Launch Lab</a></td>
+  <!-- NOTE: This Lightspeed lab is deprecated and the commercial lab requires Red Hat supervision-->
 <td>⏱️ 30 minutes</td>
 </tr>
 </tbody>
