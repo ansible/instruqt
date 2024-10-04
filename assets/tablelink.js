@@ -14,6 +14,6 @@ for (const tableRow of tableRows) {
     event.preventDefault();
 
     // Ensure the row's data-href link always wins
-    window.open(this.dataset.href, "_blank");
+    window.location.href = this.dataset.href;
   });
 }
