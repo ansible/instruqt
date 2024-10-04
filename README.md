@@ -21,7 +21,7 @@
     <tbody>
         <tr data-href="./webpages/eda">
             <td>Event-Driven Ansible Technical Workshop</td>
-            <td><a href="./webpages/eda">🔬 Open Workshop</a></td>
+            <td><a href="./webpages/eda.md">🔬 Open Workshop</a></td>
         </tr>
         <tr data-href="./webpages/ansible-cloud-lab">
             <td>Introduction to cloud automation</td>
