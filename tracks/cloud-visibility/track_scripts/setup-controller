@@ -1,0 +1,131 @@
+#!/bin/bash
+
+
+#
+# Create a playbook for the user to execute
+tee /tmp/aws_setup.yml << EOF
+---
+- name: deploy azure credential
+  hosts: localhost
+  gather_facts: false
+  become: true
+  vars:
+    username: admin
+    admin_password: ansible123!
+
+  tasks:
+  
+    - name: add aws credential to automation controller
+      awx.awx.credential:
+        name: aws_credential
+        description: Amazon Web Services
+        organization: "Default"
+        state: present
+        credential_type: "Amazon Web Services"
+        controller_username: "{{ username }}"
+        controller_password: "{{ admin_password }}"
+        controller_host: "https://{{ ansible_host }}"
+        validate_certs: false  
+        inputs:
+          username: "{{ lookup('env','INSTRUQT_AWS_ACCOUNT_AWSACCOUNT_AWS_ACCESS_KEY_ID') }}"
+          password: "{{ lookup('env','INSTRUQT_AWS_ACCOUNT_AWSACCOUNT_AWS_SECRET_ACCESS_KEY') }}"
+      register: controller_try
+      retries: 5
+      until: controller_try is not failed          
+
+    - name: Add EE to the controller instance
+      awx.awx.execution_environment:
+        name: "AWS Execution Environment"
+        image: quay.io/acme_corp/aws_ee
+        controller_username: "{{ username }}"
+        controller_password: "{{ admin_password }}"
+        controller_host: "https://{{ ansible_host }}"
+        validate_certs: false
+
+    - name: Add project
+      awx.awx.project:
+        name: "AWS Demos Project"
+        description: "This is from github.com/ansible-cloud"
+        organization: "Default"
+        state: present
+        scm_type: git
+        scm_url: https://github.com/ansible-cloud/aws_demos
+        default_environment: "AWS Execution Environment"
+        controller_username: "{{ username }}"
+        controller_password: "{{ admin_password }}"
+        controller_host: "https://{{ ansible_host }}"
+        validate_certs: false
+
+    - name: delete native job template
+      awx.awx.job_template:
+        name: "Demo Job Template"
+        state: "absent"
+        controller_username: "{{ username }}"
+        controller_password: "{{ admin_password }}"
+        controller_host: "https://{{ ansible_host }}"
+        validate_certs: false
+
+    - name: create job template
+      awx.awx.job_template:
+        name: "{{ item.name }}"
+        job_type: "run"
+        organization: "Default"
+        inventory: "Demo Inventory"
+        project: "AWS Demos Project"
+        playbook: "{{ item.playbook }}"
+        credentials:
+          - "aws_credential"
+        state: "present"
+        controller_username: "{{ username }}"
+        controller_password: "{{ admin_password }}"
+        controller_host: "https://{{ ansible_host }}"
+        validate_certs: false
+      with_items:
+        - { playbook: 'playbooks/aws_resources.yml', name: 'Create AWS Resources' }
+        - { playbook: 'playbooks/aws_instances.yml', name: 'Create AWS Instances' }
+
+    - name: Launch a job template
+      awx.awx.job_launch:
+        job_template: "Create AWS Resources"
+        validate_certs: "false"
+        controller_username: "{{ username }}"
+        controller_password: "{{ admin_password }}"
+        controller_host: "https://{{ ansible_host }}"
+      register: job
+
+    - name: Wait for job to finish
+      awx.awx.job_wait:
+        job_id: "{{ job.id }}"
+        controller_username: "{{ username }}"
+        controller_password: "{{ admin_password }}"
+        controller_host: "https://{{ ansible_host }}"        
+        validate_certs: "false"
+
+    - name: Launch a job template
+      awx.awx.job_launch:
+        job_template: "Create AWS Instances"
+        validate_certs: "false"
+        controller_username: "{{ username }}"
+        controller_password: "{{ admin_password }}"
+        controller_host: "https://{{ ansible_host }}"
+
+    - name: Add ansible-1 host
+      awx.awx.host:
+        name: "ansible-1"
+        inventory: "Demo Inventory"
+        state: present
+        controller_username: "{{ username }}"
+        controller_password: "{{ admin_password }}"
+        controller_host: "https://{{ ansible_host }}"
+        validate_certs: false      
+        variables:
+            note: in production these passwords would be encrypted in vault
+            ansible_user: rhel
+            ansible_password: ansible123!
+            ansible_host: controller
+EOF
+
+# Execute above playbook
+ansible-playbook /tmp/aws_setup.yml
+
+exit 0

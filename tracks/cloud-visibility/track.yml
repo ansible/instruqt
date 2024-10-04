@@ -1,0 +1,36 @@
+slug: cloud-visibility
+id: a9reffypixbu
+title: 'Hybrid cloud automation: AWS Infrastructure visibility'
+teaser: Use Red Hat Ansible Automation Platform to retrieve structured data from public
+  clouds and provide dynamic documentation.
+description: |-
+  The goal of this lab is to illustrate how Ansible info modules can retrieve from public clouds can provide us awareness of our cloud footprint easily and output it to anything.
+
+  ![picture of lab diagram](https://github.com/IPvSean/pictures_for_github/blob/master/aws-diagram.png?raw=true)
+icon: https://github.com/network-automation/networking-icons/raw/master/multi-cloud/multicloud-red.png
+tags:
+- hybridcloud
+- ansible
+- ansibleautomationplatform
+- aap
+owner: redhat
+developers:
+- seanc@redhat.com
+instructors:
+- sgallego@redhat.com
+- zleblanc@redhat.com
+- dlemons@redhat.com
+show_timer: true
+skipping_enabled: true
+timelimit: 2700
+lab_config:
+  overlay: false
+  width: 33
+  position: right
+  feedback_recap_enabled: true
+  feedback_tab_enabled: false
+  loadingMessages: true
+  lab_v2: false
+  override_challenge_layout: false
+  hideStopButton: false
+checksum: "68337299409420722"
