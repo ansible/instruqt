@@ -1,0 +1,9 @@
+#!/bin/bash
+
+tower-cli config verify_ssl false
+tower-cli login admin --password ansible123!
+
+if ! tower-cli inventory  list -f json | jq -e '.results[] | select(.name | match("AWS Inventory";"i"))'; then
+    fail-message "You have not created 'AWS inventory'"
+    exit 1
+fi

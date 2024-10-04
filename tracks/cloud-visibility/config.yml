@@ -1,0 +1,73 @@
+version: "3"
+containers:
+- name: cloud-client
+  image: gcr.io/instruqt/cloud-client
+  shell: /bin/bash
+  ports:
+  - 80
+  memory: 256
+virtualmachines:
+- name: controller
+  image: red-hat-mbu/automation-controller
+  shell: /bin/su - rhel -s /bin/bash
+  environment:
+    TERM: xterm
+  machine_type: n1-standard-4
+aws_accounts:
+- name: awsaccount
+  iam_policy: |-
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+            "Sid":"EC2DefaultAllow",
+            "Effect": "Allow",
+            "Action": "ec2:*",
+            "Resource": "*"
+        }
+      ]
+    }
+  scp_policy: |
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Sid": "LimitInstanceTypeRun",
+          "Action": [
+            "ec2:RunInstances"
+          ],
+          "Effect": "Deny",
+          "Resource": "arn:aws:ec2:*:*:instance/*",
+          "Condition": {
+            "StringNotEqualsIfExists": {
+              "ec2:InstanceType": [
+                "t2.micro"
+              ]
+            }
+          }
+        },
+        {
+          "Sid": "LimitInstanceTypeModify",
+          "Action": [
+            "ec2:ModifyInstanceAttribute"
+          ],
+          "Effect": "Deny",
+          "Resource": "arn:aws:ec2:*:*:instance/*",
+          "Condition": {
+            "ForAnyValue:StringNotEquals": {
+              "ec2:Attribute/InstanceType": [
+                "t2.micro"
+              ]
+            }
+          }
+        },
+        {
+          "Sid": "AllowS3BucketCreation",
+          "Action": [
+            "s3:CreateBucket"
+          ],
+          "Effect": "Allow",
+          "Resource": "arn:aws:s3:::*"
+        }
+      ]
+    }
