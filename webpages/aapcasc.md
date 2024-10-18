@@ -59,19 +59,19 @@ Recommended agenda for when there is an instructor teaching.
 <tr>
 <td>Creating an Execution Environment</td>
 <td>Learn how to use configuration as code to create execution environments.</td>
-<td><a target="_new" href="(TBD)">🚀 Launch Lab</a></td>
+<td><a target="_new" href="https://developers.redhat.com/content-gateway/link/3885823 ">🚀 Launch Lab</a></td>
 <td>⏱️ 45 minutes</td>
 </tr>
 <tr>
 <td>Configuring your Automation hub</td>
 <td>Learn how to use configuration as code to configure Ansible Automation hub.</td>
-<td><a target="_new" href="(TBD)">🚀 Launch Lab</a></td>
+<td><a target="_new" href="https://developers.redhat.com/content-gateway/link/3885823 ">🚀 Launch Lab</a></td>
 <td>⏱️ 70 minutes</td>
 </tr>
 <tr>
 <td>Configuring your Automation controller</td>
 <td>Learn how to use configuration as code to configure Ansible Automation controller.</td>
-<td><a target="_new" href="(TBD)">🚀 Launch Lab</a></td>
+<td><a target="_new" href="https://developers.redhat.com/content-gateway/link/3885823 ">🚀 Launch Lab</a></td>
 <td>⏱️ 120 minutes</td>
 </tr>
 </tbody>
@@ -92,7 +92,7 @@ Recommended agenda for when there is an instructor teaching.
 <tr>
 <td>Creating an Automation controller Workflow in code</td>
 <td>Use CasC to maintain workflows in the Automation controller.</td>
-<td><a target="_new" href="(TBD)">🚀 Launch Lab</a></td>
+<td><a target="_new" href="https://developers.redhat.com/content-gateway/link/3885823 ">🚀 Launch Lab</a></td>
 <td>⏱️ 90 minutes</td>
 </tr>
 </tbody>
