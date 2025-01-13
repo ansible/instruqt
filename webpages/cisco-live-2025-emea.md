@@ -1,4 +1,4 @@
-<h1>Cisco Live 2024</h1>
+<h1>Cisco Live 2025 - EMEA</h1>
 <section class="page-contain">
   <a target="_new" href="https://play.instruqt.com/redhat/invite/3xkrydzryhhb" class="data-card">
     <h3>DEVRHL-1001</h3>
