@@ -45,8 +45,8 @@
     </span>
   </a>
   <a target="_new" href="https://play.instruqt.com/redhat/invite/" class="data-card">
-    <h3>DEVRHL-1005</h3>
-    <h4>Event-Driven Ansible for Cisco technology</h4>
+    <h3>DEVRHL-1007</h3>
+    <h4>Event-Driven Ansible for Cisco routers and switches</h4>
     <p>Event-driven automation is a method for automatically responding to changing conditions on your network.</p>
     <span class="link-text">
       Lab Page
@@ -56,9 +56,9 @@
     </span>
   </a>
   <a target="_new" href="https://play.instruqt.com/redhat/invite/" class="data-card">
-    <h3>DEVRHL-1006</h3>
-    <h4>Ansible Network Automation and Sources of Truth</h4>
-    <p>Learn how to centralize your resources in a network Source of Truth such as NetBox.</p>
+    <h3>DEVRHL-1008</h3>
+    <h4>Network automation and Sources of Truth</h4>
+    <p>Learn how to centralize your resources in a network Source of Truth such as NetBox or Git.</p>
     <span class="link-text">
       Lab Page
       <svg width="25" height="16" viewBox="0 0 25 16" fill="none" xmlns="http://www.w3.org/2000/svg">
