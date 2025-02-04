@@ -44,7 +44,7 @@
 </svg>
     </span>
   </a>
-  <a target="_new" href="https://play.instruqt.com/redhat/invite/" class="data-card">
+  <a target="_new" href="https://play.instruqt.com/redhat/invite/safjltkwk5oj" class="data-card">
     <h3>DEVRHL-1007</h3>
     <h4>Event-Driven Ansible for Cisco routers and switches</h4>
     <p>Event-driven automation is a method for automatically responding to changing conditions on your network.</p>
