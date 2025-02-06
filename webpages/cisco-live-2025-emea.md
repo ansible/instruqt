@@ -55,7 +55,7 @@
 </svg>
     </span>
   </a>
-  <a target="_new" href="https://play.instruqt.com/redhat/invite/" class="data-card">
+  <a target="_new" href="https://play.instruqt.com/redhat/invite/d0o2sbmqe89c" class="data-card">
     <h3>DEVRHL-1008</h3>
     <h4>Network automation and Sources of Truth</h4>
     <p>Learn how to centralize your resources in a network Source of Truth such as NetBox or Git.</p>
