@@ -1,0 +1,10 @@
+
+NETBOX_FQDN=netbox-8000-${_SANDBOX_ID}.env.play.intruqt.com
+
+#https://netbox-8000-ef393avfgkx8.env.play.instruqt.com
+
+
+### new docker-compose-plugin
+docker compose --project-directory=/tmp/netbox-docker pull 
+## daemon mode
+docker compose --project-directory=/tmp/netbox-docker up -d netbox netbox-worker

@@ -1,0 +1,411 @@
+#!/bin/bash
+
+#### BEGIN CREATE Files for Gitea ####
+cat <<EOF | tee /tmp/ansible-navigator.yml
+---
+ansible-navigator:
+  ansible:
+    inventory:
+      entries:
+        - /home/rhel/netbox/hosts
+  execution-environment:
+    container-engine: podman
+    container-options:
+      - "--net=host"
+    enabled: true
+    image: ghcr.io/ansible-network/autocon-ee
+    pull:
+      policy: missing
+  logging:
+    level: debug
+    file: /home/rhel/ansible-navigator.log
+  playbook-artifact:
+    save-as: /home/rhel/autocon2-playbook-artifacts/{playbook_name}-artifact-{time_stamp}.json
+
+EOF
+## end /tmp/navigator
+
+cat <<EOF | tee /tmp/switch_desired_conf.yml
+my_sot:
+    - name: Ethernet1
+      mode: access
+      access:
+        vlan: 30
+EOF
+## end /tmp/switch
+
+cat <<EOF | tee /tmp/inventory.ini
+[ciservers]
+gitea ansible_user=root
+
+
+[ciservers:vars]
+ansible_become_method=su
+
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+EOF
+## end /tmp/inventory
+
+cat <<EOF | tee /tmp/track_vars.yml
+---
+# config vars
+ansible_python_interpreter: /usr/bin/python3
+student_user: student
+student_password: learn_ansible
+host_key_checking: false
+admin_username: admin
+admin_password: ansible123!
+git_repo: http://gitea:3000/{{ student_user }}/aap_workshop.git
+repo_user: rhel
+default_tag_name: "0.0.1"
+
+EOF
+## end /tmp/track
+
+## BEGIN GITEA AAP_WORKSHOP ##
+# cat <<EOF | tee /tmp/gitea_setup.yml
+# # Gitea config
+# - name: Configure Gitea host
+#   hosts: gitea
+#   gather_facts: false
+#   become: true
+#   tags:
+#     - gitea-config
+
+#   tasks:
+#     - name: Install python3 Gitea
+#       ansible.builtin.raw: /sbin/apk add python3
+
+#     - name: Install Gitea packages
+#       community.general.apk:
+#         name: subversion,tar
+#         state: present
+
+#     - name: Create repo users
+#       ansible.builtin.command: "{{ item }}"
+#       become_user: git
+#       register: __output
+#       failed_when: __output.rc not in [ 0, 1 ]
+#       changed_when: '"user already exists" not in __output.stdout'
+#       loop:
+#         - "/usr/local/bin/gitea admin user create --admin --username {{ student_user }} --password {{ student_password }} --must-change-password=false --email {{ student_user }}@localhost"
+
+
+#     - name: Create repo for project 
+#       ansible.builtin.uri:
+#         url: http://gitea:3000/api/v1/user/repos
+#         method: POST
+#         body_format: json
+#         body:
+#           name: aap_workshop
+#           auto_init: false
+#           private: false
+#         force_basic_auth: true
+#         url_password: "{{ student_password }}"
+#         url_username: "{{ student_user }}"
+#         status_code: [201, 409]
+
+
+#     - name: Create repo dir
+#       ansible.builtin.file:
+#         path: "/tmp/aap_workshop"
+#         state: directory
+#         mode: 0755
+
+#     - name: Configure git to use main repo by default
+#       community.general.git_config:
+#         name: init.defaultBranch
+#         scope: global
+#         value: main
+#       tags:
+#         - git
+
+#     - name: Initialise track repo
+#       ansible.builtin.command:
+#         cmd: /usr/bin/git init
+#         chdir: "/tmp/aap_workshop"
+#         creates: "/aap_workshop/.git" 
+
+#     - name: Configure git to store credentials
+#       community.general.git_config:
+#         name: credential.helper
+#         scope: global
+#         value: store --file /tmp/git-creds
+
+#     - name: Store repo credentials in git-creds file
+#       ansible.builtin.copy:
+#         dest: /tmp/git-creds
+#         mode: 0644
+#         content: "http://{{ student_user }}:{{ student_password }}@{{ 'gitea:3000' | urlencode }}"
+
+#     - name: Configure git username
+#       community.general.git_config:
+#         name: user.name
+#         scope: global
+#         value: "{{ ansible_user }}"
+
+#     - name: Configure git email address
+#       community.general.git_config:
+#         name: user.email
+#         scope: global
+#         value: "{{ ansible_user }}@local"
+
+#     - name: Clone the repository
+#       git:
+#         repo: "https://github.com/ansible-network/autocon2_aap_workshop"
+#         dest: "/tmp/autocon2_aap_workshop"
+#         version: "main"  # Branch or tag to checkout
+#         force: yes  # Overwrite if the directory exists
+#       register: git_clone_result
+
+#     - name: Display result
+#       debug:
+#         var: git_clone_result
+
+
+#     - name: Gather all files excluding .git
+#       find:
+#         paths: "/tmp/autocon2_aap_workshop"
+#         file_type: any
+#         recurse: yes
+#       register: files_to_copy
+
+#     - name: Copy files to destination
+#       ansible.builtin.copy:
+#         src: "{{ item.path }}"
+#         dest: "/tmp/aap_workshop/{{ item.path | regex_replace('/tmp/autocon2_aap_workshop/', '') }}"
+#         remote_src: yes
+#       loop: "{{ files_to_copy.files }}"
+#       when: "'/.git/' not in item.path and '/.git' != item.path"
+
+#     - name: Delete directories
+#       ansible.builtin.file:
+#         path: "{{ item }}"
+#         state: absent
+#       loop:
+#         - "/tmp/aap_workshop/playbooks/playbooks"
+#         - "/tmp/aap_workshop/rulebooks/rulebooks"
+
+#     - name: Ensure solutions directory exists
+#       ansible.builtin.file:
+#         path: "/tmp/aap_workshop/solutions"
+#         state: directory
+#         mode: '0755'
+
+#     - name: Move playbooks and rulebooks to solutions directory
+#       ansible.builtin.command:
+#         cmd: "mv /tmp/aap_workshop/{{ item }} /tmp/aap_workshop/solutions/"
+#       loop:
+#         - playbooks
+#         - rulebooks
+
+#     - name: Create new playbooks and rulebooks directories
+#       ansible.builtin.command:
+#         cmd: "mkdir /tmp/aap_workshop/{{ item }}"
+#       loop:
+#         - playbooks
+#         - rulebooks
+
+#     - name: Create new .gitkeep files
+#       ansible.builtin.command:
+#         cmd: "touch /tmp/aap_workshop/{{ item }}/.gitkeep"
+#       loop:
+#         - playbooks
+#         - rulebooks
+
+#     - name: Ensure the .vscode directory exists
+#       ansible.builtin.file:
+#         path: /tmp/aap_workshop/.vscode
+#         state: directory
+#         mode: '0755'
+
+#     - name: Ensure settings.json file contains the required configuration
+#       ansible.builtin.copy:
+#         dest: "/tmp/aap_workshop/.vscode/settings.json"
+#         content: |
+#           {
+#               "ansible.python.interpreterPath": "/bin/python3.11"
+#           }
+#         force: true
+#         mode: '0644'
+
+
+#     - name: Replace the configuration file
+#       ansible.builtin.copy:
+#         src: /tmp/ansible-navigator.yml
+#         dest: /tmp/aap_workshop/ansible-navigator.yml
+#         mode: '0644'
+
+#     - name: Add remote origin to repo
+#       ansible.builtin.command:
+#         cmd: "{{ item }}"
+#         chdir: "/tmp/aap_workshop"   
+#       ignore_errors: true      
+#       register: __output
+#       changed_when: __output.rc == 0
+#       loop:
+#         - "git remote add origin http://gitea:3000/{{ student_user }}/aap_workshop.git"
+#         - "git checkout -b main"
+#         - "git add ."
+#         - "git commit -m'Initial commit'"
+#         - "git push -u origin main --force"
+# EOF
+# ## end /tmp/gitea
+
+
+
+# ansible-playbook /tmp/gitea_setup.yml -e @/tmp/track_vars.yml -i /tmp/inventory.ini
+
+# #### END CREATE Files for Gitea ####
+
+
+### BEGIN NETBOX REPOS GITEA ####
+
+cat <<EOF | tee /tmp/track_vars_netbox.yml
+---
+# config vars
+ansible_python_interpreter: /usr/bin/python3
+student_user: student
+student_password: learn_ansible
+host_key_checking: false
+admin_username: admin
+admin_password: ansible123!
+git_repo_inventory: http://gitea:3000/{{ student_user }}/netbox_inventory.git
+git_repo_rulebooks: http://gitea:3000/{{ student_user }}/netbox_rulebooks.git
+git_repo_playbooks: http://gitea:3000/{{ student_user }}/netbox_playbooks.git
+git_repo_netbox: http://gitea:3000/{{ student_user }}/netbox_repo.git
+github_repo_inventory: https://github.com/leogallego/netbox-inventory.git
+github_repo_rulebooks: https://github.com/leogallego/aap-netbox-rulebooks.git
+github_repo_playbooks: https://github.com/leogallego/aap-netbox-playbooks.git
+github_repo_netbox: https://github.com/leogallego/instruqt-netbox.git
+repo_user: rhel
+repo_name: netbox_inventory
+repo_name_rulebooks: netbox_rulebooks
+repo_name_playbooks: netbox_playbooks
+repo_name_netbox: netbox
+default_tag_name: "0.0.1"
+
+EOF
+## end /track
+
+cat <<EOF | tee /tmp/gitea_setup_netbox.yml
+# Gitea config
+- name: Configure Gitea host
+  hosts: gitea
+  gather_facts: false
+  become: true
+  tags:
+    - gitea-config
+
+  tasks:
+    - name: Install python3 Gitea
+      ansible.builtin.raw: /sbin/apk add python3
+
+    - name: Install Gitea packages
+      community.general.apk:
+        name: subversion,tar
+        state: present
+
+    - name: Create repo users
+      ansible.builtin.command: "{{ item }}"
+      become_user: git
+      register: __output
+      failed_when: __output.rc not in [ 0, 1 ]
+      changed_when: '"user already exists" not in __output.stdout'
+      loop:
+        - "/usr/local/bin/gitea admin user create --admin --username {{ student_user }} --password {{ student_password }} --must-change-password=false --email {{ student_user }}@localhost"
+      
+    - name: Configure git to use main repo by default
+      community.general.git_config:
+        name: init.defaultBranch
+        scope: global
+        value: main
+      tags:
+        - git
+
+    - name: Configure git to store credentials
+      community.general.git_config:
+        name: credential.helper
+        scope: global
+        value: store --file /tmp/git-creds
+
+    - name: Store repo credentials in git-creds file
+      ansible.builtin.copy:
+        dest: /tmp/git-creds
+        mode: 0644
+        content: "http://{{ student_user }}:{{ student_password }}@{{ 'gitea:3000' | urlencode }}"
+
+    - name: Configure git username
+      community.general.git_config:
+        name: user.name
+        scope: global
+        value: "{{ ansible_user }}"
+
+    - name: Configure git email address
+      community.general.git_config:
+        name: user.email
+        scope: global
+        value: "{{ ansible_user }}@local"
+
+
+    - name: Create repo for netbox project 
+      ansible.builtin.uri:
+        url: http://gitea:3000/api/v1/user/repos
+        method: POST
+        body_format: json
+        body:
+          name: "{{ repo_name_netbox }}"
+          auto_init: false
+          private: false
+        force_basic_auth: true
+        url_password: "{{ student_password }}"
+        url_username: "{{ student_user }}"
+        status_code: [201, 409]
+
+    - name: Clone the netbox repository
+      git:
+        repo: "{{ github_repo_netbox }}"
+        dest: "/tmp/{{ repo_name_netbox }}"
+        version: "main"  # Branch or tag to checkout
+        force: yes  # Overwrite if the directory exists
+      register: git_clone_netbox_result
+
+    - name: Display result
+      debug:
+        var: git_clone_netbox_result
+
+    - name: Add remote origin to netbox repo
+      ansible.builtin.command:
+        cmd: "{{ item }}"
+        chdir: "/tmp/{{ repo_name_netbox }}"   
+      ignore_errors: true
+      register: __output
+      changed_when: __output.rc == 0
+      loop:
+        - "git remote set-url origin http://gitea:3000/{{ student_user }}/{{ repo_name_netbox }}.git"
+        - "git remote -v"
+#        - "git checkout -b main"
+        - "git add ."
+        - "git commit -m'Initial commit'"
+        - "git push -u origin main --force"
+EOF
+## end /inventory
+
+ansible-playbook /tmp/gitea_setup_netbox.yml -e @/tmp/track_vars_netbox.yml -i /tmp/inventory.ini
+
+### END NETBOX REPO
+
+
+
+## start setup challenge 1
+#su - rhel -s /bin/bash <<'EOF'
+#git clone http://gitea:3000/student/aap_workshop.git
+#EOF
+
+su - rhel -s /bin/bash <<'EOF'
+git clone http://gitea:3000/student/netbox.git
+EOF
+
+

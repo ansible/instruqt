@@ -1,0 +1,2 @@
+su - rhel -c '/usr/bin/curl https://raw.githubusercontent.com/leogallego/aap-netbox-setup/refs/heads/main/5-eda-playbooks.yml -o /home/rhel/5-eda-playbooks.yml'
+su - rhel -c 'cd /home/rhel; ansible-navigator run /home/rhel/5-eda-playbooks.yml --mode stdout --penv _SANDBOX_ID -vvv'

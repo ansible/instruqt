@@ -1,0 +1,419 @@
+# Allow Lightspeed Controller to login to podman-host for troubleshooting
+cat <<EOF | tee /root/.ssh/authorized_keys
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOlqhBDyiEfymLBSMEE5Cx2mtUiHVpeHZpO/Xe71Puv2
+EOF
+
+yum install yum-utils jq podman wget git ansible-core nano -y
+setenforce 0
+## fix firewall : to - or remove for single port:
+firewall-cmd --permanent --add-port=2000-2003/tcp
+firewall-cmd --permanent --add-port=6030-6033/tcp
+firewall-cmd --permanent --add-port=8065/tcp
+firewall-cmd --reload
+export RTPASS=ansible
+echo "ansible" | passwd root --stdin
+
+# Grab sample switch config
+rm -rf /tmp/setup ## Troubleshooting step
+
+ansible-galaxy collection install community.general
+ansible-galaxy collection install servicenow.itsm
+
+mkdir /tmp/setup/
+
+git clone https://github.com/nmartins0611/Instruqt_netops.git /tmp/setup/
+
+### Configure containers
+
+podman pull quay.io/nmartins/ceoslab-rh
+#podman pull docker.io/nats
+#podman run --name mattermost-preview -d --publish 8065:8065 mattermost/mattermost-preview
+
+
+## Create Networks
+
+podman network create net1
+podman network create net2
+podman network create net3
+podman network create loop
+podman network create management
+
+# Create mattermost container
+podman run -d --network management --name=mattermost --privileged --publish 8065:8065 mattermost/mattermost-preview:7.8.6
+
+##docker pull mattermost/platform:6.5.0
+
+#podman create --name=ceos1 --privileged -v /tmp/setup/sw01/sw01:/mnt/flash/startup-config -e INTFTYPE=eth -e ETBA=1 -e SKIP_ZEROTOUCH_BARRIER_IN_SYSDBINIT=1 -e CEOS=1 -e EOS_PLATFORM=ceoslab -e container=docker -p 9092:9092 -p 6031:6030 -p 2001:22/tcp -i -t quay.io/nmartins/ceoslab-rh /sbin/init systemd.setenv=INTFTYPE=eth systemd.setenv=ETBA=1 systemd.setenv=SKIP_ZEROTOUCH_BARRIER_IN_SYSDBINIT=1 systemd.setenv=CEOS=1 systemd.setenv=EOS_PLATFORM=ceoslab systemd.setenv=container=podman
+podman run -d --network management --name=ceos1 --privileged -v /tmp/setup/sw01/sw01:/mnt/flash/startup-config -e INTFTYPE=eth -e ETBA=1 -e SKIP_ZEROTOUCH_BARRIER_IN_SYSDBINIT=1 -e CEOS=1 -e EOS_PLATFORM=ceoslab -e container=docker -p 6031:6030 -p 2001:22/tcp -i -t quay.io/nmartins/ceoslab-rh /sbin/init systemd.setenv=INTFTYPE=eth systemd.setenv=ETBA=1 systemd.setenv=SKIP_ZEROTOUCH_BARRIER_IN_SYSDBINIT=1 systemd.setenv=CEOS=1 systemd.setenv=EOS_PLATFORM=ceoslab systemd.setenv=container=podman  ##
+podman run -d --network management --name=ceos2 --privileged -v /tmp/setup/sw02/sw02:/mnt/flash/startup-config -e INTFTYPE=eth -e ETBA=1 -e SKIP_ZEROTOUCH_BARRIER_IN_SYSDBINIT=1 -e CEOS=1 -e EOS_PLATFORM=ceoslab -e container=docker -p 6032:6030 -p 2002:22/tcp -i -t quay.io/nmartins/ceoslab-rh /sbin/init systemd.setenv=INTFTYPE=eth systemd.setenv=ETBA=1 systemd.setenv=SKIP_ZEROTOUCH_BARRIER_IN_SYSDBINIT=1 systemd.setenv=CEOS=1 systemd.setenv=EOS_PLATFORM=ceoslab systemd.setenv=container=podman  ##systemd.setenv=MGMT_INTF=eth0
+podman run -d --network management --name=ceos3 --privileged -v /tmp/setup/sw03/sw03:/mnt/flash/startup-config -e INTFTYPE=eth -e ETBA=1 -e SKIP_ZEROTOUCH_BARRIER_IN_SYSDBINIT=1 -e CEOS=1 -e EOS_PLATFORM=ceoslab -e container=docker -p 6033:6030 -p 2003:22/tcp -i -t quay.io/nmartins/ceoslab-rh /sbin/init systemd.setenv=INTFTYPE=eth systemd.setenv=ETBA=1 systemd.setenv=SKIP_ZEROTOUCH_BARRIER_IN_SYSDBINIT=1 systemd.setenv=CEOS=1 systemd.setenv=EOS_PLATFORM=ceoslab systemd.setenv=container=podman  ##systemd.setenv=MGMT_INTF=eth0
+
+###### NO BGP
+# podman run -d --network management --name=ceos1 --privileged -v /tmp/setup/sw01/sw01_nobgp:/mnt/flash/startup-config -e INTFTYPE=eth -e ETBA=1 -e SKIP_ZEROTOUCH_BARRIER_IN_SYSDBINIT=1 -e CEOS=1 -e EOS_PLATFORM=ceoslab -e container=docker -p 6031:6030 -p 2001:22/tcp -i -t quay.io/nmartins/ceoslab-rh /sbin/init systemd.setenv=INTFTYPE=eth systemd.setenv=ETBA=1 systemd.setenv=SKIP_ZEROTOUCH_BARRIER_IN_SYSDBINIT=1 systemd.setenv=CEOS=1 systemd.setenv=EOS_PLATFORM=ceoslab systemd.setenv=container=podman  ##
+# podman run -d --network management --name=ceos2 --privileged -v /tmp/setup/sw02/sw02_nobgp:/mnt/flash/startup-config -e INTFTYPE=eth -e ETBA=1 -e SKIP_ZEROTOUCH_BARRIER_IN_SYSDBINIT=1 -e CEOS=1 -e EOS_PLATFORM=ceoslab -e container=docker -p 6032:6030 -p 2002:22/tcp -i -t quay.io/nmartins/ceoslab-rh /sbin/init systemd.setenv=INTFTYPE=eth systemd.setenv=ETBA=1 systemd.setenv=SKIP_ZEROTOUCH_BARRIER_IN_SYSDBINIT=1 systemd.setenv=CEOS=1 systemd.setenv=EOS_PLATFORM=ceoslab systemd.setenv=container=podman  ##systemd.setenv=MGMT_INTF=eth0
+# podman run -d --network management --name=ceos3 --privileged -v /tmp/setup/sw03/sw03_nobgp:/mnt/flash/startup-config -e INTFTYPE=eth -e ETBA=1 -e SKIP_ZEROTOUCH_BARRIER_IN_SYSDBINIT=1 -e CEOS=1 -e EOS_PLATFORM=ceoslab -e container=docker -p 6033:6030 -p 2003:22/tcp -i -t quay.io/nmartins/ceoslab-rh /sbin/init systemd.setenv=INTFTYPE=eth systemd.setenv=ETBA=1 systemd.setenv=SKIP_ZEROTOUCH_BARRIER_IN_SYSDBINIT=1 systemd.setenv=CEOS=1 systemd.setenv=EOS_PLATFORM=ceoslab systemd.setenv=container=podman  ##systemd.setenv=MGMT_INTF=eth0
+
+## Attach Networks
+podman network connect loop ceos1
+podman network connect net1 ceos1
+podman network connect net3 ceos1
+podman network connect management ceos1
+
+podman network connect loop ceos2
+podman network connect net1 ceos2
+podman network connect net2 ceos2
+podman network connect management ceos2
+
+podman network connect loop ceos3
+podman network connect net2 ceos3
+podman network connect net3 ceos3
+podman network connect management ceos3
+
+podman network connect management mattermost
+
+## Wait for Switches to load conf
+sleep 60
+
+## Get management IP
+var1=$(podman inspect ceos1 | jq -r '.[] | .NetworkSettings.Networks.management | .IPAddress')
+var2=$(podman inspect ceos2 | jq -r '.[] | .NetworkSettings.Networks.management | .IPAddress')
+var3=$(podman inspect ceos3 | jq -r '.[] | .NetworkSettings.Networks.management | .IPAddress')
+var4=$(podman inspect mattermost | jq -r '.[] | .NetworkSettings.Networks.management | .IPAddress')
+
+## Build local host etc/hosts
+echo "$var1" ceos1 >> /etc/hosts
+echo "$var2" ceos2 >> /etc/hosts
+echo "$var3" ceos3 >> /etc/hosts
+echo "$var4" mattermost >> /etc/hosts
+
+## Install Gmnic
+bash -c "$(curl -sL https://get-gnmic.kmrd.dev)"
+
+## Test GMNIC
+## gnmic -a localhost:6031 -u ansible -p ansible --insecure subscribe --path   "/interfaces/interface[name=Ethernet1]/state/admin-status"
+## gnmic -addr ceos1:6031 -username ansible -password ansible   get '/network-instances/network-instance[name=default]/protocols/protocol[identifier=BGP][name=BGP]/bgp'
+## gnmic -a localhost:6031 -u ansible -p ansible --insecure subscribe --path 'components/component/state/memory/'
+
+## SSH Setup
+echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDdQebku7hz6otXEso48S0yjY0mQ5oa3VbFfOvEHeApfu9pNMG34OCzNpRadCDIYEfidyCXZqC91vuVM+6R7ULa/pZcgoeDopYA2wWSZEBIlF9DexAU4NEG4Zc0sHfrbK66lyVgdpvu1wmHT5MEhaCWQclo4B5ixuUVcSjfiM8Y7FL/qOp2FY8QcN10eExQo1CrGBHCwvATxdjgB+7yFhjVYVkYALINDoqbFaituKupqQyCj3FIoKctHG9tsaH/hBnhzRrLWUfuUTMMveDY24PzG5NR3rBFYI3DvKk5+nkpTcnLLD2cze6NIlKW5KygKQ4rO0tJTDOqoGvK5J5EM4Jb" >> /root/.ssh/authorized_keys 
+echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOlqhBDyiEfymLBSMEE5Cx2mtUiHVpeHZpO/Xe71Puv2" >> /root/.ssh/authorized_keys 
+
+echo "Host *" >> /etc/ssh/ssh_config
+echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
+echo "UserKnownHostsFile=/dev/null" >> /etc/ssh/ssh_config
+chmod 400 /etc/ssh/ssh_config
+systemctl restart sshd
+
+
+
+#### CREATE Files for Gitea
+
+cat <<EOF | tee /tmp/switch_desired_conf.yml
+my_sot:
+    - name: Ethernet1
+      mode: access
+      access:
+        vlan: 30
+EOF
+
+cat <<EOF | tee /tmp/inventory.ini
+[ciservers]
+gitea ansible_user=root
+
+
+[ciservers:vars]
+ansible_become_method=su
+
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+EOF
+
+
+cat <<EOF | tee /tmp/track_vars.yml
+---
+# config vars
+ansible_python_interpreter: /usr/bin/python3
+student_user: student
+student_password: learn_ansible
+host_key_checking: false
+admin_username: admin
+admin_password: ansible123!
+git_repo: http://gitea:3000/{{ student_user }}/aap_workshop.git
+repo_user: rhel
+default_tag_name: "0.0.1"
+
+EOF
+
+cat <<EOF | tee /tmp/gitea_setup.yml
+# Gitea config
+- name: Configure Gitea host
+  hosts: gitea
+  gather_facts: false
+  become: true
+  tags:
+    - gitea-config
+
+  tasks:
+    - name: Install python3 Gitea
+      ansible.builtin.raw: /sbin/apk add python3
+
+    - name: Install Gitea packages
+      community.general.apk:
+        name: subversion, tar
+        state: present
+
+    - name: Create repo users
+      ansible.builtin.command: "{{ item }}"
+      become_user: git
+      register: __output
+      failed_when: __output.rc not in [ 0, 1 ]
+      changed_when: '"user already exists" not in __output.stdout'
+      loop:
+        - "/usr/local/bin/gitea admin user create --admin --username {{ student_user }} --password {{ student_password }} --must-change-password=false --email {{ student_user }}@localhost"
+
+    # - name: Create repo for project 
+    #   ansible.builtin.uri:
+    #     url: http://gitea:3000/api/v1/user/repos
+    #     method: POST
+    #     body_format: json
+    #     body:
+    #       name: leaf
+    #       auto_init: false
+    #       private: false
+    #     force_basic_auth: true
+    #     url_password: "{{ student_password }}"
+    #     url_username: "{{ student_user }}"
+    #     status_code: [201, 409]
+
+    - name: Create repo for project 
+      ansible.builtin.uri:
+        url: http://gitea:3000/api/v1/user/repos
+        method: POST
+        body_format: json
+        body:
+          name: aap_workshop
+          auto_init: false
+          private: false
+        force_basic_auth: true
+        url_password: "{{ student_password }}"
+        url_username: "{{ student_user }}"
+        status_code: [201, 409]
+
+    # - name: Create repo dir
+    #   ansible.builtin.file:
+    #     path: "/tmp/leaf"
+    #     state: directory
+    #     mode: 0755
+
+    - name: Create repo dir
+      ansible.builtin.file:
+        path: "/tmp/aap_workshop"
+        state: directory
+        mode: 0755
+
+    - name: Configure git to use main repo by default
+      community.general.git_config:
+        name: init.defaultBranch
+        scope: global
+        value: main
+      tags:
+        - git
+
+    # - name: Initialise track repo
+    #   ansible.builtin.command:
+    #     cmd: /usr/bin/git init
+    #     chdir: "/tmp/leaf"
+    #     creates: "/leaf/.git"
+
+    - name: Initialise track repo
+      ansible.builtin.command:
+        cmd: /usr/bin/git init
+        chdir: "/tmp/aap_workshop"
+        creates: "/aap_workshop/.git" 
+
+    - name: Configure git to store credentials
+      community.general.git_config:
+        name: credential.helper
+        scope: global
+        value: store --file /tmp/git-creds
+
+    # - name: Configure repo dir as git safe dir
+    #   community.general.git_config:
+    #     name: safe.directory
+    #     scope: global
+    #     value: "/tmp/leaf"
+
+    - name: Store repo credentials in git-creds file
+      ansible.builtin.copy:
+        dest: /tmp/git-creds
+        mode: 0644
+        content: "http://{{ student_user }}:{{ student_password }}@{{ 'gitea:3000' | urlencode }}"
+
+    - name: Configure git username
+      community.general.git_config:
+        name: user.name
+        scope: global
+        value: "{{ ansible_user }}"
+
+    - name: Configure git email address
+      community.general.git_config:
+        name: user.email
+        scope: global
+        value: "{{ ansible_user }}@local"
+
+    # - name: Copy file with owner and permissions
+    #   ansible.builtin.copy:
+    #    src: /tmp/switch_desired_conf.yml
+    #    dest: /tmp/leaf/
+
+    - name: Clone the repository
+      git:
+        repo: "https://github.com/leogallego/autocon2_aap_workshop.git"
+        dest: "/tmp/autocon2_aap_workshop"
+        version: "main"  # Branch or tag to checkout
+        force: yes  # Overwrite if the directory exists
+      register: git_clone_result
+
+    - name: Display result
+      debug:
+        var: git_clone_result
+
+    # - name: Gather files to copy
+    #   find:
+    #     paths: "/tmp/autocon2_aap_workshop"
+    #     file_type: any
+    #   register: files_to_copy
+
+    - name: Gather all files excluding .git
+      find:
+        paths: "/tmp/autocon2_aap_workshop"
+        file_type: any
+        recurse: yes
+      register: files_to_copy
+
+    # - name: Copy files to destination
+    #   copy:
+    #     src: "{{ item.path }}"
+    #     dest: "/tmp/aap_workshop/{{ item.path | basename }}"
+    #     remote_src: yes
+    #   loop: "{{ files_to_copy.files }}"
+    #   when: "'/.git/' not in item.path and '/.git' != item.path"
+
+    - name: Copy files to destination
+      ansible.builtin.copy:
+        src: "{{ item.path }}"
+        dest: "/tmp/aap_workshop/{{ item.path | regex_replace('/tmp/autocon2_aap_workshop/', '') }}"
+        remote_src: yes
+      loop: "{{ files_to_copy.files }}"
+      when: "'/.git/' not in item.path and '/.git' != item.path"
+
+    - name: Delete directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "/tmp/aap_workshop/playbooks/playbooks"
+        - "/tmp/aap_workshop/rulebooks/rulebooks"
+
+    - name: Ensure solutions directory exists
+      ansible.builtin.file:
+        path: "/tmp/aap_workshop/solutions"
+        state: directory
+        mode: '0755'
+
+    - name: Move playbooks and rulebooks to solutions directory
+      ansible.builtin.command:
+        cmd: "mv /tmp/aap_workshop/{{ item }} /tmp/aap_workshop/solutions/"
+      loop:
+        - playbooks
+        - rulebooks
+
+    - name: Create new playbooks and rulebooks directories
+      ansible.builtin.command:
+        cmd: "mkdir /tmp/aap_workshop/{{ item }}"
+      loop:
+        - playbooks
+        - rulebooks
+
+    - name: Create new .gitkeep files
+      ansible.builtin.command:
+        cmd: "touch /tmp/aap_workshop/{{ item }}/.gitkeep"
+      loop:
+        - playbooks
+        - rulebooks
+
+    - name: Ensure the .vscode directory exists
+      ansible.builtin.file:
+        path: /tmp/aap_workshop/.vscode
+        state: directory
+        mode: '0755'
+
+    - name: Ensure settings.json file contains the required configuration
+      ansible.builtin.copy:
+        dest: "/tmp/aap_workshop/.vscode/settings.json"
+        content: |
+          {
+              "ansible.python.interpreterPath": "/bin/python3.11"
+          }
+        force: true
+        mode: '0644'
+
+
+    - name: Replace the configuration file
+      ansible.builtin.copy:
+        src: /tmp/ansible-navigator.yml
+        dest: /tmp/aap_workshop/ansible-navigator.yml
+        mode: '0644'
+          
+    # - name: Add remote origin to repo
+    #   ansible.builtin.command:
+    #     cmd: "{{ item }}"
+    #     chdir: "/tmp/leaf"   
+    #   register: __output
+    #   changed_when: __output.rc == 0
+    #   loop:
+    #     - "git remote add origin http://gitea:3000/{{ student_user }}/leaf.git"
+    #     - "git checkout -b main"
+    #     - "git add ."
+    #     - "git commit -m'Initial commit'"
+    #     - "git push -u origin main --force"
+
+    - name: Add remote origin to repo
+      ansible.builtin.command:
+        cmd: "{{ item }}"
+        chdir: "/tmp/aap_workshop"   
+      register: __output
+      changed_when: __output.rc == 0
+      loop:
+        - "git remote add origin http://gitea:3000/{{ student_user }}/aap_workshop.git"
+        - "git checkout -b main"
+        - "git add ."
+        - "git commit -m'Initial commit'"
+        - "git push -u origin main --force"
+EOF
+
+cat <<EOF | tee /tmp/ansible-navigator.yml
+---
+ansible-navigator:
+  ansible:
+    inventory:
+      entries:
+        - /home/rhel/aap_workshop/hosts
+  execution-environment:
+    container-engine: podman
+    enabled: true
+    image: ghcr.io/ansible-network/autocon-ee
+    pull:
+      policy: never
+  logging:
+    level: debug
+    file: /home/rhel/ansible-navigator.log
+  playbook-artifact:
+    save-as: /home/rhel/autocon2-playbook-artifacts/{playbook_name}-artifact-{time_stamp}.json
+
+EOF
+
+ansible-playbook /tmp/gitea_setup.yml -e @/tmp/track_vars.yml -i /tmp/inventory.ini
+
+

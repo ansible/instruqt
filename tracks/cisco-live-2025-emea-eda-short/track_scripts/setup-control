@@ -1,0 +1,411 @@
+#!/bin/bash
+
+
+# ## SSH Setup
+# echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDdQebku7hz6otXEso48S0yjY0mQ5oa3VbFfOvEHeApfu9pNMG34OCzNpRadCDIYEfidyCXZqC91vuVM+6R7ULa/pZcgoeDopYA2wWSZEBIlF9DexAU4NEG4Zc0sHfrbK66lyVgdpvu1wmHT5MEhaCWQclo4B5ixuUVcSjfiM8Y7FL/qOp2FY8QcN10eExQo1CrGBHCwvATxdjgB+7yFhjVYVkYALINDoqbFaituKupqQyCj3FIoKctHG9tsaH/hBnhzRrLWUfuUTMMveDY24PzG5NR3rBFYI3DvKk5+nkpTcnLLD2cze6NIlKW5KygKQ4rO0tJTDOqoGvK5J5EM4Jb" >> /root/.ssh/authorized_keys 
+# echo "Host *" >> /etc/ssh/ssh_config
+# echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
+# echo "UserKnownHostsFile=/dev/null" >> /etc/ssh/ssh_config
+# chmod 400 /etc/ssh/ssh_config
+# systemctl restart sshd
+
+
+sandbox_id=$(env | grep -oP '^_SANDBOX_ID=\K.*')
+entry="gitea gitea.${sandbox_id}.svc.cluster.local"
+echo "$entry" | sudo tee -a /etc/hosts > /dev/null
+
+echo "Current user: $(whoami)"
+
+
+#### CREATE Files for Gitea
+
+cat <<EOF | tee /tmp/switch_desired_conf.yml
+my_sot:
+    - name: Ethernet1
+      mode: access
+      access:
+        vlan: 30
+EOF
+
+cat <<EOF | tee /tmp/inventory.ini
+[ciservers]
+gitea ansible_user=root
+
+
+[ciservers:vars]
+ansible_become_method=su
+
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+EOF
+
+
+cat <<EOF | tee /tmp/track_vars.yml
+---
+# config vars
+ansible_python_interpreter: /usr/bin/python3
+student_user: student
+student_password: learn_ansible
+host_key_checking: false
+admin_username: admin
+admin_password: ansible123!
+git_repo: http://gitea:3000/{{ student_user }}/leaf.git
+repo_user: rhel
+default_tag_name: "0.0.1"
+
+EOF
+
+# cat <<EOF | tee /tmp/gitea_setup.yml
+# # Gitea config
+# - name: Configure Gitea host
+#   hosts: gitea
+#   gather_facts: false
+#   become: true
+#   tags:
+#     - gitea-config
+
+#   tasks:
+#     - name: Install python3 Gitea
+#       ansible.builtin.raw: /sbin/apk add python3
+
+#     - name: Install Gitea packages
+#       community.general.apk:
+#         name: subversion, tar
+#         state: present
+
+#     - name: Create repo users
+#       ansible.builtin.command: "{{ item }}"
+#       become_user: git
+#       register: __output
+#       failed_when: __output.rc not in [ 0, 1 ]
+#       changed_when: '"user already exists" not in __output.stdout'
+#       loop:
+#         - "/usr/local/bin/gitea admin user create --admin --username {{ student_user }} --password {{ student_password }} --must-change-password=false --email {{ student_user }}@localhost"
+
+#     - name: Create repo for project 
+#       ansible.builtin.uri:
+#         url: http://gitea:3000/api/v1/user/repos
+#         method: POST
+#         body_format: json
+#         body:
+#           name: leaf
+#           auto_init: false
+#           private: false
+#         force_basic_auth: true
+#         url_password: "{{ student_password }}"
+#         url_username: "{{ student_user }}"
+#         status_code: [201, 409]
+
+#     - name: Create repo dir
+#       ansible.builtin.file:
+#         path: "/tmp/leaf"
+#         state: directory
+#         mode: 0755
+
+#     - name: Configure git to use main repo by default
+#       community.general.git_config:
+#         name: init.defaultBranch
+#         scope: global
+#         value: main
+#       tags:
+#         - git
+
+#     - name: Initialise track repo
+#       ansible.builtin.command:
+#         cmd: /usr/bin/git init
+#         chdir: "/tmp/leaf"
+#         creates: "/leaf/.git" 
+
+#     - name: Configure git to store credentials
+#       community.general.git_config:
+#         name: credential.helper
+#         scope: global
+#         value: store --file /tmp/git-creds
+
+#     - name: Configure repo dir as git safe dir
+#       community.general.git_config:
+#         name: safe.directory
+#         scope: global
+#         value: "/tmp/leaf"
+
+#     - name: Store repo credentials in git-creds file
+#       ansible.builtin.copy:
+#         dest: /tmp/git-creds
+#         mode: 0644
+#         content: "http://{{ student_user }}:{{ student_password }}@{{ 'gitea:3000' | urlencode }}"
+
+#     - name: Configure git username
+#       community.general.git_config:
+#         name: user.name
+#         scope: global
+#         value: "{{ ansible_user }}"
+
+#     - name: Configure git email address
+#       community.general.git_config:
+#         name: user.email
+#         scope: global
+#         value: "{{ ansible_user }}@local"
+
+#     - name: Copy file with owner and permissions
+#       ansible.builtin.copy:
+#        src: /tmp/switch_desired_conf.yml
+#        dest: /tmp/leaf/
+
+#     - name: Add remote origin to repo
+#       ansible.builtin.command:
+#         cmd: "{{ item }}"
+#         chdir: "/tmp/leaf"   
+#       register: __output
+#       changed_when: __output.rc == 0
+#       loop:
+#         - "git remote add origin http://gitea:3000/{{ student_user }}/leaf.git"
+#         - "git checkout -b main"
+#         - "git add ."
+#         - "git commit -m'Initial commit'"
+#         - "git push -u origin main --force"
+# EOF
+
+# ansible-playbook /tmp/gitea_setup.yml -e @/tmp/track_vars.yml -i /tmp/inventory.ini
+
+
+
+## fix dns resolution in automation-controller rhel9 image
+echo "search $_SANDBOX_ID.svc.cluster.local." >> /etc/resolv.conf
+
+## wait for instruqt boot
+set -euxo pipefail
+while [ ! -f /opt/instruqt/bootstrap/host-bootstrap-completed ]
+do
+    echo "Waiting for Instruqt to finish booting the VM"
+    sleep 1
+done
+
+## set user name
+USER=rhel
+CONTROLLER_FQDN=control.${_SANDBOX_ID}.svc.cluster.local
+
+## setup rhel user
+touch /etc/sudoers.d/rhel_sudoers
+echo "%rhel ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/rhel_sudoers
+cp -a /root/.ssh/* /home/$USER/.ssh/.
+chown -R rhel:rhel /home/$USER/.ssh
+
+
+## ansible home
+mkdir /home/$USER/ansible
+## ansible-files dir
+mkdir /home/$USER/ansible-files
+
+## ansible.cfg
+echo "[defaults]" > /home/$USER/.ansible.cfg
+echo "inventory = /home/$USER/ansible-files/hosts" >> /home/$USER/.ansible.cfg
+echo "host_key_checking = False" >> /home/$USER/.ansible.cfg
+
+## chown and chmod all files in rhel user home
+chown -R rhel:rhel /home/$USER/ansible
+chmod 777 /home/$USER/ansible
+#touch /home/rhel/ansible-files/hosts
+chown -R rhel:rhel /home/$USER/ansible-files
+
+## git setup
+git config --global user.email "rhel@example.com"
+git config --global user.name "Red Hat"
+su - $USER -c 'git config --global user.email "rhel@example.com"'
+su - $USER -c 'git config --global user.name "Red Hat"'
+
+
+## set ansible-navigator default settings
+## for the EE to work we need to pass env variables
+## TODO: controller_host doesnt resolve with control and 127.0.0.1
+## is interpreted within the EE
+su - $USER -c 'cat >/home/$USER/ansible-navigator.yml <<EOL
+---
+ansible-navigator:
+  ansible:
+    inventory:
+      entries:
+      - /home/rhel/ansible-files/hosts
+  execution-environment:
+    container-engine: podman
+    container-options:
+      - "--net=host"
+    enabled: true
+    image: registry.redhat.io/ansible-automation-platform-25/ee-supported-rhel8
+    pull:
+      policy: missing
+    environment-variables:
+      pass:
+        - CONTROLLER_USERNAME
+        - CONTROLLER_PASSWORD
+        - CONTROLLER_VERIFY_SSL
+      set:
+        CONTROLLER_HOST: control.${_SANDBOX_ID}.svc.cluster.local
+  logging:
+    level: debug
+  mode: stdout
+  playbook-artifact:
+    save-as: /home/rhel/{playbook_name}-artifact-{time_stamp}.json
+
+EOL
+cat /home/$USER/ansible-navigator.yml'
+
+## copy navigator settings
+su - $USER -c 'cp /home/$USER/ansible-navigator.yml /home/$USER/.ansible-navigator.yml'
+su - $USER -c 'cp /home/$USER/ansible-navigator.yml /home/$USER/ansible-files/ansible-navigator.yml'
+
+
+## set inventory hosts for commandline ansible
+su - $USER -c 'cat >/home/$USER/ansible-files/hosts <<EOL
+[web]
+node1
+node2
+
+[database]
+node3
+
+[controller]
+control
+
+EOL
+cat /home/$USER/ansible-files/hosts'
+## end inventory hosts
+
+## chown and chmod all files in rhel user home
+chown -R rhel:rhel /home/rhel/ansible
+chmod 777 /home/rhel/ansible
+#touch /home/rhel/ansible-files/hosts
+chown -R rhel:rhel /home/rhel/ansible-files
+
+
+
+## Set controller access env variables for system
+cat >/etc/environment <<EOL
+CONTROLLER_HOST=control.${_SANDBOX_ID}.svc.cluster.local
+CONTROLLER_USERNAME=admin
+CONTROLLER_PASSWORD='ansible123!'
+CONTROLLER_VERIFY_SSL=false
+
+EOL
+cat /etc/environment
+## end environment
+
+## disable useless repos
+dnf config-manager --disable google*
+dnf config-manager --disable *source*
+dnf config-manager --disable *debug*
+
+# install ansible-navigator
+dnf install -y python3-pip 
+su - $USER -c 'python3 -m pip install ansible-navigator --user'
+echo 'export PATH=$HOME/.local/bin:$PATH' >> /home/$USER/.profile
+echo 'export PATH=$HOME/.local/bin:$PATH' >> /etc/profile
+
+#Switch to correct Python version
+#/usr/sbin/alternatives --set python3 /usr/bin/python3.8
+
+
+## SSH key for Cisco
+cat <<EOF | tee /root/.ssh/id_ed25519
+-----BEGIN OPENSSH PRIVATE KEY-----
+b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+QyNTUxOQAAACDpaoQQ8ohH8piwUjBBOQsdprVIh1aXh2aTv13u9T7r9gAAAKBpUGJJaVBi
+SQAAAAtzc2gtZWQyNTUxOQAAACDpaoQQ8ohH8piwUjBBOQsdprVIh1aXh2aTv13u9T7r9g
+AAAECXyW/JcGAAFzHipsweKvEIFVXAURrot9V7U2pbk9zqIOlqhBDyiEfymLBSMEE5Cx2m
+tUiHVpeHZpO/Xe71Puv2AAAAGnNlYW4uZS5jYXZhbmF1Z2hAZ21haWwuY29tAQID
+-----END OPENSSH PRIVATE KEY-----
+EOF
+
+cat <<EOF | tee /root/.ssh/id_ed25519
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOlqhBDyiEfymLBSMEE5Cx2mtUiHVpeHZpO/Xe71Puv2
+EOF
+
+chmod -R 600 /root/.ssh/id_ed25519
+
+
+cat <<EOF | tee /home/rhel/.ssh/id_ed25519
+-----BEGIN OPENSSH PRIVATE KEY-----
+b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+QyNTUxOQAAACDpaoQQ8ohH8piwUjBBOQsdprVIh1aXh2aTv13u9T7r9gAAAKBpUGJJaVBi
+SQAAAAtzc2gtZWQyNTUxOQAAACDpaoQQ8ohH8piwUjBBOQsdprVIh1aXh2aTv13u9T7r9g
+AAAECXyW/JcGAAFzHipsweKvEIFVXAURrot9V7U2pbk9zqIOlqhBDyiEfymLBSMEE5Cx2m
+tUiHVpeHZpO/Xe71Puv2AAAAGnNlYW4uZS5jYXZhbmF1Z2hAZ21haWwuY29tAQID
+-----END OPENSSH PRIVATE KEY-----
+EOF
+
+cat <<EOF | tee /home/rhel/.ssh/id_ed25519.pub
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOlqhBDyiEfymLBSMEE5Cx2mtUiHVpeHZpO/Xe71Puv2
+EOF
+
+chmod -R 600 /home/rhel/.ssh/id_ed25519
+sudo chown rhel:rhel /home/rhel/.ssh/id_ed25519
+
+
+cp /home/rhel/.ssh/id_ed25519 /tmp/
+chmod -R 777 /tmp/id_ed25519
+
+#### Telegraf Setup
+######################################
+
+cat <<EOF | tee /etc/yum.repos.d/influxdb.repo
+[influxdb]
+name = InfluxDB Repository - RHEL \$releasever
+baseurl = https://repos.influxdata.com/rhel/\$releasever/\$basearch/stable
+enabled = 1
+gpgcheck = 1
+gpgkey = https://repos.influxdata.com/influxdata-archive_compat.key
+
+EOF
+
+dnf -y install telegraf
+
+cat <<EOF | tee /etc/telegraf/telegraf.conf
+
+cat <<EOF | tee /etc/yum.repos.d/influxdb.repo
+[influxdb]
+name = InfluxDB Repository - RHEL \$releasever
+baseurl = https://repos.influxdata.com/rhel/\$releasever/\$basearch/stable
+enabled = 1
+gpgcheck = 1
+gpgkey = https://repos.influxdata.com/influxdata-archive_compat.key
+
+EOF
+
+dnf -y install telegraf
+
+cat <<EOF | tee /etc/telegraf/telegraf.conf
+
+############################################## CISCO 8000V  #############################################
+[[inputs.cisco_telemetry_mdt]]
+#  ## Telemetry transport can be "tcp" or "grpc".  TLS is only supported when
+#  ## using the grpc transport.
+  transport = "grpc"
+#
+#  ## Address and port to host telemetry listener
+  service_address = ":57000"
+
+############################################## OUTPUTS  ####################################################
+
+[outputs.kafka]
+# URLs of kafka brokers
+  brokers = ["broker:9092"] # EDIT THIS LINE
+# Kafka topic for producer messages
+  topic = "network"
+  data_format = "json"
+
+EOF
+
+### Load Automation Controller with Machine Credentials for Cat8000v
+#su - $USER -c '/usr/bin/curl https://gist.githubusercontent.com/NilashishC/c3f9cec52fe8d1743b7da54c2c909ab6/raw/7083d29a220e89e99f3cce37a943e75aef0db8c3/ConfigureCredentialDE -o /home/$USER/setup_controller.yml'
+
+## basic aap setup
+su - $USER -c '/usr/bin/curl https://gist.githubusercontent.com/anshulbehl/60ae9b68a3c8760f7be4704a76b83cad/raw/023855b89361368df11fbb59b6b6268e720f819d/gistfile1.txt -o /home/$USER/setup_controller.yml'
+
+## leo: aap setup with controller projects, workflow, inventory, etc. 
+su - $USER -c '/usr/bin/curl https://raw.githubusercontent.com/leogallego/aap-ciscolive-setup/refs/heads/main/aap-netbox-setup.yml -o /home/$USER/setup_controller_afterboot.yml'
+
+## run playbook
+su - $USER -c 'cd /home/$USER; ansible-navigator run /home/$USER/setup_controller.yml --mode stdout --penv _SANDBOX_ID'
+
+## Give Cisco boot time
+sleep 40

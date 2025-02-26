@@ -1,0 +1,41 @@
+su - rhel -c 'mkdir /home/rhel/netbox-setup'
+su - rhel -c '/usr/bin/curl https://raw.githubusercontent.com/leogallego/ansible-netbox-setup/refs/heads/main/netbox_setup.yml -o /home/rhel/netbox-setup/netbox-setup.yml'
+
+sed -i 's|netbox_url: "{{ lookup('\''env'\'', '\''NETBOX_API'\'') }}"|netbox_url: "http://netbox:8000"|' /home/rhel/netbox-setup/netbox-setup.yml
+sed -i 's|netbox_token: "{{ lookup('\''env'\'', '\''NETBOX_TOKEN'\'') }}"|netbox_token: "0123456789abcdef0123456789abcdef01234567"|' /home/rhel/netbox-setup/netbox-setup.yml
+
+
+## set ansible-navigator default settings for netbox
+su - $USER -c 'cat >/home/rhel/netbox-setup/ansible-navigator.yml <<EOL
+---
+ansible-navigator:
+  ansible:
+    inventory:
+      entries:
+      - /home/rhel/ansible-files/hosts
+  execution-environment:
+    container-engine: podman
+    container-options:
+      - "--net=host"
+    enabled: true
+    image: quay.io/acme_corp/network-netbox-eda-ee:latest
+    pull:
+      policy: missing
+    environment-variables:
+      pass:
+        - CONTROLLER_USERNAME
+        - CONTROLLER_PASSWORD
+        - CONTROLLER_VERIFY_SSL
+      set:
+        CONTROLLER_HOST: control.${_SANDBOX_ID}.svc.cluster.local
+  logging:
+    level: debug
+  mode: stdout
+  playbook-artifact:
+    save-as: /home/rhel/{playbook_name}-artifact-{time_stamp}.json
+
+EOL
+cat /home/rhel/netbox-setup/ansible-navigator.yml'
+## end navigator
+
+su - rhel -c 'cd /home/rhel/netbox-setup; ansible-navigator run /home/rhel/netbox-setup/netbox-setup.yml --mode stdout --penv _SANDBOX_ID -vvv'

@@ -1,0 +1,48 @@
+version: "3"
+containers:
+- name: gitea
+  image: gitea/gitea:1.16.8
+  ports:
+  - 3000
+  environment:
+    GITEA__DEFAULT__RUN_MODE: dev
+    GITEA__database__DB_TYPE: sqlite3
+    GITEA__database__PATH: /data/gitea/gitea.db
+    GITEA__picture__DISABLE_GRAVATAR: "true"
+    GITEA__repository__DEFAULT_PRIVATE: "false"
+    GITEA__repository__DEFAULT_PUSH_CREATE_PRIVATE: "false"
+    GITEA__repository__ENABLE_PUSH_CREATE_ORG: "true"
+    GITEA__repository__ENABLE_PUSH_CREATE_USER: "true"
+    GITEA__repository__ONLY_ALLOW_PUSH_IF_GITEA_ENVIRONMENT_SET: "false"
+    GITEA__security__INSTALL_LOCK: "true"
+    GITEA__server__DOMAIN: http://gitea
+    GITEA__server__OFFLINE_MODE: "true"
+    GITEA__server__ROOT_URL: http://gitea:3000
+    GITEA__server__SSH_DOMAIN: http://gitea
+    GITEA__service__DISABLE_REGISTRATION: "true"
+    GITEA__service__REQUIRE_SIGNIN_VIEW: "false"
+    GITEA__webhook__ALLOWED_HOST_LIST: '*'
+    USER_GID: "1000"
+    USER_UID: "1000"
+  memory: 2048
+virtualmachines:
+- name: control
+  image: red-hat-mbu/aap-25-ce-20241010
+  shell: /bin/su - rhel -s /bin/bash
+  machine_type: n1-standard-8
+  allow_external_ingress:
+  - http
+  - https
+  - high-ports
+- name: cisco
+  image: red-hat-mbu/cisco8000v
+  machine_type: n1-standard-1
+- name: devtools
+  image: red-hat-mbu/ansible25
+  machine_type: n2-standard-2
+- name: netbox
+  image: instruqt/docker-2010
+  machine_type: e2-standard-4
+- name: cisco2
+  image: red-hat-mbu/cisco8000v
+  machine_type: n1-standard-1
