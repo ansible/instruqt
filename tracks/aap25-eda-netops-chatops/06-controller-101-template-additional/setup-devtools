@@ -1,0 +1,43 @@
+su - rhel -c 'cat >/home/rhel/tmp_inventory <<EOL
+[arista]
+ceos1 ansible_host=podman-host ansible_port=2001
+ceos2 ansible_host=podman-host ansible_port=2002 
+ceos3 ansible_host=podman-host ansible_port=2003 
+
+[arista:vars]
+ansible_connection=ansible.netcommon.network_cli
+ansible_network_os=arista.eos.eos
+ansible_user=ansible
+ansible_password=ansible
+ansible_become=yes
+ansible_become_method=enable
+
+EOL
+cat /home/rhel/tmp_inventory'
+
+su - rhel -c 'cat >/home/rhel/tmp_cleanup_ceos.yml <<EOL
+---
+- hosts: arista
+  gather_facts: false
+  vars:
+    ceos1: 65001
+    ceos2: 65002
+    ceos3: 65003
+  tasks:
+    - name: Cleanup BGP on ceos1
+      arista.eos.eos_config:
+        lines:
+          - "no router bgp {{ inventory_hostname }}"
+      ignore_errors: true
+    
+    - name: Verify BGP is not configured
+      arista.eos.eos_command:
+        commands: show running-config | section bgp
+
+EOL
+cat /home/rhel/tmp_cleanup_ceos.yml'
+
+su - rhel -c 'ansible-navigator run /home/rhel/tmp_cleanup_ceos.yml -i /home/rhel/tmp_inventory --eei ghcr.io/nilashishc/network-ee --mode stdout'
+
+su - rhel -c 'rm -rf /home/rhel/tmp_inventory /home/rhel/tmp_cleanup_ceos.yml'
+su - rhel -c 'podman rmi network-ee'
