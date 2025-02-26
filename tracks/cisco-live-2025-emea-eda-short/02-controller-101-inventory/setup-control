@@ -1,0 +1,1 @@
+su - rhel -c 'cd /home/rhel; ansible-navigator run /home/rhel/setup_controller_afterboot.yml --mode stdout --penv _SANDBOX_ID -vvv'

@@ -1,0 +1,47 @@
+
+
+NETBOX_FQDN=netbox-8000-${_SANDBOX_ID}.env.play.intruqt.com
+
+
+## install tools
+#apt-get update 
+#apt-get upgrade
+apt-get update -y 
+apt-get install -y docker-compose-plugin nano 
+
+
+## get netbox
+
+git clone --depth=1 -b release https://github.com/netbox-community/netbox-docker.git /tmp/netbox-docker
+cat <<EOF | tee /tmp/netbox-docker/docker-compose.override.yml
+services:
+  netbox:
+    ports:
+      - 8000:8080
+    environment:
+      ALLOWED_HOSTS: '*'
+      POSTGRES_USER: "netbox"
+      POSTGRES_PASSWORD: "netbox"
+      POSTGRES_DB: "netbox"
+      POSTGRES_HOST: "postgres"
+      REDIS_HOST: "redis"
+      SKIP_SUPERUSER: "false"
+      SUPERUSER_EMAIL: "admin@example.com"
+      SUPERUSER_PASSWORD: "netbox"
+      SUPERUSER_NAME: "admin"
+#      CSRF_TRUSTED_ORIGINS: "http://netbox:8000"
+#      DEBUG: "true"
+    healthcheck:
+      start_period: 180s
+EOF
+
+### old docker-compose
+#docker-compose --project-directory=/tmp/netbox-docker pull 
+#docker-compose --project-directory=/tmp/netbox-docker up 
+
+### new docker-compose-plugin
+#docker compose --project-directory=/tmp/netbox-docker pull 
+## daemon mode
+#docker compose --project-directory=/tmp/netbox-docker up -d
+## debug / lab never starts
+#docker compose --project-directory=/tmp/netbox-docker up

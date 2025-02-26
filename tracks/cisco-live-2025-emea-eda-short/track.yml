@@ -1,0 +1,43 @@
+slug: cisco-live-2025-emea-eda-short
+id: 9y4tdkjdkvzq
+title: '[Cisco Live EMEA] DEVRHL-1007 - Workshop 5: Event-Driven Ansible for Cisco
+  routers and switches'
+teaser: NetOps with Ansible Automation Platform 2.5
+description: |-
+  # Event-Driven Ansible Automation for Cisco Devices
+
+  ![Logo-Red_Hat-Ansible_Automation_Platform-A-Standard-RGB.png](./assets/Logo-Red_Hat-Ansible_Automation_Platform-A-Standard-RGB.png)
+
+  Get started with Network Automation using **Ansible Automation Platform 2.5**!
+
+  Deploy and run the playbooks in **Automation Controller**. Use **Event-Driven Ansible** to notify about various events occurring in your network in real time and take actions based on the events as required.
+
+  **NetOps** is an approach to network operations that focuses on rapid deployments and agility. It is also referred to as NetOps 2.0 or NetDevOps, and has become the standard operating procedure for digital enterprises working to keep pace with customer expectations.
+
+  NetOps includes elements of automation, orchestration, and continuous validation to enable agile development and application delivery in modern IT organizations with complex network infrastructure.
+icon: https://www.ansible.com/hubfs/Logo-Red_Hat-Ansible-A-Reverse-SVG.svg
+tags:
+- controller
+- automation
+- ansible
+- gettingstarted
+- infrastructure
+owner: redhat
+developers:
+- lgallego@redhat.com
+show_timer: true
+skipping_enabled: true
+timelimit: 3300
+lab_config:
+  extend_ttl: 3300
+  feedback_recap_enabled: true
+  feedback_tab_enabled: false
+  loadingMessages: true
+  theme:
+    name: modern-dark
+  override_challenge_layout: false
+  hideStopButton: false
+  default_layout: AssignmentRight
+  default_layout_sidebar_size: 33
+checksum: "9285094269878611737"
+enhanced_loading: false
