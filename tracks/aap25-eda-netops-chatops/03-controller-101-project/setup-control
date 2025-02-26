@@ -1,0 +1,13 @@
+# Commands to be executed as rhel user
+echo "Running as user $(whoami)"
+su - rhel <<EOF
+echo "Running as user $(whoami)"
+for service in $(systemctl list-units --type=service --user --no-pager | awk "/.service/ {print \$1}"); do
+  if [[ "$service" != "systemd-tmpfiles-setup.service" ]]; then
+    echo "Restarting $service..."
+    systemctl --user restart "$service"
+  else
+    echo "Skipping $service (not allowed to restart manually)"
+  fi
+done
+EOF

@@ -1,0 +1,16 @@
+su - rhel -s /bin/bash <<'EOF'
+export XDG_RUNTIME_DIR=/run/user/$(id -u)
+export DBUS_SESSION_BUS_ADDRESS=unix:path=$XDG_RUNTIME_DIR/bus
+
+echo "Running as user $(whoami)"
+for service in $(systemctl list-units --type=service --user --no-pager | awk '/.service/ {print $1}'); do
+    if [[ "$service" != "systemd-tmpfiles-setup.service" ]]; then
+        echo "Restarting $service..."
+        systemctl --user restart "$service"
+    else
+        echo "Skipping $service (not allowed to restart manually)"
+    fi
+done
+
+sleep 10
+EOF
