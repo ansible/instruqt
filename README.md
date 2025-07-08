@@ -45,7 +45,7 @@
         </tr>
         <tr data-href="./webpages/aapcasc">
             <td>Getting Started with Configuration as Code for Ansible Automation Platform 2 Technical Workshop</td>
-            <td><a href="./webpages/aapcasc.md">🔬 Open Workshop</a></td>
+            <td><a href="./webpages/aapcasc-4.md">🔬 Open Workshop</a></td>
         </tr>
     </tbody>
 </table>
